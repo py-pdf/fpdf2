@@ -2457,7 +2457,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             KeyError: If no destination exists with the given name
         """
         if name not in self.named_destinations:
-            raise KeyError(f"No destination named '{name}' exists")
+            # Create a placeholder named destination pointing to page 0
+            # This will be caught during output if never set properly
+            self.named_destinations[name] = DestinationXYZ(0, top=self.h_pt * self.k)
         
         # Return the name prefixed with # to indicate it's a named destination
         # This way, the link() method will use the named destination string
@@ -2484,7 +2486,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 or from external documents.
         """
         # Handle named destination case
-        if name:
+        if name and link is None:
             # Create the destination
             dest = DestinationXYZ(
                 self.page if page == -1 else page,
@@ -2506,6 +2508,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link.top = self.h_pt - y * self.k
         link.left = x * self.k
         link.zoom = zoom
+        
+        # If a name is provided with an existing link, associate the name with this link
+        if name:
+            self.named_destinations[name] = link
+            return name
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None, **kwargs):
@@ -2534,11 +2541,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 # Check if this is a named destination (prefixed with '#')
                 if link.startswith("#"):
                     dest_name = link[1:]  # Remove the '#' prefix
-                    if dest_name in self.named_destinations:
-                        # Use destination name instead of destination object for named destinations
-                        dest = PDFString(dest_name, encrypt=True)
-                    else:
-                        raise KeyError(f"Named destination '{dest_name}' not found")
+                    # If the named destination doesn't exist yet, create a placeholder
+                    # destination pointing to page 0 (which doesn't exist)
+                    # This will be caught during output if never set properly
+                    if dest_name not in self.named_destinations:
+                        self.named_destinations[dest_name] = DestinationXYZ(0, top=self.h_pt * self.k)
+                    # Use destination name instead of destination object for named destinations
+                    dest = PDFString(dest_name, encrypt=True)
                 else:
                     # Regular URL
                     action = URIAction(link)

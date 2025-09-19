@@ -20,6 +20,7 @@ from .annotations import PDFAnnotation
 from .drawing import PaintSoftMask, Transform
 from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
+from .errors import FPDFException
 from .font_type_3 import Type3Font
 from .image_datastructures import RasterImageInfo
 from .line_break import TotalPagesSubstitutionFragment
@@ -1578,6 +1579,12 @@ class OutputProducer:
                 # Create a list of name/destination pairs for the Dests name tree
                 dests_names = []
                 for name, dest in fpdf.named_destinations.items():
+                    # Check if this is a placeholder destination (page 0)
+                    if dest.page_number == 0:
+                        raise FPDFException(
+                            f"Named destination '{name}' was referenced but never set with set_link(name=...)"
+                        )
+                    
                     # Ensure the destination's page_ref is set
                     if not hasattr(dest, "page_ref") or not dest.page_ref:
                         page_index = dest.page_number - 1
@@ -1591,7 +1598,7 @@ class OutputProducer:
 
                 if dests_names:
                     names_dict_entries["/Dests"] = pdf_dict(
-                        {"/Names": pdf_list(dests_names)}
+                        {"/Names": pdf_list(sorted(dests_names))}
                     )
 
             catalog_obj.names = pdf_dict(names_dict_entries)
