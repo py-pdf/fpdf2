@@ -150,16 +150,8 @@ def test_named_destinations(tmp_path):
         new_y=YPos.NEXT,
     )
 
-    # Generate the reference PDF
-    pdf_path = tmp_path / "test_named_destinations.pdf"
-    pdf.output(pdf_path)
-
-    # Also save a copy to the test directory for reference
-    reference_path = HERE / "test_named_destinations.pdf"
-    pdf.output(reference_path)
-
-    # Verify the file was created
-    assert pdf_path.exists()
+    # Compare generated PDF to reference using assert_pdf_equal
+    assert_pdf_equal(pdf, HERE / "named_dest.pdf", tmp_path)
 
 
 def test_invalid_destination():
