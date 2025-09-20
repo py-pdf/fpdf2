@@ -20,7 +20,6 @@ from .annotations import PDFAnnotation
 from .drawing import PaintSoftMask, Transform
 from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
-from .errors import FPDFException
 from .font_type_3 import Type3Font
 from .image_datastructures import RasterImageInfo
 from .line_break import TotalPagesSubstitutionFragment
@@ -1584,7 +1583,7 @@ class OutputProducer:
                         raise FPDFException(
                             f"Named destination '{name}' was referenced but never set with set_link(name=...)"
                         )
-                    
+
                     # Ensure the destination's page_ref is set
                     if not hasattr(dest, "page_ref") or not dest.page_ref:
                         page_index = dest.page_number - 1

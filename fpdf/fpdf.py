@@ -2448,13 +2448,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def get_named_destination(self, name):
         """
         Retrieves a named destination by its name and creates a link to it.
-        
+
         Args:
             name (str): The name of the destination to retrieve.
-            
+
         Returns:
             str: A string with format "#name" that can be used with cell(), write(), image(), or link()
-            
+
         Raises:
             KeyError: If no destination exists with the given name
         """
@@ -2462,12 +2462,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # Create a placeholder named destination pointing to page 0
             # This will be caught during output if never set properly
             self.named_destinations[name] = DestinationXYZ(0, top=self.h_pt * self.k)
-        
+
         # Return the name prefixed with # to indicate it's a named destination
         # This way, the link() method will use the named destination string
         dest_name = f"#{name}"
         return dest_name
-        
+
     def set_link(self, link=None, y=0, x=0, page=-1, zoom="null", name=None):
         """
         Defines the page and position a link points to.
@@ -2510,13 +2510,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link.top = self.h_pt - y * self.k
         link.left = x * self.k
         link.zoom = zoom
-        
+
         # If a name is provided with an existing link, associate the name with this link
         if name:
             self.named_destinations[name] = link
             return name
 
-    @check_page
+        # Return link index for backward compatibility
+        return link
+
     def link(self, x, y, w, h, link, alt_text=None, **kwargs):
         """
         Puts a link annotation on a rectangular area of the page.
@@ -2547,7 +2549,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     # destination pointing to page 0 (which doesn't exist)
                     # This will be caught during output if never set properly
                     if dest_name not in self.named_destinations:
-                        self.named_destinations[dest_name] = DestinationXYZ(0, top=self.h_pt * self.k)
+                        self.named_destinations[dest_name] = DestinationXYZ(
+                            0, top=self.h_pt * self.k
+                        )
                     # Use destination name instead of destination object for named destinations
                     dest = PDFString(dest_name, encrypt=True)
                 else:
