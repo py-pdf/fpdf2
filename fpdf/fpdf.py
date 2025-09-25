@@ -2423,11 +2423,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 destination in the PDF that can be referenced from other parts of the document
                 or from external documents.
         """
-        # Handle named destinations
-        if name is not None:
-            if not name or name.isspace():
-                raise ValueError("Destination name cannot be empty or whitespace")
-
         # Create destination
         link = DestinationXYZ(
             self.page if page == -1 else page,
@@ -2436,8 +2431,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             zoom=zoom,
         )
 
-        # Store named destination if provided
-        if name:
+        # Handle named destinations
+        if name is not None:
+            if not name or name.isspace():
+                raise ValueError("Destination name cannot be empty or whitespace")
             self.named_destinations[name] = link
 
         # Store link and return index
@@ -2465,8 +2462,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # Return the name prefixed with # to indicate it's a named destination
         # This way, the link() method will use the named destination string
-        dest_name = f"#{name}"
-        return dest_name
+        return f"#{name}"
 
     def set_link(self, link=None, y=0, x=0, page=-1, zoom="null", name=None):
         """

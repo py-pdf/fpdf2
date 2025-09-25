@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539)
 * support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
 * support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1) - _cf._ [PR #1305](https://github.com/py-pdf/fpdf2/pull/1305)
+* support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar
 
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
