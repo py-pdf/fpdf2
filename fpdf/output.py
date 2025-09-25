@@ -1705,7 +1705,7 @@ class OutputProducer:
 
                     # Add name and destination to the Dests list
                     dests_names.append(
-                        f"{PDFString(name).serialize()} {dest.serialize()}"
+                        f"{PDFString(name, encrypt=True).serialize(_security_handler=fpdf._security_handler, _obj_id=catalog_obj.id)} {dest.serialize()}"
                     )
 
                 if dests_names:
