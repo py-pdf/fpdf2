@@ -30,6 +30,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * issue with markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
 * a bug with merging fragments of different types - _cf._ PR [#1567](https://github.com/py-pdf/fpdf2/pull/1567)
 * updated destination page numbers of internal links when the ToC renderer spans multiple pages - _cf._ PR [#1566](https://github.com/py-pdf/fpdf2/pull/1566)
+* GoTo action and add test for GoTo a named destination - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545)
 
 ## [2.8.4] - 2025-08-11
 ### Added
