@@ -151,7 +151,7 @@ def test_named_destinations(tmp_path):
     )
 
     # Compare generated PDF to reference using assert_pdf_equal
-    assert_pdf_equal(pdf, HERE / "test_named_destinations.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "named_destinations.pdf", tmp_path)
 
 
 def test_invalid_destination():
