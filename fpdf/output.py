@@ -813,9 +813,13 @@ class OutputProducer:
             for annot in page_obj.annots:
                 page_dests = []
                 if annot.dest:
-                    page_dests.append(annot.dest)
+                    # Only add to page_dests if it's a Destination object (not a string/PDFString)
+                    if hasattr(annot.dest, "page_number"):
+                        page_dests.append(annot.dest)
                 if annot.a and hasattr(annot.a, "dest"):
-                    page_dests.append(annot.a.dest)
+                    # Only add to page_dests if it's a Destination object (not a string/PDFString)
+                    if hasattr(annot.a.dest, "page_number"):
+                        page_dests.append(annot.a.dest)
                 for dest in page_dests:
                     if dest.page_number > len(page_objs):
                         raise ValueError(
@@ -1557,15 +1561,47 @@ class OutputProducer:
         catalog_obj.open_action = pdf_list(zoom_config)
         if struct_tree_root_obj:
             catalog_obj.mark_info = pdf_dict({"/Marked": "true"})
-        if fpdf.embedded_files:
-            file_spec_names = [
-                f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().serialize()}"
-                for embedded_file in fpdf.embedded_files
-                if embedded_file.globally_enclosed
-            ]
-            catalog_obj.names = pdf_dict(
-                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
-            )
+        if fpdf.embedded_files or fpdf.named_destinations:
+            names_dict_entries = {}
+
+            if fpdf.embedded_files:
+                file_spec_names = [
+                    f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().serialize()}"
+                    for embedded_file in fpdf.embedded_files
+                    if embedded_file.globally_enclosed
+                ]
+                names_dict_entries["/EmbeddedFiles"] = pdf_dict(
+                    {"/Names": pdf_list(file_spec_names)}
+                )
+
+            if fpdf.named_destinations:
+                # Create a list of name/destination pairs for the Dests name tree
+                dests_names = []
+                for name, dest in fpdf.named_destinations.items():
+                    # Check if this is a placeholder destination (page 0)
+                    if dest.page_number == 0:
+                        raise FPDFException(
+                            f"Named destination '{name}' was referenced but never set with set_link(name=...)"
+                        )
+
+                    # Ensure the destination's page_ref is set
+                    if not hasattr(dest, "page_ref") or not dest.page_ref:
+                        page_index = dest.page_number - 1
+                        if 0 <= page_index < len(fpdf.pages):
+                            dest.page_ref = pdf_ref(fpdf.pages[dest.page_number].id)
+
+                    # Add name and destination to the Dests list
+                    dests_names.append(
+                        f"{PDFString(name).serialize()} {dest.serialize()}"
+                    )
+
+                if dests_names:
+                    names_dict_entries["/Dests"] = pdf_dict(
+                        {"/Names": pdf_list(sorted(dests_names))}
+                    )
+
+            catalog_obj.names = pdf_dict(names_dict_entries)
+
         page_labels = [
             f"{i} {pdf_dict(page.get_page_label().serialize())}"
             for i, page in enumerate(self._iter_pages_in_order())
