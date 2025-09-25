@@ -53,8 +53,6 @@ class NamedAction(Action):
 
 
 class GoToAction(Action):
-    "As of 2022, this does not seem honored by neither Adobe Acrobat nor Sumatra readers."
-
     def __init__(self, dest, next_action=None):
         super().__init__(next_action)
         self.dest = dest

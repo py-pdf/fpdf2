@@ -54,7 +54,7 @@ except ImportError:
         pass
 
 
-from .actions import URIAction
+from .actions import GoToAction, URIAction
 from .annotations import (
     DEFAULT_ANNOT_FLAGS,
     AnnotationDict,
@@ -2768,8 +2768,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): width of the link rectangle
             h (float): height of the link rectangle
         """
+        annotation_action_type = "Action"
+        if isinstance(action, GoToAction):
+            annotation_action_type = "Link"
         annotation = AnnotationDict(
-            "Action",
+            annotation_action_type,
             x * self.k,
             self.h_pt - y * self.k,
             w * self.k,
