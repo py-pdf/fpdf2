@@ -46,6 +46,31 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="fpdf.errors.ComplianceError"><code class="flex name class">
+<span>class <span class="ident">ComplianceError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8a95e9ba19174e7d46b88d260ec08711da0bd35c/fpdf/errors.py#L55-L56" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class ComplianceError(FPDFException):
+    &#34;&#34;&#34;Base class for standards-compliance violations (PDF/A, PDF/X, etc.).&#34;&#34;&#34;</code></pre>
+</details>
+<div class="desc"><p>Base class for standards-compliance violations (PDF/A, PDF/X, etc.).</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.errors.FPDFException" href="#fpdf.errors.FPDFException">FPDFException</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="fpdf.errors.PDFAComplianceError" href="#fpdf.errors.PDFAComplianceError">PDFAComplianceError</a></li>
+</ul>
+</dd>
 <dt id="fpdf.errors.FPDFException"><code class="flex name class">
 <span>class <span class="ident">FPDFException</span></span>
 <span>(</span><span>*args, **kwargs)</span>
@@ -54,7 +79,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f179cfcd60be3d341bec7d7d4d4f732ff485a16b/fpdf/errors.py#L1-L2" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/8a95e9ba19174e7d46b88d260ec08711da0bd35c/fpdf/errors.py#L1-L2" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFException(Exception):
     pass</code></pre>
@@ -67,6 +92,7 @@ el.replaceWith(d);
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="fpdf.errors.ComplianceError" href="#fpdf.errors.ComplianceError">ComplianceError</a></li>
 <li><a title="fpdf.errors.FPDFPageFormatException" href="#fpdf.errors.FPDFPageFormatException">FPDFPageFormatException</a></li>
 <li><a title="fpdf.errors.FPDFUnicodeEncodingException" href="#fpdf.errors.FPDFUnicodeEncodingException">FPDFUnicodeEncodingException</a></li>
 </ul>
@@ -79,7 +105,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f179cfcd60be3d341bec7d7d4d4f732ff485a16b/fpdf/errors.py#L5-L32" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/8a95e9ba19174e7d46b88d260ec08711da0bd35c/fpdf/errors.py#L5-L32" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFPageFormatException(FPDFException):
     &#34;&#34;&#34;Error is thrown when a bad page format is given&#34;&#34;&#34;
@@ -126,7 +152,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f179cfcd60be3d341bec7d7d4d4f732ff485a16b/fpdf/errors.py#L35-L52" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/8a95e9ba19174e7d46b88d260ec08711da0bd35c/fpdf/errors.py#L35-L52" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFUnicodeEncodingException(FPDFException):
     &#34;&#34;&#34;Error is thrown when a character that cannot be encoded by the chosen encoder is provided&#34;&#34;&#34;
@@ -155,6 +181,28 @@ el.replaceWith(d);
 <li>builtins.BaseException</li>
 </ul>
 </dd>
+<dt id="fpdf.errors.PDFAComplianceError"><code class="flex name class">
+<span>class <span class="ident">PDFAComplianceError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8a95e9ba19174e7d46b88d260ec08711da0bd35c/fpdf/errors.py#L59-L60" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFAComplianceError(ComplianceError):
+    &#34;&#34;&#34;Raised when an operation would produce a PDF that violates the selected PDF/A profile.&#34;&#34;&#34;</code></pre>
+</details>
+<div class="desc"><p>Raised when an operation would produce a PDF that violates the selected PDF/A profile.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.errors.ComplianceError" href="#fpdf.errors.ComplianceError">ComplianceError</a></li>
+<li><a title="fpdf.errors.FPDFException" href="#fpdf.errors.FPDFException">FPDFException</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 </dl>
 </section>
 </article>
@@ -171,6 +219,9 @@ el.replaceWith(d);
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="fpdf.errors.ComplianceError" href="#fpdf.errors.ComplianceError">ComplianceError</a></code></h4>
+</li>
+<li>
 <h4><code><a title="fpdf.errors.FPDFException" href="#fpdf.errors.FPDFException">FPDFException</a></code></h4>
 </li>
 <li>
@@ -178,6 +229,9 @@ el.replaceWith(d);
 </li>
 <li>
 <h4><code><a title="fpdf.errors.FPDFUnicodeEncodingException" href="#fpdf.errors.FPDFUnicodeEncodingException">FPDFUnicodeEncodingException</a></code></h4>
+</li>
+<li>
+<h4><code><a title="fpdf.errors.PDFAComplianceError" href="#fpdf.errors.PDFAComplianceError">PDFAComplianceError</a></code></h4>
 </li>
 </ul>
 </li>
