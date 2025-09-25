@@ -12,6 +12,8 @@ import logging
 import re
 from collections import OrderedDict, defaultdict
 from contextlib import contextmanager
+from datetime import datetime, timezone
+from html import escape as _html_escape
 from io import BytesIO
 
 from fontTools import subset as ftsubset
@@ -209,7 +211,11 @@ class PDFInfo(PDFObject):
         super().__init__()
         self.title = PDFString(title, encrypt=True) if title else None
         self.subject = PDFString(subject, encrypt=True) if subject else None
+        if author and isinstance(author, (list, tuple, set)):
+            author = "; ".join(str(a) for a in author)
         self.author = PDFString(author, encrypt=True) if author else None
+        if keywords and isinstance(keywords, (list, tuple, set)):
+            keywords = ", ".join(str(keyword) for keyword in keywords)
         self.keywords = PDFString(keywords, encrypt=True) if keywords else None
         self.creator = PDFString(creator, encrypt=True) if creator else None
         self.producer = PDFString(producer, encrypt=True) if producer else None
@@ -538,7 +544,8 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append("<<")
         out.append(f"/Size {self.count}")
         out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
-        out.append(f"/Info {pdf_ref(self.info_obj.id)}")
+        if self.info_obj:
+            out.append(f"/Info {pdf_ref(self.info_obj.id)}")
         fpdf = builder.fpdf
         if self.encryption_obj:
             out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
@@ -786,11 +793,14 @@ class OutputProducer:
         sig_annotation_obj = self._add_annotations_as_objects()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
+            self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
         self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
-        info_obj = self._add_info()
+        info_obj = None
+        if not fpdf._compliance:
+            info_obj = self._add_info()
         encryption_obj = self._add_encryption()
 
         xref = PDFXrefAndTrailer(self)
@@ -914,7 +924,7 @@ class OutputProducer:
         fpdf = self.fpdf
         page_objs = []
         for page_obj in list(self._iter_pages_in_order())[_slice]:
-            if fpdf.pdf_version > "1.3":
+            if fpdf.pdf_version > "1.3" and fpdf.allow_images_transparency:
                 page_obj.group = pdf_dict(
                     {"/Type": "/Group", "/S": "/Transparency", "/CS": "/DeviceRGB"},
                     field_join=" ",
@@ -1465,12 +1475,108 @@ class OutputProducer:
         return outline_dict_obj, outline_items
 
     def _add_xmp_metadata(self):
-        if not self.fpdf.xmp_metadata:
+        # Prefer explicitly provided XMP (user-supplied inner <x:xmpmeta/> without xpacket):
+        xmp_src = self.fpdf.xmp_metadata
+        # If not provided but a PDF/A document is being created, synthesize it:
+        if not xmp_src and self.fpdf._compliance:
+            xmp_src = self._build_xmp_from_info()
+        if not xmp_src:
             return None
-        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'
+        xpacket = f'<?xpacket begin="{chr(0xFEFF)}" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{xmp_src}\n<?xpacket end="w"?>\n'
         pdf_obj = PDFXmpMetadata(xpacket)
         self._add_pdf_obj(pdf_obj)
         return pdf_obj
+
+    def _build_xmp_from_info(self) -> str:
+        title = getattr(self.fpdf, "title", None) or ""
+        subject = getattr(self.fpdf, "subject", None) or ""
+        author = getattr(self.fpdf, "author", None) or ""
+        if author and isinstance(author, str):
+            author = [author]
+        keywords = getattr(self.fpdf, "keywords", None) or ""
+        if keywords and isinstance(keywords, str):
+            keywords = [keywords]
+        creator_tool = getattr(self.fpdf, "creator", None) or ""
+        producer = getattr(self.fpdf, "producer", None) or ""
+        cdate = getattr(self.fpdf, "creation_date", None)
+        creation_date_utc = None
+        if isinstance(cdate, datetime):
+            creation_date_utc = cdate if cdate.tzinfo else cdate.astimezone()
+            creation_date_utc = creation_date_utc.astimezone(timezone.utc)
+        pdfa = self.fpdf._compliance
+
+        # Escape for XML attributes/PCDATA:
+        def esc(s):
+            """Return XML-escaped text suitable for XMP (attributes or text nodes)."""
+            value = "" if s is None else _html_escape(str(s), quote=True)
+            return value.replace("'", "&apos;")
+
+        # XMP times are ISO 8601 (e.g., 2025-09-01T12:34:56+02:00):
+        EPOCH = datetime(1969, 12, 31, 19, 0, 0, tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        if creation_date_utc == EPOCH:
+            xmp_create = EPOCH.isoformat(timespec="seconds")
+            xmp_modify = EPOCH.isoformat(timespec="seconds")
+        else:
+            create_dt = creation_date_utc or now
+            xmp_create = create_dt.isoformat(timespec="seconds")
+            xmp_modify = now.isoformat(timespec="seconds")
+        # Build a single Description that includes everything + pdfaid if requested:
+        parts = [
+            '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="fpdf2">',
+            "  <rdf:RDF",
+            '    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"',
+            '    xmlns:dc="http://purl.org/dc/elements/1.1/"',
+            '    xmlns:xmp="http://ns.adobe.com/xap/1.0/"',
+            '    xmlns:pdf="http://ns.adobe.com/pdf/1.3/"',
+            '    xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">',
+            '    <rdf:Description rdf:about=""',
+        ]
+        # attributes block (xmp, pdf, pdfaid)
+        if creator_tool:
+            parts.append(f'        xmp:CreatorTool="{esc(creator_tool)}"')
+        if xmp_create:
+            parts.append(f'        xmp:CreateDate="{esc(xmp_create)}"')
+            parts.append(f'        xmp:ModifyDate="{esc(xmp_modify)}"')
+            parts.append(f'        xmp:MetadataDate="{esc(xmp_modify)}"')
+        if producer:
+            parts.append(f'        pdf:Producer="{esc(producer)}"')
+        if keywords:
+            keyword_list = ",".join(keywords)
+            parts.append(f'        pdf:Keywords="{esc(keyword_list)}"')
+        parts.append("      >")
+        # nested elements (Lang Alt / Seqs)
+        if pdfa:
+            parts.append(f"      <pdfaid:part>{int(pdfa.part)}</pdfaid:part>")
+            if pdfa.conformance:
+                parts.append(
+                    f"      <pdfaid:conformance>{esc(pdfa.conformance)}</pdfaid:conformance>"
+                )
+            if pdfa.part == 4:
+                parts.append("      <pdfaid:rev>2020</pdfaid:rev>")
+        if title:
+            parts += [
+                "      <dc:title><rdf:Alt>",
+                '        <rdf:li xml:lang="x-default">' + esc(title) + "</rdf:li>",
+                "      </rdf:Alt></dc:title>",
+            ]
+        if subject:
+            parts += [
+                "      <dc:description><rdf:Alt>",
+                '        <rdf:li xml:lang="x-default">' + esc(subject) + "</rdf:li>",
+                "      </rdf:Alt></dc:description>",
+            ]
+        if author:
+            parts.append("      <dc:creator><rdf:Seq>")
+            for a in author:
+                parts.append(f"        <rdf:li>{esc(a)}</rdf:li>")
+            parts.append("      </rdf:Seq></dc:creator>")
+        parts += [
+            "    </rdf:Description>",
+            "  </rdf:RDF>",
+            "</x:xmpmeta>",
+        ]
+        return "\n".join(parts)
 
     def _add_info(self):
         fpdf = self.fpdf
@@ -1566,13 +1672,20 @@ class OutputProducer:
 
             if fpdf.embedded_files:
                 file_spec_names = [
-                    f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().serialize()}"
+                    f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().ref}"
                     for embedded_file in fpdf.embedded_files
                     if embedded_file.globally_enclosed
                 ]
                 names_dict_entries["/EmbeddedFiles"] = pdf_dict(
                     {"/Names": pdf_list(file_spec_names)}
                 )
+                global_file_specs = [
+                    pdf_ref(ef.file_spec().id)
+                    for ef in self.fpdf.embedded_files
+                    if ef.globally_enclosed()
+                ]
+                if global_file_specs:
+                    catalog_obj.a_f = pdf_list(global_file_specs)
 
             if fpdf.named_destinations:
                 # Create a list of name/destination pairs for the Dests name tree

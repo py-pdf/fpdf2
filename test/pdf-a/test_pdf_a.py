@@ -1,69 +1,24 @@
-import sys
 from pathlib import Path
 
-from fpdf import FPDF
-from fpdf.enums import OutputIntentSubType
-from fpdf.output import PDFICCProfile
-from fpdf import FPDF_VERSION
-import pikepdf
-
 import pytest
+
+from fpdf import FPDF
+from fpdf.drawing_primitives import DeviceRGB
+from fpdf.enums import DocumentCompliance
 
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 FONT_DIR = HERE / ".." / "fonts"
-TUTORIAL = HERE / ".." / ".." / "tutorial"
-
-
-class PDF(FPDF):
-    def __init__(
-        self, *args, language, title, subject, creator, description, keywords, **kwargs
-    ):
-        super().__init__(*args, **kwargs)
-        self.language = language
-        self.title = title
-        self.subject = subject
-        self.creator = creator
-        self.description = description
-        self.keywords = keywords
-
-    def output(self, name: str, *args, **kwargs):
-        if self.language:
-            self.set_lang(self.language)
-        if self.subject:
-            self.set_subject(self.subject)
-        super().output(name, *args, **kwargs)
-        if hasattr(name, "name"):  # => io.BufferedWriter from assert_pdf_equal()
-            name.close()  # closing buffer before opening file with pikepdf (required on Windows)
-            name = name.name
-        with pikepdf.open(name, allow_overwriting_input=True) as pdf:
-            with pdf.open_metadata(set_pikepdf_as_editor=False) as meta:
-                if self.title:
-                    meta["dc:title"] = self.title
-                if self.creator:
-                    meta["dc:creator"] = self.creator
-                if self.description:
-                    meta["dc:description"] = self.description
-                if self.keywords:
-                    meta["pdf:Keywords"] = self.keywords
-                meta["pdf:Producer"] = f"py-pdf/fpdf2"
-                meta["xmp:CreatorTool"] = __name__
-                # meta["xmp:CreateDate"] = already done by assert_pdf_equal()
-                meta["pdfaid:part"] = "3"
-                meta["pdfaid:conformance"] = "B"
-            pdf.save(deterministic_id=True)
 
 
 def test_basic_pdfa(tmp_path):
-    pdf = PDF(
-        language="en-US",
-        title="Tutorial7",
-        subject="Example for PDFA",
-        creator=["John Dow", "Jane Dow"],
-        description="this is my description of this file",
-        keywords="Example Tutorial7",
-    )
+    pdf = FPDF(enforce_compliance=DocumentCompliance.PDFA_3B)
+    pdf.set_lang("en-US")
+    pdf.set_title("Tutorial7")
+    pdf.set_subject("Example for PDFA")
+    pdf.set_author(["John Dow", "Jane Dow"])
+    pdf.set_keywords(["Example", "Tutorial7", "PDF/A"])
     pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.add_font("DejaVuSans", style="B", fname=FONT_DIR / "DejaVuSans-Bold.ttf")
     pdf.add_font("DejaVuSans", style="I", fname=FONT_DIR / "DejaVuSans-Oblique.ttf")
@@ -76,16 +31,71 @@ def test_basic_pdfa(tmp_path):
     pdf.ln(20)
     pdf.set_font(style="I")
     pdf.write(text="Example text in italics")
-    with open(TUTORIAL / "sRGB2014.icc", "rb") as iccp_file:
-        icc_profile = PDFICCProfile(
-            contents=iccp_file.read(), n=3, alternate="DeviceRGB"
-        )
-    pdf.add_output_intent(
-        OutputIntentSubType.PDFA,
-        "sRGB",
-        "IEC 61966-2-1:1999",
-        "http://www.color.org",
-        icc_profile,
-        "sRGB2014 (v2)",
-    )
     assert_pdf_equal(pdf, HERE / "basic_pdfa.pdf", tmp_path)
+
+
+def test_pdfa_font_fallback(tmp_path):
+    pdf = FPDF(enforce_compliance=DocumentCompliance.PDFA_2B)
+    pdf.add_page()
+    pdf.add_font(family="Quicksand", fname=FONT_DIR / "Quicksand-Regular.otf")
+    pdf.add_font(family="Roboto", fname=FONT_DIR / "Roboto-Regular.ttf")
+    pdf.add_font(family="DejaVuSans", fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.add_font(family="TwitterEmoji", fname=FONT_DIR / "TwitterEmoji.ttf")
+    pdf.add_font(family="Waree", fname=FONT_DIR / "Waree.ttf")
+    text = "Hello world / สวัสดีชาวโลก ทดสอบฟอนต์, 😄 😁 😆 😅 ✌"
+    pdf.set_fallback_fonts(
+        ["DejaVuSans", "Quicksand", "Waree", "TwitterEmoji", "Roboto"]
+    )
+    pdf.set_text_shaping(True)
+    pdf.set_font("TwitterEmoji", size=20)
+    pdf.cell(text=text, new_x="LMARGIN", new_y="NEXT")
+    pdf.ln()
+    pdf.set_font("Roboto", size=20)
+    pdf.cell(text=text, new_x="LMARGIN", new_y="NEXT")
+    assert_pdf_equal(pdf, HERE / "pdfa_fallback_fonts.pdf", tmp_path)
+
+
+def test_pdfa_png_image(tmp_path):
+    pdf = FPDF(enforce_compliance=DocumentCompliance.PDFA_3B)
+    pdf.add_page()
+    pdf.image(
+        HERE / ".." / "image" / "png_images" / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+        x=0,
+        y=0,
+        w=0,
+        h=0,
+    )
+    assert_pdf_equal(pdf, HERE / "pdfa_image_png.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "dc",
+    [
+        DocumentCompliance.PDFA_1B,
+        DocumentCompliance.PDFA_2B,
+        DocumentCompliance.PDFA_2U,
+        DocumentCompliance.PDFA_3B,
+        DocumentCompliance.PDFA_3U,
+        DocumentCompliance.PDFA_4,
+        DocumentCompliance.PDFA_4E,
+    ],
+)
+def test_pdfa_transparent_png(tmp_path, dc):
+    pdf = FPDF(enforce_compliance=dc)
+    pdf.set_page_background(DeviceRGB(r=0, g=0, b=0))
+    pdf.set_compression(False)
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans", size=10)
+    pdf.add_page()
+    pdf.image(
+        HERE / ".." / "image" / "png_images" / "e59ec0cfb8ab64558099543dc19f8378.png",
+        x=0,
+        y=0,
+        w=0,
+        h=0,
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / f"{dc.name.lower()}_transparent_png.pdf",
+        tmp_path,
+    )

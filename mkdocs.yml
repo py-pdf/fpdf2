@@ -180,6 +180,7 @@ nav:
   - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
+  - 'PDF/A':                          'pdfa.md'
 - 'Mixing other libs':
   - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with Markdown':          'CombineWithMarkdown.md'

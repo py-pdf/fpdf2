@@ -9,6 +9,9 @@ in non-backward-compatible ways.
 import gc
 import os
 import warnings
+
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.9)
+from importlib import resources
 from numbers import Number
 from tracemalloc import get_traced_memory, is_tracing
 from typing import Iterable, NamedTuple, Tuple, Union
@@ -147,6 +150,11 @@ def int_to_letters(n: int) -> str:
     if n > 25:
         return int_to_letters(int((n / 26) - 1)) + int_to_letters(n % 26)
     return chr(n + ord("A"))
+
+
+def builtin_srgb2014_bytes() -> bytes:
+    pkg = "fpdf.data.color_profiles"
+    return (resources.files(pkg) / "sRGB2014.icc").read_bytes()
 
 
 ################################################################################
