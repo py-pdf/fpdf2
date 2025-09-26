@@ -181,17 +181,19 @@ class TableOfContents:
             )
 
             # fill in-between with dots
+            clearance_margin = pdf.c_margin * 2
             current_x = pdf.get_x()
             page_label_length = pdf.get_string_width(page_label)
-            in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
+            in_between_space = pdf.w - current_x - page_label_length - clearance_margin - pdf.r_margin
             if in_between_space < 0:
                 # no space to render the page number - go to next line
                 pdf.ln()
+                pdf.set_x(pdf.l_margin + indent)
                 current_x = pdf.get_x()
                 in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
             in_between = ""
             if in_between_space > 0:
-                while pdf.get_string_width(in_between + "  ") < in_between_space:
+                while pdf.get_string_width(in_between + "  ") + clearance_margin < in_between_space:
                     in_between += "."
 
                 if len(in_between) > 1:
