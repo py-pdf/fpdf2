@@ -196,7 +196,7 @@ class TableOfContents:
             in_between = ""
             if in_between_space > 0:
                 while (
-                    pdf.get_string_width(in_between + "  ") + clearance_margin
+                    pdf.get_string_width(in_between) + clearance_margin
                     < in_between_space
                 ):
                     in_between += "."
