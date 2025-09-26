@@ -324,5 +324,7 @@ def test_goto_named_destination(tmp_path):
     pdf.add_link(y=140, name="page2")
     pdf.text(x=80, y=140, text="Page 2")
     assert_pdf_equal(
-        pdf, HERE / "encryption_goto_named_destination.pdf", tmp_path,
+        pdf,
+        HERE / "encryption_goto_named_destination.pdf",
+        tmp_path,
     )
