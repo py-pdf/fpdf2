@@ -93,7 +93,7 @@ def test_goto_action_named_destination(tmp_path):
     x, y, text = 80, 140, "GoTo action"
     pdf.text(x=x, y=y, text=text)
     pdf.add_action(
-        GoToAction(dest="(page2)"),
+        GoToAction(dest="#page2"),
         x=x,
         y=y - pdf.font_size,
         w=pdf.get_string_width(text),
