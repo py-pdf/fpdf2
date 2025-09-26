@@ -44,6 +44,11 @@ def test_bidi_conformance():
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
     https://www.unicode.org/reports/tr41/tr41-32.html#Tests9
     This file contains 770,241 tests
+
+    The file BidiTest.txt is available from:
+    https://www.unicode.org/Public/17.0.0/ucd/BidiTest.txt
+
+    The local copy is compressed with xz to save space (the original file is 7.7 MB)
     """
 
     def check_result(string, base_direction, levels, reorder):
@@ -106,6 +111,11 @@ def test_bidi_character():
     """
     The other test file, BidiCharacterTest.txt, contains test sequences of explicit code points, including, for example, bracket pairs.
     There are 91,707 tests on this file
+
+    The file BidiCharacterTest.txt is available from:
+    https://www.unicode.org/Public/17.0.0/ucd/BidiCharacterTest.txt
+
+    The local copy is compressed with xz to save space (the original file is 6.7 MB)
     """
 
     with lzma.open(HERE / "BidiCharacterTest.txt.xz", "rb") as compressed_file:
