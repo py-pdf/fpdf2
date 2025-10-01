@@ -62,12 +62,12 @@ def test_bidi_conformance():
             len_levels = len(levels)
         if len(characters) != len_levels:
             return False
-        for indx, char in enumerate(characters):
-            if levels[indx] != "x" and levels[indx] != str(char.embedding_level):
+        for index, char in enumerate(characters):
+            if levels[index] != "x" and levels[index] != str(char.embedding_level):
                 return False
         return not any(
-            reorder[indx] != str(char.character_index)
-            for (indx, char) in enumerate(reordered_characters)
+            reorder[index] != str(char.character_index)
+            for (index, char) in enumerate(reordered_characters)
         )
 
     with lzma.open(HERE / "BidiTest.txt.xz", "rb") as compressed_file:

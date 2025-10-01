@@ -10,6 +10,7 @@ extend-ignore-identifiers-re = [
     "ue", "UE",
     "FlateDecode",
     "VAI",
+    "^TAI_THAM$",
 ]
 extend-ignore-re = [
     "loca subsetting",
