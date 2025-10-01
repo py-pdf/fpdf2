@@ -228,6 +228,37 @@ async def create_pdf(request: Request):
 
 ```
 
+## Bottle
+[Bottle](https://bottlepy.org/docs/dev/index.html) is:
+> Bottle is a fast, simple and lightweight WSGI micro web-framework for Python. It is distributed as a single file module and has no dependencies other than the Python Standard Library.
+
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
+
+```python
+from bottle import route, run, response
+from fpdf import FPDF
+
+@route('/')
+def hello():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.cell(text="hello world")
+    pdf_bytes = bytes(pdf.output())
+    
+    response.set_header('Content-Type', 'application/pdf')
+    response.status = 200
+    response.content_length = len(pdf_bytes)
+    
+    return pdf_bytes
+
+if __name__ == '__main__':
+    run(host='localhost', port=8080, debug=True)
+
+```
+
+
+
 
 ## Jupyter
 Check [tutorial/notebook.ipynb](https://github.com/py-pdf/fpdf2/blob/master/tutorial/notebook.ipynb)
