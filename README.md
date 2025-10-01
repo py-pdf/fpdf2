@@ -331,6 +331,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/woopzz"><img src="https://avatars.githubusercontent.com/u/20585814?v=4?s=100" width="100px;" alt="Bohdan Kovtunovych"/><br /><sub><b>Bohdan Kovtunovych</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Awoopzz" title="Bug reports">🐛</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=woopzz" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/RamBelitkar"><img src="https://avatars.githubusercontent.com/u/144576048?v=4?s=100" width="100px;" alt="RamBelitkar"/><br /><sub><b>RamBelitkar</b></sub></a><br /><a href="#research-RamBelitkar" title="Research">🔬</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=RamBelitkar" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://techtracer.pages.dev"><img src="https://avatars.githubusercontent.com/u/48885301?v=4?s=100" width="100px;" alt="Tanmay Chaudhari"/><br /><sub><b>Tanmay Chaudhari</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=tanmayc07" title="Documentation">📖</a></td>
+    </tr>
   </tbody>
 </table>
 
