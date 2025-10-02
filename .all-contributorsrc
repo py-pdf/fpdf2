@@ -1543,6 +1543,15 @@
         "research",
         "code"
       ]
+    },
+    {
+      "login": "tanmayc07",
+      "name": "Tanmay Chaudhari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48885301?v=4",
+      "profile": "https://techtracer.pages.dev",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
