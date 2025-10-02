@@ -152,7 +152,12 @@ from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import Padding, get_scale_factor, builtin_srgb2014_bytes
+from .util import (
+    Padding,
+    get_scale_factor,
+    builtin_srgb2014_bytes,
+    get_parsed_unicode_range,
+)
 
 # Public global variables:
 FPDF_VERSION = "2.8.4"
@@ -2186,7 +2191,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             ctxt.add_item(path)
 
-    def add_font(self, family=None, style="", fname=None, uni="DEPRECATED"):
+    def add_font(
+        self, family=None, style="", fname=None, uni="DEPRECATED", unicode_range=None
+    ):
         """
         Imports a TrueType or OpenType font and makes it available
         for later calls to the `FPDF.set_font()` method.
@@ -2199,6 +2206,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style (str): font style. "" for regular, include 'B' for bold, and/or 'I' for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
+            unicode_range (list of tuples): Optional list of tuples defining
             uni (bool): [**DEPRECATED since 2.5.1**] unused
         """
         if not fname:
@@ -2250,7 +2258,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
             return
 
-        self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
+        parsed_unicode_range = None
+        if unicode_range is not None:
+            parsed_unicode_range = get_parsed_unicode_range(unicode_range)
+
+        self.fonts[fontkey] = TTFFont(
+            self, font_file_path, fontkey, style, parsed_unicode_range
+        )
 
     def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):
         """
