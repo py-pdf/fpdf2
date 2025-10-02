@@ -2206,7 +2206,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style (str): font style. "" for regular, include 'B' for bold, and/or 'I' for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
-            unicode_range (list of tuples): Optional list of tuples defining
+            unicode_range (Optional[Union[str, int, tuple, list]]): subset of Unicode codepoints to embed.
+                Accepts CSS-style strings (e.g. "U+1F600-1F64F, U+2600"), integers, tuples, or lists.
+                Defaults to None, which embeds the full cmap.
             uni (bool): [**DEPRECATED since 2.5.1**] unused
         """
         if not fname:
