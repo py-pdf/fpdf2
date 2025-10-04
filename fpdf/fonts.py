@@ -271,9 +271,10 @@ class TTFFont:
         "missing_glyphs",
         "biggest_size_pt",
         "color_font",
+        "unicode_range",
     )
 
-    def __init__(self, fpdf, font_file_path, fontkey, style):
+    def __init__(self, fpdf, font_file_path, fontkey, style, unicode_range=None):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
@@ -366,6 +367,13 @@ class TTFFont:
             raise NotImplementedError(
                 "Font not supported as it does not have a unicode cmap table - cf. issue #1396"
             )
+
+        if unicode_range is not None and len(unicode_range) != 0:
+            self.cmap = {
+                codepoint: glyph_id
+                for codepoint, glyph_id in self.cmap.items()
+                if codepoint in unicode_range
+            }
 
         # saving a list of glyph ids to char to allow
         # subset by unicode (regular) and by glyph
