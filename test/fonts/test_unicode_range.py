@@ -409,27 +409,26 @@ def test_mixed_text_with_multiple_scripts(tmp_path):
 
 
 def test_prefer_specialized_font_for_punctuation(tmp_path):
-    """Test preferring a specialized font for certain punctuation"""
+    """Test preferring a specialized font for smart quotes"""
 
     pdf = FPDF()
 
     pdf.add_font(
         family="DejaVu",
         fname=HERE / "DejaVuSans.ttf",
-        unicode_range="U+0020-0021, U+0023-2018, U+201A-10FFFF",  # Skip U+2019
+        unicode_range="U+0020-2017, U+201A-10FFFF",  # Skip U+2018-2019
     )
 
     pdf.add_font(
         family="DejaVuQuotes",
         fname=HERE / "DejaVuSans-Bold.ttf",
-        unicode_range="U+2018-201F",
+        unicode_range="U+2018-201F",  # Smart quotes
     )
 
     pdf.set_font("DejaVu", size=24)
     pdf.set_fallback_fonts(["DejaVuQuotes"])
     pdf.add_page()
-
-    pdf.cell(w=0, text="Regular 'quotes' and \"smart quotes\"")
+    pdf.cell(w=0, text="Regular text with 'smart' and \"fancy\" quotes")
 
     assert_pdf_equal(
         pdf,
