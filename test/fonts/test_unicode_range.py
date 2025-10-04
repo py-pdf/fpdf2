@@ -173,7 +173,7 @@ def test_invalid_range_format():
     """Test error for malformed range string"""
 
     with pytest.raises(ValueError):
-        get_parsed_unicode_range("U+1F600-1F602-1F604")  # Too many dashes
+        get_parsed_unicode_range("U+1F600-1F602-1F604")
 
 
 # Test that unicode_range correctly filters font character maps
@@ -181,6 +181,7 @@ def test_invalid_range_format():
 
 def test_filters_basic_latin():
     """Test filtering to basic Latin characters only"""
+
     pdf = FPDF()
     pdf.add_font(
         family="DejaVu",
@@ -200,6 +201,7 @@ def test_filters_basic_latin():
 
 def test_filters_multiple_ranges():
     """Test filtering with multiple ranges"""
+
     pdf = FPDF()
     pdf.add_font(
         family="DejaVu",
@@ -215,6 +217,7 @@ def test_filters_multiple_ranges():
 
 def test_empty_range_raises_value_error():
     """Test that an empty unicode_range raises a ValueError"""
+
     pdf = FPDF()
     with pytest.raises(ValueError, match="unicode_range cannot be empty"):
         pdf.add_font(family="DejaVu", fname=HERE / "DejaVuSans.ttf", unicode_range=[])
@@ -222,6 +225,7 @@ def test_empty_range_raises_value_error():
 
 def test_none_range_keeps_full_cmap():
     """Test that None unicode_range keeps full font cmap"""
+
     pdf = FPDF()
     pdf.add_font(family="DejaVu", fname=HERE / "DejaVuSans.ttf", unicode_range=None)
     font = pdf.fonts["dejavu"]
@@ -231,6 +235,7 @@ def test_none_range_keeps_full_cmap():
 
 def test_preserves_font_style():
     """Test that unicode_range works with font styles"""
+
     pdf = FPDF()
     pdf.add_font(
         family="DejaVu",
@@ -238,8 +243,8 @@ def test_preserves_font_style():
         fname=HERE / "DejaVuSans-Bold.ttf",
         unicode_range="U+0041-005A",
     )
-    assert "dejavuB" in pdf.fonts  # Changed from "dejavub" to "dejavuB"
-    font = pdf.fonts["dejavuB"]  # Changed from "dejavub" to "dejavuB"
+    assert "dejavuB" in pdf.fonts
+    font = pdf.fonts["dejavuB"]
     assert 0x0041 in font.cmap
 
 
@@ -247,8 +252,6 @@ def test_emoji_fallback_with_unicode_range(tmp_path):
     """Test that emoji falls back to color font when main font filtered"""
     pdf = FPDF()
 
-    # Main font: DejaVu has both latin and some emoji glyphs (monochrome)
-    # But we restrict it to only Basic Latin
     pdf.add_font(
         family="DejaVu",
         fname=HERE / "DejaVuSans.ttf",
@@ -256,7 +259,10 @@ def test_emoji_fallback_with_unicode_range(tmp_path):
     )
 
     # Fallback: Noto Emoji renders all emojis in color
-    pdf.add_font(family="NotoEmoji", fname=HERE / "colrv1-NotoColorEmoji.ttf")
+    pdf.add_font(
+        family="NotoEmoji",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
+    )
 
     pdf.set_font("DejaVu", size=24)
     pdf.set_fallback_fonts(["NotoEmoji"])
@@ -274,13 +280,17 @@ def test_emoji_fallback_with_unicode_range(tmp_path):
 
 def test_emoji_without_unicode_range_shows_monochrome(tmp_path):
     """Test baseline: without unicode_range, DejaVu's monochrome emoji is used"""
+
     pdf = FPDF()
 
     # Main font: DejaVu without unicode_range restriction
     pdf.add_font(family="DejaVu", fname=HERE / "DejaVuSans.ttf")
 
     # Fallback: Noto Emoji (won't be used for chars DejaVu has)
-    pdf.add_font(family="NotoEmoji", fname=HERE / "colrv1-NotoColorEmoji.ttf")
+    pdf.add_font(
+        family="NotoEmoji",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
+    )
 
     pdf.set_font("DejaVu", size=24)
     pdf.set_fallback_fonts(["NotoEmoji"])
@@ -298,18 +308,18 @@ def test_emoji_without_unicode_range_shows_monochrome(tmp_path):
 
 def test_restrict_emoji_font_to_specific_ranges(tmp_path):
     """Test restricting emoji font to only handle specific emoji ranges"""
+
     pdf = FPDF()
 
     pdf.add_font(
         family="DejaVu",
         fname=HERE / "DejaVuSans.ttf",
-        unicode_range="U+0020-007E",  # Basic Latin
+        unicode_range="U+0020-007E",
     )
 
-    # Only handle emoticons range, not other symbols
     pdf.add_font(
         family="NotoEmoji",
-        fname=HERE / "colrv1-NotoColorEmoji.ttf",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
         unicode_range="U+1F600-1F64F",  # Emoticons only
     )
 
@@ -318,53 +328,51 @@ def test_restrict_emoji_font_to_specific_ranges(tmp_path):
     pdf.add_page()
 
     # 😀 is in emoticons range (will use NotoEmoji)
-    # ☀ is in misc symbols (not in NotoEmoji's restricted range)
+    # ☀ is in misc symbols (not in NotoEmoji's restricted range as well as not in DejaVu)
     pdf.cell(w=0, text="Hello 😀 World ☀")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "emoji_restricted_range.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "emoji_restricted_range.pdf", tmp_path)
 
 
 def test_multiple_emoji_fonts_different_ranges(tmp_path):
     """Test using multiple emoji fonts with different unicode ranges"""
+
     pdf = FPDF()
 
     pdf.add_font(
-        family="DejaVu", fname=HERE / "DejaVuSans.ttf", unicode_range="U+0020-007E"
+        family="DejaVu",
+        fname=HERE / "DejaVuSans.ttf",
+        unicode_range="U+0020-007E, U+2600-26FF",
     )
 
-    # First emoji font: Emoticons
     pdf.add_font(
-        family="NotoEmoji1",
-        fname=HERE / "colrv1-NotoColorEmoji.ttf",
-        unicode_range="U+1F600-1F64F",
-    )
-
-    # Second emoji font: Miscellaneous Symbols
-    pdf.add_font(
-        family="NotoEmoji2",
-        fname=HERE / "colrv1-NotoColorEmoji.ttf",
-        unicode_range="U+2600-26FF",
+        family="NotoEmoji",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
+        unicode_range="U+1F600-1F64F, U+1F680-1F6FF",
     )
 
     pdf.set_font("DejaVu", size=24)
-    pdf.set_fallback_fonts(["NotoEmoji1", "NotoEmoji2"])
+    pdf.set_fallback_fonts(["NotoEmoji"])
     pdf.add_page()
 
-    pdf.cell(w=0, text="Hello 😀 ☀ 🚀")
+    # Misc Symbols (DejaVu - monochrome)
+    pdf.cell(w=0, text="Symbols: ☀ ☁ ☂ ☃ ⚡ ☕ ♠ ♥ ♦")
+    pdf.ln()
+    # Emoticons (NotoEmoji - colorful)
+    pdf.cell(w=0, text="Faces: 😀 😁 😂 😃 😄 😅 😆 😊 😍 😎")
+    pdf.ln()
+    # Transport (NotoEmoji - colorful)
+    pdf.cell(w=0, text="Transport: 🚀 🚁 🚂 🚃 🚄 🚅 🚗 🚙")
+    pdf.ln()
+    # Mixed: showing contrast
+    pdf.cell(w=0, text="Mixed: ☀ 😀 ☕ 😊 ☂ 🚀 ♦ 😎 ♥")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "multiple_emoji_fonts.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "multiple_emoji_fonts.pdf", tmp_path)
 
 
 def test_mixed_text_with_multiple_scripts(tmp_path):
     """Test document with Latin, symbols, and emoji"""
+
     pdf = FPDF()
 
     # Main font: Basic Latin + Latin Extended
@@ -377,7 +385,7 @@ def test_mixed_text_with_multiple_scripts(tmp_path):
     # Emoji font
     pdf.add_font(
         family="NotoEmoji",
-        fname=HERE / "colrv1-NotoColorEmoji.ttf",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
         unicode_range="U+1F300-1F9FF, U+2600-27BF",
     )
 
@@ -402,21 +410,19 @@ def test_mixed_text_with_multiple_scripts(tmp_path):
 
 def test_prefer_specialized_font_for_punctuation(tmp_path):
     """Test preferring a specialized font for certain punctuation"""
+
     pdf = FPDF()
 
-    # Main font: Everything except fancy quotes
     pdf.add_font(
         family="DejaVu",
         fname=HERE / "DejaVuSans.ttf",
         unicode_range="U+0020-0021, U+0023-2018, U+201A-10FFFF",  # Skip U+2019
     )
 
-    # Specialized font with better quotes (if available)
-    # For testing, we'll use the same font but restricted to quotes
     pdf.add_font(
         family="DejaVuQuotes",
         fname=HERE / "DejaVuSans-Bold.ttf",
-        unicode_range="U+2018-201F",  # Smart quotes range
+        unicode_range="U+2018-201F",
     )
 
     pdf.set_font("DejaVu", size=24)
@@ -434,6 +440,7 @@ def test_prefer_specialized_font_for_punctuation(tmp_path):
 
 def test_multi_cell_with_unicode_range(tmp_path):
     """Test unicode_range works with multi_cell and text wrapping"""
+
     pdf = FPDF()
 
     pdf.add_font(
@@ -442,7 +449,7 @@ def test_multi_cell_with_unicode_range(tmp_path):
 
     pdf.add_font(
         family="NotoEmoji",
-        fname=HERE / "colrv1-NotoColorEmoji.ttf",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
         unicode_range="U+1F600-1F64F, U+2600-26FF",
     )
 
@@ -468,6 +475,7 @@ def test_multi_cell_with_unicode_range(tmp_path):
 
 def test_markdown_with_unicode_range(tmp_path):
     """Test unicode_range works with markdown formatting"""
+
     pdf = FPDF()
 
     pdf.add_font(
@@ -486,7 +494,10 @@ def test_markdown_with_unicode_range(tmp_path):
         unicode_range="U+0020-007E",
     )
 
-    pdf.add_font(family="NotoEmoji", fname=HERE / "colrv1-NotoColorEmoji.ttf")
+    pdf.add_font(
+        family="NotoEmoji",
+        fname=HERE.parent / "color_font" / "colrv1-NotoColorEmoji.ttf",
+    )
 
     pdf.set_font("DejaVu", size=16)
     pdf.set_fallback_fonts(["NotoEmoji"])
@@ -504,6 +515,7 @@ def test_markdown_with_unicode_range(tmp_path):
 
 def test_unicode_range_with_zero_width_characters(tmp_path):
     """Test unicode_range with zero-width and combining characters"""
+
     pdf = FPDF()
 
     pdf.add_font(
@@ -515,8 +527,7 @@ def test_unicode_range_with_zero_width_characters(tmp_path):
     pdf.set_font("DejaVu", size=24)
     pdf.add_page()
 
-    # Text with combining characters
-    pdf.cell(w=0, text="e\u0301")  # é composed with combining acute
+    pdf.cell(w=0, text="e\u0301")
 
     assert_pdf_equal(
         pdf,
@@ -527,6 +538,7 @@ def test_unicode_range_with_zero_width_characters(tmp_path):
 
 def test_unicode_range_bmp_boundary(tmp_path):
     """Test unicode_range at BMP/supplementary plane boundary"""
+
     pdf = FPDF()
 
     pdf.add_font(

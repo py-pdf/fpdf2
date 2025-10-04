@@ -264,7 +264,7 @@ def get_process_rss_as_mib() -> Union[Number, None]:
         with open(f"/proc/{pid}/statm", encoding="utf8") as statm:
             return (
                 int(statm.readline().split()[1])
-                * os.sysconf("SC_PAGE_SIZE")  # pylint: disable=no-member
+                * os.sysconf("SC_PAGE_SIZE")
                 / 1024
                 / 1024
             )
