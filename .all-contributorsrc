@@ -1552,6 +1552,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Malay-dev",
+      "name": "Malay Kumar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/91375797?v=4",
+      "profile": "https://github.com/Malay-dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
