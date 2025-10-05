@@ -55,7 +55,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L46-L51" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L46-L51" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def buffer_subst(buffer, placeholder, value):
     buffer_size = len(buffer)
@@ -73,7 +73,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L155-L157" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L155-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def builtin_srgb2014_bytes() -&gt; bytes:
     pkg = &#34;fpdf.data.color_profiles&#34;
@@ -88,7 +88,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L96-L116" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L96-L116" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def convert_unit(
     to_convert: Union[float, int, Iterable[Union[float, int, Iterable]]],
@@ -129,7 +129,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L54-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L54-L68" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def escape_parens(s):
     &#34;&#34;&#34;Add a backslash character before , ( and )&#34;&#34;&#34;
@@ -156,7 +156,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L246-L256" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L317-L327" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_gc_managed_objs_total_size() -&gt; str:
     &#34;From experiments, not very reliable&#34;
@@ -179,7 +179,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L169-L179" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L240-L250" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_mem_usage(prefix) -&gt; str:
     _collected_count = gc.collect()
@@ -195,6 +195,94 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="fpdf.util.get_parsed_unicode_range"><code class="name flex">
+<span>def <span class="ident">get_parsed_unicode_range</span></span>(<span>unicode_range)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L160-L228" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_parsed_unicode_range(unicode_range):
+    &#34;&#34;&#34;
+    Parse unicode_range parameter into a set of codepoints.
+
+    Supports CSS-style formats:
+    - String with comma-separated ranges: &#34;U+1F600-1F64F, U+2600-26FF, U+2615&#34;
+    - List of strings: [&#34;U+1F600-1F64F&#34;, &#34;U+2600&#34;, &#34;U+26FF&#34;]
+    - List of tuples: [(0x1F600, 0x1F64F), (0x2600, 0x26FF)]
+    - List of integers: [0x1F600, 0x2600, 128512]
+    - Mixed formats: [(0x1F600, 0x1F64F), &#34;U+2600&#34;, 128512]
+
+    Returns a set of integer codepoints.
+    &#34;&#34;&#34;
+    if unicode_range is not None and len(unicode_range) == 0:
+        raise ValueError(&#34;unicode_range cannot be empty&#34;)
+
+    codepoints = set()
+
+    if isinstance(unicode_range, str):
+        unicode_range = [item.strip() for item in unicode_range.split(&#34;,&#34;)]
+
+    for item in unicode_range:
+        if isinstance(item, tuple):
+            if len(item) != 2:
+                raise ValueError(f&#34;Tuple must have exactly 2 elements: {item}&#34;)
+            start, end = item
+
+            if isinstance(start, str):
+                start = int(start.replace(&#34;U+&#34;, &#34;&#34;).replace(&#34;u+&#34;, &#34;&#34;), 16)
+            if isinstance(end, str):
+                end = int(end.replace(&#34;U+&#34;, &#34;&#34;).replace(&#34;u+&#34;, &#34;&#34;), 16)
+
+            if start &gt; end:
+                raise ValueError(f&#34;Invalid range: start ({start}) &gt; end ({end})&#34;)
+
+            codepoints.update(range(start, end + 1))
+
+        elif isinstance(item, str):
+            item_stripped = item.strip().replace(&#34;u+&#34;, &#34;U+&#34;)
+
+            if &#34;-&#34; in item_stripped and not item_stripped.startswith(&#34;-&#34;):
+                parts = item_stripped.split(&#34;-&#34;)
+                if len(parts) != 2:
+                    raise ValueError(f&#34;Invalid range format: {item_stripped}&#34;)
+
+                start = int(parts[0].replace(&#34;U+&#34;, &#34;&#34;), 16)
+                end = int(parts[1].replace(&#34;U+&#34;, &#34;&#34;), 16)
+
+                if start &gt; end:
+                    raise ValueError(
+                        f&#34;Invalid range: start ({hex(start)}) &gt; end ({hex(end)})&#34;
+                    )
+
+                codepoints.update(range(start, end + 1))
+            else:
+                codepoint = int(item_stripped.replace(&#34;U+&#34;, &#34;&#34;), 16)
+                codepoints.add(codepoint)
+
+        elif isinstance(item, int):
+            if item &lt; 0:
+                raise ValueError(f&#34;Invalid codepoint: {item} (must be non-negative)&#34;)
+            codepoints.add(item)
+
+        else:
+            raise ValueError(
+                f&#34;Unsupported unicode_range item type: {type(item).__name__}&#34;
+            )
+
+    return codepoints</code></pre>
+</details>
+<div class="desc"><p>Parse unicode_range parameter into a set of codepoints.</p>
+<p>Supports CSS-style formats:
+- String with comma-separated ranges: "U+1F600-1F64F, U+2600-26FF, U+2615"
+- List of strings: ["U+1F600-1F64F", "U+2600", "U+26FF"]
+- List of tuples: [(0x1F600, 0x1F64F), (0x2600, 0x26FF)]
+- List of integers: [0x1F600, 0x2600, 128512]
+- Mixed formats: [(0x1F600, 0x1F64F), "U+2600", 128512]</p>
+<p>Returns a set of integer codepoints.</p></div>
+</dd>
 <dt id="fpdf.util.get_pillow_allocated_memory"><code class="name flex">
 <span>def <span class="ident">get_pillow_allocated_memory</span></span>(<span>) ‑> str</span>
 </code></dt>
@@ -202,7 +290,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L265-L271" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L336-L342" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_pillow_allocated_memory() -&gt; str:
     # pylint: disable=c-extension-no-member,import-outside-toplevel
@@ -221,7 +309,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L204-L222" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L275-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_process_heap_and_stack_sizes() -&gt; Tuple[str]:
     heap_size_in_mib, stack_size_in_mib = &#34;&lt;unavailable&gt;&#34;, &#34;&lt;unavailable&gt;&#34;
@@ -252,7 +340,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L182-L186" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L253-L257" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_process_rss() -&gt; str:
     rss_as_mib = get_process_rss_as_mib()
@@ -269,7 +357,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L189-L201" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L260-L272" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_process_rss_as_mib() -&gt; Union[Number, None]:
     &#34;Inspired by psutil source code&#34;
@@ -294,7 +382,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L225-L243" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L296-L314" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_pymalloc_allocated_over_total_size() -&gt; Tuple[str]:
     &#34;&#34;&#34;
@@ -326,7 +414,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L71-L93" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L71-L93" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_scale_factor(unit: Union[str, Number]) -&gt; float:
     &#34;&#34;&#34;
@@ -373,7 +461,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L259-L262" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L330-L333" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_tracemalloc_traced_memory() -&gt; str:
     &#34;Requires python -X tracemalloc&#34;
@@ -389,7 +477,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L136-L145" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L136-L145" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int2roman(n):
     &#34;Convert an integer to Roman numeral&#34;
@@ -411,7 +499,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L148-L152" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L148-L152" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int_to_letters(n: int) -&gt; str:
     &#34;Convert an integer to a letter value (A to Z for the first 26, then AA to ZZ, and so on)&#34;
@@ -428,7 +516,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L165-L166" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L236-L237" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def print_mem_usage(prefix):
     print(get_mem_usage(prefix))</code></pre>
@@ -448,7 +536,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: Number = 0
@@ -493,7 +581,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: Number = 0
@@ -524,7 +612,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: Number = 0
@@ -555,7 +643,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: Number = 0
@@ -586,7 +674,7 @@ From experiments, not very reliable</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/util.py#L23-L43" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: Number = 0
@@ -635,6 +723,7 @@ From experiments, not very reliable</p></div>
 <li><code><a title="fpdf.util.escape_parens" href="#fpdf.util.escape_parens">escape_parens</a></code></li>
 <li><code><a title="fpdf.util.get_gc_managed_objs_total_size" href="#fpdf.util.get_gc_managed_objs_total_size">get_gc_managed_objs_total_size</a></code></li>
 <li><code><a title="fpdf.util.get_mem_usage" href="#fpdf.util.get_mem_usage">get_mem_usage</a></code></li>
+<li><code><a title="fpdf.util.get_parsed_unicode_range" href="#fpdf.util.get_parsed_unicode_range">get_parsed_unicode_range</a></code></li>
 <li><code><a title="fpdf.util.get_pillow_allocated_memory" href="#fpdf.util.get_pillow_allocated_memory">get_pillow_allocated_memory</a></code></li>
 <li><code><a title="fpdf.util.get_process_heap_and_stack_sizes" href="#fpdf.util.get_process_heap_and_stack_sizes">get_process_heap_and_stack_sizes</a></code></li>
 <li><code><a title="fpdf.util.get_process_rss" href="#fpdf.util.get_process_rss">get_process_rss</a></code></li>

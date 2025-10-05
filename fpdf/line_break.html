@@ -61,7 +61,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L467-L640" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L467-L640" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CurrentLine:
     def __init__(self, max_width: float, print_sh: bool = False, indent: float = 0):
@@ -249,7 +249,7 @@ normally, instead of triggering a line break. Default: False</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L496-L501" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L496-L501" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def width(self):
@@ -270,7 +270,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L503-L570" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L503-L570" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_character(
     self,
@@ -350,7 +350,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L615-L640" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L615-L640" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def automatic_break(self, align: Align):
     assert self.automatic_break_possible()
@@ -388,7 +388,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L612-L613" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L612-L613" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def automatic_break_possible(self):
     return self.hyphen_break_hint is not None or self.space_break_hint is not None</code></pre>
@@ -402,7 +402,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L597-L610" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L597-L610" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def manual_break(
     self, align: Align, trailing_nl: bool = False, trailing_form_feed: bool = False
@@ -428,7 +428,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L572-L584" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L572-L584" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def trim_trailing_spaces(self):
     if not self.fragments:
@@ -456,7 +456,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L47-L363" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L47-L363" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Fragment:
     &#34;&#34;&#34;
@@ -788,7 +788,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L116-L118" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L116-L118" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def char_spacing(self):
@@ -801,7 +801,7 @@ def char_spacing(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L148-L150" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L148-L150" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def char_vpos(self):
@@ -814,7 +814,7 @@ def char_vpos(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L132-L134" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L132-L134" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def draw_color(self):
@@ -827,7 +827,7 @@ def draw_color(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L136-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L136-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def fill_color(self):
@@ -840,7 +840,7 @@ def fill_color(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L74-L76" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L74-L76" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font(self) -&gt; Union[CoreFont, TTFFont]:
@@ -853,7 +853,7 @@ def font(self) -&gt; Union[CoreFont, TTFFont]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L90-L92" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L90-L92" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_family(self):
@@ -866,7 +866,7 @@ def font_family(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L108-L110" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L108-L110" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_size(self):
@@ -879,7 +879,7 @@ def font_size(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L94-L106" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L94-L106" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_size_pt(self):
@@ -902,7 +902,7 @@ def font_size_pt(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L112-L114" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L112-L114" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_stretching(self):
@@ -915,7 +915,7 @@ def font_stretching(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L86-L88" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L86-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_style(self):
@@ -928,7 +928,7 @@ def font_style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L187-L193" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L187-L193" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def fragment_direction(self):
@@ -945,7 +945,7 @@ def fragment_direction(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L82-L84" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L82-L84" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def is_ttf_font(self):
@@ -958,7 +958,7 @@ def is_ttf_font(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L152-L165" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L152-L165" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def lift(self):
@@ -982,7 +982,7 @@ def lift(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L144-L146" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L144-L146" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def line_width(self):
@@ -995,7 +995,7 @@ def line_width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L179-L185" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L179-L185" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def paragraph_direction(self):
@@ -1012,7 +1012,7 @@ def paragraph_direction(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L128-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L128-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def strikethrough(self):
@@ -1025,7 +1025,7 @@ def strikethrough(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L167-L169" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L167-L169" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def string(self):
@@ -1038,7 +1038,7 @@ def string(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L140-L142" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L140-L142" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_color(self):
@@ -1051,7 +1051,7 @@ def text_color(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L120-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L120-L122" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_mode(self):
@@ -1064,7 +1064,7 @@ def text_mode(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L175-L177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L175-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_shaping_parameters(self):
@@ -1077,7 +1077,7 @@ def text_shaping_parameters(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L124-L126" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L124-L126" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def underline(self):
@@ -1090,7 +1090,7 @@ def underline(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L171-L173" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L171-L173" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def width(self):
@@ -1108,7 +1108,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L252-L259" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L252-L259" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_character_width(self, character: str, print_sh=False, initial_cs=True):
     &#34;&#34;&#34;
@@ -1128,7 +1128,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L208-L242" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L208-L242" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_width(
     self,
@@ -1186,7 +1186,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L244-L250" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L244-L250" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def has_same_style(self, other: &#34;Fragment&#34;):
     &#34;&#34;&#34;Returns if 2 fragments are equivalent other than the characters/string&#34;&#34;&#34;
@@ -1205,7 +1205,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L261-L268" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L261-L268" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_pdf_text(self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h):
     if self.is_ttf_font:
@@ -1225,7 +1225,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L357-L363" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L357-L363" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_pdf_text_core(self, frag_ws, current_ws):
     ret = &#34;&#34;
@@ -1244,7 +1244,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L270-L305" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L270-L305" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_pdf_text_ttf(self, frag_ws, word_spacing):
     ret = &#34;&#34;
@@ -1292,7 +1292,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L307-L355" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L307-L355" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_with_text_shaping(self, pos_x, pos_y, h, word_spacing):
     ret = &#34;&#34;
@@ -1353,7 +1353,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L195-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L195-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def trim(self, index: int):
     self.characters = self.characters[:index]</code></pre>
@@ -1370,7 +1370,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1396,7 +1396,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1417,7 +1417,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1438,7 +1438,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1459,7 +1459,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1480,7 +1480,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1501,7 +1501,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1522,7 +1522,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1543,7 +1543,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1564,7 +1564,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1585,7 +1585,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L454-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HyphenHint(NamedTuple):
     original_fragment_index: int
@@ -1611,7 +1611,7 @@ precedence over the start/end arguments.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L643-L817" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L643-L817" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class MultiLineBreak:
     def __init__(
@@ -1830,7 +1830,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L697-L817" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L697-L817" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_line(self):
     first_char = True  # &#34;Tw&#34; ignores the first character in a text object.
@@ -1966,7 +1966,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -1988,7 +1988,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -2005,7 +2005,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -2022,7 +2022,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -2039,7 +2039,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -2056,7 +2056,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -2073,7 +2073,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -2095,7 +2095,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2143,7 +2143,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2186,7 +2186,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2229,7 +2229,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2272,7 +2272,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2315,7 +2315,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2358,7 +2358,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2401,7 +2401,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2444,7 +2444,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2487,7 +2487,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L410-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextLine(NamedTuple):
     fragments: tuple
@@ -2535,7 +2535,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L421-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L421-L442" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_ordered_fragments(self):
     if not self.fragments:
@@ -2572,7 +2572,7 @@ at the beginning will be skipped. Default value: False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L366-L407" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L366-L407" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TotalPagesSubstitutionFragment(Fragment):
     &#34;&#34;&#34;
@@ -2645,7 +2645,7 @@ output is being produced.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L380-L386" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L380-L386" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_placeholder_string(self):
     &#34;&#34;&#34;
@@ -2686,7 +2686,7 @@ within the document.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L388-L398" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L388-L398" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_pdf_text(self, *args, **kwargs):
     &#34;&#34;&#34;
@@ -2712,7 +2712,7 @@ the necessary information and graphic state for the final substitution rendering
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/7ca8b11ae1aede7ae64e6f0300b291ccea48ba81/fpdf/line_break.py#L400-L407" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77a7ba8ec1b6d1b5345f5875a2f5f2ea02f6c238/fpdf/line_break.py#L400-L407" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_text_substitution(self, replacement_text: str):
     &#34;&#34;&#34;
