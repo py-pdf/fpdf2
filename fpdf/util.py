@@ -157,6 +157,77 @@ def builtin_srgb2014_bytes() -> bytes:
     return (resources.files(pkg) / "sRGB2014.icc").read_bytes()
 
 
+def get_parsed_unicode_range(unicode_range):
+    """
+    Parse unicode_range parameter into a set of codepoints.
+
+    Supports CSS-style formats:
+    - String with comma-separated ranges: "U+1F600-1F64F, U+2600-26FF, U+2615"
+    - List of strings: ["U+1F600-1F64F", "U+2600", "U+26FF"]
+    - List of tuples: [(0x1F600, 0x1F64F), (0x2600, 0x26FF)]
+    - List of integers: [0x1F600, 0x2600, 128512]
+    - Mixed formats: [(0x1F600, 0x1F64F), "U+2600", 128512]
+
+    Returns a set of integer codepoints.
+    """
+    if unicode_range is not None and len(unicode_range) == 0:
+        raise ValueError("unicode_range cannot be empty")
+
+    codepoints = set()
+
+    if isinstance(unicode_range, str):
+        unicode_range = [item.strip() for item in unicode_range.split(",")]
+
+    for item in unicode_range:
+        if isinstance(item, tuple):
+            if len(item) != 2:
+                raise ValueError(f"Tuple must have exactly 2 elements: {item}")
+            start, end = item
+
+            if isinstance(start, str):
+                start = int(start.replace("U+", "").replace("u+", ""), 16)
+            if isinstance(end, str):
+                end = int(end.replace("U+", "").replace("u+", ""), 16)
+
+            if start > end:
+                raise ValueError(f"Invalid range: start ({start}) > end ({end})")
+
+            codepoints.update(range(start, end + 1))
+
+        elif isinstance(item, str):
+            item_stripped = item.strip().replace("u+", "U+")
+
+            if "-" in item_stripped and not item_stripped.startswith("-"):
+                parts = item_stripped.split("-")
+                if len(parts) != 2:
+                    raise ValueError(f"Invalid range format: {item_stripped}")
+
+                start = int(parts[0].replace("U+", ""), 16)
+                end = int(parts[1].replace("U+", ""), 16)
+
+                if start > end:
+                    raise ValueError(
+                        f"Invalid range: start ({hex(start)}) > end ({hex(end)})"
+                    )
+
+                codepoints.update(range(start, end + 1))
+            else:
+                codepoint = int(item_stripped.replace("U+", ""), 16)
+                codepoints.add(codepoint)
+
+        elif isinstance(item, int):
+            if item < 0:
+                raise ValueError(f"Invalid codepoint: {item} (must be non-negative)")
+            codepoints.add(item)
+
+        else:
+            raise ValueError(
+                f"Unsupported unicode_range item type: {type(item).__name__}"
+            )
+
+    return codepoints
+
+
 ################################################################################
 ################### Utility functions to track memory usage ####################
 ################################################################################
