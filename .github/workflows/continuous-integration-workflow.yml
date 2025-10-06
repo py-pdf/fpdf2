@@ -139,7 +139,7 @@ jobs:
           sed -i '/install_requires/,/\n/s/>=/==/' setup.cfg
           pip install .
           # Targeting only a subset of tests because: A) it's faster and B) some tests are dependant on a specific version of fonttools or Pillow
-          pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils
+          pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils --deselect test/drawing/test_drawing_text.py::test_text_ttf_transforms
   doc:
     runs-on: ubuntu-latest
     permissions:

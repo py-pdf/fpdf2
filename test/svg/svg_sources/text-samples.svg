@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="10cm" height="10cm" viewBox="0 0 1000 1000" version="1.1"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Example text-samples.svg</title>
+
+  <rect fill="none" stroke="blue" stroke-width="1" x="1" y="1" width="998" height="998" />
+
+  <text>Text without any attributes</text>
+
+  <text x="20" y="35">My</text>
+  <text x="45" y="35">cat</text>
+  <text x="55" y="55">is</text>
+  <text x="70" y="55">Grumpy!</text>
+
+  <text x="925" y="925">Bottom right</text>
+
+</svg>

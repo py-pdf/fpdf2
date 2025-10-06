@@ -10,7 +10,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/SVG.html>
 
 import logging, math, re, warnings
 from numbers import Number
-from typing import NamedTuple
+from typing import NamedTuple, Optional, Tuple
 
 from fontTools.svgLib.path import parse_path
 
@@ -60,6 +60,20 @@ NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 TRANSFORM_GETTER = re.compile(
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+-]+)\)"
 )
+
+CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+
+
+def _normalize_css_value(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return None
+        return stripped
+    return value
 
 
 @force_nodocument
@@ -245,6 +259,11 @@ def inheritable(value, converter=lambda value: value):
 
 @force_nodocument
 def optional(value, converter=lambda noop: noop):
+    # Treat missing/empty/whitespace exactly like "not set"
+    if value is None:
+        return None
+    if isinstance(value, str) and not value.strip():
+        return None
     if value == "none":
         return None
 
@@ -274,7 +293,8 @@ svg_attr_map = {
     "stroke-dasharray": lambda dasharray: (
         "stroke_dash_pattern",
         optional(
-            dasharray, lambda da: [float(item) for item in NUMBER_SPLIT.split(da)]
+            dasharray,
+            lambda da: [float(item) for item in NUMBER_SPLIT.split(da) if item],
         ),
     ),
     # stroke-dashoffset may be a percentage, which we don't support currently
@@ -301,20 +321,33 @@ svg_attr_map = {
 
 
 @force_nodocument
-def apply_styles(stylable, svg_element):
+def apply_styles(stylable, svg_element, computed_style=None):
     """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
-    style = html.parse_css_style(svg_element.attrib.get("style", ""))
+    if computed_style is not None:
+        style = computed_style
+    else:
+        style = {}
+        for key, value in html.parse_css_style(
+            svg_element.attrib.get("style", "")
+        ).items():
+            norm_value = _normalize_css_value(value)
+            if norm_value is not None:
+                style[key] = norm_value
 
     stylable.style.auto_close = False
 
     for attr_name, converter in svg_attr_map.items():
-        value = style.get(attr_name, svg_element.attrib.get(attr_name))
-        if value:
+        value = _normalize_css_value(style.get(attr_name))
+        if value is None:
+            value = _normalize_css_value(svg_element.attrib.get(attr_name))
+        if value is not None:
             setattr(stylable.style, *converter(value))
 
     # handle this separately for now
-    opacity = style.get("opacity", svg_element.attrib.get("opacity"))
-    if opacity:
+    opacity = _normalize_css_value(style.get("opacity"))
+    if opacity is None:
+        opacity = _normalize_css_value(svg_element.attrib.get("opacity"))
+    if opacity is not None:
         opacity = float(opacity)
         stylable.style.fill_opacity = opacity
         stylable.style.stroke_opacity = opacity
@@ -322,6 +355,150 @@ def apply_styles(stylable, svg_element):
     tfstr = svg_element.attrib.get("transform")
     if tfstr:
         stylable.transform = convert_transforms(tfstr)
+
+
+def _preserve_ws(style_map: dict, tag) -> bool:
+    # CSS ‘white-space’ wins; otherwise XML’s xml:space
+    ws = (style_map.get("white-space") or "").strip()
+    if ws in ("pre", "pre-wrap", "break-spaces"):
+        return True
+    xml_space = tag.attrib.get("{http://www.w3.org/XML/1998/namespace}space")
+    return xml_space == "preserve"
+
+
+def _collapse_ws(s: str, *, preserve: bool = False) -> str:
+    """
+    Collapse sequences of whitespace characters (spaces, tabs, etc.) to a single space
+    In some cases, like with `pre` tags, whitespace should be preserved.
+    """
+    if s is None:
+        return ""
+    if preserve:
+        return s  # keep all spaces/newlines
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _svg_font_style_to_emphasis(font_style: str, font_weight: str) -> str:
+    # Map CSS-like values to fpdf "B", "I", "BI", ""
+    b = False
+    i = False
+    if font_weight:
+        fw = font_weight.strip().lower()
+        # numeric 600+ considered bold in CSS, also "bold", "bolder"
+        b = fw in ("bold", "bolder") or (fw.isdigit() and int(fw) >= 600)
+    if font_style:
+        fs = font_style.strip().lower()
+        i = fs in ("italic", "oblique")
+    if b and i:
+        return "BI"
+    if b:
+        return "B"
+    if i:
+        return "I"
+    return ""
+
+
+def _get_attr_or_style(
+    tag, name: str, style_map: Optional[dict] = None
+) -> Optional[str]:
+    """Return the value for a given attribute, honoring computed style overrides."""
+    if style_map is not None:
+        value = _normalize_css_value(style_map.get(name))
+        if value is not None:
+            return value
+    if style_map is None:
+        inline = html.parse_css_style(tag.attrib.get("style", ""))
+        value = _normalize_css_value(inline.get(name))
+        if value is not None:
+            return value
+    return _normalize_css_value(tag.attrib.get(name))
+
+
+def _parse_font_attrs(
+    tag, style_map: Optional[dict] = None
+) -> Tuple[Optional[str], str, Optional[float], str]:
+    """Returns (font_family or None, font_style_emphasis, font_size_pt or None, text_anchor)"""
+    family_value = _get_attr_or_style(tag, "font-family", style_map)
+    if family_value:
+        cleaned = []
+        for item in family_value.split(","):
+            stripped = item.strip().replace('"', "").replace("'", "")
+            if stripped:
+                cleaned.append(stripped)
+        family = ",".join(cleaned) if cleaned else None
+    else:
+        family = None
+
+    # style/weight -> B/I/BI/""
+    font_style = _get_attr_or_style(tag, "font-style", style_map) or ""
+    font_weight = _get_attr_or_style(tag, "font-weight", style_map) or ""
+    emphasis = _svg_font_style_to_emphasis(font_style, font_weight)
+
+    # font-size: default 16px (SVG/CSS). Your resolve_length defaults to pt; px=0.75pt defined above.
+    fs = _get_attr_or_style(tag, "font-size", style_map)
+    size_pt = (
+        resolve_length(fs) if fs is not None else None
+    )  # px handled in absolute_length_units
+
+    # text-anchor: start|middle|end (default start)
+    ta = (_get_attr_or_style(tag, "text-anchor", style_map) or "start").strip().lower()
+    if ta not in ("start", "middle", "end"):
+        ta = "start"
+
+    return family, emphasis, float(size_pt) if size_pt is not None else None, ta
+
+
+def _parse_xy_delta(
+    tag, style_map: Optional[dict] = None
+) -> Tuple[float, float, float, float]:
+    """x,y (default 0,0) and optional dx,dy (default 0)"""
+
+    def first_number(name: str, default: float = 0.0, resolver=resolve_length):
+        attr = None
+        if style_map is not None and name in style_map:
+            attr = style_map[name]
+        elif name in tag.attrib:
+            attr = tag.attrib[name]
+        if not attr:
+            return default
+        parts = NUMBER_SPLIT.split(attr.strip())
+        if not parts or not parts[0]:
+            return default
+        return float(resolver(parts[0]))
+
+    x = first_number("x", 0.0)
+    y = first_number("y", 0.0)
+    dx = first_number("dx", 0.0)
+    dy = first_number("dy", 0.0)
+    return x, y, dx, dy
+
+
+def _extract_css_class_styles(css_text):
+    styles = []
+    if not css_text:
+        return styles
+
+    cleaned = CSS_COMMENT_RE.sub("", css_text)
+    for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
+        declarations = html.parse_css_style(body)
+        if not declarations:
+            continue
+        normalized = {}
+        for key, value in declarations.items():
+            norm_value = _normalize_css_value(value)
+            if norm_value is not None:
+                normalized[key] = norm_value
+        if not normalized:
+            continue
+        selectors = [selector.strip() for selector in selector_block.split(",")]
+        for selector in selectors:
+            if not selector.startswith("."):
+                continue
+            class_name = selector[1:].split(":", 1)[0].strip()
+            if not class_name:
+                continue
+            styles.append((class_name, dict(normalized)))
+    return styles
 
 
 @force_nodocument
@@ -585,6 +762,7 @@ class SVGObject:
     def __init__(self, svg_text, image_cache: ImageCache = None):
         self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
+        self.css_class_styles = {}
 
         # disabling bandit rule as we use defusedxml:
         svg_tree = parse_xml_str(svg_text)  # nosec B314
@@ -592,6 +770,7 @@ class SVGObject:
         if svg_tree.tag not in xmlns_lookup("svg", "svg"):
             raise ValueError(f"root tag must be svg, not {svg_tree.tag}")
 
+        self._collect_css_styles(svg_tree)
         self.extract_shape_info(svg_tree)
         self.convert_graphics(svg_tree)
 
@@ -600,6 +779,32 @@ class SVGObject:
         if key:
             key = "#" + key if not key.startswith("#") else key
             self.cross_references[key] = referenced
+
+    def _collect_css_styles(self, root_tag):
+        for node in root_tag.iter():
+            if node.tag in xmlns_lookup("svg", "style"):
+                css_text = "".join(node.itertext() or [])
+                for class_name, declarations in _extract_css_class_styles(css_text):
+                    existing = self.css_class_styles.setdefault(class_name, {})
+                    existing.update(declarations)
+
+    def _style_map_for(self, tag):
+        style_map = {}
+        if self.css_class_styles:
+            class_attr = tag.attrib.get("class")
+            if class_attr:
+                for class_name in class_attr.split():
+                    class_styles = self.css_class_styles.get(class_name)
+                    if class_styles:
+                        style_map.update(class_styles)
+        inline = html.parse_css_style(tag.attrib.get("style", ""))
+        for key, value in inline.items():
+            norm_value = _normalize_css_value(value)
+            if norm_value is not None:
+                style_map[key] = norm_value
+            elif key in style_map:
+                style_map.pop(key, None)
+        return style_map
 
     @force_nodocument
     def extract_shape_info(self, root_tag):
@@ -814,6 +1019,9 @@ class SVGObject:
                     clip_id = None
                 for child_ in child:
                     self.build_clipping_path(child_, clip_id)
+            elif child.tag in xmlns_lookup("svg", "style"):
+                # Styles handled globally during parsing
+                continue
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -825,8 +1033,9 @@ class SVGObject:
     @force_nodocument
     def build_xref(self, xref):
         """Resolve a cross-reference to an already-seen SVG element by ID."""
+        style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
-        apply_styles(pdf_group, xref)
+        apply_styles(pdf_group, xref, style_map)
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
@@ -856,9 +1065,10 @@ class SVGObject:
     @force_nodocument
     def build_group(self, group, pdf_group=None):
         """Handle nested items within a group <g> tag."""
+        style_map = self._style_map_for(group)
         if pdf_group is None:
             pdf_group = GraphicsContext()
-            apply_styles(pdf_group, group)
+        apply_styles(pdf_group, group, style_map)
 
         # handle defs before anything else
         for child in [
@@ -869,6 +1079,9 @@ class SVGObject:
         for child in group:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
+            elif child.tag in xmlns_lookup("svg", "style"):
+                # Stylesheets already parsed globally.
+                continue
             elif child.tag in xmlns_lookup("svg", "g"):
                 pdf_group.add_item(self.build_group(child), False)
             elif child.tag in xmlns_lookup("svg", "a"):
@@ -886,6 +1099,8 @@ class SVGObject:
                 pdf_group.add_item(self.build_xref(child), False)
             elif child.tag in xmlns_lookup("svg", "image"):
                 pdf_group.add_item(self.build_image(child), False)
+            elif child.tag in xmlns_lookup("svg", "text"):
+                pdf_group.add_item(self.build_text(child), False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -899,9 +1114,10 @@ class SVGObject:
     @force_nodocument
     def build_path(self, path):
         """Convert an SVG <path> tag into a PDF path object."""
+        style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
-        apply_styles(pdf_path, path)
-        self.apply_clipping_path(pdf_path, path)
+        apply_styles(pdf_path, path, style_map)
+        self.apply_clipping_path(pdf_path, path, style_map)
         svg_path = path.attrib.get("d")
         if svg_path is not None:
             svg_path_converter(pdf_path, svg_path)
@@ -911,20 +1127,25 @@ class SVGObject:
     @force_nodocument
     def build_shape(self, shape):
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
+        style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
-        self.apply_clipping_path(shape_path, shape)
+        apply_styles(shape_path, shape, style_map)
+        self.apply_clipping_path(shape_path, shape, style_map)
         self.update_xref(shape.attrib.get("id"), shape_path)
         return shape_path
 
     @force_nodocument
     def build_clipping_path(self, shape, clip_id):
         if shape.tag in shape_tags:
+            style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
             clipping_path_shape = shape_builder(shape, True)
+            apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
+            style_map = self._style_map_for(shape)
             clipping_path_shape = PaintedPath()
-            apply_styles(clipping_path_shape, shape)
+            apply_styles(clipping_path_shape, shape, style_map)
             clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")
             if svg_path is not None:
@@ -938,10 +1159,14 @@ class SVGObject:
         self.update_xref(clip_id, clipping_path_shape)
 
     @force_nodocument
-    def apply_clipping_path(self, stylable, svg_element):
-        clipping_path = svg_element.attrib.get("clip-path")
-        if clipping_path:
-            clipping_path_id = re.search(r"url\((\#\w+)\)", clipping_path)
+    def apply_clipping_path(self, stylable, svg_element, style_map=None):
+        clip_value = None
+        if style_map and "clip-path" in style_map:
+            clip_value = style_map["clip-path"]
+        if clip_value is None:
+            clip_value = svg_element.attrib.get("clip-path")
+        if clip_value:
+            clipping_path_id = re.search(r"url\((\#\w+)\)", clip_value)
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
@@ -978,6 +1203,149 @@ class SVGObject:
         )
         self.update_xref(image.attrib.get("id"), svg_image)
         return svg_image
+
+    @force_nodocument
+    def build_text(self, text_tag):
+        """
+        Convert <text> (and simple <tspan>) into a PaintedPath with Text runs.
+        - Uses Text baseline at (x,y)
+        - Honors x/y and dx/dy on <text> and direct child <tspan>
+        - Flattens nested tspans; advanced per-character positioning is not implemented
+        """
+        style_map = self._style_map_for(text_tag)
+        path = PaintedPath()
+        apply_styles(path, text_tag, style_map)
+        self.apply_clipping_path(path, text_tag, style_map)
+
+        preserve_parent = _preserve_ws(style_map, text_tag)
+        leading = _collapse_ws(
+            text_tag.text or "",
+        )
+
+        base_family, base_emph, base_size, base_anchor = _parse_font_attrs(
+            text_tag, style_map
+        )
+        if base_family is None:
+            base_family = "sans-serif"
+        if base_size is None:
+            base_size = resolve_length("16px")
+        base_x, base_y, base_dx, base_dy = _parse_xy_delta(text_tag, style_map)
+        cur_x = base_x + base_dx
+        cur_y = base_y + base_dy
+
+        # Rough width estimator to advance the "current text position"
+        def _estimate_run_advance(text: str, font_size: float) -> float:
+            # Very rough: ~0.6em average advance per glyph; replace with real metrics later.
+            return 0.6 * font_size * len(text)
+
+        # Helper to emit one run (apply style BEFORE drawing), returns advance in x
+        def add_run(
+            content: str,
+            family: Optional[str],
+            emph: str,
+            size: Optional[float],
+            anchor: str,
+            x: float,
+            y: float,
+            tag_for_style,  # XML element whose attrs/styles apply to this run
+            style_map_for_tag,  # computed style dict for that element
+        ) -> float:
+            content = _collapse_ws(content)
+            if not content:
+                return 0.0
+            run_size = size if size is not None else base_size
+            if run_size is None:
+                run_size = resolve_length("16px")
+            run_family = family or base_family or "sans-serif"
+            with path._new_graphics_context() as context:
+                # Apply styles for this specific run first (so fill, opacity, etc. affect the text)
+                apply_styles(context, tag_for_style, style_map_for_tag)
+                path.text(
+                    x=x,
+                    y=y,
+                    content=content,
+                    font_family=run_family,
+                    font_style=emph,
+                    font_size=run_size,
+                    text_anchor=anchor,
+                )
+            return _estimate_run_advance(content, run_size)
+
+        # 1) LEADING TEXT (before first <tspan>) or whole text
+        leading = _collapse_ws(text_tag.text or "", preserve=preserve_parent)
+        if leading:
+            cur_x += add_run(
+                leading,
+                base_family,
+                base_emph,
+                base_size,
+                base_anchor,
+                cur_x,
+                cur_y,
+                text_tag,
+                style_map,  # style comes from the <text> element
+            )
+
+        # Collect direct text nodes and <tspan>
+        for child in text_tag:
+            if child.tag in xmlns_lookup("svg", "tspan"):
+                child_style = self._style_map_for(child)
+                fam, emph, size, anchor = _parse_font_attrs(child, child_style)
+                x, y, dx, dy = _parse_xy_delta(child, child_style)
+
+                # In SVG 1.1, tspan x/y replace current position if specified; dx/dy are relative increments.
+                local_x = cur_x
+                local_y = cur_y
+                if "x" in child.attrib or "x" in child_style:
+                    local_x = x
+                if "y" in child.attrib or "y" in child_style:
+                    local_y = y
+                local_x += dx
+                local_y += dy
+
+                cur_x = local_x
+                cur_y = local_y
+
+                child_preserve = _preserve_ws(child_style, child)
+                run_text = _collapse_ws(
+                    "".join(child.itertext()), preserve=child_preserve
+                )
+                cur_x += add_run(
+                    run_text,
+                    fam or base_family,
+                    emph or base_emph,
+                    size if size is not None else base_size,
+                    anchor or base_anchor,
+                    local_x,
+                    local_y,
+                    child,
+                    child_style,  # style comes from the <tspan> element
+                )
+
+                # Update pen position for subsequent tspans that rely on dx/dy (very simplified)
+                cur_x = local_x
+                cur_y = local_y
+
+                # 3) TEXT BETWEEN TSPANS = child.tail, inherits parent (<text>) style
+                tail = _collapse_ws(child.tail or "", preserve=preserve_parent)
+                if tail:
+                    cur_x += add_run(
+                        tail,
+                        base_family,
+                        base_emph,
+                        base_size,
+                        base_anchor,
+                        cur_x,
+                        cur_y,
+                        text_tag,
+                        style_map,  # inherit parent style
+                    )
+            else:
+                # other child tags are ignored (already logged elsewhere)
+                pass
+
+        self.update_xref(text_tag.attrib.get("id"), path)
+        return path
 
 
 class SVGImage(NamedTuple):

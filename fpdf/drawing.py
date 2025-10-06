@@ -2601,6 +2601,125 @@ class Ellipse(NamedTuple):
         return " ".join(render_list), Move(self.center), initial_point
 
 
+class TextRun(NamedTuple):
+    text: str
+    family: str
+    emphasis: str
+    size: float
+    dx: float = 0.0
+    dy: float = 0.0
+    transform: Optional[Transform] = None
+    run_style: Optional[GraphicsStyle] = None
+
+
+class Text(NamedTuple):
+    """
+    SVG-like text renderable.
+    Baseline position at (x, y), with optional text-anchor handling.
+    """
+
+    x: float
+    y: float
+    text: str
+    font_family: str
+    font_style: str  # "B", "I", "BI", or "" for normal
+    font_size: float
+    text_anchor: str = "start"  # "start" | "middle" | "end"
+
+    def bounding_box(self, start: Point) -> tuple["BoundingBox", Point]:
+        """
+        Compute a conservative bbox for the text, using the font's
+        text width and ascent/descent.
+        Resource catalog is not available at this time - values
+        are approximated here but correct at render().
+        """
+        asc = 0.8 * self.font_size
+        dsc = 0.2 * self.font_size
+        # approx width: 0.5 * font_size * len(text) for bbox only
+        # actual width is computed at render time.
+        approx_width = 0.5 * self.font_size * max(0, len(self.text))
+        # Anchor adjustment
+        if self.text_anchor == "middle":
+            x0 = self.x - approx_width / 2.0
+        elif self.text_anchor == "end":
+            x0 = self.x - approx_width
+        else:
+            x0 = self.x
+        x1 = x0 + approx_width
+
+        # Baseline y: bbox spans [y - ascent, y + descent]
+        y0 = self.y - asc
+        y1 = self.y + dsc
+        return BoundingBox.from_points([Point(x0, y0), Point(x1, y1)]), start
+
+    @force_nodocument
+    def render(
+        self,
+        resource_registry: "ResourceCatalog",
+        style: "GraphicsStyle",
+        last_item: "Renderable",
+        initial_point: Point,
+    ) -> tuple[str, "Renderable", Point]:
+        """
+        Emit PDF text operators:
+
+          BT
+            <font_id> <font_size> Tf
+            Tr <mode>               (map from GraphicsStyle->PathPaintRule)
+            1 0 0 1 x y Tm
+            (escaped-text) Tj
+          ET
+        """
+        # Resolve font & text width
+        font = resource_registry.get_font_from_family(self.font_family, self.font_style)
+        _, text_width = font.get_text_width(self.text, self.font_size, None)
+
+        # Anchor adjust on X
+        if self.text_anchor == "middle":
+            x = self.x - text_width / 2.0
+        elif self.text_anchor == "end":
+            x = self.x - text_width
+        else:
+            x = self.x
+
+        # Text rendering mode (Tr) mapped from resolved paint rule.
+        # Colors/dashes/alpha are already applied by GraphicsContext.
+        rule = style.resolve_paint_rule()
+        if rule in (PathPaintRule.FILL_NONZERO, PathPaintRule.FILL_EVENODD):
+            tr = 0
+        elif rule is PathPaintRule.STROKE:
+            tr = 1
+        elif rule in (
+            PathPaintRule.STROKE_FILL_NONZERO,
+            PathPaintRule.STROKE_FILL_EVENODD,
+        ):
+            tr = 2
+        else:  # PathPaintRule.DONT_PAINT:
+            tr = 3
+
+        ops = [
+            "BT",
+            f"/F{font.i} {number_to_str(self.font_size)} Tf",
+            f"{number_to_str(tr)} Tr",
+            f"1 0 0 -1 {number_to_str(x)} {number_to_str(self.y)} Tm",
+            font.encode_text(self.text),
+            "ET",
+        ]
+
+        return " ".join(ops), last_item, initial_point
+
+    # pylint: disable=unused-argument
+    @force_nodocument
+    def render_debug(
+        self, resource_registry, style, last_item, initial_point, debug_stream, pfx
+    ):
+        rendered, resolved, initial_point = self.render(
+            resource_registry, style, last_item, initial_point
+        )
+        debug_stream.write(str(self) + "\n")
+        return rendered, resolved, initial_point
+
+
 class ImplicitClose(NamedTuple):
     """
     A path close element that is conditionally rendered depending on the value of
@@ -2779,6 +2898,7 @@ if TYPE_CHECKING:
         org=Point(0, 0), size=Point(0, 0), corner_radii=Point(0, 0)
     )
     ellipse: Renderable = Ellipse(radii=Point(0, 0), center=Point(0, 0))
+    text: Renderable = Text(x=0, y=0, text="", font_family="Sans serif", font_size=12)
     implicit_close: Renderable = ImplicitClose()
     close: Renderable = Close()
 
@@ -3509,6 +3629,44 @@ class PaintedPath:
 
         self.add_path_element(
             RelativeArc(radii, rotation, large_arc, positive_sweep, end), _copy=False
+        )
+        return self
+
+    def text(
+        self,
+        x: float,
+        y: float,
+        content: str,
+        *,
+        font_family: str = "helvetica",
+        font_style: str = "",  # "", "B", "I", "BI"
+        font_size: float = 12.0,
+        text_anchor: str = "start",  # "start" | "middle" | "end"
+    ):
+        """
+        Append a text run at (x, y) to this path.
+
+        The baseline is at (x, y). `text_anchor` controls alignment about x.
+        `font_style` accepts "", "B", "I", or "BI". `font_family` can be a single
+        name or a comma-separated fallback list (handled at render-time).
+
+        Returns:
+            self (to allow chaining)
+        """
+        # Normalize style just in case e.g. "ib" -> "BI"
+        s = "".join(sorted(font_style.upper()))
+
+        self.add_path_element(
+            Text(
+                x=x,
+                y=y,
+                text=content,
+                font_family=font_family,
+                font_style=s,
+                font_size=font_size,
+                text_anchor=text_anchor,
+            ),
+            _copy=False,
         )
         return self
 
