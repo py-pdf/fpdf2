@@ -1,3 +1,4 @@
+__version__ = "2.8.0"
 """
 Root module.
 Gives direct access to some classes defined in submodules:

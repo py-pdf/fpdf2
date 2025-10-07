@@ -37,6 +37,9 @@ from typing import (
     Union,
 )
 
+FPDF_VERSION = "2.8.0"
+__version__ = FPDF_VERSION
+
 try:
     from cryptography.hazmat.primitives.serialization import pkcs12
     from endesive import signer
