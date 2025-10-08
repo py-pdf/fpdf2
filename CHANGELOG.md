@@ -27,6 +27,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * native support for PDF/A compliance verification - including PDF/A-1B, 2B, 2U, 3B, 3U, 4, 4E and 4F. Accessible PDF/A documents (PDF/A 1A, 2A and 3A) are not yet supported.
 * `unicode_range` parameter for `add_font()` to restrict which Unicode characters a font covers, similar to CSS `@font-face` unicode-range. This allows users to control font priority on a per-character-range basis and prevents unwanted glyphs from main fonts when better alternatives exist in fallback fonts. Supports multiple input formats: CSS-style strings (`"U+1F600-1F64F, U+2600-26FF"`), lists of strings, tuples, integers, and mixed formats - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
 * Utility function `get_parsed_unicode_range()` to convert various unicode*range formats to codepoints - \_cf.* [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
+* `variations` parameter added in `add_font()` to allow the use of variable fonts - _cf._ [issue #1544](https://github.com/py-pdf/fpdf2/issues/1544)
+
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * issue with markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
