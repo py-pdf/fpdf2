@@ -1,9 +1,10 @@
-from pathlib import Path
-
-from fpdf import FPDF
-
-from test.conftest import assert_pdf_equal, EPOCH
 import pytest
+import sys
+
+from pathlib import Path
+from fpdf import FPDF
+from test.conftest import assert_pdf_equal, EPOCH
+
 
 HERE = Path(__file__).resolve().parent
 EMBEDDED_FILE = HERE / "requirements.txt"
@@ -16,6 +17,10 @@ def test_embed_file_self(tmp_path):
     assert_pdf_equal(pdf, HERE / "embed_file_self.pdf", tmp_path)
 
 
+@pytest.mark.skipif(
+    sys.platform in ("cygwin", "win32") and sys.version_info[:2] == (3, 14),
+    reason="Skipped on Windows with Python 3.14 due to zlib compressed data differences",
+)
 def test_embed_file_all_optionals(tmp_path):
     pdf = FPDF()
     pdf.add_page()

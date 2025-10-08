@@ -17,10 +17,10 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - name: Set up Python 3.13 🔧
+      - name: Set up Python 3.14 🔧
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: 3.13
+          python-version: 3.14
       - name: Install system dependencies ⚙️
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
       - name: Check all PDF reference files used in tests ☑
@@ -49,7 +49,7 @@ jobs:
       - name: Set up Python 3.13 🔧
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: 3.13
+          python-version: 3.13 #semgrep not working on 3.14
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -94,7 +94,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
         platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
@@ -115,11 +115,31 @@ jobs:
         # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version != '3.13' }}
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
+      - name: Install qpdf on Windows
+        if: startsWith(matrix.platform, 'windows')
+        shell: pwsh
+        run: |
+          choco install qpdf -y
+          qpdf --version
       - name: Install Python dependencies ⚙️
+        # Temporarily writing a constraints file to make sure numpy 2.3.3 is used
+        # for python 3.14
+        shell: bash
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade . -r test/requirements.txt
+          # --- Create constraints file ---
+          CONSTRAINTS_FILE="constraints.txt"
+          if [[ "${{ matrix.python-version }}" == "3.14" ]]; then
+            echo "numpy>=2.3.3" > "$CONSTRAINTS_FILE"
+            echo "Added numpy>=2.3.3 to $CONSTRAINTS_FILE"
+          else
+            : > "$CONSTRAINTS_FILE"   # create empty file
+            echo "Created empty $CONSTRAINTS_FILE"
+          fi
+          # --- Install dependencies respecting constraints ---
+          pip install --upgrade . -r test/requirements.txt -c "$CONSTRAINTS_FILE"
       - name: Run tests ☑
+        shell: bash
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.10' && 'test-enabled' || '' }}
           CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13' && 'test-enabled' || '' }}
@@ -127,7 +147,13 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          pytest -vv --trace-memory-usage
+          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
+          echo "Running with --trace-memory-usage (Ubuntu)"
+            pytest -vv --trace-memory-usage
+          else
+            echo "Running without trace-memory-usage (${{ matrix.platform }})"
+            pytest -vv
+          fi
       - name: Upload coverage report to codecov.io ☑
         # We only upload coverage ONCE, for a single parallel execution / Python version:
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
@@ -176,10 +202,10 @@ jobs:
           persist-credentials: false
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
-      - name: Set up Python 3.13 🔧
+      - name: Set up Python 3.14 🔧
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: 3.13
+          python-version: 3.14
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -239,10 +265,10 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - name: Set up Python 3.13 🔧
+      - name: Set up Python 3.14 🔧
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - name: Build distributions for Pypi 🏗️
         id: build
         run: |
