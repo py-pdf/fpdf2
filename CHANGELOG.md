@@ -186,6 +186,7 @@ Version 2.8.1 is exactly similar.
 * documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/mistletoe/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
 * support for `Table` cells that span multiple rows via the `rowspan` attribute, which can be combined with `colspan` - thanks to @mjasperse
 * `TableSpan.COL` and `TableSpan.ROW` enums that can be used as placeholder table entries to identify span extents - thanks to @mjasperse
+* support for SVG `<text>` elements
 ### Fixed
 * when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now handles linking directly to other pages - thanks to @mjasperse

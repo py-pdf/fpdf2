@@ -301,7 +301,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         # array of PDFPage objects starting at index 1:
         self.pages: Dict[int, PDFPage] = {}
-        self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.links = {}  # array of Destination objects starting at index 1
         self.named_destinations = {}  # dictionary mapping names to Destination objects
@@ -416,6 +415,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
+
+    @property
+    def fonts(self):
+        return self._resource_catalog.font_registry
 
     def set_encryption(
         self,
@@ -2357,7 +2360,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     f"Usage of base fonts is now allowed for documents compliant with {self._compliance.label}. Use add_font() to embed a font file"
                 )
 
-            self.fonts[fontkey] = CoreFont(self, fontkey, style)
+            self.fonts[fontkey] = CoreFont(len(self.fonts) + 1, fontkey, style)
 
         # Select it
         self.font_family = family
