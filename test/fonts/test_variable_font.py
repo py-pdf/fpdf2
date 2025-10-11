@@ -123,20 +123,6 @@ def test_font_with_one_axis(tmp_path):
     assert_pdf_equal(pdf, HERE / "variable_font_with_one_modified_axis.pdf", tmp_path)
 
 
-def test_invalid_variations_dictionary():
-    pdf = FPDF()
-    pdf.add_page()
-    unknown_style = "R"
-    with pytest.raises(ValueError) as error:
-        pdf.add_font(
-            "Roboto Variable",
-            "",
-            HERE / "Roboto-Variable.ttf",
-            variations={unknown_style: {"wdth": 75, "wght": 400}},
-        )
-        assert error == "Variations dictionary is invalid."
-
-
 def test_invalid_axes_dict():
     pdf = FPDF()
     pdf.add_page()
@@ -168,3 +154,52 @@ def test_variations_not_dictionary():
             variations=invalid_variations_list,
         )
         assert error == "Variations, if specified, must be a dictionary"
+
+
+def test_variations_are_axes(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Provide axes dictionary instead of variations
+    # and also provide a style.
+    pdf.add_font(
+        "Roboto Variable",
+        "B",
+        HERE / "Roboto-Variable.ttf",
+        variations={"wght": 600},
+    )
+
+    pdf.set_font("Roboto Variable", "B", 20)
+
+    pdf.cell(
+        w=pdf.epw,
+        text="Roboto Variable Bold(wdth=600)",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+
+    assert_pdf_equal(pdf, HERE / "variable_font_variations_are_axes.pdf", tmp_path)
+
+
+def test_multicell_and_markdown(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Add font with regular and bold style, but render
+    # bold text using markdown and multi_cell() method.
+    pdf.add_font(
+        "Roboto Variable",
+        "",
+        HERE / "Roboto-Variable.ttf",
+        variations={"": {"wdth": 100, "wght": 400}, "B": {"wght": 600}},
+    )
+    pdf.set_font("Roboto Variable", "", 20)
+
+    pdf.multi_cell(
+        w=pdf.epw,
+        text="Regular and **Bold** text",
+        markdown=True,
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    assert_pdf_equal(pdf, HERE / "variable_font_with_markdown.pdf", tmp_path)

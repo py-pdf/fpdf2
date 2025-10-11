@@ -55,8 +55,6 @@ except ImportError:
         pass
 
 
-from fontTools.varLib import instancer
-
 from .actions import GoToAction, URIAction
 from .annotations import (
     DEFAULT_ANNOT_FLAGS,
@@ -2279,14 +2277,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if not isinstance(variations, dict):
                 raise TypeError("Variations, if specified, must be a dictionary")
 
-            # Check if font is a variable font.
-            fontkey = f"{family.lower()}"
-            var_font = TTFFont(
-                self, font_file_path, fontkey, style, parsed_unicode_range
-            )
-            if "fvar" not in var_font.ttfont:
-                raise AttributeError(f"{fname} is not a variable font")
-
             # Check variations dictionary
             if all(
                 key.upper() in ("", "B", "I", "BI") and isinstance(value, dict)
@@ -2297,19 +2287,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     if already_exists(fontkey):
                         continue
                     self.fonts[fontkey] = TTFFont(
-                        self, font_file_path, fontkey, var_style, parsed_unicode_range
-                    )
-
-                    # static=True causes instantiateVariablefont to behave like deprecated fontTools.varLib.mutator.
-                    # and returns a proper static font.
-                    instancer.instantiateVariableFont(
-                        self.fonts[fontkey].ttfont,
+                        self,
+                        font_file_path,
+                        fontkey,
+                        var_style,
+                        parsed_unicode_range,
                         axes_dict,
-                        inplace=True,
-                        static=True,
                     )
             else:
-                raise ValueError("Variations dictionary is invalid.")
+                fontkey = f"{family.lower()}{style}"
+                self.fonts[fontkey] = TTFFont(
+                    self,
+                    font_file_path,
+                    fontkey,
+                    style,
+                    parsed_unicode_range,
+                    variations,
+                )
         else:
             # Handle static fonts.
             fontkey = f"{family.lower()}{style}"
