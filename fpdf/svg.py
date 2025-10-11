@@ -9,6 +9,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/SVG.html>
 """
 
 import logging, math, re, warnings
+from copy import deepcopy
 from numbers import Number
 from typing import NamedTuple, Optional, Tuple
 
@@ -34,6 +35,8 @@ from .drawing import (
     PaintedPath,
     PathPen,
     ClippingPath,
+    Text,
+    TextRun,
 )
 from .image_datastructures import ImageCache, VectorImageInfo
 from .output import stream_content_for_raster_image
@@ -375,7 +378,7 @@ def _collapse_ws(s: str, *, preserve: bool = False) -> str:
         return ""
     if preserve:
         return s  # keep all spaces/newlines
-    return re.sub(r"\s+", " ", s).strip()
+    return re.sub(r"\s+", " ", s)
 
 
 def _svg_font_style_to_emphasis(font_style: str, font_weight: str) -> str:
@@ -434,7 +437,7 @@ def _parse_font_attrs(
     font_weight = _get_attr_or_style(tag, "font-weight", style_map) or ""
     emphasis = _svg_font_style_to_emphasis(font_style, font_weight)
 
-    # font-size: default 16px (SVG/CSS). Your resolve_length defaults to pt; px=0.75pt defined above.
+    # font-size: default 16px (SVG/CSS); resolve_length defaults to pt; px=0.75pt defined above.
     fs = _get_attr_or_style(tag, "font-size", style_map)
     size_pt = (
         resolve_length(fs) if fs is not None else None
@@ -449,10 +452,13 @@ def _parse_font_attrs(
 
 
 def _parse_xy_delta(
-    tag, style_map: Optional[dict] = None
+    tag,
+    style_map: Optional[dict] = None,
+    font_size: Optional[float] = None,
 ) -> Tuple[float, float, float, float]:
     """x,y (default 0,0) and optional dx,dy (default 0)"""
 
+    # pylint: disable=too-many-return-statements
     def first_number(name: str, default: float = 0.0, resolver=resolve_length):
         attr = None
         if style_map is not None and name in style_map:
@@ -464,7 +470,46 @@ def _parse_xy_delta(
         parts = NUMBER_SPLIT.split(attr.strip())
         if not parts or not parts[0]:
             return default
-        return float(resolver(parts[0]))
+        token = parts[0]
+        match = unit_splitter.fullmatch(token)
+        if match:
+            value_str = match.group("value")
+            unit = (match.group("unit") or "").strip()
+            if unit.lower() in {"em", "rem"}:
+                if font_size is None:
+                    LOGGER.warning(
+                        "Ignoring relative %s length on <%s %s> because font size is unknown",
+                        unit,
+                        tag.tag,
+                        name,
+                    )
+                    return default
+                try:
+                    return float(value_str) * font_size
+                except (TypeError, ValueError):
+                    return default
+            if unit.lower() == "ex":
+                if font_size is None:
+                    LOGGER.warning(
+                        "Ignoring relative ex length on <%s %s> because font size is unknown",
+                        tag.tag,
+                        name,
+                    )
+                    return default
+                try:
+                    return float(value_str) * font_size * 0.5
+                except (TypeError, ValueError):
+                    return default
+        try:
+            return float(resolver(token))
+        except ValueError:
+            LOGGER.warning(
+                "Ignoring unsupported length '%s' on <%s %s>",
+                token,
+                tag.tag,
+                name,
+            )
+            return default
 
     x = first_number("x", 0.0)
     y = first_number("y", 0.0)
@@ -804,6 +849,19 @@ class SVGObject:
                 style_map[key] = norm_value
             elif key in style_map:
                 style_map.pop(key, None)
+        inheritable_attrs = (
+            "font-family",
+            "font-size",
+            "font-style",
+            "font-weight",
+            "text-anchor",
+            "white-space",
+        )
+        for attr in inheritable_attrs:
+            if attr in tag.attrib:
+                norm_value = _normalize_css_value(tag.attrib.get(attr))
+                if norm_value is not None:
+                    style_map.setdefault(attr, norm_value)
         return style_map
 
     @force_nodocument
@@ -1063,12 +1121,14 @@ class SVGObject:
         return pdf_group
 
     @force_nodocument
-    def build_group(self, group, pdf_group=None):
+    def build_group(self, group, pdf_group=None, inherited_style=None):
         """Handle nested items within a group <g> tag."""
-        style_map = self._style_map_for(group)
+        local_style = self._style_map_for(group)
+        merged_style = dict(inherited_style or {})
+        merged_style.update(local_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
-        apply_styles(pdf_group, group, style_map)
+        apply_styles(pdf_group, group, merged_style)
 
         # handle defs before anything else
         for child in [
@@ -1083,14 +1143,14 @@ class SVGObject:
                 # Stylesheets already parsed globally.
                 continue
             elif child.tag in xmlns_lookup("svg", "g"):
-                pdf_group.add_item(self.build_group(child), False)
+                pdf_group.add_item(self.build_group(child, None, merged_style), False)
             elif child.tag in xmlns_lookup("svg", "a"):
                 # <a> tags aren't supported but we need to recurse into them to
                 # render nested elements.
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
                 )
-                pdf_group.add_item(self.build_group(child), False)
+                pdf_group.add_item(self.build_group(child, None, merged_style), False)
             elif child.tag in xmlns_lookup("svg", "path"):
                 pdf_group.add_item(self.build_path(child), False)
             elif child.tag in shape_tags:
@@ -1100,7 +1160,7 @@ class SVGObject:
             elif child.tag in xmlns_lookup("svg", "image"):
                 pdf_group.add_item(self.build_image(child), False)
             elif child.tag in xmlns_lookup("svg", "text"):
-                pdf_group.add_item(self.build_text(child), False)
+                pdf_group.add_item(self.build_text(child, merged_style), False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -1205,144 +1265,193 @@ class SVGObject:
         return svg_image
 
     @force_nodocument
-    def build_text(self, text_tag):
+    def build_text(self, text_tag, inherited_style=None):
         """
         Convert <text> (and simple <tspan>) into a PaintedPath with Text runs.
         - Uses Text baseline at (x,y)
         - Honors x/y and dx/dy on <text> and direct child <tspan>
         - Flattens nested tspans; advanced per-character positioning is not implemented
         """
-        style_map = self._style_map_for(text_tag)
+        local_style = self._style_map_for(text_tag)
+        effective_style = dict(inherited_style or {})
+        effective_style.update(local_style)
         path = PaintedPath()
-        apply_styles(path, text_tag, style_map)
-        self.apply_clipping_path(path, text_tag, style_map)
+        apply_styles(path, text_tag, local_style)
+        self.apply_clipping_path(path, text_tag, effective_style)
 
-        preserve_parent = _preserve_ws(style_map, text_tag)
-        leading = _collapse_ws(
-            text_tag.text or "",
-        )
+        preserve_parent = _preserve_ws(effective_style, text_tag)
 
         base_family, base_emph, base_size, base_anchor = _parse_font_attrs(
-            text_tag, style_map
+            text_tag, effective_style
         )
         if base_family is None:
             base_family = "sans-serif"
-        if base_size is None:
-            base_size = resolve_length("16px")
-        base_x, base_y, base_dx, base_dy = _parse_xy_delta(text_tag, style_map)
-        cur_x = base_x + base_dx
-        cur_y = base_y + base_dy
+        default_font_size = (
+            base_size if base_size is not None else resolve_length("16px")
+        )
+        base_x, base_y, base_dx, base_dy = _parse_xy_delta(
+            text_tag, effective_style, font_size=default_font_size
+        )
+        anchor_x = base_x + base_dx
+        anchor_y = base_y + base_dy
 
-        # Rough width estimator to advance the "current text position"
-        def _estimate_run_advance(text: str, font_size: float) -> float:
-            # Very rough: ~0.6em average advance per glyph; replace with real metrics later.
-            return 0.6 * font_size * len(text)
+        text_runs: list[TextRun] = []
+        pending_dx = 0.0
+        pending_dy = 0.0
 
-        # Helper to emit one run (apply style BEFORE drawing), returns advance in x
-        def add_run(
-            content: str,
+        def _style_for_run(tag, style_map_for_tag):
+            if tag is None or style_map_for_tag is None:
+                return None
+            context = GraphicsContext()
+            apply_styles(context, tag, style_map_for_tag)
+            context.style.auto_close = GraphicsStyle.INHERIT
+            overrides = any(
+                getattr(context.style, prop) is not GraphicsStyle.INHERIT
+                for prop in GraphicsStyle.MERGE_PROPERTIES
+            )
+            if not overrides:
+                return None
+            return deepcopy(context.style)
+
+        def _add_run(
+            raw_text: str,
             family: Optional[str],
-            emph: str,
+            emphasis: Optional[str],
             size: Optional[float],
-            anchor: str,
-            x: float,
-            y: float,
-            tag_for_style,  # XML element whose attrs/styles apply to this run
-            style_map_for_tag,  # computed style dict for that element
-        ) -> float:
-            content = _collapse_ws(content)
+            preserve: bool,
+            dx_extra: float = 0.0,
+            dy_extra: float = 0.0,
+            abs_x: Optional[float] = None,
+            abs_y: Optional[float] = None,
+            style_tag=None,
+            style_map_for_tag=None,
+        ):
+            nonlocal pending_dx, pending_dy
+            raw = raw_text or ""
+            collapsed = _collapse_ws(raw, preserve=preserve)
+            if preserve:
+                content = collapsed
+            else:
+                trimmed = collapsed.strip()
+                if trimmed:
+                    content = trimmed
+                    if raw[:1].isspace():
+                        content = " " + content
+                    if raw[-1:].isspace():
+                        content = content + " "
+                else:
+                    if (raw[:1].isspace() or raw[-1:].isspace()) and text_runs:
+                        content = " "
+                    else:
+                        content = ""
             if not content:
-                return 0.0
-            run_size = size if size is not None else base_size
-            if run_size is None:
-                run_size = resolve_length("16px")
-            run_family = family or base_family or "sans-serif"
-            with path._new_graphics_context() as context:
-                # Apply styles for this specific run first (so fill, opacity, etc. affect the text)
-                apply_styles(context, tag_for_style, style_map_for_tag)
-                path.text(
-                    x=x,
-                    y=y,
-                    content=content,
-                    font_family=run_family,
-                    font_style=emph,
-                    font_size=run_size,
-                    text_anchor=anchor,
-                )
-            return _estimate_run_advance(content, run_size)
+                pending_dx += dx_extra
+                pending_dy += dy_extra
+                return
 
-        # 1) LEADING TEXT (before first <tspan>) or whole text
-        leading = _collapse_ws(text_tag.text or "", preserve=preserve_parent)
-        if leading:
-            cur_x += add_run(
-                leading,
-                base_family,
-                base_emph,
-                base_size,
-                base_anchor,
-                cur_x,
-                cur_y,
-                text_tag,
-                style_map,  # style comes from the <text> element
+            run_size = size if size is not None else default_font_size
+            run_family = family or base_family or "sans-serif"
+            run_emphasis = (emphasis if emphasis is not None else base_emph) or ""
+            run_dx = pending_dx + dx_extra
+            run_dy = pending_dy + dy_extra
+            pending_dx = 0.0
+            pending_dy = 0.0
+            run_style = _style_for_run(style_tag, style_map_for_tag)
+
+            text_runs.append(
+                TextRun(
+                    text=content,
+                    family=run_family,
+                    emphasis=run_emphasis,
+                    size=run_size,
+                    dx=run_dx,
+                    dy=run_dy,
+                    abs_x=abs_x,
+                    abs_y=abs_y,
+                    run_style=run_style,
+                )
             )
 
-        # Collect direct text nodes and <tspan>
+        # Leading text (before child <tspan>)
+        _add_run(
+            text_tag.text or "",
+            base_family,
+            base_emph,
+            base_size,
+            preserve=preserve_parent,
+            style_tag=None,
+            style_map_for_tag=None,
+        )
+
         for child in text_tag:
             if child.tag in xmlns_lookup("svg", "tspan"):
-                child_style = self._style_map_for(child)
-                fam, emph, size, anchor = _parse_font_attrs(child, child_style)
-                x, y, dx, dy = _parse_xy_delta(child, child_style)
-
-                # In SVG 1.1, tspan x/y replace current position if specified; dx/dy are relative increments.
-                local_x = cur_x
-                local_y = cur_y
-                if "x" in child.attrib or "x" in child_style:
-                    local_x = x
-                if "y" in child.attrib or "y" in child_style:
-                    local_y = y
-                local_x += dx
-                local_y += dy
-
-                cur_x = local_x
-                cur_y = local_y
-
-                child_preserve = _preserve_ws(child_style, child)
-                run_text = _collapse_ws(
-                    "".join(child.itertext()), preserve=child_preserve
+                child_local_style = self._style_map_for(child)
+                child_effective_style = dict(effective_style)
+                child_effective_style.update(child_local_style)
+                fam, emph, size, _anchor = _parse_font_attrs(
+                    child, child_effective_style
                 )
-                cur_x += add_run(
+                run_font_size = size if size is not None else default_font_size
+                x, y, dx, dy = _parse_xy_delta(
+                    child, child_effective_style, font_size=run_font_size
+                )
+
+                child_preserve = _preserve_ws(child_effective_style, child)
+                raw_itertext = "".join(child.itertext())
+                tail_text = child.tail or ""
+                if tail_text and raw_itertext.endswith(tail_text):
+                    run_text = raw_itertext[: -len(tail_text)]
+                else:
+                    run_text = raw_itertext
+                abs_x = None
+                abs_y = None
+                if "x" in child.attrib or (
+                    child_local_style is not None and "x" in child_local_style
+                ):
+                    abs_x = x
+                if "y" in child.attrib or (
+                    child_local_style is not None and "y" in child_local_style
+                ):
+                    abs_y = y
+
+                _add_run(
                     run_text,
-                    fam or base_family,
-                    emph or base_emph,
-                    size if size is not None else base_size,
-                    anchor or base_anchor,
-                    local_x,
-                    local_y,
-                    child,
-                    child_style,  # style comes from the <tspan> element
+                    fam,
+                    emph,
+                    size,
+                    preserve=child_preserve,
+                    dx_extra=dx,
+                    dy_extra=dy,
+                    abs_x=abs_x,
+                    abs_y=abs_y,
+                    style_tag=child,
+                    style_map_for_tag=child_local_style,
                 )
 
-                # Update pen position for subsequent tspans that rely on dx/dy (very simplified)
-                cur_x = local_x
-                cur_y = local_y
-
-                # 3) TEXT BETWEEN TSPANS = child.tail, inherits parent (<text>) style
-                tail = _collapse_ws(child.tail or "", preserve=preserve_parent)
-                if tail:
-                    cur_x += add_run(
-                        tail,
-                        base_family,
-                        base_emph,
-                        base_size,
-                        base_anchor,
-                        cur_x,
-                        cur_y,
-                        text_tag,
-                        style_map,  # inherit parent style
-                    )
+                # Text between tspans inherits parent style
+                _add_run(
+                    child.tail or "",
+                    base_family,
+                    base_emph,
+                    base_size,
+                    preserve=preserve_parent,
+                    style_tag=None,
+                    style_map_for_tag=None,
+                )
             else:
                 # other child tags are ignored (already logged elsewhere)
                 pass
+
+        if text_runs:
+            path.add_path_element(
+                Text(
+                    x=anchor_x,
+                    y=anchor_y,
+                    text_runs=tuple(text_runs),
+                    text_anchor=base_anchor,
+                ),
+                _copy=False,
+            )
 
         self.update_xref(text_tag.attrib.get("id"), path)
         return path

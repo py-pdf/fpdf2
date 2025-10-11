@@ -5,7 +5,7 @@ import pytest
 from fpdf import FPDF
 from fpdf.drawing import GradientPaint, GraphicsContext, PaintedPath
 from fpdf.drawing_primitives import DeviceRGB, Transform
-from fpdf.drawing import Text
+from fpdf.drawing import Text, TextRun
 from fpdf.pattern import LinearGradient
 from test.conftest import assert_pdf_equal
 
@@ -31,10 +31,14 @@ def test_text_and_shape_order(tmp_path: Path):
     t = Text(
         x=40,
         y=80,
-        text="Hello Overlap",
-        font_family="helvetica",
-        font_style="",
-        font_size=24,
+        text_runs=(
+            TextRun(
+                text="Hello Overlap",
+                family="helvetica",
+                emphasis="",
+                size=24,
+            ),
+        ),
         text_anchor="start",
     )
     gc.add_item(t)
@@ -61,10 +65,14 @@ def test_shape_with_transparency_over_text(tmp_path: Path):
     t = Text(
         x=40,
         y=130,
-        text="Transparent Shape Over Me",
-        font_family="helvetica",
-        font_style="",
-        font_size=26,
+        text_runs=(
+            TextRun(
+                text="Transparent Shape Over Me",
+                family="helvetica",
+                emphasis="",
+                size=26,
+            ),
+        ),
     )
     gc.add_item(t)
 
@@ -101,10 +109,14 @@ def test_text_with_transparency_over_shape(tmp_path: Path):
     t = Text(
         x=40,
         y=210,
-        text="Semi-Transparent Text",
-        font_family="helvetica",
-        font_style="",
-        font_size=28,
+        text_runs=(
+            TextRun(
+                text="Semi-Transparent Text",
+                family="helvetica",
+                emphasis="",
+                size=28,
+            ),
+        ),
     )
     gc_text.add_item(t)
     root.add_item(gc_text)
@@ -132,10 +144,14 @@ def test_text_gradient_transparency(tmp_path: Path):
         Text(
             x=40,
             y=280,
-            text="Gradient Text Fill",
-            font_family="helvetica",
-            font_style="",
-            font_size=30,
+            text_runs=(
+                TextRun(
+                    text="Gradient Text Fill",
+                    family="helvetica",
+                    emphasis="",
+                    size=30,
+                ),
+            ),
         )
     )
     text.style.fill_color = GradientPaint(gradient, units="userSpaceOnUse")
@@ -164,55 +180,79 @@ def test_text_fonts_styles_alignment(tmp_path: Path):
         Text(
             x=x,
             y=80,
-            text="Start / Helvetica",
-            font_family="DejaVu, sans-serif",
-            font_style="",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="Start / Helvetica",
+                    family="DejaVu, sans-serif",
+                    emphasis="",
+                    size=20,
+                ),
+            ),
             text_anchor="start",
         ),
         Text(
             x=x,
             y=110,
-            text="Middle / Helvetica B",
-            font_family="non-existent, helvetica",
-            font_style="B",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="Middle / Helvetica B",
+                    family="non-existent, helvetica",
+                    emphasis="B",
+                    size=20,
+                ),
+            ),
             text_anchor="middle",
         ),
         Text(
             x=x,
             y=140,
-            text="End / Helvetica I",
-            font_family="helvetica",
-            font_style="I",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="End / Helvetica I",
+                    family="helvetica",
+                    emphasis="I",
+                    size=20,
+                ),
+            ),
             text_anchor="end",
         ),
         Text(
             x=x,
             y=170,
-            text="Start / Times BI",
-            font_family="times",
-            font_style="BI",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="Start / Times BI",
+                    family="times",
+                    emphasis="BI",
+                    size=20,
+                ),
+            ),
             text_anchor="start",
         ),
         Text(
             x=x,
             y=200,
-            text="Middle / Courier",
-            font_family="courier",
-            font_style="",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="Middle / Courier",
+                    family="courier",
+                    emphasis="",
+                    size=20,
+                ),
+            ),
             text_anchor="middle",
         ),
         Text(
             x=x,
             y=230,
-            text="End / Courier B",
-            font_family="courier",
-            font_style="B",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="End / Courier B",
+                    family="courier",
+                    emphasis="B",
+                    size=20,
+                ),
+            ),
             text_anchor="end",
         ),
     ]
@@ -235,10 +275,14 @@ def test_text_font_not_found_raises():
     t = Text(
         x=50,
         y=320,
-        text="Should fail to resolve font",
-        font_family="__no_such_font_family__",
-        font_style="",
-        font_size=18,
+        text_runs=(
+            TextRun(
+                text="Should fail to resolve font",
+                family="__no_such_font_family__",
+                emphasis="",
+                size=18,
+            ),
+        ),
     )
     gc.add_item(t)
 
@@ -273,10 +317,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=x,
             y=70,
-            text="Start / DejaVu",
-            font_family="DejaVu",
-            font_style="",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="Start / DejaVu",
+                    family="DejaVu",
+                    emphasis="",
+                    size=20,
+                ),
+            ),
             text_anchor="start",
         )
     )
@@ -284,10 +332,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=x,
             y=100,
-            text="Middle / DejaVu",
-            font_family="DejaVu",
-            font_style="",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="Middle / DejaVu",
+                    family="DejaVu",
+                    emphasis="",
+                    size=20,
+                ),
+            ),
             text_anchor="middle",
         )
     )
@@ -295,10 +347,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=x,
             y=130,
-            text="End / DejaVu",
-            font_family="DejaVu",
-            font_style="",
-            font_size=20,
+            text_runs=(
+                TextRun(
+                    text="End / DejaVu",
+                    family="DejaVu",
+                    emphasis="",
+                    size=20,
+                ),
+            ),
             text_anchor="end",
         )
     )
@@ -319,10 +375,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=x,
             y=190,
-            text="Start / DejaVu (rot)",
-            font_family="dejavu, helvetica, sans serif",
-            font_style="",
-            font_size=18,
+            text_runs=(
+                TextRun(
+                    text="Start / DejaVu (rot)",
+                    family="dejavu, helvetica, sans serif",
+                    emphasis="",
+                    size=18,
+                ),
+            ),
             text_anchor="start",
         )
     )
@@ -330,10 +390,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=x,
             y=220,
-            text="Middle / DejaVu (rot)",
-            font_family="DejaVu",
-            font_style="",
-            font_size=18,
+            text_runs=(
+                TextRun(
+                    text="Middle / DejaVu (rot)",
+                    family="DejaVu",
+                    emphasis="",
+                    size=18,
+                ),
+            ),
             text_anchor="middle",
         )
     )
@@ -341,10 +405,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=x,
             y=250,
-            text="End / DejaVu (rot)",
-            font_family="DEJAVU",
-            font_style="",
-            font_size=18,
+            text_runs=(
+                TextRun(
+                    text="End / DejaVu (rot)",
+                    family="DEJAVU",
+                    emphasis="",
+                    size=18,
+                ),
+            ),
             text_anchor="end",
         )
     )
@@ -354,10 +422,14 @@ def test_text_ttf_transforms(tmp_path: Path):
         Text(
             x=40,
             y=310,
-            text="😀🚀☕",
-            font_family="NotoEmoji",
-            font_style="",
-            font_size=28,
+            text_runs=(
+                TextRun(
+                    text="😀🚀☕",
+                    family="NotoEmoji",
+                    emphasis="",
+                    size=28,
+                ),
+            ),
         )
     )
 
