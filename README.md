@@ -334,6 +334,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://techtracer.pages.dev"><img src="https://avatars.githubusercontent.com/u/48885301?v=4?s=100" width="100px;" alt="Tanmay Chaudhari"/><br /><sub><b>Tanmay Chaudhari</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=tanmayc07" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Malay-dev"><img src="https://avatars.githubusercontent.com/u/91375797?v=4?s=100" width="100px;" alt="Malay Kumar"/><br /><sub><b>Malay Kumar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Malay-dev" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://rapteon.github.io"><img src="https://avatars.githubusercontent.com/u/42870679?v=4?s=100" width="100px;" alt="Rapteon"/><br /><sub><b>Rapteon</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Rapteon" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
