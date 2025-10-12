@@ -280,7 +280,7 @@ class HelloWorld(object):
         cherrypy.response.headers['content-type'] = 'application/pdf'
         cherrypy.response.status = 200
 
-        return pdf_bytes 
+        return pdf_bytes
 
 
 if __name__ == "__main__":
