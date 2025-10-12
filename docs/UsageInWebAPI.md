@@ -257,6 +257,35 @@ if __name__ == '__main__':
 
 ```
 
+## CherryPy
+[CherryPy](https://cherrypy.dev) is:
+> CherryPy is a pythonic, object-oriented web framework. CherryPy allows developers to build web applications in much the same way they would build any other object-oriented Python program. This results in smaller source code developed in less time.
+
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
+
+
+```python
+import cherrypy
+from fpdf import FPDF
+
+class HelloWorld(object):
+    @cherrypy.expose
+    def index(self):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(text="hello world")
+        pdf_bytes = bytes(pdf.output())
+
+        cherrypy.response.headers['content-type'] = 'application/pdf'
+        cherrypy.response.status = 200
+
+        return pdf_bytes 
+
+
+if __name__ == "__main__":
+    cherrypy.quickstart(HelloWorld())
+```
 
 
 
