@@ -102,6 +102,36 @@ if __name__ == '__main__':
     run(host='localhost', port=8080, debug=True)
 ```
 
+### CherryPy
+[CherryPy](https://cherrypy.dev) is:
+> a pythonic, object-oriented web framework, allowing developers to build web applications in much the same way they would build any other object-oriented Python program.
+
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
+
+
+```python
+import cherrypy
+from fpdf import FPDF
+
+class HelloWorld(object):
+    @cherrypy.expose
+    def index(self):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(text="hello world")
+        pdf_bytes = bytes(pdf.output())
+
+        cherrypy.response.headers['content-type'] = 'application/pdf'
+        cherrypy.response.status = 200
+
+        return pdf_bytes
+
+
+if __name__ == "__main__":
+    cherrypy.quickstart(HelloWorld())
+```
+
 
 ## AWS lambda
 The following code demonstrates some minimal [AWS lambda handler function](https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html)
@@ -252,7 +282,6 @@ async def create_pdf(request: Request):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 ```
-
 
 ## Jupyter
 Check [tutorial/notebook.ipynb](https://github.com/py-pdf/fpdf2/blob/master/tutorial/notebook.ipynb)
