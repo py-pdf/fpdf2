@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Simple & fast PDF generation for Python"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "LGPL-3.0-or-later" }
+license = { file = "LICENSE" }
 
 authors = [
   { name = "Olivier PLATHEY" },
