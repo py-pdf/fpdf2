@@ -36,7 +36,7 @@ from typing import (
     Optional,
     Union,
 )
-__version__ = FPDF_VERSION
+
 
 try:
     from cryptography.hazmat.primitives.serialization import pkcs12
@@ -162,6 +162,7 @@ from .util import (
 
 # Public global variables:
 FPDF_VERSION = "2.8.4"
+__version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
