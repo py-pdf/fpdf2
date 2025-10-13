@@ -36,8 +36,6 @@ from typing import (
     Optional,
     Union,
 )
-
-FPDF_VERSION = "2.8.0"
 __version__ = FPDF_VERSION
 
 try:
