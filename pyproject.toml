@@ -61,7 +61,7 @@ fpdf = [
 ]
 
 [tool.setuptools.dynamic]
-version = { attr = "fpdf.__version__" }
+version = { attr = "fpdf.FPDF_VERSION" }
 
 
 
