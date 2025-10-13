@@ -26,29 +26,6 @@ def report(request):
 ```
 
 
-## Flask ##
-[Flask](https://flask.palletsprojects.com) is a micro web framework written in Python.
-
-The following code can be placed in a `app.py` file and launched using `flask run`:
-
-```python
-from flask import Flask, make_response
-from fpdf import FPDF
-
-app = Flask(__name__)
-
-@app.route("/")
-def hello_world():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=24)
-    pdf.cell(text="hello world")
-    response = make_response(bytes(pdf.output()))
-    response.headers["Content-Type"] = "application/pdf"
-    return response
-```
-
-
 ## WSGI applications
 The following code can be placed in a `fpdf2_app.py` to make a WSGI application
 
@@ -74,6 +51,86 @@ This script can then be served as a HTTP application using either:
 * [`werkzeug.serving.run_simple`](https://werkzeug.palletsprojects.com/en/stable/serving/)
 * [Gunicorn](https://gunicorn.org/), using: `gunicorn --bind localhost:8000 fpdf2_app:app`
 * [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/), using: `uwsgi --http :8000 --module fpdf2_app:app`
+
+### Flask ##
+[Flask](https://flask.palletsprojects.com) is a micro web framework written in Python.
+
+The following code can be placed in a `app.py` file and launched using `flask run`:
+
+```python
+from flask import Flask, make_response
+from fpdf import FPDF
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello_world():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.cell(text="hello world")
+    response = make_response(bytes(pdf.output()))
+    response.headers["Content-Type"] = "application/pdf"
+    return response
+```
+
+### Bottle
+[Bottle](https://bottlepy.org/docs/dev/index.html) is:
+> Bottle is a fast, simple and lightweight WSGI micro web-framework for Python. It is distributed as a single file module and has no dependencies other than the Python Standard Library.
+
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
+
+```python
+from bottle import route, run, response
+from fpdf import FPDF
+
+@route('/')
+def hello():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.cell(text="hello world")
+    pdf_bytes = bytes(pdf.output())
+    
+    response.set_header('Content-Type', 'application/pdf')
+    response.status = 200
+    response.content_length = len(pdf_bytes)
+    
+    return pdf_bytes
+
+if __name__ == '__main__':
+    run(host='localhost', port=8080, debug=True)
+```
+
+### CherryPy
+[CherryPy](https://cherrypy.dev) is:
+> a pythonic, object-oriented web framework, allowing developers to build web applications in much the same way they would build any other object-oriented Python program.
+
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
+
+
+```python
+import cherrypy
+from fpdf import FPDF
+
+class HelloWorld(object):
+    @cherrypy.expose
+    def index(self):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(text="hello world")
+        pdf_bytes = bytes(pdf.output())
+
+        cherrypy.response.headers['content-type'] = 'application/pdf'
+        cherrypy.response.status = 200
+
+        return pdf_bytes
+
+
+if __name__ == "__main__":
+    cherrypy.quickstart(HelloWorld())
+```
 
 
 ## AWS lambda
@@ -182,7 +239,6 @@ st.download_button(
 
 The following code shows how to generate a PDF file via a POST endpoint that receives a JSON object. The JSON object can be used to write into the PDF file. The generated PDF file will be returned back to the user/frontend as the response. 
 
-
 ```python
 from fastapi import FastAPI, Request, Response, HTTPException, status
 from fpdf import FPDF
@@ -225,69 +281,7 @@ async def create_pdf(request: Request):
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
 ```
-
-## Bottle
-[Bottle](https://bottlepy.org/docs/dev/index.html) is:
-> Bottle is a fast, simple and lightweight WSGI micro web-framework for Python. It is distributed as a single file module and has no dependencies other than the Python Standard Library.
-
-The following code can be placed in a `app.py` file and launched using `python3 app.py`
-
-```python
-from bottle import route, run, response
-from fpdf import FPDF
-
-@route('/')
-def hello():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=24)
-    pdf.cell(text="hello world")
-    pdf_bytes = bytes(pdf.output())
-    
-    response.set_header('Content-Type', 'application/pdf')
-    response.status = 200
-    response.content_length = len(pdf_bytes)
-    
-    return pdf_bytes
-
-if __name__ == '__main__':
-    run(host='localhost', port=8080, debug=True)
-
-```
-
-## CherryPy
-[CherryPy](https://cherrypy.dev) is:
-> a pythonic, object-oriented web framework, allowing developers to build web applications in much the same way they would build any other object-oriented Python program.
-
-The following code can be placed in a `app.py` file and launched using `python3 app.py`
-
-
-```python
-import cherrypy
-from fpdf import FPDF
-
-class HelloWorld(object):
-    @cherrypy.expose
-    def index(self):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Helvetica", size=24)
-        pdf.cell(text="hello world")
-        pdf_bytes = bytes(pdf.output())
-
-        cherrypy.response.headers['content-type'] = 'application/pdf'
-        cherrypy.response.status = 200
-
-        return pdf_bytes
-
-
-if __name__ == "__main__":
-    cherrypy.quickstart(HelloWorld())
-```
-
-
 
 ## Jupyter
 Check [tutorial/notebook.ipynb](https://github.com/py-pdf/fpdf2/blob/master/tutorial/notebook.ipynb)
