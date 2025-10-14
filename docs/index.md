@@ -22,7 +22,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 ## Main features ##
 
 * Easy to use, with a user-friendly [API](https://py-pdf.github.io/fpdf2/fpdf/), and easy to extend
-* Python 3.9+ support
+* Python 3.10+ support
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
 * Internal / external [links](Links.md)
 * Embedding images, including transparency and alpha channel, using [Pillow (Python Imaging Library)](https://pillow.readthedocs.io/en/stable/)

@@ -78,7 +78,7 @@ pdf.write_html("""
 pdf.output("html.pdf")
 ```
 
-Internally `FPDF.write_html()` uses the [`fpdf.html.HTML2PDF` class](https://py-pdf.github.io/fpdf2/fpdf/html.html#fpdf.html.HTML2PDF) that implements HTML parsing using [`html.parser.HTMLParser`](https://docs.python.org/3/library/html.parser.html).
+Internally `FPDF.write_html()` uses the [`fpdf.html.HTML2FPDF` class](https://py-pdf.github.io/fpdf2/fpdf/html.html#fpdf.html.HTML2FPDF) that implements HTML parsing using [`html.parser.HTMLParser`](https://docs.python.org/3/library/html.parser.html).
 
 ### Styling HTML tags globally
 
