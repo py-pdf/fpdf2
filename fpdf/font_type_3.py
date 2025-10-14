@@ -207,7 +207,7 @@ class COLRFont(Type3Font):
     drawing API to render the glyphs as vector graphics.
     """
 
-    def __init__(self, fpdf: "FPDF", base_font: "TTFFont"):
+    def __init__(self, fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0):
         super().__init__(fpdf, base_font)
         colr_table: table_C_O_L_R_ = self.base_font.ttfont["COLR"]
         self.colrv0_glyphs = []
@@ -223,11 +223,15 @@ class COLRFont(Type3Font):
             }
         self.palette = None
         if "CPAL" in self.base_font.ttfont:
-            # hardcoding the first palette for now
-            print(
-                f"This font has {len(self.base_font.ttfont['CPAL'].palettes)} palettes"
-            )
-            palette = self.base_font.ttfont["CPAL"].palettes[0]
+            num_palettes = len(self.base_font.ttfont["CPAL"].palettes)
+            # Validate palette index
+            if palette_index >= num_palettes:
+                LOGGER.warning(
+                    f"Palette index {palette_index} is out of range. "
+                    f"This font has {num_palettes} palettes. Using palette 0."
+                )
+                palette_index = 0
+            palette = self.base_font.ttfont["CPAL"].palettes[palette_index]
             self.palette = [
                 (
                     color.red / 255,
@@ -725,7 +729,7 @@ class SBIXColorFont(Type3Font):
         glyph.glyph_width = w
 
 
-def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Union[Type3Font, None]:
+def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0) -> Union[Type3Font, None]:
     if "CBDT" in base_font.ttfont:
         LOGGER.debug("Font %s is a CBLC+CBDT color font", base_font.name)
         return CBDTColorFont(fpdf, base_font)
@@ -738,7 +742,7 @@ def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Union[Type3Font
             LOGGER.debug("Font %s is a COLRv0 color font", base_font.name)
         else:
             LOGGER.debug("Font %s is a COLRv1 color font", base_font.name)
-        return COLRFont(fpdf, base_font)
+        return COLRFont(fpdf, base_font, palette_index)
     if "SVG " in base_font.ttfont:
         LOGGER.debug("Font %s is a SVG color font", base_font.name)
         return SVGColorFont(fpdf, base_font)
