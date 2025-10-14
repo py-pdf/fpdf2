@@ -59,7 +59,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -131,7 +131,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -198,7 +198,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -265,7 +265,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -332,7 +332,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -399,7 +399,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -466,7 +466,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -538,7 +538,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L563-L980" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L785-L1457" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGObject:
     &#34;&#34;&#34;
@@ -565,6 +565,7 @@ in non-backward-compatible ways.</p>
     def __init__(self, svg_text, image_cache: ImageCache = None):
         self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
+        self.css_class_styles = {}
 
         # disabling bandit rule as we use defusedxml:
         svg_tree = parse_xml_str(svg_text)  # nosec B314
@@ -572,6 +573,7 @@ in non-backward-compatible ways.</p>
         if svg_tree.tag not in xmlns_lookup(&#34;svg&#34;, &#34;svg&#34;):
             raise ValueError(f&#34;root tag must be svg, not {svg_tree.tag}&#34;)
 
+        self._collect_css_styles(svg_tree)
         self.extract_shape_info(svg_tree)
         self.convert_graphics(svg_tree)
 
@@ -580,6 +582,45 @@ in non-backward-compatible ways.</p>
         if key:
             key = &#34;#&#34; + key if not key.startswith(&#34;#&#34;) else key
             self.cross_references[key] = referenced
+
+    def _collect_css_styles(self, root_tag):
+        for node in root_tag.iter():
+            if node.tag in xmlns_lookup(&#34;svg&#34;, &#34;style&#34;):
+                css_text = &#34;&#34;.join(node.itertext() or [])
+                for class_name, declarations in _extract_css_class_styles(css_text):
+                    existing = self.css_class_styles.setdefault(class_name, {})
+                    existing.update(declarations)
+
+    def _style_map_for(self, tag):
+        style_map = {}
+        if self.css_class_styles:
+            class_attr = tag.attrib.get(&#34;class&#34;)
+            if class_attr:
+                for class_name in class_attr.split():
+                    class_styles = self.css_class_styles.get(class_name)
+                    if class_styles:
+                        style_map.update(class_styles)
+        inline = html.parse_css_style(tag.attrib.get(&#34;style&#34;, &#34;&#34;))
+        for key, value in inline.items():
+            norm_value = _normalize_css_value(value)
+            if norm_value is not None:
+                style_map[key] = norm_value
+            elif key in style_map:
+                style_map.pop(key, None)
+        inheritable_attrs = (
+            &#34;font-family&#34;,
+            &#34;font-size&#34;,
+            &#34;font-style&#34;,
+            &#34;font-weight&#34;,
+            &#34;text-anchor&#34;,
+            &#34;white-space&#34;,
+        )
+        for attr in inheritable_attrs:
+            if attr in tag.attrib:
+                norm_value = _normalize_css_value(tag.attrib.get(attr))
+                if norm_value is not None:
+                    style_map.setdefault(attr, norm_value)
+        return style_map
 
     @force_nodocument
     def extract_shape_info(self, root_tag):
@@ -794,6 +835,9 @@ in non-backward-compatible ways.</p>
                     clip_id = None
                 for child_ in child:
                     self.build_clipping_path(child_, clip_id)
+            elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;style&#34;):
+                # Styles handled globally during parsing
+                continue
             else:
                 LOGGER.warning(
                     &#34;Ignoring unsupported SVG tag: &lt;%s&gt; (contributions are welcome to add support for it)&#34;,
@@ -805,8 +849,9 @@ in non-backward-compatible ways.</p>
     @force_nodocument
     def build_xref(self, xref):
         &#34;&#34;&#34;Resolve a cross-reference to an already-seen SVG element by ID.&#34;&#34;&#34;
+        style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
-        apply_styles(pdf_group, xref)
+        apply_styles(pdf_group, xref, style_map)
 
         for candidate in xmlns_lookup(&#34;xlink&#34;, &#34;href&#34;, &#34;id&#34;):
             try:
@@ -834,11 +879,14 @@ in non-backward-compatible ways.</p>
         return pdf_group
 
     @force_nodocument
-    def build_group(self, group, pdf_group=None):
+    def build_group(self, group, pdf_group=None, inherited_style=None):
         &#34;&#34;&#34;Handle nested items within a group &lt;g&gt; tag.&#34;&#34;&#34;
+        local_style = self._style_map_for(group)
+        merged_style = dict(inherited_style or {})
+        merged_style.update(local_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
-            apply_styles(pdf_group, group)
+        apply_styles(pdf_group, group, merged_style)
 
         # handle defs before anything else
         for child in [
@@ -849,15 +897,18 @@ in non-backward-compatible ways.</p>
         for child in group:
             if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;defs&#34;):
                 self.handle_defs(child)
+            elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;style&#34;):
+                # Stylesheets already parsed globally.
+                continue
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;g&#34;):
-                pdf_group.add_item(self.build_group(child), False)
+                pdf_group.add_item(self.build_group(child, None, merged_style), False)
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;a&#34;):
                 # &lt;a&gt; tags aren&#39;t supported but we need to recurse into them to
                 # render nested elements.
                 LOGGER.warning(
                     &#34;Ignoring unsupported SVG tag: &lt;a&gt; (contributions are welcome to add support for it)&#34;,
                 )
-                pdf_group.add_item(self.build_group(child), False)
+                pdf_group.add_item(self.build_group(child, None, merged_style), False)
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;path&#34;):
                 pdf_group.add_item(self.build_path(child), False)
             elif child.tag in shape_tags:
@@ -866,6 +917,8 @@ in non-backward-compatible ways.</p>
                 pdf_group.add_item(self.build_xref(child), False)
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;image&#34;):
                 pdf_group.add_item(self.build_image(child), False)
+            elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;text&#34;):
+                pdf_group.add_item(self.build_text(child, merged_style), False)
             else:
                 LOGGER.warning(
                     &#34;Ignoring unsupported SVG tag: &lt;%s&gt; (contributions are welcome to add support for it)&#34;,
@@ -879,9 +932,10 @@ in non-backward-compatible ways.</p>
     @force_nodocument
     def build_path(self, path):
         &#34;&#34;&#34;Convert an SVG &lt;path&gt; tag into a PDF path object.&#34;&#34;&#34;
+        style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
-        apply_styles(pdf_path, path)
-        self.apply_clipping_path(pdf_path, path)
+        apply_styles(pdf_path, path, style_map)
+        self.apply_clipping_path(pdf_path, path, style_map)
         svg_path = path.attrib.get(&#34;d&#34;)
         if svg_path is not None:
             svg_path_converter(pdf_path, svg_path)
@@ -891,20 +945,25 @@ in non-backward-compatible ways.</p>
     @force_nodocument
     def build_shape(self, shape):
         &#34;&#34;&#34;Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn&#39;t have access to this object.)&#34;&#34;&#34;
+        style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
-        self.apply_clipping_path(shape_path, shape)
+        apply_styles(shape_path, shape, style_map)
+        self.apply_clipping_path(shape_path, shape, style_map)
         self.update_xref(shape.attrib.get(&#34;id&#34;), shape_path)
         return shape_path
 
     @force_nodocument
     def build_clipping_path(self, shape, clip_id):
         if shape.tag in shape_tags:
+            style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
             clipping_path_shape = shape_builder(shape, True)
+            apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup(&#34;svg&#34;, &#34;path&#34;):
+            style_map = self._style_map_for(shape)
             clipping_path_shape = PaintedPath()
-            apply_styles(clipping_path_shape, shape)
+            apply_styles(clipping_path_shape, shape, style_map)
             clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get(&#34;d&#34;)
             if svg_path is not None:
@@ -918,10 +977,14 @@ in non-backward-compatible ways.</p>
         self.update_xref(clip_id, clipping_path_shape)
 
     @force_nodocument
-    def apply_clipping_path(self, stylable, svg_element):
-        clipping_path = svg_element.attrib.get(&#34;clip-path&#34;)
-        if clipping_path:
-            clipping_path_id = re.search(r&#34;url\((\#\w+)\)&#34;, clipping_path)
+    def apply_clipping_path(self, stylable, svg_element, style_map=None):
+        clip_value = None
+        if style_map and &#34;clip-path&#34; in style_map:
+            clip_value = style_map[&#34;clip-path&#34;]
+        if clip_value is None:
+            clip_value = svg_element.attrib.get(&#34;clip-path&#34;)
+        if clip_value:
+            clipping_path_id = re.search(r&#34;url\((\#\w+)\)&#34;, clip_value)
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
@@ -957,7 +1020,199 @@ in non-backward-compatible ways.</p>
             svg_obj=self,
         )
         self.update_xref(image.attrib.get(&#34;id&#34;), svg_image)
-        return svg_image</code></pre>
+        return svg_image
+
+    @force_nodocument
+    def build_text(self, text_tag, inherited_style=None):
+        &#34;&#34;&#34;
+        Convert &lt;text&gt; (and simple &lt;tspan&gt;) into a PaintedPath with Text runs.
+        - Uses Text baseline at (x,y)
+        - Honors x/y and dx/dy on &lt;text&gt; and direct child &lt;tspan&gt;
+        - Flattens nested tspans; advanced per-character positioning is not implemented
+        &#34;&#34;&#34;
+        local_style = self._style_map_for(text_tag)
+        effective_style = dict(inherited_style or {})
+        effective_style.update(local_style)
+        path = PaintedPath()
+        apply_styles(path, text_tag, local_style)
+        self.apply_clipping_path(path, text_tag, effective_style)
+
+        preserve_parent = _preserve_ws(effective_style, text_tag)
+
+        base_family, base_emph, base_size, base_anchor = _parse_font_attrs(
+            text_tag, effective_style
+        )
+        if base_family is None:
+            base_family = &#34;sans-serif&#34;
+        default_font_size = (
+            base_size if base_size is not None else resolve_length(&#34;16px&#34;)
+        )
+        base_x, base_y, base_dx, base_dy = _parse_xy_delta(
+            text_tag, effective_style, font_size=default_font_size
+        )
+        anchor_x = base_x + base_dx
+        anchor_y = base_y + base_dy
+
+        text_runs: list[TextRun] = []
+        pending_dx = 0.0
+        pending_dy = 0.0
+
+        def _style_for_run(tag, style_map_for_tag):
+            if tag is None or style_map_for_tag is None:
+                return None
+            context = GraphicsContext()
+            apply_styles(context, tag, style_map_for_tag)
+            context.style.auto_close = GraphicsStyle.INHERIT
+            overrides = any(
+                getattr(context.style, prop) is not GraphicsStyle.INHERIT
+                for prop in GraphicsStyle.MERGE_PROPERTIES
+            )
+            if not overrides:
+                return None
+            return deepcopy(context.style)
+
+        def _add_run(
+            raw_text: str,
+            family: Optional[str],
+            emphasis: Optional[str],
+            size: Optional[float],
+            preserve: bool,
+            dx_extra: float = 0.0,
+            dy_extra: float = 0.0,
+            abs_x: Optional[float] = None,
+            abs_y: Optional[float] = None,
+            style_tag=None,
+            style_map_for_tag=None,
+        ):
+            nonlocal pending_dx, pending_dy
+            raw = raw_text or &#34;&#34;
+            collapsed = _collapse_ws(raw, preserve=preserve)
+            if preserve:
+                content = collapsed
+            else:
+                trimmed = collapsed.strip()
+                if trimmed:
+                    content = trimmed
+                    if raw[:1].isspace():
+                        content = &#34; &#34; + content
+                    if raw[-1:].isspace():
+                        content = content + &#34; &#34;
+                else:
+                    if (raw[:1].isspace() or raw[-1:].isspace()) and text_runs:
+                        content = &#34; &#34;
+                    else:
+                        content = &#34;&#34;
+            if not content:
+                pending_dx += dx_extra
+                pending_dy += dy_extra
+                return
+
+            run_size = size if size is not None else default_font_size
+            run_family = family or base_family or &#34;sans-serif&#34;
+            run_emphasis = (emphasis if emphasis is not None else base_emph) or &#34;&#34;
+            run_dx = pending_dx + dx_extra
+            run_dy = pending_dy + dy_extra
+            pending_dx = 0.0
+            pending_dy = 0.0
+            run_style = _style_for_run(style_tag, style_map_for_tag)
+
+            text_runs.append(
+                TextRun(
+                    text=content,
+                    family=run_family,
+                    emphasis=run_emphasis,
+                    size=run_size,
+                    dx=run_dx,
+                    dy=run_dy,
+                    abs_x=abs_x,
+                    abs_y=abs_y,
+                    run_style=run_style,
+                )
+            )
+
+        # Leading text (before child &lt;tspan&gt;)
+        _add_run(
+            text_tag.text or &#34;&#34;,
+            base_family,
+            base_emph,
+            base_size,
+            preserve=preserve_parent,
+            style_tag=None,
+            style_map_for_tag=None,
+        )
+
+        for child in text_tag:
+            if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;tspan&#34;):
+                child_local_style = self._style_map_for(child)
+                child_effective_style = dict(effective_style)
+                child_effective_style.update(child_local_style)
+                fam, emph, size, _anchor = _parse_font_attrs(
+                    child, child_effective_style
+                )
+                run_font_size = size if size is not None else default_font_size
+                x, y, dx, dy = _parse_xy_delta(
+                    child, child_effective_style, font_size=run_font_size
+                )
+
+                child_preserve = _preserve_ws(child_effective_style, child)
+                raw_itertext = &#34;&#34;.join(child.itertext())
+                tail_text = child.tail or &#34;&#34;
+                if tail_text and raw_itertext.endswith(tail_text):
+                    run_text = raw_itertext[: -len(tail_text)]
+                else:
+                    run_text = raw_itertext
+                abs_x = None
+                abs_y = None
+                if &#34;x&#34; in child.attrib or (
+                    child_local_style is not None and &#34;x&#34; in child_local_style
+                ):
+                    abs_x = x
+                if &#34;y&#34; in child.attrib or (
+                    child_local_style is not None and &#34;y&#34; in child_local_style
+                ):
+                    abs_y = y
+
+                _add_run(
+                    run_text,
+                    fam,
+                    emph,
+                    size,
+                    preserve=child_preserve,
+                    dx_extra=dx,
+                    dy_extra=dy,
+                    abs_x=abs_x,
+                    abs_y=abs_y,
+                    style_tag=child,
+                    style_map_for_tag=child_local_style,
+                )
+
+                # Text between tspans inherits parent style
+                _add_run(
+                    child.tail or &#34;&#34;,
+                    base_family,
+                    base_emph,
+                    base_size,
+                    preserve=preserve_parent,
+                    style_tag=None,
+                    style_map_for_tag=None,
+                )
+            else:
+                # other child tags are ignored (already logged elsewhere)
+                pass
+
+        if text_runs:
+            path.add_path_element(
+                Text(
+                    x=anchor_x,
+                    y=anchor_y,
+                    text_runs=tuple(text_runs),
+                    text_anchor=base_anchor,
+                ),
+                _copy=False,
+            )
+
+        self.update_xref(text_tag.attrib.get(&#34;id&#34;), path)
+        return path</code></pre>
 </details>
 <div class="desc"><p>A representation of an SVG that has been converted to a PDF representation.</p></div>
 <h3>Static methods</h3>
@@ -991,7 +1246,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L762-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L1025-L1050" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
     &#34;&#34;&#34;
@@ -1042,7 +1297,7 @@ written.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L656-L676" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L919-L939" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_page_viewport(self, pdf, align_viewbox=True):
     &#34;&#34;&#34;
@@ -1090,7 +1345,7 @@ viewbox aspect ratio does not match that of the viewport.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3db2f2edd21e6ae52f2c1fbcf32c5ff2d6cae207/fpdf/svg.py#L678-L760" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f8c72880e274b32f85d7c359953f541f087eb9ce/fpdf/svg.py#L941-L1023" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_rect_viewport(
     self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
