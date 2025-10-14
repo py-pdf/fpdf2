@@ -278,6 +278,8 @@ For more information on fallback fonts, see the [Fallback fonts](#fallback-fonts
 
 ## Variable Fonts ##
 
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 A variable font allows users to use a single font file containing many
 variations of a typeface, such as weight, width, optical size, and slant. Each such variable which modifies the typeface is called an axis.
 These variables have specific tags which are used to specify their values, such as `"wdth"` for modifying width,

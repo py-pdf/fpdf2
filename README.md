@@ -14,8 +14,8 @@
 
 [![issues closed](https://img.shields.io/github/issues-closed/py-pdf/fpdf2)](https://github.com/py-pdf/fpdf2/issues)
 [![PRs closed](https://img.shields.io/github/issues-pr-closed/py-pdf/fpdf2)](https://github.com/py-pdf/fpdf2/pulls)
-[![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-[![first-timers-only Friendly](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](http://www.firsttimersonly.com/)
+[![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](https://makeapullrequest.com)
+[![first-timers-only Friendly](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://www.firsttimersonly.com/)
 → come look at our [good first issues](https://github.com/py-pdf/fpdf2/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 # fpdf2
