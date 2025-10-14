@@ -275,3 +275,57 @@ When you specify a unicode_range, the font's internal character map (cmap) is tr
 - You avoid unwanted "fallback pollution" from fonts with poor-quality glyphs
 
 For more information on fallback fonts, see the [Fallback fonts](#fallback-fonts) section.
+
+## Variable Fonts ##
+
+A variable font allows users to use a single font file containing many
+variations of a typeface, such as weight, width, optical size, and slant. Each such variable which modifies the typeface is called an axis.
+These variables have specific tags which are used to specify their values, such as `"wdth"` for modifying width,
+and `"wght"` for modifying weight. For a full list
+of tags, please check the documentation of your variable font.
+
+The `variations` parameter in [add_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to specify the value
+of one or more axes, thus creating a static font from the variable font.
+
+The following examples assume that the provided font is a variable font.  
+
+```python
+# Specify width and weight in regular style.
+pdf.add_font(
+    "Roboto Variable", "", "Roboto-Variable.ttf", variations={"wdth": 75, "wght": 300}
+)
+
+# Specify weight for bold style.
+pdf.add_font("Roboto Variable", "B", "Roboto-Variable.ttf", variations={"wght": 600})
+
+```
+
+The above examples provide the axes dictionary to specify
+the styles. If an axis is not mentioned, the default width will be used, and the axis will be dropped as shown below.
+
+```python
+# Creating an italic version of the variable font.
+# If an axis is set to None, or if the axis is unspecified,
+# it will not be variable in the created font.
+pdf.add_font(
+    "Roboto Variable",
+    "B",
+    "Roboto-Variable.ttf",
+    variations={"wght": 800, "wdth": None},
+)
+```
+
+It is also possible to specify more than 1 style in the `variations` dictionary.
+If a separate axes dictionary is specified for each style, then the `style` parameter
+is ignored as shown below.
+
+```python
+pdf.add_font(
+    "Roboto Variable",
+    style="", # ignored
+    fname="Roboto-Variable.ttf",
+    variations={"": {"wght": 300}, "B": {"wght": 700}},
+)
+```
+A `TypeError` will be raised if `variations` is not a dictionary, and
+an `AttributeError` will be raised if `variations` is used but the font is **not** a variable font.

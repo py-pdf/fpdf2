@@ -2192,7 +2192,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ctxt.add_item(path)
 
     def add_font(
-        self, family=None, style="", fname=None, uni="DEPRECATED", unicode_range=None
+        self,
+        family=None,
+        style="",
+        fname=None,
+        uni="DEPRECATED",
+        unicode_range=None,
+        variations=None,
     ):
         """
         Imports a TrueType or OpenType font and makes it available
@@ -2209,6 +2215,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             unicode_range (Optional[Union[str, int, tuple, list]]): subset of Unicode codepoints to embed.
                 Accepts CSS-style strings (e.g. "U+1F600-1F64F, U+2600"), integers, tuples, or lists.
                 Defaults to None, which embeds the full cmap.
+            variations (dict[style, dict]): maps style to limits of axes for the variable font.
             uni (bool): [**DEPRECATED since 2.5.1**] unused
         """
         if not fname:
@@ -2232,12 +2239,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
 
-        style = "".join(sorted(style.upper()))
-        if any(letter not in "BI" for letter in style):
-            raise ValueError(
-                f"Unknown style provided (only B & I letters are allowed): {style}"
-            )
-
         for parent in (".", FPDF_FONT_DIR):
             if not parent:
                 continue
@@ -2251,22 +2252,66 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if family is None:
             family = font_file_path.stem
 
-        fontkey = f"{family.lower()}{style}"
-        # Check if font already added or one of the core fonts
-        if fontkey in self.fonts or fontkey in CORE_FONTS:
-            warnings.warn(
-                f"Core font or font already added '{fontkey}': doing nothing",
-                stacklevel=get_stack_level(),
-            )
-            return
-
         parsed_unicode_range = None
         if unicode_range is not None:
             parsed_unicode_range = get_parsed_unicode_range(unicode_range)
 
-        self.fonts[fontkey] = TTFFont(
-            self, font_file_path, fontkey, style, parsed_unicode_range
-        )
+        def already_exists(fontkey):
+            # Check if font already added or one of the core fonts
+            if fontkey in self.fonts or fontkey in CORE_FONTS:
+                warnings.warn(
+                    f"Core font or font already added '{fontkey}': doing nothing",
+                    stacklevel=get_stack_level(),
+                )
+                return True
+            return False
+
+        style = "".join(sorted(style.upper()))
+        if any(letter not in "BI" for letter in style):
+            raise ValueError(
+                f"Unknown style provided (only B & I letters are allowed): {style}"
+            )
+
+        # Handle variable font.
+        if variations is not None:
+            if not isinstance(variations, dict):
+                raise TypeError("Variations, if specified, must be a dictionary")
+
+            # Check variations dictionary
+            if all(
+                key.upper() in ("", "B", "I", "BI") and isinstance(value, dict)
+                for key, value in variations.items()
+            ):
+                for var_style, axes_dict in variations.items():
+                    fontkey = f"{family.lower()}{var_style}"
+                    if already_exists(fontkey):
+                        continue
+                    self.fonts[fontkey] = TTFFont(
+                        self,
+                        font_file_path,
+                        fontkey,
+                        var_style,
+                        parsed_unicode_range,
+                        axes_dict,
+                    )
+            else:
+                fontkey = f"{family.lower()}{style}"
+                self.fonts[fontkey] = TTFFont(
+                    self,
+                    font_file_path,
+                    fontkey,
+                    style,
+                    parsed_unicode_range,
+                    variations,
+                )
+        else:
+            # Handle static fonts.
+            fontkey = f"{family.lower()}{style}"
+            if already_exists(fontkey):
+                return
+            self.fonts[fontkey] = TTFFont(
+                self, font_file_path, fontkey, style, parsed_unicode_range
+            )
 
     def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):
         """
