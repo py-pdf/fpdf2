@@ -18,14 +18,14 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.5] - Not released yet
 ### Added
-* documentation on how to combine `fpdf2` with **Plone**: [UsageInWebAPI.html#plone](https://py-pdf.github.io/fpdf2/UsageInWebAPI.html#plone)
+* documentation on how to combine `fpdf2` with **Bottle**, **CherryPy** & **Plone**: [link to documentation](https://py-pdf.github.io/fpdf2/UsageInWebAPI.html)
 * basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
 * Porter–Duff compositing operations and bounding box support to the drawing API - _cf._ [PR #1532](https://github.com/py-pdf/fpdf2/pull/1532)
-* support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539)
+* support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539): [link to documentation](https://py-pdf.github.io/fpdf2/Drawing.html#compositing-operations)
 * support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
 * support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1) - _cf._ [PR #1305](https://github.com/py-pdf/fpdf2/pull/1305)
-* support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar
-* native support for PDF/A compliance verification - including PDF/A-1B, 2B, 2U, 3B, 3U, 4, 4E and 4F. Accessible PDF/A documents (PDF/A 1A, 2A and 3A) are not yet supported.
+* support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar: [link to documentation](https://py-pdf.github.io/fpdf2/NamedDestinations.html)
+* native support for PDF/A compliance verification - including PDF/A-1B, 2B, 2U, 3B, 3U, 4, 4E and 4F: [link to documentation](https://py-pdf.github.io/fpdf2/pdfa.html) Accessible PDF/A documents (PDF/A 1A, 2A and 3A) are not yet supported.
 * `unicode_range` parameter for `add_font()` to restrict which Unicode characters a font covers, similar to CSS `@font-face` unicode-range. This allows users to control font priority on a per-character-range basis and prevents unwanted glyphs from main fonts when better alternatives exist in fallback fonts. Supports multiple input formats: CSS-style strings (`"U+1F600-1F64F, U+2600-26FF"`), lists of strings, tuples, integers, and mixed formats - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
 * Utility function `get_parsed_unicode_range()` to convert various unicode*range formats to codepoints - \_cf.* [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
 * `variations` parameter added in `add_font()` to allow the use of variable fonts - _cf._ [issue #1544](https://github.com/py-pdf/fpdf2/issues/1544): [link to documentation](https://py-pdf.github.io/fpdf2/Unicode.html#variable-fonts)

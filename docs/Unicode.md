@@ -220,6 +220,8 @@ An example of this can be found in [test/fonts/test_font_fallback.py](https://gi
 
 ## Unicode range limits ##
 
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 The `unicode_range` parameter in [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to restrict which Unicode characters a font will handle, similar to CSS `@font-face` unicode-range rules. This gives you fine-grained control over font priority on a per-character basis.
 
 This is particularly useful when you want fallback fonts to take priority for specific character ranges, even when the main font technically supports those characters. A common scenario is preferring colorful emoji fonts over monochrome glyphs that exist in regular fonts.
@@ -276,6 +278,7 @@ When you specify a unicode_range, the font's internal character map (cmap) is tr
 
 For more information on fallback fonts, see the [Fallback fonts](#fallback-fonts) section.
 
+
 ## Variable Fonts ##
 
 _New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
@@ -289,7 +292,7 @@ of tags, please check the documentation of your variable font.
 The `variations` parameter in [add_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to specify the value
 of one or more axes, thus creating a static font from the variable font.
 
-The following examples assume that the provided font is a variable font.  
+The following examples assume that the provided font is a variable font.
 
 ```python
 # Specify width and weight in regular style.

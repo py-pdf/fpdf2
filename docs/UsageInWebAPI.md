@@ -410,7 +410,7 @@ class CatalogReportView(BrowserView):
     
     def __call__(self):
         catalog = self.context.portal_catalog
-        results = catalog(portal_type='Document', 
+        results = catalog(portal_type='Document',
                          review_state='published')
         
         pdf = FPDF()

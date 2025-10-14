@@ -1,5 +1,7 @@
 # PDF/A with fpdf2
 
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 ## What is PDF/A
 
 **PDF/A** is the ISO standard for long-term archiving of PDFs. It restricts features that aren’t stable for preservation (e.g., JavaScript, encryption, multimedia) and **requires self-containment** (fonts embedded, color spaces defined, predictable rendering).

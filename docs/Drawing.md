@@ -189,6 +189,8 @@ pdf.output("drawing-demo.pdf")
 
 ## Compositing operations
 
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 The drawing API also supports compositing operations, which control how a path blends with another.
 These are based on the [Porter–Duff compositing model](https://en.wikipedia.org/wiki/Alpha_compositing) and the blend modes defined in PDF 1.4.
 

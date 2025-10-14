@@ -33,13 +33,16 @@ The same month, Georg Mischler ([@gmischler](https://github.com/gmischler)) and 
 
 ## Compatibility between PyFPDF & fpdf2 ##
 
-`fpdf2` aims to be fully compatible with PyFPDF code.
+`fpdf2` aims to be fully compatible with PyFPDF original code (`fpdf==1.7.2`).
 
 The notable exceptions are:
 
 * for the [`cell()` method](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed. It used to be `0` and is now set to the current value of `FPDF.font_size`
 * the font caching mechanism, that used the `pickle` module, has been **removed**, for security reasons, and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/py-pdf/fpdf2/issues/345).
 * [Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template) elements now have a **transparent background** by default, instead of white
+
+Additionally, HTML rendering is not guaranteed to be identical regarding whitespace,
+especially since version 2.7.6 and the new set of classes introduced to manage text flow: <https://py-pdf.github.io/fpdf2/TextRegion.html>
 
 Some features are also **deprecated**.
 As of version 2.8.4 they **still work** but **generate a warning** when used:
