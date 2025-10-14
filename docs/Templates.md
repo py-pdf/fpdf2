@@ -188,7 +188,7 @@ or a [`FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) inst
     * default: `10` for text, `2` for `BC`, `1.5` for `C39`
 * **`dash_pattern(dash, gap, phase)`**: a dict of the line dash pattern for the element
     * _optional_
-    * for line, box, ellipse follows the parameters of [set_dash_pattern()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern) 
+    * for line, box, ellipse follows the parameters of [set_dash_pattern()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern)
     * Only supported in dict/JSON
     * There are three allowed keys: `dash`,`gap`, and `phase`. At least `dash` must be present. 
     * default: `dash=0` (solid lines)
