@@ -2601,6 +2601,270 @@ class Ellipse(NamedTuple):
         return " ".join(render_list), Move(self.center), initial_point
 
 
+class TextRun(NamedTuple):
+    text: str
+    family: str
+    emphasis: str
+    size: float
+    dx: float = 0.0
+    dy: float = 0.0
+    abs_x: Optional[float] = None
+    abs_y: Optional[float] = None
+    transform: Optional[Transform] = None
+    run_style: Optional[GraphicsStyle] = None
+
+
+class Text(NamedTuple):
+    """
+    SVG-like text renderable.
+    Stores the anchor position (x, y) and one or more TextRuns that include
+    relative positioning offsets. Accurate glyph positioning is resolved
+    during rendering once font metrics are available.
+    """
+
+    x: float
+    y: float
+    text_runs: tuple[TextRun, ...]
+    text_anchor: str = "start"  # "start" | "middle" | "end"
+
+    def _approximate_layout(self) -> tuple[list[tuple[float, float, float]], float]:
+        """
+        Produce an approximate layout for bounding-box estimation.
+
+        Returns:
+            A tuple of (per-run layout list, total width estimate).  Each layout
+            entry is (x, y, width) in user space.
+        """
+        positions: list[tuple[float, float, float]] = []
+        pen_x = self.x
+        pen_y = self.y
+        max_right = pen_x
+        min_left = pen_x
+
+        for run in self.text_runs:
+            if run.abs_x is not None:
+                pen_x = run.abs_x
+            if run.abs_y is not None:
+                pen_y = run.abs_y
+            pen_x += run.dx
+            pen_y += run.dy
+            # Fallback width estimation: ~0.5em per glyph
+            approx_width = 0.5 * run.size * max(0, len(run.text))
+            positions.append((pen_x, pen_y, approx_width))
+            min_left = min(min_left, pen_x)
+            max_right = max(max_right, pen_x + approx_width)
+            pen_x += approx_width
+
+        total_width = max_right - min_left
+        return positions, total_width
+
+    def _anchor_offset(self, positions: list[tuple[float, float, float]]) -> float:
+        """Compute anchor offset for the provided approximate layout."""
+        if not positions:
+            return 0.0
+
+        if any(run.abs_x is not None for run in self.text_runs):
+            return 0.0
+
+        min_x = min(pos[0] for pos in positions)
+        max_x = max(pos[0] + pos[2] for pos in positions)
+
+        if self.text_anchor == "middle":
+            return self.x - (min_x + max_x) / 2.0
+        if self.text_anchor == "end":
+            return self.x - max_x
+        return self.x - min_x
+
+    def bounding_box(self, start: Point) -> tuple["BoundingBox", Point]:
+        """
+        Compute a conservative bbox for the text.
+
+        Font metrics are not available at this stage so the layout relies on
+        approximate glyph widths proportional to the run font size. The actual
+        layout is computed precisely in render().
+        """
+        if not self.text_runs:
+            return BoundingBox.empty(), start
+
+        positions, _ = self._approximate_layout()
+        anchor_offset = self._anchor_offset(positions)
+
+        min_x = float("inf")
+        max_x = float("-inf")
+        min_y = float("inf")
+        max_y = float("-inf")
+
+        for (run_x, run_y, run_width), run in zip(positions, self.text_runs):
+            adj_x = run_x + anchor_offset
+            asc = 0.8 * run.size
+            desc = 0.2 * run.size
+            min_x = min(min_x, adj_x)
+            max_x = max(max_x, adj_x + run_width)
+            min_y = min(min_y, run_y - asc)
+            max_y = max(max_y, run_y + desc)
+
+        if min_x == float("inf"):
+            return BoundingBox.empty(), start
+
+        x0 = min_x
+        x1 = max_x
+        y0 = min_y
+        y1 = max_y
+
+        return BoundingBox.from_points([Point(x0, y0), Point(x1, y1)]), start
+
+    @force_nodocument
+    def render(
+        self,
+        resource_registry: "ResourceCatalog",
+        style: "GraphicsStyle",
+        last_item: "Renderable",
+        initial_point: Point,
+    ) -> tuple[str, "Renderable", Point]:
+        """
+        Emit PDF text operators:
+
+          BT
+            <font_id> <font_size> Tf
+            Tr <mode>               (map from GraphicsStyle->PathPaintRule)
+            1 0 0 1 x y Tm
+            (escaped-text) Tj
+          ET
+        """
+        if not self.text_runs:
+            return "", last_item, initial_point
+
+        # Precise layout resolution with actual font metrics
+        layout: list[tuple[float, float, float, TextRun, object]] = []
+        pen_x = self.x
+        pen_y = self.y
+        min_x = pen_x
+        max_x = pen_x
+
+        for run in self.text_runs:
+            font = resource_registry.get_font_from_family(run.family, run.emphasis)
+            _, width = font.get_text_width(run.text, run.size, None)
+            if run.abs_x is not None:
+                pen_x = run.abs_x
+            if run.abs_y is not None:
+                pen_y = run.abs_y
+            pen_x += run.dx
+            pen_y += run.dy
+            min_x = min(min_x, pen_x)
+            max_x = max(max_x, pen_x + width)
+            layout.append((pen_x, pen_y, width, run, font))
+            pen_x += width
+
+        has_absolute = any(run.abs_x is not None for _, _, _, run, _ in layout)
+
+        if layout and not has_absolute:
+            if self.text_anchor == "middle":
+                anchor_offset = self.x - (min_x + max_x) / 2.0
+            elif self.text_anchor == "end":
+                anchor_offset = self.x - max_x
+            else:
+                anchor_offset = self.x - min_x
+        else:
+            anchor_offset = 0.0
+
+        ops: list[str] = []
+        NO_EMIT_SET = (None, GraphicsStyle.INHERIT)
+
+        for run_x, run_y, width, run, font in layout:
+            effective_style = (
+                GraphicsStyle.merge(style, run.run_style)
+                if run.run_style is not None
+                else style
+            )
+
+            # Determine text rendering mode
+            rule = effective_style.resolve_paint_rule()
+            if rule in (PathPaintRule.FILL_NONZERO, PathPaintRule.FILL_EVENODD):
+                tr = 0
+            elif rule is PathPaintRule.STROKE:
+                tr = 1
+            elif rule in (
+                PathPaintRule.STROKE_FILL_NONZERO,
+                PathPaintRule.STROKE_FILL_EVENODD,
+            ):
+                tr = 2
+            else:  # PathPaintRule.DONT_PAINT:
+                tr = 3
+
+            run_ops: list[str] = []
+
+            if run.run_style is not None:
+                merged_style = effective_style
+                style_dict_name = resource_registry.register_graphics_style(
+                    merged_style
+                )
+
+                if style_dict_name is not None:
+                    run_ops.append(f"{render_pdf_primitive(style_dict_name)} gs")
+
+                fill_color = merged_style.fill_color
+                stroke_color = merged_style.stroke_color
+
+                run_bbox = BoundingBox.from_points(
+                    [
+                        Point(run_x + anchor_offset, run_y - 0.8 * run.size),
+                        Point(run_x + anchor_offset + width, run_y + 0.2 * run.size),
+                    ]
+                )
+
+                if fill_color not in NO_EMIT_SET:
+                    if isinstance(fill_color, GradientPaint):
+                        run_ops.append(
+                            fill_color.emit_fill(resource_registry, run_bbox)
+                        )
+                    else:
+                        run_ops.append(fill_color.serialize().lower())
+                if stroke_color not in NO_EMIT_SET:
+                    if isinstance(stroke_color, GradientPaint):
+                        run_ops.append(
+                            stroke_color.emit_stroke(resource_registry, run_bbox)
+                        )
+                    else:
+                        run_ops.append(stroke_color.serialize().upper())
+
+                dash_pattern = merged_style.stroke_dash_pattern
+                dash_phase = merged_style.stroke_dash_phase
+                if dash_pattern not in NO_EMIT_SET:
+                    run_ops.append(
+                        render_pdf_primitive(dash_pattern)
+                        + f" {number_to_str(dash_phase)} d"
+                    )
+
+            run_ops.extend(
+                [
+                    "BT",
+                    f"/F{font.i} {number_to_str(run.size)} Tf",
+                    f"{number_to_str(tr)} Tr",
+                    f"1 0 0 -1 {number_to_str(run_x + anchor_offset)} {number_to_str(run_y)} Tm",
+                    font.encode_text(run.text),
+                    "ET",
+                ]
+            )
+
+            if run.run_style is not None:
+                run_ops = ["q"] + run_ops + ["Q"]
+
+            ops.extend(run_ops)
+
+        return " ".join(ops), last_item, initial_point
+
+    # pylint: disable=unused-argument
+    @force_nodocument
+    def render_debug(
+        self, resource_registry, style, last_item, initial_point, debug_stream, pfx
+    ):
+        rendered, resolved, initial_point = self.render(
+            resource_registry, style, last_item, initial_point
+        )
+        debug_stream.write(str(self) + "\n")
+        return rendered, resolved, initial_point
+
+
 class ImplicitClose(NamedTuple):
     """
     A path close element that is conditionally rendered depending on the value of
@@ -2779,6 +3043,11 @@ if TYPE_CHECKING:
         org=Point(0, 0), size=Point(0, 0), corner_radii=Point(0, 0)
     )
     ellipse: Renderable = Ellipse(radii=Point(0, 0), center=Point(0, 0))
+    text: Renderable = Text(
+        x=0,
+        y=0,
+        text_runs=(TextRun(text="", family="Sans serif", emphasis="", size=12.0),),
+    )
     implicit_close: Renderable = ImplicitClose()
     close: Renderable = Close()
 
@@ -3509,6 +3778,48 @@ class PaintedPath:
 
         self.add_path_element(
             RelativeArc(radii, rotation, large_arc, positive_sweep, end), _copy=False
+        )
+        return self
+
+    def text(
+        self,
+        x: float,
+        y: float,
+        content: str,
+        *,
+        font_family: str = "helvetica",
+        font_style: str = "",  # "", "B", "I", "BI"
+        font_size: float = 12.0,
+        text_anchor: str = "start",  # "start" | "middle" | "end"
+    ):
+        """
+        Append a text run at (x, y) to this path.
+
+        The baseline is at (x, y). `text_anchor` controls alignment about x.
+        `font_style` accepts "", "B", "I", or "BI". `font_family` can be a single
+        name or a comma-separated fallback list (handled at render-time).
+
+        Returns:
+            self (to allow chaining)
+        """
+        # Normalize style just in case e.g. "ib" -> "BI"
+        s = "".join(sorted(font_style.upper()))
+
+        self.add_path_element(
+            Text(
+                x=x,
+                y=y,
+                text_runs=(
+                    TextRun(
+                        text=content,
+                        family=font_family,
+                        emphasis=s,
+                        size=font_size,
+                    ),
+                ),
+                text_anchor=text_anchor,
+            ),
+            _copy=False,
         )
         return self
 

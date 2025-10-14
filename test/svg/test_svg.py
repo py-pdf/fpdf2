@@ -11,7 +11,8 @@ import pytest
 
 from . import parameters
 
-GENERATED_PDF_DIR = Path(__file__).resolve().parent / "generated_pdf"
+HERE = Path(__file__).resolve().parent
+GENERATED_PDF_DIR = HERE / "generated_pdf"
 
 
 def assert_style_match(lhs, rhs):
@@ -327,4 +328,24 @@ class TestSVGObject:
         # In the resulting document, a page break occurs before the image being rendered:
         assert_pdf_equal(
             pdf, GENERATED_PDF_DIR / "svg_rendering_image_over_page_break.pdf", tmp_path
+        )
+
+    def test_svg_text_ttf_font(self, tmp_path):
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.add_font(
+            family="serif", style="", fname=HERE.parent / "fonts" / "DejaVuSans.ttf"
+        )
+        pdf.image(
+            name=HERE / "svg_sources" / "ocanada.svg",
+            x=pdf.l_margin,
+            y=pdf.t_margin,
+            w=pdf.epw,
+            h=pdf.eph,
+            keep_aspect_ratio=True,
+        )
+        assert_pdf_equal(
+            pdf,
+            GENERATED_PDF_DIR / "ocanada.pdf",
+            tmp_path,
         )
