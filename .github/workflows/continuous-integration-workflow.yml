@@ -94,7 +94,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
@@ -121,7 +121,7 @@ jobs:
           pip install --upgrade . -r test/requirements.txt
       - name: Run tests ☑
         env:
-          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
+          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.10' && 'test-enabled' || '' }}
           CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
@@ -133,7 +133,7 @@ jobs:
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
         run: bash <(curl -s https://codecov.io/bash)
       - name: Run tests with the minimal versions of fpdf2 direct dependencies ☑
-        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.9' }}
+        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.10' }}
         run: |
           # Ensuring that those minimal versions remain compatible:
           sed -i '/install_requires/,/\n/s/>=/==/' setup.cfg

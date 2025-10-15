@@ -83,7 +83,7 @@ You can run a single test by executing: `pytest -k function_name`.
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
 It is self-documented in the `tox.ini` file in the repository.
 To run tests for all versions of Python, simply run `tox`.
-If you do not want to run tests for all versions of python, run `tox -e py39`
+If you do not want to run tests for all versions of python, run `tox -e py313`
 (or your version of Python).
 
 ### Why is a test failing?

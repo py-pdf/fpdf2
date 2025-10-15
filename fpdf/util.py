@@ -162,6 +162,7 @@ def get_parsed_unicode_range(unicode_range):
     Parse unicode_range parameter into a set of codepoints.
 
     Supports CSS-style formats:
+
     - String with comma-separated ranges: "U+1F600-1F64F, U+2600-26FF, U+2615"
     - List of strings: ["U+1F600-1F64F", "U+2600", "U+26FF"]
     - List of tuples: [(0x1F600, 0x1F64F), (0x2600, 0x26FF)]
