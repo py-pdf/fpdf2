@@ -22,6 +22,7 @@ from .annotations import PDFAnnotation
 from .drawing import PaintSoftMask, Transform
 from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
+from .fonts import CORE_FONTS, CoreFont, TTFFont
 from .font_type_3 import Type3Font
 from .image_datastructures import RasterImageInfo
 from .line_break import TotalPagesSubstitutionFragment
@@ -46,7 +47,7 @@ try:
 except ImportError:
     signer = None
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -638,6 +639,7 @@ class ResourceCatalog:
     IMG_REGEX = re.compile(r"/I(\d+) Do")
     PATTERN_FILL_REGEX = re.compile(r"/(P\d+)\s+scn")
     PATTERN_STROKE_REGEX = re.compile(r"/(P\d+)\s+SCN")
+    FONT_REGEX = re.compile(r"/F(\d+)\s+[-+]?\d+(?:\.\d+)?\s+Tf")
 
     def __init__(self):
         self.resources = defaultdict(dict)
@@ -645,6 +647,7 @@ class ResourceCatalog:
         self.graphics_styles = OrderedDict()
         self.soft_mask_xobjects = []
         self.last_reserved_object_id = 0
+        self.font_registry: Dict[str, Union[CoreFont, TTFFont]] = {}
 
     def add(self, resource_type: PDFResourceType, resource, page_number: Optional[int]):
         if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADING):
@@ -704,6 +707,9 @@ class ResourceCatalog:
         for m in self.PATTERN_STROKE_REGEX.finditer(rendered):
             found.add((PDFResourceType.PATTERN, m.group(1)))
 
+        for m in self.FONT_REGEX.finditer(rendered):
+            found.add((PDFResourceType.FONT, int(m.group(1))))
+
         return found
 
     def index_stream_resources(self, rendered: str, page_number: int) -> None:
@@ -743,6 +749,82 @@ class ResourceCatalog:
         if resource_type == PDFResourceType.SHADING:
             return "Sh"
         raise ValueError(f"No prefix for resource type {resource_type}")
+
+    def get_font_from_family(
+        self, font_family: str, font_style: str = ""
+    ) -> Union["CoreFont", "TTFFont"]:
+        """
+        Resolve a family+style to a concrete font instance from the font registry.
+        Behavior:
+          - Exact match (family.lower() + style.upper()) in registry: return it
+          - If `family` names a core font: add CoreFont to registry (if missing) and return it
+          - If `family` is an alias/generic: translate to a core font, add to registry (if missing), and return it
+          - Otherwise: raise KeyError
+
+        Notes:
+          - For Symbol/ZapfDingbats, style is forced to "" (they don't support B/I).
+        """
+        if not font_family:
+            raise KeyError("Empty font family")
+
+        style = "".join(sorted(font_style.upper()))
+
+        alias = {
+            # sans
+            "sans-serif": "helvetica",
+            "sans serif": "helvetica",
+            "arial": "helvetica",
+            "verdana": "helvetica",
+            "tahoma": "helvetica",
+            "segoe ui": "helvetica",
+            # serif
+            "serif": "times",
+            "times": "times",
+            "times new roman": "times",
+            "georgia": "times",
+            "cambria": "times",
+            "garamond": "times",
+            # mono
+            "monospace": "courier",
+            "courier": "courier",
+            "courier new": "courier",
+            "consolas": "courier",
+            "monaco": "courier",
+            # symbol
+            "symbol": "symbol",
+            "zapfdingbats": "zapfdingbats",
+            "zapf dingbats": "zapfdingbats",
+        }
+
+        for candidate in font_family.strip().strip("'\"").split(","):
+            family = candidate.strip().strip("'\"").lower()
+
+            # 1) Exact match
+            fontkey = f"{family}{style}"
+            if fontkey in self.font_registry:
+                return self.font_registry[fontkey]
+
+            # 2) Core-family direct hit?
+            if family in CORE_FONTS:
+                core_style = "" if family in {"symbol", "zapfdingbats"} else style
+                key = f"{family}{core_style}"
+                if key not in self.font_registry:
+                    i = len(self.font_registry) + 1
+                    self.font_registry[key] = CoreFont(i, key, core_style)
+                return self.font_registry[key]
+
+            # 3) Alias / generic mapping to core font
+            mapped = alias.get(family)
+            if mapped:
+                core_style = "" if mapped in {"symbol", "zapfdingbats"} else style
+                key = f"{mapped}{core_style}"
+                if key not in self.font_registry:
+                    i = len(self.font_registry) + 1
+                    self.font_registry[key] = CoreFont(i, key, core_style)
+                return self.font_registry[key]
+
+        # 4) Fail: do not return anything
+        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
 
 
 class OutputProducer:

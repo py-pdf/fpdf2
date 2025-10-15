@@ -21,6 +21,7 @@ from typing import Optional, Tuple, Union
 
 from fontTools import ttLib
 from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.varLib import instancer
 
 try:
     import uharfbuzz as hb
@@ -224,8 +225,8 @@ class CoreFont:
         "emphasis",
     )
 
-    def __init__(self, fpdf, fontkey, style):
-        self.i = len(fpdf.fonts) + 1
+    def __init__(self, i, fontkey, style):
+        self.i = i
         self.type = "core"
         self.name = CORE_FONTS[fontkey]
         self.sp = 250  # strikethrough horizontal position
@@ -274,7 +275,9 @@ class TTFFont:
         "unicode_range",
     )
 
-    def __init__(self, fpdf, font_file_path, fontkey, style, unicode_range=None):
+    def __init__(
+        self, fpdf, font_file_path, fontkey, style, unicode_range=None, axes_dict=None
+    ):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
@@ -287,6 +290,18 @@ class TTFFont:
         self.ttfont = ttLib.TTFont(
             self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
         )
+
+        if axes_dict is not None:
+            # Check if variable font.
+            if "fvar" not in self.ttfont:
+                raise AttributeError(f"{self.ttffile} is not a variable font")
+
+            instancer.instantiateVariableFont(
+                self.ttfont,
+                axes_dict,
+                inplace=True,
+                static=True,
+            )
 
         self.scale = 1000 / self.ttfont["head"].unitsPerEm
 
