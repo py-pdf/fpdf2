@@ -41,7 +41,7 @@ def test_get_img_info():
             for k, v in info.items():
                 if k == "smask":
                     short_info["smask"] = zlib.decompress(v)
-                if k in short_keys:
+                elif k in short_keys:
                     short_info[k] = v.decode("latin-1") if isinstance(v, bytes) else v
 
             if "smask" in expected[path.name]:
