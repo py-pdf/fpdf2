@@ -5,11 +5,12 @@ Tests the palette parameter in add_font() method.
 
 from pathlib import Path
 from fpdf import FPDF
+from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 
 
-def test_palette_parameter_acceptance():
+def test_palette_parameter_acceptance(tmp_path):
     """Test that the palette parameter is accepted and stored."""
     pdf = FPDF()
 
@@ -31,11 +32,10 @@ def test_palette_parameter_acceptance():
     pdf.set_font("Nabla-P2", size=24)
     pdf.cell(text="TEST")
 
-    # If we get here without errors, the test passes
-    assert True
+    assert_pdf_equal(pdf, HERE / "palette_parameter_acceptance.pdf", tmp_path)
 
 
-def test_palette_defaults():
+def test_palette_defaults(tmp_path):
     """Test that palette defaults work correctly."""
     pdf = FPDF()
 
@@ -53,26 +53,28 @@ def test_palette_defaults():
     pdf.set_font("Nabla-Explicit", size=24)
     pdf.cell(text="EXPLICIT")
 
-    # If we get here without errors, the test passes
-    assert True
+    assert_pdf_equal(pdf, HERE / "palette_defaults.pdf", tmp_path)
 
 
-def test_out_of_range_palette():
-    """Test that out-of-range palette indices are handled gracefully."""
+def test_out_of_range_palette(tmp_path, caplog):
+    """Test that out-of-range palette indices are handled gracefully with warning."""
     pdf = FPDF()
 
-    # This should not raise an error, should fall back to palette 0
+    # This should not raise an error, should fall back to palette 0 and log a warning
     pdf.add_font("Nabla-OOR", "", HERE / "Nabla-Regular-COLRv1-VariableFont_EDPT,EHLT.ttf", palette=999)
 
     pdf.add_page()
     pdf.set_font("Nabla-OOR", size=24)
     pdf.cell(text="OUT OF RANGE")
 
-    # If we get here without errors, the test passes
-    assert True
+    # Check that a warning was logged about the out-of-range palette
+    assert any("out of range" in record.message.lower() or "palette" in record.message.lower() 
+               for record in caplog.records if record.levelname == "WARNING")
+    
+    assert_pdf_equal(pdf, HERE / "out_of_range_palette.pdf", tmp_path)
 
 
-def test_multiple_palettes_same_font():
+def test_multiple_palettes_same_font(tmp_path):
     """Test using multiple palettes from the same font file."""
     pdf = FPDF()
     
@@ -98,5 +100,4 @@ def test_multiple_palettes_same_font():
     pdf.set_font("Nabla-P2", size=20)
     pdf.cell(text="HELLO", new_x="lmargin", new_y="next")
     
-    # If we get here without errors, the test passes
-    assert True
+    assert_pdf_equal(pdf, HERE / "multiple_palettes_same_font.pdf", tmp_path)
