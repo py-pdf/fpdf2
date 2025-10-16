@@ -37,6 +37,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * updated destination page numbers of internal links when the ToC renderer spans multiple pages - _cf._ PR [#1566](https://github.com/py-pdf/fpdf2/pull/1566)
 * GoTo action and add test for GoTo named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545)
 * TableOfContents class missing cell clearance on spacing calculation - _cf._ [issue #1582](https://github.com/py-pdf/fpdf2/issues/1582)
+* removed debug print statements from `PaintComposite.__init__` in `fpdf/drawing.py`
+* resolved various pylint warnings by removing useless suppressions and adding proper ones for legitimate cases
 ### Removed
 * support for Python 3.9, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in October 2025
 
