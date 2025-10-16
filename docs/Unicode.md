@@ -334,3 +334,56 @@ pdf.add_font(
 ```
 A `TypeError` will be raised if `variations` is not a dictionary, and
 an `AttributeError` will be raised if `variations` is used but the font is **not** a variable font.
+
+
+## Color Font Palette Selection ##
+
+_New in [:octicons-tag-24: 2.8.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Some color fonts (COLRv0, COLRv1, CBDT, SBIX, SVG) contain multiple predefined color palettes.
+The `palette` parameter in [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to select which palette to use when rendering the font.
+
+This is useful when you want to use different color schemes from the same font file without having to embed the font multiple times.
+
+Example:
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+
+# Add the same color font with different palettes using different family names
+pdf.add_font(
+    family="Nabla-Default",
+    fname="Nabla-Regular-COLRv1.ttf",
+    palette=0  # Use palette 0 (default)
+)
+
+pdf.add_font(
+    family="Nabla-Blue",
+    fname="Nabla-Regular-COLRv1.ttf",
+    palette=1  # Use palette 1
+)
+
+pdf.add_font(
+    family="Nabla-Grey",
+    fname="Nabla-Regular-COLRv1.ttf",
+    palette=2  # Use palette 2
+)
+
+# Use the fonts with different palettes
+pdf.set_font("Nabla-Default", size=24)
+pdf.cell(text="Text with Palette 0", new_x="lmargin", new_y="next")
+
+pdf.set_font("Nabla-Blue", size=24)
+pdf.cell(text="Text with Palette 1", new_x="lmargin", new_y="next")
+
+pdf.set_font("Nabla-Grey", size=24)
+pdf.cell(text="Text with Palette 2", new_x="lmargin", new_y="next")
+
+pdf.output("color_font_palettes.pdf")
+```
+
+If you specify a palette index that is out of range, `fpdf2` will log a warning and fall back to palette 0.
+You can check the number of available palettes in your color font's documentation or by inspecting the font file.
