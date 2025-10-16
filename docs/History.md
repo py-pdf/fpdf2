@@ -42,7 +42,7 @@ The notable exceptions are:
 * [Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template) elements now have a **transparent background** by default, instead of white
 
 Additionally, HTML rendering is not guaranteed to be identical regarding whitespace,
-especially since version 2.7.6 and the new set of classes introduced to manage text flow: <https://py-pdf.github.io/fpdf2/TextRegion.html>
+especially since version 2.7.6 and the new set of classes introduced to manage text flow: [Text Flow Regions](TextRegion.md)
 
 Some features are also **deprecated**.
 As of version 2.8.4 they **still work** but **generate a warning** when used:
