@@ -56,7 +56,7 @@ Python's standard "unicodedata" library doesn't offer this table.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f288a85b78cc6a467b680009d029600332cf9dc/fpdf/unicode_script.py#L1168-L1176" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe7af3e9d781bdcfaee5ec793753de975655e9a6/fpdf/unicode_script.py#L1168-L1176" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@lru_cache(maxsize=None)
 def get_unicode_script(char: str) -&gt; UnicodeScript:
@@ -77,13 +77,13 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <dl>
 <dt id="fpdf.unicode_script.UnicodeScript"><code class="flex name class">
 <span>class <span class="ident">UnicodeScript</span></span>
-<span>(</span><span>*args, **kwds)</span>
+<span>(</span><span>*values)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f288a85b78cc6a467b680009d029600332cf9dc/fpdf/unicode_script.py#L11-L182" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe7af3e9d781bdcfaee5ec793753de975655e9a6/fpdf/unicode_script.py#L11-L182" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class UnicodeScript(IntEnum):
     COMMON = 0
