@@ -23,7 +23,10 @@ TABLE_DATA_AS_DF = DataFrame(_TMP_DF.values[1:], columns=_TMP_DF.iloc[0])
 ################################### camelot ###################################
 ###############################################################################
 
-if sys.platform not in ("cygwin", "win32", "darwin"):
+if sys.platform not in ("cygwin", "win32", "darwin") and sys.version_info[:2] != (
+    3,
+    14,
+):
     # Disabling tests as GhostScript is not installed in GitHub Actions pipeline under Windows or macOS
 
     @pytest.mark.parametrize("flavor", ("lattice", "stream"))

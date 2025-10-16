@@ -1,7 +1,8 @@
 import logging
-from pathlib import Path
-
 import pytest
+import sys
+
+from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import DocumentCompliance
@@ -31,6 +32,10 @@ def test_pdfa1_forbids_embed(dc):
     )
 
 
+@pytest.mark.skipif(
+    sys.platform in ("cygwin", "win32") and sys.version_info[:2] == (3, 14),
+    reason="Skipped on Windows with Python 3.14 due to zlib compressed data differences",
+)
 @pytest.mark.parametrize(
     "dc",
     [DocumentCompliance.PDFA_2B, DocumentCompliance.PDFA_2U, DocumentCompliance.PDFA_4],

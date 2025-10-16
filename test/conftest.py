@@ -12,6 +12,7 @@ import logging
 import os
 import pathlib
 import shutil
+import sys
 import tracemalloc
 import warnings
 
@@ -118,6 +119,12 @@ def assert_pdf_equal(
         )
         actual_pdf.output(expected.open("wb"), linearize=linearize)
         return
+    # Force ignore_id_changes on Python 3.14
+    # CPython replaced zlib by zlib-ng on the Windows build
+    # and the compressed data is not 100% identical anymore.
+    # https://github.com/python/cpython/pull/131438
+    if sys.version_info[:2] == (3, 14) and QPDF_AVAILABLE:
+        ignore_id_changes = True
     if isinstance(expected, pathlib.Path):
         expected_pdf_path = expected
     else:
