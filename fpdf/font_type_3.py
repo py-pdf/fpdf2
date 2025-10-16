@@ -34,7 +34,6 @@ if TYPE_CHECKING:
     from .fonts import TTFFont
     from .fpdf import FPDF
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -227,8 +226,9 @@ class COLRFont(Type3Font):
             # Validate palette index
             if palette_index >= num_palettes:
                 LOGGER.warning(
-                    f"Palette index {palette_index} is out of range. "
-                    f"This font has {num_palettes} palettes. Using palette 0."
+                    "Palette index %s is out of range. This font has %s palettes. Using palette 0.",
+                    palette_index,
+                    num_palettes,
                 )
                 palette_index = 0
             palette = self.base_font.ttfont["CPAL"].palettes[palette_index]
