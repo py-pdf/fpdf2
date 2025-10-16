@@ -7,13 +7,18 @@ from test.conftest import assert_pdf_equal, EPOCH
 
 
 HERE = Path(__file__).resolve().parent
-EMBEDDED_FILE = HERE / "requirements.txt"
+
+
+def _make_text_file(tmp_path: Path) -> Path:
+    p = tmp_path / "helloworld.txt"
+    p.write_text("Hello world", encoding="utf-8")
+    return p
 
 
 def test_embed_file_self(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.embed_file(EMBEDDED_FILE, modification_date=False)
+    pdf.embed_file(_make_text_file(tmp_path), modification_date=False)
     assert_pdf_equal(pdf, HERE / "embed_file_self.pdf", tmp_path)
 
 
@@ -25,7 +30,7 @@ def test_embed_file_all_optionals(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.embed_file(
-        str(EMBEDDED_FILE),
+        str(_make_text_file(tmp_path)),
         desc="Source Python code",
         creation_date=EPOCH,
         modification_date=EPOCH,
@@ -45,7 +50,9 @@ def test_embed_file_from_bytes(tmp_path):
 def test_file_attachment_annotation(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.file_attachment_annotation(EMBEDDED_FILE, modification_date=False, x=50, y=50)
+    pdf.file_attachment_annotation(
+        _make_text_file(tmp_path), modification_date=False, x=50, y=50
+    )
     assert_pdf_equal(pdf, HERE / "file_attachment_annotation.pdf", tmp_path)
 
 
@@ -62,7 +69,8 @@ def test_embed_file_invalid_params():
         pdf.embed_file(basename="file.txt")
 
 
-def test_embed_file_duplicate():
+def test_embed_file_duplicate(tmp_path):
+    EMBEDDED_FILE = _make_text_file(tmp_path)
     pdf = FPDF()
     pdf.add_page()
     pdf.embed_file(EMBEDDED_FILE)
