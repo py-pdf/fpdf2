@@ -2310,7 +2310,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     style,
                     parsed_unicode_range,
                     variations,
-                    palette
+                    palette,
                 )
         else:
             # Handle static fonts.
@@ -2318,7 +2318,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if already_exists(fontkey):
                 return
             self.fonts[fontkey] = TTFFont(
-                self, font_file_path, fontkey, style, parsed_unicode_range, None, palette
+                self,
+                font_file_path,
+                fontkey,
+                style,
+                parsed_unicode_range,
+                None,
+                palette,
             )
 
     def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):

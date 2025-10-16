@@ -729,7 +729,9 @@ class SBIXColorFont(Type3Font):
         glyph.glyph_width = w
 
 
-def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0) -> Union[Type3Font, None]:
+def get_color_font_object(
+    fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0
+) -> Union[Type3Font, None]:
     if "CBDT" in base_font.ttfont:
         LOGGER.debug("Font %s is a CBLC+CBDT color font", base_font.name)
         return CBDTColorFont(fpdf, base_font)
