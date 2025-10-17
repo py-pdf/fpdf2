@@ -338,7 +338,7 @@ an `AttributeError` will be raised if `variations` is used but the font is **not
 
 ## Color Font Palette Selection ##
 
-_New in [:octicons-tag-24: 2.8.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Some color fonts (COLRv0, COLRv1, CBDT, SBIX, SVG) contain multiple predefined color palettes.
 The `palette` parameter in [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to select which palette to use when rendering the font.
