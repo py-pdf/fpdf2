@@ -336,6 +336,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Malay-dev"><img src="https://avatars.githubusercontent.com/u/91375797?v=4?s=100" width="100px;" alt="Malay Kumar"/><br /><sub><b>Malay Kumar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Malay-dev" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://rapteon.github.io"><img src="https://avatars.githubusercontent.com/u/42870679?v=4?s=100" width="100px;" alt="Rapteon"/><br /><sub><b>Rapteon</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Rapteon" title="Code">💻</a> <a href="#ideas-Rapteon" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://vinspace.live"><img src="https://avatars.githubusercontent.com/u/159937181?v=4?s=100" width="100px;" alt="Vin"/><br /><sub><b>Vin</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Vidushi2709" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://vedantmahajan.vercel.app/"><img src="https://avatars.githubusercontent.com/u/113882531?v=4?s=100" width="100px;" alt="Vedant Mahajan"/><br /><sub><b>Vedant Mahajan</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Vedant817" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
