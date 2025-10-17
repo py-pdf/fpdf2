@@ -273,10 +273,18 @@ class TTFFont:
         "biggest_size_pt",
         "color_font",
         "unicode_range",
+        "palette_index",
     )
 
     def __init__(
-        self, fpdf, font_file_path, fontkey, style, unicode_range=None, axes_dict=None
+        self,
+        fpdf,
+        font_file_path,
+        fontkey,
+        style,
+        unicode_range=None,
+        axes_dict=None,
+        palette_index=None,
     ):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
@@ -419,8 +427,11 @@ class TTFFont:
         self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self)
+        self.palette_index = palette_index if palette_index is not None else 0
         self.color_font = (
-            get_color_font_object(fpdf, self) if fpdf.render_color_fonts else None
+            get_color_font_object(fpdf, self, self.palette_index)
+            if fpdf.render_color_fonts
+            else None
         )
 
     # pylint: disable=no-member
@@ -465,6 +476,7 @@ class TTFFont:
         copy.biggest_size_pt = self.biggest_size_pt
         copy._hbfont = self._hbfont
         copy.color_font = self.color_font
+        copy.palette_index = self.palette_index
         return copy
 
     def close(self):

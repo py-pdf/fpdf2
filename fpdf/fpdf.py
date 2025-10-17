@@ -2202,6 +2202,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         uni="DEPRECATED",
         unicode_range=None,
         variations=None,
+        palette=None,
     ):
         """
         Imports a TrueType or OpenType font and makes it available
@@ -2219,6 +2220,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 Accepts CSS-style strings (e.g. "U+1F600-1F64F, U+2600"), integers, tuples, or lists.
                 Defaults to None, which embeds the full cmap.
             variations (dict[style, dict]): maps style to limits of axes for the variable font.
+            palette (int): optional palette index for color fonts (COLR/CPAL). Defaults to 0 (first palette).
+                Only applicable to fonts with CPAL table (color fonts).
             uni (bool): [**DEPRECATED since 2.5.1**] unused
         """
         if not fname:
@@ -2296,6 +2299,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         var_style,
                         parsed_unicode_range,
                         axes_dict,
+                        palette,
                     )
             else:
                 fontkey = f"{family.lower()}{style}"
@@ -2306,6 +2310,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     style,
                     parsed_unicode_range,
                     variations,
+                    palette,
                 )
         else:
             # Handle static fonts.
@@ -2313,7 +2318,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if already_exists(fontkey):
                 return
             self.fonts[fontkey] = TTFFont(
-                self, font_file_path, fontkey, style, parsed_unicode_range
+                self,
+                font_file_path,
+                fontkey,
+                style,
+                parsed_unicode_range,
+                None,
+                palette,
             )
 
     def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):
