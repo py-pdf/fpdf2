@@ -1580,6 +1580,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Vedant817",
+      "name": "Vedant Mahajan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/113882531?v=4",
+      "profile": "https://vedantmahajan.vercel.app/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
