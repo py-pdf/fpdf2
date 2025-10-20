@@ -220,6 +220,7 @@ class COLRFont(Type3Font):
         self.colrv0_glyphs = []
         self.colrv1_glyphs = []
         self.version = colr_table.version
+        self.colrv1_clip_boxes = {}
         if colr_table.version == 0:
             self.colrv0_glyphs = colr_table.ColorLayers
         else:
@@ -233,6 +234,21 @@ class COLRFont(Type3Font):
                 glyph.BaseGlyph: glyph
                 for glyph in colr_table.table.BaseGlyphList.BaseGlyphPaintRecord
             }
+            clip_list = getattr(colr_table.table, "ClipList", None)
+            if clip_list is not None:
+                for glyph_name, clip in getattr(clip_list, "clips", {}).items():
+                    # Only static ClipBoxes are supported at the moment.
+                    if hasattr(clip, "xMin") and hasattr(clip, "xMax"):
+                        self.colrv1_clip_boxes[glyph_name] = (
+                            clip.xMin,
+                            clip.yMin,
+                            clip.xMax,
+                            clip.yMax,
+                        )
+                    else:
+                        LOGGER.debug(
+                            "Unsupported COLRv1 clip format for glyph '%s'", glyph_name
+                        )
         self.palette = None
         if "CPAL" in self.base_font.ttfont:
             num_palettes = len(self.base_font.ttfont["CPAL"].palettes)
@@ -321,6 +337,9 @@ class COLRFont(Type3Font):
 
     def draw_glyph_colrv1(self, glyph_name):
         gc = GraphicsContext()
+        clip_path = self._build_clip_path(glyph_name)
+        if clip_path is not None:
+            gc.clipping_path = clip_path
         glyph = self.colrv1_glyphs[glyph_name]
         self.draw_colrv1_paint(
             paint=glyph.Paint,
@@ -538,6 +557,9 @@ class COLRFont(Type3Font):
             visited_glyphs.add(ref_name)
             try:
                 group = GraphicsContext()
+                clip_path = self._build_clip_path(ref_name)
+                if clip_path is not None:
+                    group.clipping_path = clip_path
                 self.draw_colrv1_paint(
                     paint=rec.Paint,
                     parent=group,
@@ -759,6 +781,16 @@ class COLRFont(Type3Font):
             return ("Blend", blend_mode)
 
         raise NotImplementedError(f"Unknown composite mode: {composite_mode}")
+
+    def _build_clip_path(self, glyph_name: str) -> Optional[ClippingPath]:
+        clip_box = self.colrv1_clip_boxes.get(glyph_name)
+        if clip_box is None:
+            return None
+        x_min, y_min, x_max, y_max = clip_box
+        clip_path = ClippingPath()
+        clip_path.move_to(x_min, y_min)
+        clip_path.rectangle(x_min, y_min, x_max - x_min, y_max - y_min)
+        return clip_path
 
 
 class CBDTColorFont(Type3Font):
