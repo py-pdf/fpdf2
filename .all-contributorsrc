@@ -1589,6 +1589,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "alhman",
+      "name": "alhman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23240822?v=4",
+      "profile": "https://www.jobsta.at",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
