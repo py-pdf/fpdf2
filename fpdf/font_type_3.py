@@ -16,7 +16,19 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
 from fontTools.ttLib.tables.C_O_L_R_ import table_C_O_L_R_
-from fontTools.ttLib.tables.otTables import CompositeMode, Paint, PaintFormat
+from collections import UserList
+
+# pylint: disable=no-name-in-module
+from fontTools.ttLib.tables.otTables import (
+    ClipBoxFormat,
+    CompositeMode,
+    Paint,
+    PaintFormat,
+    VarAffine2x3,
+    VarColorLine,
+    VarColorStop,
+)
+from fontTools.varLib.varStore import VarStoreInstancer
 
 from .drawing_primitives import DeviceRGB, DeviceGray, DeviceCMYK, Transform
 from .drawing import (
@@ -43,6 +55,23 @@ if TYPE_CHECKING:
     from .fpdf import FPDF
 
 LOGGER = logging.getLogger(__name__)
+
+PAINT_VAR_MAPPING = {
+    PaintFormat.PaintVarSolid: PaintFormat.PaintSolid,
+    PaintFormat.PaintVarLinearGradient: PaintFormat.PaintLinearGradient,
+    PaintFormat.PaintVarRadialGradient: PaintFormat.PaintRadialGradient,
+    PaintFormat.PaintVarSweepGradient: PaintFormat.PaintSweepGradient,
+    PaintFormat.PaintVarTransform: PaintFormat.PaintTransform,
+    PaintFormat.PaintVarTranslate: PaintFormat.PaintTranslate,
+    PaintFormat.PaintVarScale: PaintFormat.PaintScale,
+    PaintFormat.PaintVarScaleAroundCenter: PaintFormat.PaintScaleAroundCenter,
+    PaintFormat.PaintVarScaleUniform: PaintFormat.PaintScaleUniform,
+    PaintFormat.PaintVarScaleUniformAroundCenter: PaintFormat.PaintScaleUniformAroundCenter,
+    PaintFormat.PaintVarRotate: PaintFormat.PaintRotate,
+    PaintFormat.PaintVarRotateAroundCenter: PaintFormat.PaintRotateAroundCenter,
+    PaintFormat.PaintVarSkew: PaintFormat.PaintSkew,
+    PaintFormat.PaintVarSkewAroundCenter: PaintFormat.PaintSkewAroundCenter,
+}
 
 
 class Type3FontGlyph:
@@ -221,6 +250,8 @@ class COLRFont(Type3Font):
         self.colrv1_glyphs = []
         self.version = colr_table.version
         self.colrv1_clip_boxes = {}
+        self.colr_var_instancer = None
+        self.colr_var_index_map = None
         if colr_table.version == 0:
             self.colrv0_glyphs = colr_table.ColorLayers
         else:
@@ -230,25 +261,29 @@ class COLRFont(Type3Font):
                 )
             except (KeyError, AttributeError, TypeError, ValueError):
                 self.colrv0_glyphs = {}
+            colr_table_v1 = colr_table.table
+            var_store = getattr(colr_table_v1, "VarStore", None)
+            if var_store is not None:
+                axis_tags = []
+                if "fvar" in self.base_font.ttfont:
+                    axis_tags = [
+                        axis.axisTag for axis in self.base_font.ttfont["fvar"].axes
+                    ]
+                self.colr_var_instancer = VarStoreInstancer(var_store, axis_tags)
+                self.colr_var_instancer.setLocation({tag: 0.0 for tag in axis_tags})
+                var_index_map = getattr(colr_table_v1, "VarIndexMap", None)
+                if var_index_map is not None:
+                    self.colr_var_index_map = var_index_map.mapping
             self.colrv1_glyphs = {
                 glyph.BaseGlyph: glyph
-                for glyph in colr_table.table.BaseGlyphList.BaseGlyphPaintRecord
+                for glyph in colr_table_v1.BaseGlyphList.BaseGlyphPaintRecord
             }
-            clip_list = getattr(colr_table.table, "ClipList", None)
+            clip_list = getattr(colr_table_v1, "ClipList", None)
             if clip_list is not None:
                 for glyph_name, clip in getattr(clip_list, "clips", {}).items():
-                    # Only static ClipBoxes are supported at the moment.
-                    if hasattr(clip, "xMin") and hasattr(clip, "xMax"):
-                        self.colrv1_clip_boxes[glyph_name] = (
-                            clip.xMin,
-                            clip.yMin,
-                            clip.xMax,
-                            clip.yMax,
-                        )
-                    else:
-                        LOGGER.debug(
-                            "Unsupported COLRv1 clip format for glyph '%s'", glyph_name
-                        )
+                    resolved = self._resolve_clip_box(clip)
+                    if resolved is not None:
+                        self.colrv1_clip_boxes[glyph_name] = resolved
         self.palette = None
         if "CPAL" in self.base_font.ttfont:
             num_palettes = len(self.base_font.ttfont["CPAL"].palettes)
@@ -364,6 +399,7 @@ class COLRFont(Type3Font):
         This is an implementation of the COLR version 1 rendering algorithm:
         https://learn.microsoft.com/en-us/typography/opentype/spec/colr#colr-version-1-rendering-algorithm
         """
+        paint = self._unwrap_paint(paint)
         ctm: Transform = ctm or Transform.identity()
 
         if visited_glyphs is None:
@@ -782,6 +818,17 @@ class COLRFont(Type3Font):
 
         raise NotImplementedError(f"Unknown composite mode: {composite_mode}")
 
+    def _unwrap_paint(self, paint: Paint) -> Paint:
+        mapped_format = PAINT_VAR_MAPPING.get(paint.Format)
+        if mapped_format is None or self.colr_var_instancer is None:
+            return paint
+        return VarTableWrapper(
+            paint,
+            self.colr_var_instancer,
+            self.colr_var_index_map,
+            format_override=mapped_format,
+        )
+
     def _build_clip_path(self, glyph_name: str) -> Optional[ClippingPath]:
         clip_box = self.colrv1_clip_boxes.get(glyph_name)
         if clip_box is None:
@@ -791,6 +838,90 @@ class COLRFont(Type3Font):
         clip_path.move_to(x_min, y_min)
         clip_path.rectangle(x_min, y_min, x_max - x_min, y_max - y_min)
         return clip_path
+
+    def _resolve_clip_box(self, clip) -> Optional[tuple]:
+        if clip is None:
+            return None
+        if (
+            getattr(clip, "Format", None) == ClipBoxFormat.Variable
+            and self.colr_var_instancer is not None
+        ):
+            clip = VarTableWrapper(
+                clip,
+                self.colr_var_instancer,
+                self.colr_var_index_map,
+            )
+        if hasattr(clip, "xMin") and hasattr(clip, "xMax"):
+            return (clip.xMin, clip.yMin, clip.xMax, clip.yMax)
+        LOGGER.debug("Unsupported COLRv1 clip format for clip box")
+        return None
+
+
+class VarTableWrapper:
+    def __init__(
+        self,
+        wrapped,
+        instancer: VarStoreInstancer,
+        var_index_map=None,
+        format_override: Optional[int] = None,
+    ):
+        assert not isinstance(wrapped, VarTableWrapper)
+        self._wrapped = wrapped
+        self._instancer = instancer
+        self._var_index_map = var_index_map
+        self._format_override = format_override
+        self._var_attrs = {
+            attr: idx for idx, attr in enumerate(wrapped.getVariableAttrs())
+        }
+
+    def __repr__(self):
+        return f"VarTableWrapper({self._wrapped!r})"
+
+    def _get_var_index_for_attr(self, attr_name):
+        offset = self._var_attrs.get(attr_name)
+        if offset is None:
+            return None
+        base_index = self._wrapped.VarIndexBase
+        if base_index == 0xFFFFFFFF:
+            return base_index
+        var_idx = base_index + offset
+        if self._var_index_map is not None:
+            try:
+                var_idx = self._var_index_map[var_idx]
+            except IndexError:
+                pass
+        return var_idx
+
+    def _get_delta_for_attr(self, attr_name, var_idx):
+        delta = self._instancer[var_idx]
+        converter = self._wrapped.getConverterByName(attr_name)
+        if hasattr(converter, "fromInt"):
+            delta = converter.fromInt(delta)
+        return delta
+
+    def __getattr__(self, attr_name):
+        if attr_name == "Format" and self._format_override is not None:
+            return self._format_override
+
+        value = getattr(self._wrapped, attr_name)
+
+        var_idx = self._get_var_index_for_attr(attr_name)
+        if var_idx is not None:
+            if var_idx < 0xFFFFFFFF:
+                value += self._get_delta_for_attr(attr_name, var_idx)
+        elif isinstance(value, (VarAffine2x3, VarColorLine)):
+            value = VarTableWrapper(value, self._instancer, self._var_index_map)
+        elif (
+            isinstance(value, (list, UserList))
+            and value
+            and isinstance(value[0], VarColorStop)
+        ):
+            value = [
+                VarTableWrapper(item, self._instancer, self._var_index_map)
+                for item in value
+            ]
+
+        return value
 
 
 class CBDTColorFont(Type3Font):

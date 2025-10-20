@@ -1070,7 +1070,11 @@ class OutputProducer:
                     )
                 for glyph in font.color_font.glyphs:
                     glyph.obj_id = self._add_pdf_obj(
-                        PDFContentStream(contents=glyph.glyph, compress=False), "fonts"
+                        PDFContentStream(
+                            contents=glyph.glyph.encode("latin-1"),
+                            compress=self.fpdf.compress,
+                        ),
+                        "fonts",
                     )
                 bfChar = []
 
