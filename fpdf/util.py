@@ -157,6 +157,22 @@ def builtin_srgb2014_bytes() -> bytes:
     return (resources.files(pkg) / "sRGB2014.icc").read_bytes()
 
 
+def format_number(x: float, digits: int = 8) -> str:
+    # snap tiny values to zero to avoid "-0" and scientific notation
+    if abs(x) < 1e-12:
+        x = 0.0
+    s = f"{x:.{digits}f}"
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+    if s == "-0":
+        s = "0"
+    if s.startswith("."):
+        s = "0" + s
+    if s.startswith("-."):
+        s = s.replace("-.", "-0.", 1)
+    return s
+
+
 def get_parsed_unicode_range(unicode_range):
     """
     Parse unicode_range parameter into a set of codepoints.

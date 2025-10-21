@@ -42,6 +42,7 @@ from .enums import (
     BlendMode,
     ClippingPathIntersectionRule,
     CompositingOperation,
+    GradientSpreadMethod,
     GradientUnits,
     IntersectionRule,
     PathPaintRule,
@@ -50,7 +51,15 @@ from .enums import (
     StrokeCapStyle,
     StrokeJoinStyle,
 )
-from .pattern import Gradient, Pattern
+from .pattern import (
+    Gradient,
+    Pattern,
+    LinearGradient,
+    RadialGradient,
+    SweepGradient,
+    shape_linear_gradient,
+    shape_radial_gradient,
+)
 from .syntax import Name, Raw
 from .util import escape_parens
 
@@ -130,6 +139,7 @@ class GradientPaint:
         "gradient_transform",
         "apply_page_ctm",
         "skip_alpha",
+        "spread_method",
     )
 
     def __init__(
@@ -138,12 +148,18 @@ class GradientPaint:
         units: Union[GradientUnits, str] = GradientUnits.USER_SPACE_ON_USE,
         gradient_transform: Optional["Transform"] = None,
         apply_page_ctm: bool = True,
+        spread_method: Optional[Union[str, GradientSpreadMethod]] = None,
     ):
         self.gradient = gradient
         self.units = GradientUnits.coerce(units)
         self.gradient_transform = gradient_transform or Transform.identity()
         self.apply_page_ctm = apply_page_ctm
         self.skip_alpha = False
+        self.spread_method = (
+            GradientSpreadMethod.coerce(spread_method)
+            if spread_method is not None
+            else GradientSpreadMethod.PAD
+        )
 
     def _matrix_for(self, bbox: Optional["BoundingBox"]) -> "Transform":
         """Return the final /Matrix for this gradient, given an optional bbox."""
@@ -160,30 +176,42 @@ class GradientPaint:
         # userSpaceOnUse: only the provided gradient_transform
         return self.gradient_transform
 
-    def _register_pattern(self, resource_catalog, matrix: "Transform") -> str:
+    def _register_pattern(self, resource_catalog, gradient, matrix: "Transform") -> str:
         """Create a Pattern with the given matrix, register shading+pattern, return pattern name."""
-        resource_catalog.add(PDFResourceType.SHADING, self.gradient, None)
-        pattern = Pattern(self.gradient).set_matrix(matrix)
+        resource_catalog.add(PDFResourceType.SHADING, gradient, None)
+        pattern = Pattern(gradient).set_matrix(matrix)
         pattern.set_apply_page_ctm(self.apply_page_ctm)
         return resource_catalog.add(PDFResourceType.PATTERN, pattern, None)
 
-    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"] = None) -> str:
+    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"]) -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
+        gradient = self._get_gradient_with_spread_method(domain_bbox)
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_pattern(resource_catalog, matrix)
+        pattern_name = self._register_pattern(resource_catalog, gradient, matrix)
         return f"/Pattern cs /{pattern_name} scn"
 
-    def emit_stroke(
-        self, resource_catalog, bbox: Optional["BoundingBox"] = None
-    ) -> str:
+    def emit_stroke(self, resource_catalog, bbox: Optional["BoundingBox"]) -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
+        gradient = self._get_gradient_with_spread_method(domain_bbox)
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_pattern(resource_catalog, matrix)
+        pattern_name = self._register_pattern(resource_catalog, gradient, matrix)
         return f"/Pattern CS /{pattern_name} SCN"
 
     def has_alpha(self) -> bool:
         return self.gradient and self.gradient.has_alpha() and not self.skip_alpha
 
-    def _register_alpha_pattern(self, resource_catalog, matrix: "Transform") -> str:
-        alpha_shading = self.gradient.get_alpha_shading_object()
+    def _register_alpha_pattern(
+        self, resource_catalog, matrix: "Transform", bbox: "BoundingBox"
+    ) -> str:
+        alpha_shading = self.gradient.get_alpha_shading_object(bbox)
         if alpha_shading is None:
             raise RuntimeError("Alpha gradient requested but no alpha ramp found")
         # Register the shading and wrap it into a Pattern using the same matrix
@@ -192,19 +220,117 @@ class GradientPaint:
         alpha_pattern.set_apply_page_ctm(False)
         return resource_catalog.add(PDFResourceType.PATTERN, alpha_pattern, None)
 
+    def _get_gradient_with_spread_method(self, bbox: "BoundingBox") -> Gradient:
+        """
+        Now that the bbox is known, we can construct a new gradient stop line to apply
+        the spread method reflect or repeat.
+        """
+
+        if isinstance(self.gradient, SweepGradient):
+            self.gradient.spread_method = self.spread_method
+            return self.gradient.get_shading_object(bbox)
+
+        if self.spread_method == GradientSpreadMethod.PAD:
+            return self.gradient  # nothing to do
+
+        if isinstance(self.gradient, LinearGradient):
+            x1, y1, x2, y2 = self.gradient.coords
+            raw_stops = getattr(self.gradient, "raw_stops", None)
+            if raw_stops is None:
+                colors = self.gradient.colors
+                bounds = self.gradient.bounds
+                stops = (
+                    [(0.0, colors[0])]
+                    + list(zip(bounds, colors[1:-1]))
+                    + [(1.0, colors[-1])]
+                )
+            else:
+                stops = raw_stops
+
+            spread_bbox = bbox
+            if (
+                bbox is not None
+                and self.units == GradientUnits.USER_SPACE_ON_USE
+                and self.gradient_transform is not None
+            ):
+                try:
+                    spread_bbox = bbox.transformed(self.gradient_transform.inverse())
+                except ValueError:
+                    spread_bbox = bbox
+
+            return shape_linear_gradient(
+                x1,
+                y1,
+                x2,
+                y2,
+                stops,
+                spread_method=self.spread_method,
+                bbox=spread_bbox,
+            )
+
+        if isinstance(self.gradient, RadialGradient):
+            (fx, fy, fr, cx, cy, r) = self.gradient.coords
+            raw_stops = getattr(self.gradient, "raw_stops", None)
+            if raw_stops is None:
+                colors = self.gradient.colors
+                bounds = self.gradient.bounds
+                stops = (
+                    [(0.0, colors[0])]
+                    + list(zip(bounds, colors[1:-1]))
+                    + [(1.0, colors[-1])]
+                )
+            else:
+                stops = raw_stops
+            spread_bbox = bbox
+            if (
+                bbox is not None
+                and self.units == GradientUnits.USER_SPACE_ON_USE
+                and self.gradient_transform is not None
+            ):
+                try:
+                    spread_bbox = bbox.transformed(self.gradient_transform.inverse())
+                except ValueError:
+                    spread_bbox = bbox
+
+            return shape_radial_gradient(
+                cx,
+                cy,
+                r,
+                stops,
+                fx=fx,
+                fy=fy,
+                fr=fr,
+                spread_method=self.spread_method,
+                bbox=spread_bbox,
+            )
+
+        return self.gradient  # unknown gradient type, return as is
+
 
 class _AlphaGradientPaint(GradientPaint):
 
-    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"] = None) -> str:
+    def emit_fill(self, resource_catalog, bbox: "BoundingBox") -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_alpha_pattern(resource_catalog, matrix)
+        pattern_name = self._register_alpha_pattern(
+            resource_catalog, matrix, domain_bbox
+        )
         return f"/Pattern cs /{pattern_name} scn"
 
-    def emit_stroke(
-        self, resource_catalog, bbox: Optional["BoundingBox"] = None
-    ) -> str:
+    def emit_stroke(self, resource_catalog, bbox: "BoundingBox") -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_alpha_pattern(resource_catalog, matrix)
+        pattern_name = self._register_alpha_pattern(
+            resource_catalog, matrix, domain_bbox
+        )
         return f"/Pattern CS /{pattern_name} SCN"
 
     def has_alpha(self) -> bool:
@@ -309,6 +435,50 @@ class BoundingBox(NamedTuple):
     def to_tuple(self) -> tuple[float, float, float, float]:
         """Convert bounding box to a 4-tuple."""
         return (self.x0, self.y0, self.x1, self.y1)
+
+    def to_pdf_array(self) -> str:
+        """Convert bounding box to a PDF array string."""
+        return f"[{number_to_str(self.x0)} {number_to_str(self.y0)} {number_to_str(self.x1)} {number_to_str(self.y1)}]"
+
+    def corners(
+        self,
+    ) -> tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ]:
+        """Clockwise corners (x,y): (x0,y0),(x1,y0),(x1,y1),(x0,y1)."""
+        return (
+            (self.x0, self.y0),
+            (self.x1, self.y0),
+            (self.x1, self.y1),
+            (self.x0, self.y1),
+        )
+
+    def project_interval_on_axis(
+        self, x1: float, y1: float, x2: float, y2: float
+    ) -> tuple[float, float, float]:
+        """
+        Project bbox corners onto the axis from (x1,y1) to (x2,y2).
+        Returns (tmin, tmax, L) where:
+          - L is the axis length
+          - t are distances along the axis with t=0 at (x1,y1)
+        """
+        vx, vy = (x2 - x1), (y2 - y1)
+        L = math.hypot(vx, vy)
+        if L == 0.0:
+            return 0.0, 0.0, 0.0
+        ux, uy = vx / L, vy / L
+        ts = []
+        for X, Y in self.corners():
+            dx, dy = (X - x1), (Y - y1)
+            ts.append(dx * ux + dy * uy)  # dot with unit axis
+        return min(ts), max(ts), L
+
+    def max_distance_to_point(self, cx: float, cy: float) -> float:
+        """Max Euclidean distance from (cx,cy) to any bbox corner."""
+        return max(math.hypot(X - cx, Y - cy) for (X, Y) in self.corners())
 
     @property
     def width(self) -> float:
@@ -4216,11 +4386,15 @@ class GraphicsContext:
                 alpha_paint.apply_page_ctm = paint_obj.apply_page_ctm
                 mask_rect.style.fill_color = alpha_paint
                 mask_rect.style.stroke_color = None
-                mask_rect.transform = Transform.identity()
+                mask_rect.style.stroke_width = 0
                 mask_rect.style.paint_rule = PathPaintRule.FILL_NONZERO
+
+                mask_gc = GraphicsContext()
+                mask_gc.add_item(mask_rect, _copy=False)
+
                 # use luminosity so gray intensity drives coverage
                 sm = PaintSoftMask(
-                    mask_rect,
+                    mask_gc,
                     invert=False,
                     use_luminosity=True,
                     matrix=paint_obj.gradient_transform,
@@ -4610,7 +4784,11 @@ class PaintSoftMask:
         for n in _iter_nodes(node):
             if isinstance(n, PaintedPath):
                 for paint in (n.style.fill_color, n.style.stroke_color):
-                    if isinstance(paint, GradientPaint) and paint.has_alpha():
+                    if (
+                        isinstance(paint, GradientPaint)
+                        and paint.gradient
+                        and paint.gradient.has_alpha()
+                    ):
                         bb = n.bounding_box(Point(0, 0), expand_for_stroke=False)[0]
                         if bb.width <= 0 or bb.height <= 0:
                             continue
@@ -4624,16 +4802,20 @@ class PaintSoftMask:
                         )
                         rect.style.fill_color = alpha_paint
                         rect.style.stroke_color = None
+                        rect.style.stroke_width = 0
                         rect.style.paint_rule = PathPaintRule.FILL_NONZERO
-                        layers.append(rect)
+
+                        layer_gc = GraphicsContext()
+                        layer_gc.add_item(rect, _copy=False)
+                        # multiply multiple alpha contributors together
+                        layer_gc.style.blend_mode = BlendMode.MULTIPLY
+                        layers.append(layer_gc)
 
         if not layers:
             return None
 
         A = GraphicsContext()
         for layer in layers:
-            # If multiple alpha layers exist, multiply them together
-            layer.style.blend_mode = BlendMode.MULTIPLY
             A.add_item(layer)
         return A
 
@@ -4800,8 +4982,6 @@ class PaintComposite:
         if not isinstance(backdrop, (PaintedPath, GraphicsContext)) or not isinstance(
             source, (PaintedPath, GraphicsContext)
         ):
-            print(type(backdrop))
-            print(type(source))
             raise TypeError("PaintComposite requires two PaintedPath instances.")
         self.backdrop = backdrop
         self.source = source
@@ -4869,6 +5049,167 @@ class PaintComposite:
         self, resource_registry, style, last_item, initial_point, debug_stream, pfx
     ):
         debug_stream.write(f"{pfx}<PaintComposite mode={self.mode}>\n")
+        return self.render(
+            resource_registry, style, last_item, initial_point, debug_stream, pfx
+        )
+
+
+class _BlendGroup:
+    __slots__ = ("context", "base_style", "resources")
+
+    def __init__(self, context: GraphicsContext, base_style: GraphicsStyle):
+        self.context = context
+        self.base_style = deepcopy(base_style)
+        self.resources = set()
+
+    def render(self, resource_registry):
+        stream, _, _ = self.context.render(
+            resource_registry,
+            style=self.base_style,
+            last_item=None,
+            initial_point=Point(0, 0),
+        )
+        self.resources = resource_registry.scan_stream(stream)
+        return stream
+
+    def get_bounding_box(self) -> tuple[float, float, float, float]:
+        bbox, _ = self.context.bounding_box(
+            Point(0, 0), style=self.base_style, expand_for_stroke=True
+        )
+        if not bbox.is_valid():
+            return (0.0, 0.0, 0.0, 0.0)
+        return bbox.to_tuple()
+
+    def get_resource_dictionary(
+        self,
+        gfxstate_objs_per_name,
+        pattern_objs_per_name,
+        shading_objs_per_name,
+        font_objs_per_index,
+        img_objs_per_index,
+    ):
+        resources_registered: dict[PDFResourceType, set] = {}
+        for rtype, resource_id in self.resources:
+            resources_registered.setdefault(rtype, set()).add(resource_id)
+
+        parts: list[str] = []
+
+        ext_g_states = resources_registered.get(PDFResourceType.EXT_G_STATE)
+        if ext_g_states:
+            serialized = "".join(
+                f"{Name(name).serialize()} {gfxstate_objs_per_name[name].id} 0 R"
+                for name in sorted(ext_g_states)
+                if name in gfxstate_objs_per_name
+            )
+            if serialized:
+                parts.append(f"{Name('ExtGState').serialize()}<<{serialized}>>")
+
+        patterns = resources_registered.get(PDFResourceType.PATTERN)
+        if patterns:
+            serialized = "".join(
+                f"{Name(name).serialize()} {pattern_objs_per_name[name].id} 0 R"
+                for name in sorted(patterns)
+                if name in pattern_objs_per_name
+            )
+            if serialized:
+                parts.append(f"{Name('Pattern').serialize()}<<{serialized}>>")
+
+        shadings = resources_registered.get(PDFResourceType.SHADING)
+        if shadings:
+            serialized = "".join(
+                f"{Name(name).serialize()} {shading_objs_per_name[name].id} 0 R"
+                for name in sorted(shadings)
+                if name in shading_objs_per_name
+            )
+            if serialized:
+                parts.append(f"{Name('Shading').serialize()}<<{serialized}>>")
+
+        fonts = resources_registered.get(PDFResourceType.FONT)
+        if fonts:
+            serialized = "".join(
+                f"{Name(f'F{idx}').serialize()} {font_objs_per_index[idx].id} 0 R"
+                for idx in sorted(fonts)
+                if idx in font_objs_per_index
+            )
+            if serialized:
+                parts.append(f"{Name('Font').serialize()}<<{serialized}>>")
+
+        xobjects = resources_registered.get(PDFResourceType.X_OBJECT)
+        if xobjects:
+            serialized = "".join(
+                f"{Name(f'I{idx}').serialize()} {img_objs_per_index[idx].id} 0 R"
+                for idx in sorted(xobjects)
+                if idx in img_objs_per_index
+            )
+            if serialized:
+                parts.append(f"{Name('XObject').serialize()}<<{serialized}>>")
+
+        return "<<" + "".join(parts) + ">>" if parts else "<<>>"
+
+
+class PaintBlendComposite:
+    __slots__ = ("backdrop", "source", "blend_mode", "_form_index")
+
+    def __init__(
+        self,
+        backdrop: Union[GraphicsContext, PaintedPath],
+        source: Union[GraphicsContext, PaintedPath],
+        blend_mode: BlendMode,
+    ):
+        if not isinstance(backdrop, (PaintedPath, GraphicsContext)) or not isinstance(
+            source, (PaintedPath, GraphicsContext)
+        ):
+            raise TypeError(
+                "PaintBlendComposite requires PaintedPath or GraphicsContext operands."
+            )
+        self.backdrop = backdrop
+        self.source = source
+        self.blend_mode = blend_mode
+        self._form_index: Optional[int] = None
+
+    def _ensure_form_index(self, resource_registry, base_style: GraphicsStyle) -> int:
+        if self._form_index is not None:
+            return self._form_index
+
+        group = GraphicsContext()
+        backdrop_node = self.backdrop
+        source_node = self.source
+
+        if hasattr(source_node, "style"):
+            source_node.style.blend_mode = self.blend_mode
+            if source_node.style.allow_transparency is False:
+                source_node.style.allow_transparency = GraphicsStyle.INHERIT
+
+        group.add_item(backdrop_node, _copy=False)
+        group.add_item(source_node, _copy=False)
+
+        effective_style = (
+            base_style if isinstance(base_style, GraphicsStyle) else GraphicsStyle()
+        )
+        blend_group = _BlendGroup(group, effective_style)
+        self._form_index = resource_registry.register_blend_form(blend_group)
+        self.backdrop = None
+        self.source = None
+        return self._form_index
+
+    # pylint: disable=unused-argument
+    def render(
+        self,
+        resource_registry,
+        style,
+        last_item,
+        initial_point,
+        debug_stream=None,
+        pfx=None,
+    ):
+        form_index = self._ensure_form_index(resource_registry, style)
+        rendered = f"q /I{form_index} Do Q"
+        return rendered, last_item, initial_point
+
+    def render_debug(
+        self, resource_registry, style, last_item, initial_point, debug_stream, pfx
+    ):
+        debug_stream.write(f"{pfx}<PaintBlendComposite mode={self.blend_mode}>\n")
         return self.render(
             resource_registry, style, last_item, initial_point, debug_stream, pfx
         )
