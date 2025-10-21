@@ -1734,9 +1734,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # Calculate corner points
         point_1 = point_8 = (x, y)
-        point_2 = point_3 = (x + w, y)
-        point_4 = point_5 = (x + w, y + h)
-        point_6 = point_7 = (x, y + h)
+        point_2 = (x + w, y)
+        point_4 = (x + w, y + h)
+        point_6 = (x, y + h)
 
         if round_corners is True:
             round_corners = (
@@ -1754,15 +1754,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if Corner.TOP_LEFT in round_corners:
             point_2 = (x + w - r, y)
-            point_3 = (x + w, y + r)
+            _point_3 = (x + w, y + r)
 
         if Corner.BOTTOM_LEFT in round_corners:
             point_4 = (x + w, y + h - r)
-            point_5 = (x + w - r, y + h)
+            _point_5 = (x + w - r, y + h)
 
         if Corner.BOTTOM_RIGHT in round_corners:
             point_6 = (x + r, y + h)
-            point_7 = (x, y + h - r)
+            _point_7 = (x, y + h - r)
 
         # Build a single continuous path
         # Start at point_1
@@ -1851,7 +1851,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         p2 = evaluate(eta2)
         p2_prime = derivative_evaluate(eta2)
 
-        for i in range(n):
+        for _ in range(n):
             p1 = p2
             p1_prime = p2_prime
 
