@@ -338,6 +338,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="http://vinspace.live"><img src="https://avatars.githubusercontent.com/u/159937181?v=4?s=100" width="100px;" alt="Vin"/><br /><sub><b>Vin</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Vidushi2709" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://vedantmahajan.vercel.app/"><img src="https://avatars.githubusercontent.com/u/113882531?v=4?s=100" width="100px;" alt="Vedant Mahajan"/><br /><sub><b>Vedant Mahajan</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Vedant817" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.jobsta.at"><img src="https://avatars.githubusercontent.com/u/23240822?v=4?s=100" width="100px;" alt="alhman"/><br /><sub><b>alhman</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aalhman" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ai-chetan.github.io/chetan-chaudhari/"><img src="https://avatars.githubusercontent.com/u/175849359?v=4?s=100" width="100px;" alt="Chetan Chaudhari"/><br /><sub><b>Chetan Chaudhari</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Ai-Chetan" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
