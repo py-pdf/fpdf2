@@ -198,7 +198,7 @@ def normalize_stops(
 
 
 def merge_near_duplicates(
-    pairs: List[Tuple[float, Union[Color, str]]]
+    pairs: List[Tuple[float, Union[Color, str]]],
 ) -> List[Tuple[float, Union[Color, str]]]:
     out: List[Tuple[float, Union[Color, str]]] = []
     for u, col in pairs:
@@ -251,7 +251,7 @@ def sample_stops(stops01: List[Tuple[float, Color]], u: float) -> Tuple[float, .
 
 
 def extract_alpha_stops(
-    stops01: List[Tuple[float, Color]]
+    stops01: List[Tuple[float, Color]],
 ) -> List[Tuple[float, float]]:
     """Return [(u, a)] with a∈[0,1]; missing alpha => 1.0."""
     out: List[Tuple[float, float]] = []
