@@ -32,6 +32,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Utility function [`get_parsed_unicode_range()`](https://py-pdf.github.io/fpdf2/fpdf/util.html#fpdf.util.get_parsed_unicode_range) to convert various unicode range formats to codepoints - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
 * `variations` parameter added in `add_font()` to allow the use of variable fonts - _cf._ [issue #1544](https://github.com/py-pdf/fpdf2/issues/1544): [link to documentation](https://py-pdf.github.io/fpdf2/Unicode.html#variable-fonts)
 * Python 3.14 is now officially supported
+* tutorial page in Ukrainian
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * issue with Markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
@@ -44,7 +45,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `libtiff` detection logic to maintain compatibility with pillow v12.
 ### Removed
 * support for Python 3.9, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in October 2025
-* tutorial page in Ukrainian
 
 ## [2.8.4] - 2025-08-11
 ### Added
