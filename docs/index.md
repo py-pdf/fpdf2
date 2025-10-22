@@ -68,7 +68,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Türkçe](Tutorial-tr.md)
 * [Indonesian](Tutorial-id.md)
 * [Slovenščina](Tutorial-sl.md)
-
+* [Українська](Tutorial-ua.md)
 
 ## Installation ##
 
