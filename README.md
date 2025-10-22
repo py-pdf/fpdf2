@@ -340,6 +340,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://www.jobsta.at"><img src="https://avatars.githubusercontent.com/u/23240822?v=4?s=100" width="100px;" alt="alhman"/><br /><sub><b>alhman</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aalhman" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://ai-chetan.github.io/chetan-chaudhari/"><img src="https://avatars.githubusercontent.com/u/175849359?v=4?s=100" width="100px;" alt="Chetan Chaudhari"/><br /><sub><b>Chetan Chaudhari</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Ai-Chetan" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ystepanoff"><img src="https://avatars.githubusercontent.com/u/12848470?v=4?s=100" width="100px;" alt="Yegor Stepanov"/><br /><sub><b>Yegor Stepanov</b></sub></a><br /><a href="#translation-ystepanoff" title="Translation">🌍</a></td>
+    </tr>
   </tbody>
 </table>
 
