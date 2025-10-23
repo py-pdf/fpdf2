@@ -65,6 +65,7 @@ from .annotations import (
 from .bidi import BidiParagraph, auto_detect_base_direction
 from .deprecation import (
     WarnOnDeprecatedModuleAttributes,
+    deprecated_parameter,
     get_stack_level,
     support_deprecated_txt_arg,
 )
@@ -2272,12 +2273,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             ctxt.add_item(path)
 
+    @deprecated_parameter(["uni"])
     def add_font(
         self,
         family=None,
         style="",
         fname=None,
-        uni="DEPRECATED",
+        *,
         unicode_range=None,
         variations=None,
         palette=None,
@@ -2300,7 +2302,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             variations (dict[style, dict]): maps style to limits of axes for the variable font.
             palette (int): optional palette index for color fonts (COLR/CPAL). Defaults to 0 (first palette).
                 Only applicable to fonts with CPAL table (color fonts).
-            uni (bool): [**DEPRECATED since 2.5.1**] unused
         """
         if not fname:
             raise ValueError('"fname" parameter is required')
@@ -2311,16 +2312,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"
                 " this feature is deprecated since v2.5.1 and has been removed in v2.5.3."
-            )
-
-        if uni != "DEPRECATED":
-            warnings.warn(
-                (
-                    '"uni" parameter is deprecated since v2.5.1, '
-                    "unused and will soon be removed"
-                ),
-                DeprecationWarning,
-                stacklevel=get_stack_level(),
             )
 
         for parent in (".", FPDF_FONT_DIR):
@@ -2340,16 +2331,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if unicode_range is not None:
             parsed_unicode_range = get_parsed_unicode_range(unicode_range)
 
-        def already_exists(fontkey):
-            # Check if font already added or one of the core fonts
-            if fontkey in self.fonts or fontkey in CORE_FONTS:
-                warnings.warn(
-                    f"Core font or font already added '{fontkey}': doing nothing",
-                    stacklevel=get_stack_level(),
-                )
-                return True
-            return False
-
         style = "".join(sorted(style.upper()))
         if any(letter not in "BI" for letter in style):
             raise ValueError(
@@ -2367,43 +2348,33 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 for key, value in variations.items()
             ):
                 for var_style, axes_dict in variations.items():
-                    fontkey = f"{family.lower()}{var_style}"
-                    if already_exists(fontkey):
-                        continue
-                    self.fonts[fontkey] = TTFFont(
-                        self,
-                        font_file_path,
-                        fontkey,
-                        var_style,
-                        parsed_unicode_range,
-                        axes_dict,
-                        palette,
+                    self.add_font(
+                        family=family,
+                        style=var_style,
+                        fname=font_file_path,
+                        unicode_range=unicode_range,
+                        variations=axes_dict,
+                        palette=palette,
                     )
-            else:
-                fontkey = f"{family.lower()}{style}"
-                self.fonts[fontkey] = TTFFont(
-                    self,
-                    font_file_path,
-                    fontkey,
-                    style,
-                    parsed_unicode_range,
-                    variations,
-                    palette,
-                )
-        else:
-            # Handle static fonts.
-            fontkey = f"{family.lower()}{style}"
-            if already_exists(fontkey):
                 return
-            self.fonts[fontkey] = TTFFont(
-                self,
-                font_file_path,
-                fontkey,
-                style,
-                parsed_unicode_range,
-                None,
-                palette,
+        fontkey = f"{family.lower()}{style}"
+
+        if fontkey in self.fonts or fontkey in CORE_FONTS:
+            warnings.warn(
+                f"Core font or font already added '{fontkey}': doing nothing",
+                stacklevel=get_stack_level(),
             )
+            return
+
+        self.fonts[fontkey] = TTFFont(
+            self,
+            font_file_path,
+            fontkey,
+            style,
+            parsed_unicode_range,
+            variations,
+            palette,
+        )
 
     def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):
         """
@@ -6019,9 +5990,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         yield table
         table.render()
 
-    def output(
-        self, name="", dest="", linearize=False, output_producer_class=OutputProducer
-    ):
+    @deprecated_parameter(["dest"])
+    def output(self, name="", *, linearize=False, output_producer_class=OutputProducer):
         """
         Output PDF to some destination.
         The method first calls [close](close.md) if necessary to terminate the document.
@@ -6032,18 +6002,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             name (str): optional File object or file path where to save the PDF under
-            dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
             output_producer_class (class): use a custom class for PDF file generation
         """
-        if dest:
-            warnings.warn(
-                (
-                    '"dest" parameter is deprecated since v2.2.0, '
-                    "unused and will soon be removed"
-                ),
-                DeprecationWarning,
-                stacklevel=get_stack_level(),
-            )
         # Clear cache of cached functions to free up memory after output
         get_unicode_script.cache_clear()
         # Finish document if necessary:
