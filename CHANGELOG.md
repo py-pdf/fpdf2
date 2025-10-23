@@ -41,6 +41,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * GoTo action and add test for GoTo named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545)
 * TableOfContents class missing cell clearance on spacing calculation - _cf._ [issue #1582](https://github.com/py-pdf/fpdf2/issues/1582)
 * support for color font palette selection via a new `palette` parameter in `add_font()`, allowing users to choose alternate color palettes from color fonts (COLR/CPAL) and enabling different color schemes without embedding the font multiple times - cf. [issue #1578](https://github.com/py-pdf/fpdf2/issues/1578), [PR #1621](https://github.com/py-pdf/fpdf2/pull/1621)
+* rendering of round rectangles that caused visual distortions and incorrect filling - thanks to @Ai-Chetan - [PR #1634](https://github.com/py-pdf/fpdf2/pull/1634)
 ### Changed
 * `libtiff` detection logic to maintain compatibility with pillow v12.
 ### Removed
