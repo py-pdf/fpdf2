@@ -45,6 +45,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `libtiff` detection logic to maintain compatibility with pillow v12.
 ### Removed
 * support for Python 3.9, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in October 2025
+* the deprecated `uni` parameter from `fpdf.add_font()`
+* the deprecated `dest` parameter from `fpdf.output()`
 
 ## [2.8.4] - 2025-08-11
 ### Added
