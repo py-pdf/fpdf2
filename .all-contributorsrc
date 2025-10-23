@@ -1598,6 +1598,24 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "Ai-Chetan",
+      "name": "Chetan Chaudhari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/175849359?v=4",
+      "profile": "https://ai-chetan.github.io/chetan-chaudhari/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ystepanoff",
+      "name": "Yegor Stepanov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12848470?v=4",
+      "profile": "https://github.com/ystepanoff",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,

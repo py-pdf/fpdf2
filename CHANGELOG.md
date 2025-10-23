@@ -22,6 +22,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
 * Porter–Duff compositing operations and bounding box support to the drawing API - _cf._ [PR #1532](https://github.com/py-pdf/fpdf2/pull/1532)
 * support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539): [link to documentation](https://py-pdf.github.io/fpdf2/Drawing.html#compositing-operations)
+* support for gradient spread methods (PAD, reflect and repeat)
+* support for sweep (mesh) gradients
 * support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
 * support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1) - _cf._ [PR #1305](https://github.com/py-pdf/fpdf2/pull/1305)
 * support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar: [link to documentation](https://py-pdf.github.io/fpdf2/NamedDestinations.html)
@@ -30,6 +32,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Utility function [`get_parsed_unicode_range()`](https://py-pdf.github.io/fpdf2/fpdf/util.html#fpdf.util.get_parsed_unicode_range) to convert various unicode range formats to codepoints - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
 * `variations` parameter added in `add_font()` to allow the use of variable fonts - _cf._ [issue #1544](https://github.com/py-pdf/fpdf2/issues/1544): [link to documentation](https://py-pdf.github.io/fpdf2/Unicode.html#variable-fonts)
 * Python 3.14 is now officially supported
+* added Ukrainian translation of the tutorial: [українська](https://py-pdf.github.io/fpdf2/Tutorial-ua.html) - thanks to @ystepanoff
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * issue with Markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
@@ -39,6 +42,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * TableOfContents class missing cell clearance on spacing calculation - _cf._ [issue #1582](https://github.com/py-pdf/fpdf2/issues/1582)
 * support for color font palette selection via a new `palette` parameter in `add_font()`, allowing users to choose alternate color palettes from color fonts (COLR/CPAL) and enabling different color schemes without embedding the font multiple times - cf. [issue #1578](https://github.com/py-pdf/fpdf2/issues/1578), [PR #1621](https://github.com/py-pdf/fpdf2/pull/1621)
 * rendering of round rectangles that caused visual distortions and incorrect filling - thanks to @Ai-Chetan - [PR #1634](https://github.com/py-pdf/fpdf2/pull/1634)
+### Changed
+* `libtiff` detection logic to maintain compatibility with pillow v12.
 ### Removed
 * support for Python 3.9, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in October 2025
 

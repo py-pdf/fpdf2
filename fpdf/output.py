@@ -646,8 +646,10 @@ class ResourceCatalog:
         self.resources_per_page = defaultdict(set)
         self.graphics_styles = OrderedDict()
         self.soft_mask_xobjects = []
+        self.form_xobjects = []
         self.last_reserved_object_id = 0
         self.font_registry: Dict[str, Union[CoreFont, TTFFont]] = {}
+        self.next_xobject_index = 1
 
     def add(self, resource_type: PDFResourceType, resource, page_number: Optional[int]):
         if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADING):
@@ -661,6 +663,13 @@ class ResourceCatalog:
                     registry[resource]
                 )
             return registry[resource]
+
+        if (
+            resource_type == PDFResourceType.X_OBJECT
+            and isinstance(resource, int)
+            and resource >= self.next_xobject_index
+        ):
+            self.next_xobject_index = resource + 1
 
         self.resources_per_page[(page_number, resource_type)].add(resource)
         return None
@@ -690,6 +699,14 @@ class ResourceCatalog:
         xobject.id = self.last_reserved_object_id
         self.soft_mask_xobjects.append(xobject)
         return xobject.id
+
+    def register_blend_form(self, blend_group) -> int:
+        """Register a blend group Form XObject and return its resource index."""
+        xobject = blend_group_to_xobject(blend_group, self)
+        index = self.next_xobject_index
+        self.next_xobject_index += 1
+        self.form_xobjects.append((index, xobject))
+        return index
 
     def scan_stream(self, rendered: str) -> list[tuple[PDFResourceType, str]]:
         """Parse a content stream and return discovered resources"""
@@ -1053,7 +1070,11 @@ class OutputProducer:
                     )
                 for glyph in font.color_font.glyphs:
                     glyph.obj_id = self._add_pdf_obj(
-                        PDFContentStream(contents=glyph.glyph, compress=False), "fonts"
+                        PDFContentStream(
+                            contents=glyph.glyph.encode("latin-1"),
+                            compress=self.fpdf.compress,
+                        ),
+                        "fonts",
                     )
                 bfChar = []
 
@@ -1376,6 +1397,34 @@ class OutputProducer:
             )
             self.pdf_objs.append(soft_mask)
 
+    def _register_form_xobject_placeholders(self, img_objs_per_index):
+        """Ensure isolated blend forms are part of the XObject set before other resources rely on them."""
+        for index, xobject in self.fpdf._resource_catalog.form_xobjects:
+            if not getattr(xobject, "_registered", False):
+                self._add_pdf_obj(xobject, "images")
+                xobject._registered = True
+            img_objs_per_index.setdefault(index, xobject)
+
+    def _finalize_form_xobjects(
+        self,
+        img_objs_per_index,
+        gfxstate_objs_per_name,
+        pattern_objs_per_name,
+        shading_objs_per_name,
+        font_objs_per_index,
+    ):
+        """Populate resource dictionaries for isolated blend Form XObjects."""
+        for _, xobject in self.fpdf._resource_catalog.form_xobjects:
+            blend_group = getattr(xobject, "_blend_group", None)
+            if blend_group is not None:
+                xobject.resources = blend_group.get_resource_dictionary(
+                    gfxstate_objs_per_name,
+                    pattern_objs_per_name,
+                    shading_objs_per_name,
+                    font_objs_per_index,
+                    img_objs_per_index,
+                )
+
     def _add_shadings(self):
         shading_objs_per_name = OrderedDict()
         for shading, name in self.fpdf._resource_catalog.get_items(
@@ -1407,12 +1456,20 @@ class OutputProducer:
 
     def _insert_resources(self, page_objs):
         img_objs_per_index = self._add_images()
+        self._register_form_xobject_placeholders(img_objs_per_index)
         gfxstate_objs_per_name = self._add_gfxstates()
         pattern_objs_per_name = self._add_patterns()
         font_objs_per_index = self._add_fonts(
             img_objs_per_index, gfxstate_objs_per_name, pattern_objs_per_name
         )
         shading_objs_per_name = self._add_shadings()
+        self._finalize_form_xobjects(
+            img_objs_per_index,
+            gfxstate_objs_per_name,
+            pattern_objs_per_name,
+            shading_objs_per_name,
+            font_objs_per_index,
+        )
         self._add_soft_masks(gfxstate_objs_per_name, pattern_objs_per_name)
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
@@ -1937,4 +1994,18 @@ def soft_mask_path_to_xobject(path, resource_catalog: ResourceCatalog):
     xobject.subtype = Name("Form")
     xobject.b_box = PDFArray(path.get_bounding_box())
     xobject.group = "<</S /Transparency /CS /DeviceGray /I true /K false>>"
+    return xobject
+
+
+def blend_group_to_xobject(group, resource_catalog: ResourceCatalog):
+    """Convert a blend group into a Form XObject with an isolated transparency group."""
+    stream = group.render(resource_catalog)
+    xobject = PDFContentStream(contents=stream)
+    xobject._blend_group = group
+    xobject._registered = False
+    xobject.type = Name("XObject")
+    xobject.subtype = Name("Form")
+    bbox = group.get_bounding_box()
+    xobject.b_box = PDFArray(bbox)
+    xobject.group = "<</S /Transparency /CS /DeviceRGB /I true>>"
     return xobject

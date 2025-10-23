@@ -339,16 +339,23 @@ class PDFArray(list):
         elif all(isinstance(elem, (int, float)) for elem in self):
             serialized_elems = " ".join(str(elem) for elem in self)
         else:
-            serialized_elems = "\n".join(
-                (
-                    elem.ref
-                    if isinstance(elem, PDFObject)
-                    else elem.serialize(
-                        _security_handler=_security_handler, _obj_id=_obj_id
+            serialized_chunks = []
+            for elem in self:
+                if isinstance(elem, PDFObject):
+                    serialized_chunks.append(elem.ref)
+                elif hasattr(elem, "serialize"):
+                    serialized_chunks.append(
+                        elem.serialize(
+                            _security_handler=_security_handler, _obj_id=_obj_id
+                        )
                     )
-                )
-                for elem in self
-            )
+                elif isinstance(elem, bool):
+                    serialized_chunks.append(str(elem).lower())
+                elif isinstance(elem, (int, float)):
+                    serialized_chunks.append(str(elem))
+                else:
+                    serialized_chunks.append(str(elem))
+            serialized_elems = "\n".join(serialized_chunks)
         return f"[{serialized_elems}]"
 
 

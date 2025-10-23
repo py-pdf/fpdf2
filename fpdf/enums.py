@@ -1670,6 +1670,19 @@ class GradientUnits(CoerciveEnum):
     " Coordinates are in the current page space."
 
 
+class GradientSpreadMethod(CoerciveEnum):
+    "Specifies how to fill the area outside the gradient's start and end points."
+
+    PAD = "pad"
+    " The color at the start or end of the gradient is extended to fill the area before or after the gradient."
+
+    REFLECT = "reflect"
+    " The gradient pattern is repeated in reverse order (mirrored) to fill the area before or after the gradient."
+
+    REPEAT = "repeat"
+    " The gradient pattern is repeated in the same order to fill the area before or after the gradient."
+
+
 class DocumentCompliance(Enum):
     """
     Type of compliance enforcement that can be applied to a document.
