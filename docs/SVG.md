@@ -201,6 +201,44 @@ logging.getLogger("fpdf.svg").propagate = False
 - basic stroke styling
 - inline CSS styling via `style="..."` attributes
 - clipping paths
+- gradients: `<linearGradient>` and `<radialGradient>` elements with stops, opacity, transforms, and spread methods
+
+### Gradients
+
+SVG linear and radial gradients are fully supported and can be used as fill or stroke colors:
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.image("gradient_example.svg")
+pdf.output("doc-with-gradient.pdf")
+```
+
+**Supported gradient features:**
+
+- **Linear gradients** (`<linearGradient>`) with configurable start/end points
+- **Radial gradients** (`<radialGradient>`) with focal point support (`fx`, `fy`, `fr`)
+- **Gradient stops** with colors and opacity
+- **Spread methods**: `pad` (default), `reflect`, and `repeat`
+- **Gradient transforms**: rotation, scaling, translation, skewing
+- **Coordinate systems**: both `objectBoundingBox` (default) and `userSpaceOnUse`
+- Gradients can be applied to both **fill** and **stroke**
+
+Example SVG with gradient:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgb(255,255,0);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#grad1)" />
+</svg>
+```
 
 
 ## Currently Unsupported Notable SVG Features ##
@@ -219,7 +257,6 @@ There are some common SVG features that are currently **unsupported**, but that 
 - `<symbol>`
 - `<marker>`
 - `<pattern>`
-- gradients: `<linearGradient>` & `<radialGradient>`
 - embedded non-image content (including nested SVGs)
 - many standard attributes
 - CSS styling via `<style>` tags or external *.css files.
