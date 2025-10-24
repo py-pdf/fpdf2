@@ -2273,7 +2273,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             ctxt.add_item(path)
 
-    @deprecated_parameter(["uni"])
+    @deprecated_parameter([("uni", "2.5.1")])
     def add_font(
         self,
         family=None,
@@ -5990,7 +5990,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         yield table
         table.render()
 
-    @deprecated_parameter(["dest"])
+    @deprecated_parameter([("dest", "2.2.0")])
     def output(self, name="", *, linearize=False, output_producer_class=OutputProducer):
         """
         Output PDF to some destination.

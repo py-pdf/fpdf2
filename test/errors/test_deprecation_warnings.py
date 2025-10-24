@@ -31,19 +31,21 @@ def test_add_font_uni_deprecation():
             HERE.parent / "fonts" / "DejaVuSans.ttf",
             uni=True,
         )
+    assert len(record) == 1
     assert (
         str(record[0].message)
-        == 'Parameter(s) "uni" is deprecated and will be removed in a future release.'
+        == '"uni" parameter is deprecated since v2.5.1 and will be removed in a future release'
     )
 
 
-def test_output_dest_deprecation(tmp_path):
+def test_output_dest_deprecation():
     pdf = FPDF()
 
     with pytest.warns(DeprecationWarning) as record:
         # pylint: disable=unexpected-keyword-arg
-        pdf.output(name=tmp_path / "test.pdf", dest="S")
+        pdf.output(dest="S")
+    assert len(record) == 1
     assert (
         str(record[0].message)
-        == 'Parameter(s) "dest" is deprecated and will be removed in a future release.'
+        == '"dest" parameter is deprecated since v2.2.0 and will be removed in a future release'
     )

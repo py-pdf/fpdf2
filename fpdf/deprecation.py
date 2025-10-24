@@ -34,32 +34,26 @@ def support_deprecated_txt_arg(fn):
     return wrapper
 
 
-def deprecated_parameter(names):
-    """Decorator removing deprecated keyword arguments from a function call"""
+def deprecated_parameter(parameters):
+    """Decorator removing deprecated keyword arguments from a function call.
 
-    deprecated_names = tuple(names)
+    Args:
+        parameters (Iterable[tuple[str, str]]): sequence of `(parameter, version)` pairs.
+    """
+
+    deprecated_info = tuple(parameters)
     _sentinel = object()
 
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            removed = [
-                name
-                for name in deprecated_names
-                if kwargs.pop(name, _sentinel) is not _sentinel
-            ]
-            if removed:
-                plural = len(removed) > 1
-                names_text = ", ".join(f'"{name}"' for name in removed)
-                message = (
-                    f"Parameter(s) {names_text} "
-                    f'{"are" if plural else "is"} deprecated and will be removed in a future release.'
-                )
-                warnings.warn(
-                    message,
-                    DeprecationWarning,
-                    stacklevel=get_stack_level(),
-                )
+            for name, version in deprecated_info:
+                if kwargs.pop(name, _sentinel) is not _sentinel:
+                    warnings.warn(
+                        f'"{name}" parameter is deprecated since v{version} and will be removed in a future release',
+                        DeprecationWarning,
+                        stacklevel=get_stack_level(),
+                    )
             return fn(*args, **kwargs)
 
         return wrapper
