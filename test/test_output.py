@@ -16,7 +16,8 @@ def test_repeated_calls_to_output(tmp_path):
 def test_deprecation_warning(tmp_path):
     pdf = fpdf.FPDF()
     with pytest.warns(DeprecationWarning) as record:
-        pdf.output(tmp_path / "empty.pdf", "F")
+        # pylint: disable=unexpected-keyword-arg
+        pdf.output(name=tmp_path / "empty.pdf", dest="F")
     assert len(record) == 1
     assert_same_file(record[0].filename, __file__)
 

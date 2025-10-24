@@ -34,6 +34,33 @@ def support_deprecated_txt_arg(fn):
     return wrapper
 
 
+def deprecated_parameter(parameters):
+    """Decorator removing deprecated keyword arguments from a function call.
+
+    Args:
+        parameters (Iterable[tuple[str, str]]): sequence of `(parameter, version)` pairs.
+    """
+
+    deprecated_info = tuple(parameters)
+    _sentinel = object()
+
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            for name, version in deprecated_info:
+                if kwargs.pop(name, _sentinel) is not _sentinel:
+                    warnings.warn(
+                        f'"{name}" parameter is deprecated since v{version} and will be removed in a future release',
+                        DeprecationWarning,
+                        stacklevel=get_stack_level(),
+                    )
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class WarnOnDeprecatedModuleAttributes(ModuleType):
     def __call__(self):
         raise TypeError(
