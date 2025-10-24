@@ -48,6 +48,48 @@ in non-backward-compatible ways.</p>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="fpdf.deprecation.deprecated_parameter"><code class="name flex">
+<span>def <span class="ident">deprecated_parameter</span></span>(<span>parameters)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/78764a85d9ffb7830280e63a4664a50dd9a7015b/fpdf/deprecation.py#L37-L61" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def deprecated_parameter(parameters):
+    &#34;&#34;&#34;Decorator removing deprecated keyword arguments from a function call.
+
+    Args:
+        parameters (Iterable[tuple[str, str]]): sequence of `(parameter, version)` pairs.
+    &#34;&#34;&#34;
+
+    deprecated_info = tuple(parameters)
+    _sentinel = object()
+
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            for name, version in deprecated_info:
+                if kwargs.pop(name, _sentinel) is not _sentinel:
+                    warnings.warn(
+                        f&#39;&#34;{name}&#34; parameter is deprecated since v{version} and will be removed in a future release&#39;,
+                        DeprecationWarning,
+                        stacklevel=get_stack_level(),
+                    )
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator</code></pre>
+</details>
+<div class="desc"><p>Decorator removing deprecated keyword arguments from a function call.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>parameters</code></strong> :&ensp;<code>Iterable[tuple[str, str]]</code></dt>
+<dd>sequence of <code>(parameter, version)</code> pairs.</dd>
+</dl></div>
+</dd>
 <dt id="fpdf.deprecation.get_stack_level"><code class="name flex">
 <span>def <span class="ident">get_stack_level</span></span>(<span>) ‑> int</span>
 </code></dt>
@@ -55,7 +97,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/bf53829b5e9a875c09f287def6a71ac6a6ca7907/fpdf/deprecation.py#L74-L92" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/78764a85d9ffb7830280e63a4664a50dd9a7015b/fpdf/deprecation.py#L101-L119" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_stack_level() -&gt; int:
     &#34;&#34;&#34;Get the first place in the call stack that is not inside fpdf2&#34;&#34;&#34;
@@ -86,7 +128,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/bf53829b5e9a875c09f287def6a71ac6a6ca7907/fpdf/deprecation.py#L17-L34" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/78764a85d9ffb7830280e63a4664a50dd9a7015b/fpdf/deprecation.py#L17-L34" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def support_deprecated_txt_arg(fn):
     &#34;&#34;&#34;Decorator converting `txt=` arguments into `text=` arguments&#34;&#34;&#34;
@@ -122,7 +164,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/bf53829b5e9a875c09f287def6a71ac6a6ca7907/fpdf/deprecation.py#L37-L71" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/78764a85d9ffb7830280e63a4664a50dd9a7015b/fpdf/deprecation.py#L64-L98" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class WarnOnDeprecatedModuleAttributes(ModuleType):
     def __call__(self):
@@ -182,6 +224,7 @@ in non-backward-compatible ways.</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="fpdf.deprecation.deprecated_parameter" href="#fpdf.deprecation.deprecated_parameter">deprecated_parameter</a></code></li>
 <li><code><a title="fpdf.deprecation.get_stack_level" href="#fpdf.deprecation.get_stack_level">get_stack_level</a></code></li>
 <li><code><a title="fpdf.deprecation.support_deprecated_txt_arg" href="#fpdf.deprecation.support_deprecated_txt_arg">support_deprecated_txt_arg</a></code></li>
 </ul>
