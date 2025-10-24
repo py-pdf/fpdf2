@@ -26,6 +26,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539): [link to documentation](https://py-pdf.github.io/fpdf2/Drawing.html#compositing-operations)
 * support for gradient spread methods (PAD, reflect and repeat)
 * support for sweep (mesh) gradients
+* support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 * support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503) - thanks to @dabell-cc
 * support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1) - _cf._ [PR #1305](https://github.com/py-pdf/fpdf2/pull/1305)
 * support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar: [link to documentation](https://py-pdf.github.io/fpdf2/NamedDestinations.html)
