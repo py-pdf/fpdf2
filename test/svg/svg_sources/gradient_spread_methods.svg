@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
+  <defs>
+    <linearGradient id="gradPad" x1="25%" y1="0%" x2="75%" y2="0%" spreadMethod="pad">
+      <stop offset="0%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(0,0,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradReflect" x1="25%" y1="0%" x2="75%" y2="0%" spreadMethod="reflect">
+      <stop offset="0%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(0,0,255);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradRepeat" x1="25%" y1="0%" x2="75%" y2="0%" spreadMethod="repeat">
+      <stop offset="0%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(0,0,255);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="280" height="80" fill="url(#gradPad)" />
+  <text x="150" y="110" text-anchor="middle" font-size="14">Pad (default)</text>
+  
+  <rect x="10" y="130" width="280" height="80" fill="url(#gradReflect)" />
+  <text x="150" y="230" text-anchor="middle" font-size="14">Reflect</text>
+  
+  <rect x="10" y="250" width="280" height="80" fill="url(#gradRepeat)" />
+  <text x="150" y="350" text-anchor="middle" font-size="14">Repeat</text>
+</svg>
