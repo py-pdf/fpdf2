@@ -899,7 +899,7 @@ class SVGObject:
                 return resolve_length(value)
             except ValueError:
                 LOGGER.warning(
-                    f"Could not parse gradient coordinate '{value}', using 0"
+                    "Could not parse gradient coordinate '%s', using 0", value
                 )
                 return 0.0
 
@@ -939,7 +939,7 @@ class SVGObject:
                         stop_opacity = float(stop_opacity_str)
                     except ValueError:
                         LOGGER.warning(
-                            f"Invalid stop-opacity value: {stop_opacity_str}"
+                            "Invalid stop-opacity value: %s", stop_opacity_str
                         )
 
             if stop_color is None:
@@ -965,7 +965,7 @@ class SVGObject:
                 stops.append((offset, color_obj))
 
             except (ValueError, KeyError) as e:
-                LOGGER.warning(f"Could not parse stop color '{stop_color}': {e}")
+                LOGGER.warning("Could not parse stop color '%s': %s", stop_color, e)
                 continue
 
         return stops
@@ -1014,7 +1014,7 @@ class SVGObject:
             spread_method = GradientSpreadMethod.coerce(spread_str)
         except (ValueError, AttributeError):
             spread_method = GradientSpreadMethod.PAD
-            LOGGER.warning(f"Invalid spreadMethod '{spread_str}', using PAD")
+            LOGGER.warning("Invalid spreadMethod '%s', using PAD", spread_str)
 
         transform = None
         transform_str = grad_element.attrib.get("gradientTransform")
@@ -1022,12 +1022,12 @@ class SVGObject:
             try:
                 transform = convert_transforms(transform_str)
             except Exception as e:
-                LOGGER.warning(f"Could not parse gradientTransform: {e}")
+                LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = self._parse_gradient_stops(grad_element)
 
         if not stops:
-            LOGGER.warning(f"Linear gradient '{grad_id}' has no valid stops, skipping")
+            LOGGER.warning("Linear gradient '%s' has no valid stops, skipping", grad_id)
             return
 
         gradient = shape_linear_gradient(
@@ -1043,11 +1043,12 @@ class SVGObject:
             gradient=gradient,
             units=units,
             gradient_transform=transform or Transform.identity(),
+            spread_method=spread_method,
         )
 
         self.gradient_definitions[grad_id] = gradient_paint
 
-        LOGGER.debug(f"Parsed linear gradient '{grad_id}' with {len(stops)} stops")
+        LOGGER.debug("Parsed linear gradient '%s' with %d stops", grad_id, len(stops))
 
     @force_nodocument
     def _parse_radial_gradient(self, grad_element):
@@ -1076,7 +1077,7 @@ class SVGObject:
 
         if r_val <= 0:
             LOGGER.warning(
-                f"Radial gradient '{grad_id}' has invalid radius {r_val}, skipping"
+                "Radial gradient '%s' has invalid radius %s, skipping", grad_id, r_val
             )
             return
 
@@ -1099,11 +1100,11 @@ class SVGObject:
             try:
                 transform = convert_transforms(transform_str)
             except Exception as e:
-                LOGGER.warning(f"Could not parse gradientTransform: {e}")
+                LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = self._parse_gradient_stops(grad_element)
         if not stops:
-            LOGGER.warning(f"Radial gradient '{grad_id}' has no valid stops, skipping")
+            LOGGER.warning("Radial gradient '%s' has no valid stops, skipping", grad_id)
             return
 
         gradient = shape_radial_gradient(
@@ -1121,29 +1122,28 @@ class SVGObject:
             gradient=gradient,
             units=units,
             gradient_transform=transform or Transform.identity(),
+            spread_method=spread_method,
         )
 
         self.gradient_definitions[grad_id] = gradient_paint
-        LOGGER.debug(f"Parsed radial gradient '{grad_id}' with {len(stops)} stops")
+        LOGGER.debug("Parsed radial gradient '%s' with %d stops", grad_id, len(stops))
 
     @force_nodocument
     def _apply_gradient_paint(self, stylable, svg_element, style_map=None):
         """Apply gradient paint to fill or stroke if a url(#gradientId) reference is found."""
-        # Check fill for gradient reference
         fill_value = _get_attr_or_style(svg_element, "fill", style_map)
         if fill_value:
             grad_id = self._extract_gradient_id(fill_value)
             if grad_id and grad_id in self.gradient_definitions:
                 stylable.style.fill_color = self.gradient_definitions[grad_id]
-                LOGGER.debug(f"Applied gradient {grad_id} to fill")
+                LOGGER.debug("Applied gradient %s to fill", grad_id)
 
-        # Check stroke for gradient reference
         stroke_value = _get_attr_or_style(svg_element, "stroke", style_map)
         if stroke_value:
             grad_id = self._extract_gradient_id(stroke_value)
             if grad_id and grad_id in self.gradient_definitions:
                 stylable.style.stroke_color = self.gradient_definitions[grad_id]
-                LOGGER.debug(f"Applied gradient {grad_id} to stroke")
+                LOGGER.debug("Applied gradient %s to stroke", grad_id)
 
     @force_nodocument
     def extract_shape_info(self, root_tag):
