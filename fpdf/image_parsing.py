@@ -8,7 +8,7 @@ import logging
 
 try:
     from PIL import Image, TiffImagePlugin
-    from PIL import ImageCms
+    from PIL import ImageCms, features as PIL_features
 
     try:
         from PIL.Image import Resampling
@@ -19,6 +19,7 @@ try:
         RESAMPLE = Image.ANTIALIAS
 except ImportError:
     Image = None
+    PIL_features = None
 
 try:
     import numpy
@@ -252,7 +253,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         # Very simple logic for now:
         if img.format == "JPEG":
             image_filter = "DCTDecode"
-        elif img.mode == "1" and hasattr(Image.core, "libtiff_support_custom_tags"):
+        elif img.mode == "1" and PIL_features.check("libtiff"):
             # The 2nd condition prevents from running in a bug sometimes,
             # cf. test_transcode_monochrome_and_libtiff_support_custom_tags()
             image_filter = "CCITTFaxDecode"

@@ -66,6 +66,7 @@ from .annotations import (
 from .bidi import BidiParagraph, auto_detect_base_direction
 from .deprecation import (
     WarnOnDeprecatedModuleAttributes,
+    deprecated_parameter,
     get_stack_level,
     support_deprecated_txt_arg,
 )
@@ -303,7 +304,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         # array of PDFPage objects starting at index 1:
         self.pages: Dict[int, PDFPage] = {}
-        self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.links = {}  # array of Destination objects starting at index 1
         self.named_destinations = {}  # dictionary mapping names to Destination objects
@@ -418,6 +418,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
+
+    @property
+    def fonts(self):
+        return self._resource_catalog.font_registry
 
     def set_encryption(
         self,
@@ -1731,12 +1735,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if r >= min / 2:
             r /= min
 
+        # Calculate corner points
         point_1 = point_8 = (x, y)
-        point_2 = point_3 = (x + w, y)
-        point_4 = point_5 = (x + w, y + h)
-        point_6 = point_7 = (x, y + h)
-        coor_x = [x, x + w, x, x + w]
-        coor_y = [y, y, y + h, y + h]
+        point_2 = (x + w, y)
+        point_4 = (x + w, y + h)
+        point_6 = (x, y + h)
 
         if round_corners is True:
             round_corners = (
@@ -1747,47 +1750,126 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
         round_corners = tuple(Corner.coerce(rc) for rc in round_corners)
 
+        # Update points based on which corners are rounded
         if Corner.TOP_RIGHT in round_corners:
-            self.arc(coor_x[0], coor_y[0], 2 * r, 180, 270, style=style)
             point_1 = (x + r, y)
             point_8 = (x, y + r)
 
         if Corner.TOP_LEFT in round_corners:
-            self.arc(coor_x[1] - 2 * r, coor_y[1], 2 * r, 270, 0, style=style)
             point_2 = (x + w - r, y)
-            point_3 = (x + w, y + r)
+            _point_3 = (x + w, y + r)
 
         if Corner.BOTTOM_LEFT in round_corners:
-            self.arc(coor_x[3] - 2 * r, coor_y[3] - 2 * r, 2 * r, 0, 90, style=style)
             point_4 = (x + w, y + h - r)
-            point_5 = (x + w - r, y + h)
+            _point_5 = (x + w - r, y + h)
 
         if Corner.BOTTOM_RIGHT in round_corners:
-            self.arc(coor_x[2], coor_y[2] - 2 * r, 2 * r, 90, 180, style=style)
             point_6 = (x + r, y + h)
-            point_7 = (x, y + h - r)
+            _point_7 = (x, y + h - r)
 
-        if style.is_fill:
-            self.polyline(
-                [
-                    point_1,
-                    point_2,
-                    point_3,
-                    point_4,
-                    point_5,
-                    point_6,
-                    point_7,
-                    point_8,
-                    point_1,
-                ],
-                style="F",
+        # Build a single continuous path
+        # Start at point_1
+        self._out(f"{point_1[0] * self.k:.2f} {(self.h - point_1[1]) * self.k:.2f} m")
+
+        # Top edge: point_1 to point_2
+        self._out(f"{point_2[0] * self.k:.2f} {(self.h - point_2[1]) * self.k:.2f} l")
+
+        # Top-left corner arc
+        if Corner.TOP_LEFT in round_corners:
+            self._draw_arc_segment(x + w - 2 * r, y, 2 * r, 270, 0)
+
+        # Right edge: point_3 to point_4
+        self._out(f"{point_4[0] * self.k:.2f} {(self.h - point_4[1]) * self.k:.2f} l")
+
+        # Bottom-left corner arc
+        if Corner.BOTTOM_LEFT in round_corners:
+            self._draw_arc_segment(x + w - 2 * r, y + h - 2 * r, 2 * r, 0, 90)
+
+        # Bottom edge: point_5 to point_6
+        self._out(f"{point_6[0] * self.k:.2f} {(self.h - point_6[1]) * self.k:.2f} l")
+
+        # Bottom-right corner arc
+        if Corner.BOTTOM_RIGHT in round_corners:
+            self._draw_arc_segment(x, y + h - 2 * r, 2 * r, 90, 180)
+
+        # Left edge: point_7 to point_8
+        self._out(f"{point_8[0] * self.k:.2f} {(self.h - point_8[1]) * self.k:.2f} l")
+
+        # Top-right corner arc
+        if Corner.TOP_RIGHT in round_corners:
+            self._draw_arc_segment(x, y, 2 * r, 180, 270)
+
+        # Close path and apply style
+        self._out(f"h {style.operator}")
+
+    def _draw_arc_segment(self, x, y, a, start_angle, end_angle, b=None):
+        """
+        Draw an arc segment as part of an existing path (no move, no style application).
+        Used internally for building complex shapes like rounded rectangles.
+        """
+        if b is None:
+            b = a
+
+        a /= 2
+        b /= 2
+
+        cx = x + a
+        cy = y + b
+
+        def deg_to_rad(deg):
+            return deg * math.pi / 180
+
+        def angle_to_param(angle):
+            angle = deg_to_rad(angle % 360)
+            eta = math.atan2(math.sin(angle) / b, math.cos(angle) / a)
+            if eta < 0:
+                eta += 2 * math.pi
+            return eta
+
+        def evaluate(eta):
+            a_cos_eta = a * math.cos(eta)
+            b_sin_eta = b * math.sin(eta)
+            return [cx + a_cos_eta, cy + b_sin_eta]
+
+        def derivative_evaluate(eta):
+            a_sin_eta = a * math.sin(eta)
+            b_cos_eta = b * math.cos(eta)
+            return [-a_sin_eta, b_cos_eta]
+
+        start_eta = angle_to_param(start_angle)
+        end_eta = angle_to_param(end_angle)
+
+        if end_eta <= start_eta:
+            end_eta += 2 * math.pi
+
+        max_curves = 4
+        n = min(
+            max_curves, math.ceil(abs(end_eta - start_eta) / (2 * math.pi / max_curves))
+        )
+        d_eta = (end_eta - start_eta) / n
+
+        alpha = math.sin(d_eta) * (math.sqrt(4 + 3 * math.tan(d_eta / 2) ** 2) - 1) / 3
+
+        eta2 = start_eta
+        p2 = evaluate(eta2)
+        p2_prime = derivative_evaluate(eta2)
+
+        for _ in range(n):
+            p1 = p2
+            p1_prime = p2_prime
+
+            eta2 += d_eta
+            p2 = evaluate(eta2)
+            p2_prime = derivative_evaluate(eta2)
+
+            control_point_1 = [p1[0] + alpha * p1_prime[0], p1[1] + alpha * p1_prime[1]]
+            control_point_2 = [p2[0] - alpha * p2_prime[0], p2[1] - alpha * p2_prime[1]]
+
+            self._out(
+                f"{control_point_1[0] * self.k:.2f} {(self.h - control_point_1[1]) * self.k:.2f} "
+                f"{control_point_2[0] * self.k:.2f} {(self.h - control_point_2[1]) * self.k:.2f} "
+                f"{p2[0] * self.k:.2f} {(self.h - p2[1]) * self.k:.2f} c"
             )
-
-        if style.is_draw:
-            self.line(point_1[0], point_1[1], point_2[0], point_2[1])
-            self.line(point_3[0], point_3[1], point_4[0], point_4[1])
-            self.line(point_5[0], point_5[1], point_6[0], point_6[1])
-            self.line(point_7[0], point_7[1], point_8[0], point_8[1])
 
     @check_page
     def ellipse(self, x, y, w, h, style=None):
@@ -2193,8 +2275,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             ctxt.add_item(path)
 
+    @deprecated_parameter([("uni", "2.5.1")])
     def add_font(
-        self, family=None, style="", fname=None, uni="DEPRECATED", unicode_range=None
+        self,
+        family=None,
+        style="",
+        fname=None,
+        *,
+        unicode_range=None,
+        variations=None,
+        palette=None,
     ):
         """
         Imports a TrueType or OpenType font and makes it available
@@ -2211,7 +2301,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             unicode_range (Optional[Union[str, int, tuple, list]]): subset of Unicode codepoints to embed.
                 Accepts CSS-style strings (e.g. "U+1F600-1F64F, U+2600"), integers, tuples, or lists.
                 Defaults to None, which embeds the full cmap.
-            uni (bool): [**DEPRECATED since 2.5.1**] unused
+            variations (dict[style, dict]): maps style to limits of axes for the variable font.
+            palette (int): optional palette index for color fonts (COLR/CPAL). Defaults to 0 (first palette).
+                Only applicable to fonts with CPAL table (color fonts).
         """
         if not fname:
             raise ValueError('"fname" parameter is required')
@@ -2222,22 +2314,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"
                 " this feature is deprecated since v2.5.1 and has been removed in v2.5.3."
-            )
-
-        if uni != "DEPRECATED":
-            warnings.warn(
-                (
-                    '"uni" parameter is deprecated since v2.5.1, '
-                    "unused and will soon be removed"
-                ),
-                DeprecationWarning,
-                stacklevel=get_stack_level(),
-            )
-
-        style = "".join(sorted(style.upper()))
-        if any(letter not in "BI" for letter in style):
-            raise ValueError(
-                f"Unknown style provided (only B & I letters are allowed): {style}"
             )
 
         for parent in (".", FPDF_FONT_DIR):
@@ -2253,8 +2329,38 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if family is None:
             family = font_file_path.stem
 
+        parsed_unicode_range = None
+        if unicode_range is not None:
+            parsed_unicode_range = get_parsed_unicode_range(unicode_range)
+
+        style = "".join(sorted(style.upper()))
+        if any(letter not in "BI" for letter in style):
+            raise ValueError(
+                f"Unknown style provided (only B & I letters are allowed): {style}"
+            )
+
+        # Handle variable font.
+        if variations is not None:
+            if not isinstance(variations, dict):
+                raise TypeError("Variations, if specified, must be a dictionary")
+
+            # Check variations dictionary
+            if all(
+                key.upper() in ("", "B", "I", "BI") and isinstance(value, dict)
+                for key, value in variations.items()
+            ):
+                for var_style, axes_dict in variations.items():
+                    self.add_font(
+                        family=family,
+                        style=var_style,
+                        fname=font_file_path,
+                        unicode_range=unicode_range,
+                        variations=axes_dict,
+                        palette=palette,
+                    )
+                return
         fontkey = f"{family.lower()}{style}"
-        # Check if font already added or one of the core fonts
+
         if fontkey in self.fonts or fontkey in CORE_FONTS:
             warnings.warn(
                 f"Core font or font already added '{fontkey}': doing nothing",
@@ -2262,12 +2368,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
             return
 
-        parsed_unicode_range = None
-        if unicode_range is not None:
-            parsed_unicode_range = get_parsed_unicode_range(unicode_range)
-
         self.fonts[fontkey] = TTFFont(
-            self, font_file_path, fontkey, style, parsed_unicode_range
+            self,
+            font_file_path,
+            fontkey,
+            style,
+            parsed_unicode_range,
+            variations,
+            palette,
         )
 
     def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):
@@ -2359,7 +2467,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     f"Usage of base fonts is now allowed for documents compliant with {self._compliance.label}. Use add_font() to embed a font file"
                 )
 
-            self.fonts[fontkey] = CoreFont(self, fontkey, style)
+            self.fonts[fontkey] = CoreFont(len(self.fonts) + 1, fontkey, style)
 
         # Select it
         self.font_family = family
@@ -5884,9 +5992,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         yield table
         table.render()
 
-    def output(
-        self, name="", dest="", linearize=False, output_producer_class=OutputProducer
-    ):
+    @deprecated_parameter([("dest", "2.2.0")])
+    def output(self, name="", *, linearize=False, output_producer_class=OutputProducer):
         """
         Output PDF to some destination.
         The method first calls [close](close.md) if necessary to terminate the document.
@@ -5897,18 +6004,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             name (str): optional File object or file path where to save the PDF under
-            dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
             output_producer_class (class): use a custom class for PDF file generation
         """
-        if dest:
-            warnings.warn(
-                (
-                    '"dest" parameter is deprecated since v2.2.0, '
-                    "unused and will soon be removed"
-                ),
-                DeprecationWarning,
-                stacklevel=get_stack_level(),
-            )
         # Clear cache of cached functions to free up memory after output
         get_unicode_script.cache_clear()
         # Finish document if necessary:

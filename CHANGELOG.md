@@ -18,22 +18,35 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.5] - Not released yet
 ### Added
-* basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
+* documentation on how to combine `fpdf2` with **Bottle**, **CherryPy** & **Plone**: [link to documentation](https://py-pdf.github.io/fpdf2/UsageInWebAPI.html) - thanks to @tanmayc07 and @Vidushi2709
+* basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531) - thanks to @dlespiau
 * Porter–Duff compositing operations and bounding box support to the drawing API - _cf._ [PR #1532](https://github.com/py-pdf/fpdf2/pull/1532)
-* support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539)
-* support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
+* support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539): [link to documentation](https://py-pdf.github.io/fpdf2/Drawing.html#compositing-operations)
+* support for gradient spread methods (PAD, reflect and repeat)
+* support for sweep (mesh) gradients
+* support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503) - thanks to @dabell-cc
 * support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1) - _cf._ [PR #1305](https://github.com/py-pdf/fpdf2/pull/1305)
-* support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar
-* native support for PDF/A compliance verification - including PDF/A-1B, 2B, 2U, 3B, 3U, 4, 4E and 4F. Accessible PDF/A documents (PDF/A 1A, 2A and 3A) are not yet supported.
-* `unicode_range` parameter for `add_font()` to restrict which Unicode characters a font covers, similar to CSS `@font-face` unicode-range. This allows users to control font priority on a per-character-range basis and prevents unwanted glyphs from main fonts when better alternatives exist in fallback fonts. Supports multiple input formats: CSS-style strings (`"U+1F600-1F64F, U+2600-26FF"`), lists of strings, tuples, integers, and mixed formats - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
-* Utility function `get_parsed_unicode_range()` to convert various unicode*range formats to codepoints - \_cf.* [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586)
+* support for linking to named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545) - thanks to @RamBelitkar: [link to documentation](https://py-pdf.github.io/fpdf2/NamedDestinations.html)
+* native support for PDF/A compliance verification - including PDF/A-1B, 2B, 2U, 3B, 3U, 4, 4E and 4F: [link to documentation](https://py-pdf.github.io/fpdf2/pdfa.html). Accessible PDF/A documents (PDF/A 1A, 2A and 3A) are not yet supported.
+* `unicode_range` parameter for `add_font()` to restrict which unicode characters a font covers - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586) - thanks to @Malay-dev
+* `variations` parameter added in `add_font()` to allow the use of variable fonts - _cf._ [issue #1544](https://github.com/py-pdf/fpdf2/issues/1544): [link to documentation](https://py-pdf.github.io/fpdf2/Unicode.html#variable-fonts) - thanks to @Rapteon
+* support for color font palette selection via a new `palette` parameter in `add_font()`, allowing users to choose alternate color palettes from color fonts (COLR/CPAL) and enabling different color schemes without embedding the font multiple times - _cf._ [issue #1578](https://github.com/py-pdf/fpdf2/issues/1578) - thanks to @Vedant817
+* Python 3.14 is now officially supported
+* added Ukrainian translation of the tutorial: [українська](https://py-pdf.github.io/fpdf2/Tutorial-ua.html) - thanks to @ystepanoff
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
-* issue with markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
-* a bug with merging fragments of different types - _cf._ PR [#1567](https://github.com/py-pdf/fpdf2/pull/1567)
-* updated destination page numbers of internal links when the ToC renderer spans multiple pages - _cf._ PR [#1566](https://github.com/py-pdf/fpdf2/pull/1566)
-* GoTo action and add test for GoTo a named destination - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545)
+* issue with Markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
+* a bug with merging fragments of different types - _cf._ PR [#1567](https://github.com/py-pdf/fpdf2/pull/1567) - thanks to @woopzz
+* updated destination page numbers of internal links when the ToC renderer spans multiple pages - _cf._ PR [#1566](https://github.com/py-pdf/fpdf2/pull/1566) - thanks to @woopzz
+* GoTo action and add test for GoTo named destinations - _cf._ [issue #1545](https://github.com/py-pdf/fpdf2/issues/1545)
 * TableOfContents class missing cell clearance on spacing calculation - _cf._ [issue #1582](https://github.com/py-pdf/fpdf2/issues/1582)
+* rendering of round rectangles that caused visual distortions and incorrect filling - thanks to @Ai-Chetan - [PR #1634](https://github.com/py-pdf/fpdf2/pull/1634)
+### Changed
+* `libtiff` detection logic to maintain compatibility with pillow v12.
+### Removed
+* support for Python 3.9, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in October 2025
+* the deprecated `uni` parameter from `fpdf.add_font()`
+* the deprecated `dest` parameter from `fpdf.output()`
 
 ## [2.8.4] - 2025-08-11
 ### Added
@@ -186,6 +199,7 @@ Version 2.8.1 is exactly similar.
 * documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/mistletoe/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
 * support for `Table` cells that span multiple rows via the `rowspan` attribute, which can be combined with `colspan` - thanks to @mjasperse
 * `TableSpan.COL` and `TableSpan.ROW` enums that can be used as placeholder table entries to identify span extents - thanks to @mjasperse
+* support for SVG `<text>` elements
 ### Fixed
 * when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now handles linking directly to other pages - thanks to @mjasperse

@@ -11,6 +11,7 @@ extend-ignore-identifiers-re = [
     "FlateDecode",
     "VAI",
     "^TAI_THAM$",
+    "wdth", # variable font axis name.
 ]
 extend-ignore-re = [
     "loca subsetting",

@@ -42,6 +42,7 @@ from .enums import (
     BlendMode,
     ClippingPathIntersectionRule,
     CompositingOperation,
+    GradientSpreadMethod,
     GradientUnits,
     IntersectionRule,
     PathPaintRule,
@@ -50,7 +51,15 @@ from .enums import (
     StrokeCapStyle,
     StrokeJoinStyle,
 )
-from .pattern import Gradient, Pattern
+from .pattern import (
+    Gradient,
+    Pattern,
+    LinearGradient,
+    RadialGradient,
+    SweepGradient,
+    shape_linear_gradient,
+    shape_radial_gradient,
+)
 from .syntax import Name, Raw
 from .util import escape_parens
 
@@ -130,6 +139,7 @@ class GradientPaint:
         "gradient_transform",
         "apply_page_ctm",
         "skip_alpha",
+        "spread_method",
     )
 
     def __init__(
@@ -138,12 +148,18 @@ class GradientPaint:
         units: Union[GradientUnits, str] = GradientUnits.USER_SPACE_ON_USE,
         gradient_transform: Optional["Transform"] = None,
         apply_page_ctm: bool = True,
+        spread_method: Optional[Union[str, GradientSpreadMethod]] = None,
     ):
         self.gradient = gradient
         self.units = GradientUnits.coerce(units)
         self.gradient_transform = gradient_transform or Transform.identity()
         self.apply_page_ctm = apply_page_ctm
         self.skip_alpha = False
+        self.spread_method = (
+            GradientSpreadMethod.coerce(spread_method)
+            if spread_method is not None
+            else GradientSpreadMethod.PAD
+        )
 
     def _matrix_for(self, bbox: Optional["BoundingBox"]) -> "Transform":
         """Return the final /Matrix for this gradient, given an optional bbox."""
@@ -160,30 +176,42 @@ class GradientPaint:
         # userSpaceOnUse: only the provided gradient_transform
         return self.gradient_transform
 
-    def _register_pattern(self, resource_catalog, matrix: "Transform") -> str:
+    def _register_pattern(self, resource_catalog, gradient, matrix: "Transform") -> str:
         """Create a Pattern with the given matrix, register shading+pattern, return pattern name."""
-        resource_catalog.add(PDFResourceType.SHADING, self.gradient, None)
-        pattern = Pattern(self.gradient).set_matrix(matrix)
+        resource_catalog.add(PDFResourceType.SHADING, gradient, None)
+        pattern = Pattern(gradient).set_matrix(matrix)
         pattern.set_apply_page_ctm(self.apply_page_ctm)
         return resource_catalog.add(PDFResourceType.PATTERN, pattern, None)
 
-    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"] = None) -> str:
+    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"]) -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
+        gradient = self._get_gradient_with_spread_method(domain_bbox)
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_pattern(resource_catalog, matrix)
+        pattern_name = self._register_pattern(resource_catalog, gradient, matrix)
         return f"/Pattern cs /{pattern_name} scn"
 
-    def emit_stroke(
-        self, resource_catalog, bbox: Optional["BoundingBox"] = None
-    ) -> str:
+    def emit_stroke(self, resource_catalog, bbox: Optional["BoundingBox"]) -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
+        gradient = self._get_gradient_with_spread_method(domain_bbox)
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_pattern(resource_catalog, matrix)
+        pattern_name = self._register_pattern(resource_catalog, gradient, matrix)
         return f"/Pattern CS /{pattern_name} SCN"
 
     def has_alpha(self) -> bool:
         return self.gradient and self.gradient.has_alpha() and not self.skip_alpha
 
-    def _register_alpha_pattern(self, resource_catalog, matrix: "Transform") -> str:
-        alpha_shading = self.gradient.get_alpha_shading_object()
+    def _register_alpha_pattern(
+        self, resource_catalog, matrix: "Transform", bbox: "BoundingBox"
+    ) -> str:
+        alpha_shading = self.gradient.get_alpha_shading_object(bbox)
         if alpha_shading is None:
             raise RuntimeError("Alpha gradient requested but no alpha ramp found")
         # Register the shading and wrap it into a Pattern using the same matrix
@@ -192,19 +220,117 @@ class GradientPaint:
         alpha_pattern.set_apply_page_ctm(False)
         return resource_catalog.add(PDFResourceType.PATTERN, alpha_pattern, None)
 
+    def _get_gradient_with_spread_method(self, bbox: "BoundingBox") -> Gradient:
+        """
+        Now that the bbox is known, we can construct a new gradient stop line to apply
+        the spread method reflect or repeat.
+        """
+
+        if isinstance(self.gradient, SweepGradient):
+            self.gradient.spread_method = self.spread_method
+            return self.gradient.get_shading_object(bbox)
+
+        if self.spread_method == GradientSpreadMethod.PAD:
+            return self.gradient  # nothing to do
+
+        if isinstance(self.gradient, LinearGradient):
+            x1, y1, x2, y2 = self.gradient.coords
+            raw_stops = getattr(self.gradient, "raw_stops", None)
+            if raw_stops is None:
+                colors = self.gradient.colors
+                bounds = self.gradient.bounds
+                stops = (
+                    [(0.0, colors[0])]
+                    + list(zip(bounds, colors[1:-1]))
+                    + [(1.0, colors[-1])]
+                )
+            else:
+                stops = raw_stops
+
+            spread_bbox = bbox
+            if (
+                bbox is not None
+                and self.units == GradientUnits.USER_SPACE_ON_USE
+                and self.gradient_transform is not None
+            ):
+                try:
+                    spread_bbox = bbox.transformed(self.gradient_transform.inverse())
+                except ValueError:
+                    spread_bbox = bbox
+
+            return shape_linear_gradient(
+                x1,
+                y1,
+                x2,
+                y2,
+                stops,
+                spread_method=self.spread_method,
+                bbox=spread_bbox,
+            )
+
+        if isinstance(self.gradient, RadialGradient):
+            (fx, fy, fr, cx, cy, r) = self.gradient.coords
+            raw_stops = getattr(self.gradient, "raw_stops", None)
+            if raw_stops is None:
+                colors = self.gradient.colors
+                bounds = self.gradient.bounds
+                stops = (
+                    [(0.0, colors[0])]
+                    + list(zip(bounds, colors[1:-1]))
+                    + [(1.0, colors[-1])]
+                )
+            else:
+                stops = raw_stops
+            spread_bbox = bbox
+            if (
+                bbox is not None
+                and self.units == GradientUnits.USER_SPACE_ON_USE
+                and self.gradient_transform is not None
+            ):
+                try:
+                    spread_bbox = bbox.transformed(self.gradient_transform.inverse())
+                except ValueError:
+                    spread_bbox = bbox
+
+            return shape_radial_gradient(
+                cx,
+                cy,
+                r,
+                stops,
+                fx=fx,
+                fy=fy,
+                fr=fr,
+                spread_method=self.spread_method,
+                bbox=spread_bbox,
+            )
+
+        return self.gradient  # unknown gradient type, return as is
+
 
 class _AlphaGradientPaint(GradientPaint):
 
-    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"] = None) -> str:
+    def emit_fill(self, resource_catalog, bbox: "BoundingBox") -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_alpha_pattern(resource_catalog, matrix)
+        pattern_name = self._register_alpha_pattern(
+            resource_catalog, matrix, domain_bbox
+        )
         return f"/Pattern cs /{pattern_name} scn"
 
-    def emit_stroke(
-        self, resource_catalog, bbox: Optional["BoundingBox"] = None
-    ) -> str:
+    def emit_stroke(self, resource_catalog, bbox: "BoundingBox") -> str:
+        domain_bbox = (
+            BoundingBox(0.0, 0.0, 1.0, 1.0)
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX
+            else bbox
+        )
         matrix = self._matrix_for(bbox)
-        pattern_name = self._register_alpha_pattern(resource_catalog, matrix)
+        pattern_name = self._register_alpha_pattern(
+            resource_catalog, matrix, domain_bbox
+        )
         return f"/Pattern CS /{pattern_name} SCN"
 
     def has_alpha(self) -> bool:
@@ -309,6 +435,50 @@ class BoundingBox(NamedTuple):
     def to_tuple(self) -> tuple[float, float, float, float]:
         """Convert bounding box to a 4-tuple."""
         return (self.x0, self.y0, self.x1, self.y1)
+
+    def to_pdf_array(self) -> str:
+        """Convert bounding box to a PDF array string."""
+        return f"[{number_to_str(self.x0)} {number_to_str(self.y0)} {number_to_str(self.x1)} {number_to_str(self.y1)}]"
+
+    def corners(
+        self,
+    ) -> tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ]:
+        """Clockwise corners (x,y): (x0,y0),(x1,y0),(x1,y1),(x0,y1)."""
+        return (
+            (self.x0, self.y0),
+            (self.x1, self.y0),
+            (self.x1, self.y1),
+            (self.x0, self.y1),
+        )
+
+    def project_interval_on_axis(
+        self, x1: float, y1: float, x2: float, y2: float
+    ) -> tuple[float, float, float]:
+        """
+        Project bbox corners onto the axis from (x1,y1) to (x2,y2).
+        Returns (tmin, tmax, L) where:
+          - L is the axis length
+          - t are distances along the axis with t=0 at (x1,y1)
+        """
+        vx, vy = (x2 - x1), (y2 - y1)
+        L = math.hypot(vx, vy)
+        if L == 0.0:
+            return 0.0, 0.0, 0.0
+        ux, uy = vx / L, vy / L
+        ts = []
+        for X, Y in self.corners():
+            dx, dy = (X - x1), (Y - y1)
+            ts.append(dx * ux + dy * uy)  # dot with unit axis
+        return min(ts), max(ts), L
+
+    def max_distance_to_point(self, cx: float, cy: float) -> float:
+        """Max Euclidean distance from (cx,cy) to any bbox corner."""
+        return max(math.hypot(X - cx, Y - cy) for (X, Y) in self.corners())
 
     @property
     def width(self) -> float:
@@ -2601,6 +2771,270 @@ class Ellipse(NamedTuple):
         return " ".join(render_list), Move(self.center), initial_point
 
 
+class TextRun(NamedTuple):
+    text: str
+    family: str
+    emphasis: str
+    size: float
+    dx: float = 0.0
+    dy: float = 0.0
+    abs_x: Optional[float] = None
+    abs_y: Optional[float] = None
+    transform: Optional[Transform] = None
+    run_style: Optional[GraphicsStyle] = None
+
+
+class Text(NamedTuple):
+    """
+    SVG-like text renderable.
+    Stores the anchor position (x, y) and one or more TextRuns that include
+    relative positioning offsets. Accurate glyph positioning is resolved
+    during rendering once font metrics are available.
+    """
+
+    x: float
+    y: float
+    text_runs: tuple[TextRun, ...]
+    text_anchor: str = "start"  # "start" | "middle" | "end"
+
+    def _approximate_layout(self) -> tuple[list[tuple[float, float, float]], float]:
+        """
+        Produce an approximate layout for bounding-box estimation.
+
+        Returns:
+            A tuple of (per-run layout list, total width estimate).  Each layout
+            entry is (x, y, width) in user space.
+        """
+        positions: list[tuple[float, float, float]] = []
+        pen_x = self.x
+        pen_y = self.y
+        max_right = pen_x
+        min_left = pen_x
+
+        for run in self.text_runs:
+            if run.abs_x is not None:
+                pen_x = run.abs_x
+            if run.abs_y is not None:
+                pen_y = run.abs_y
+            pen_x += run.dx
+            pen_y += run.dy
+            # Fallback width estimation: ~0.5em per glyph
+            approx_width = 0.5 * run.size * max(0, len(run.text))
+            positions.append((pen_x, pen_y, approx_width))
+            min_left = min(min_left, pen_x)
+            max_right = max(max_right, pen_x + approx_width)
+            pen_x += approx_width
+
+        total_width = max_right - min_left
+        return positions, total_width
+
+    def _anchor_offset(self, positions: list[tuple[float, float, float]]) -> float:
+        """Compute anchor offset for the provided approximate layout."""
+        if not positions:
+            return 0.0
+
+        if any(run.abs_x is not None for run in self.text_runs):
+            return 0.0
+
+        min_x = min(pos[0] for pos in positions)
+        max_x = max(pos[0] + pos[2] for pos in positions)
+
+        if self.text_anchor == "middle":
+            return self.x - (min_x + max_x) / 2.0
+        if self.text_anchor == "end":
+            return self.x - max_x
+        return self.x - min_x
+
+    def bounding_box(self, start: Point) -> tuple["BoundingBox", Point]:
+        """
+        Compute a conservative bbox for the text.
+
+        Font metrics are not available at this stage so the layout relies on
+        approximate glyph widths proportional to the run font size. The actual
+        layout is computed precisely in render().
+        """
+        if not self.text_runs:
+            return BoundingBox.empty(), start
+
+        positions, _ = self._approximate_layout()
+        anchor_offset = self._anchor_offset(positions)
+
+        min_x = float("inf")
+        max_x = float("-inf")
+        min_y = float("inf")
+        max_y = float("-inf")
+
+        for (run_x, run_y, run_width), run in zip(positions, self.text_runs):
+            adj_x = run_x + anchor_offset
+            asc = 0.8 * run.size
+            desc = 0.2 * run.size
+            min_x = min(min_x, adj_x)
+            max_x = max(max_x, adj_x + run_width)
+            min_y = min(min_y, run_y - asc)
+            max_y = max(max_y, run_y + desc)
+
+        if min_x == float("inf"):
+            return BoundingBox.empty(), start
+
+        x0 = min_x
+        x1 = max_x
+        y0 = min_y
+        y1 = max_y
+
+        return BoundingBox.from_points([Point(x0, y0), Point(x1, y1)]), start
+
+    @force_nodocument
+    def render(
+        self,
+        resource_registry: "ResourceCatalog",
+        style: "GraphicsStyle",
+        last_item: "Renderable",
+        initial_point: Point,
+    ) -> tuple[str, "Renderable", Point]:
+        """
+        Emit PDF text operators:
+
+          BT
+            <font_id> <font_size> Tf
+            Tr <mode>               (map from GraphicsStyle->PathPaintRule)
+            1 0 0 1 x y Tm
+            (escaped-text) Tj
+          ET
+        """
+        if not self.text_runs:
+            return "", last_item, initial_point
+
+        # Precise layout resolution with actual font metrics
+        layout: list[tuple[float, float, float, TextRun, object]] = []
+        pen_x = self.x
+        pen_y = self.y
+        min_x = pen_x
+        max_x = pen_x
+
+        for run in self.text_runs:
+            font = resource_registry.get_font_from_family(run.family, run.emphasis)
+            _, width = font.get_text_width(run.text, run.size, None)
+            if run.abs_x is not None:
+                pen_x = run.abs_x
+            if run.abs_y is not None:
+                pen_y = run.abs_y
+            pen_x += run.dx
+            pen_y += run.dy
+            min_x = min(min_x, pen_x)
+            max_x = max(max_x, pen_x + width)
+            layout.append((pen_x, pen_y, width, run, font))
+            pen_x += width
+
+        has_absolute = any(run.abs_x is not None for _, _, _, run, _ in layout)
+
+        if layout and not has_absolute:
+            if self.text_anchor == "middle":
+                anchor_offset = self.x - (min_x + max_x) / 2.0
+            elif self.text_anchor == "end":
+                anchor_offset = self.x - max_x
+            else:
+                anchor_offset = self.x - min_x
+        else:
+            anchor_offset = 0.0
+
+        ops: list[str] = []
+        NO_EMIT_SET = (None, GraphicsStyle.INHERIT)
+
+        for run_x, run_y, width, run, font in layout:
+            effective_style = (
+                GraphicsStyle.merge(style, run.run_style)
+                if run.run_style is not None
+                else style
+            )
+
+            # Determine text rendering mode
+            rule = effective_style.resolve_paint_rule()
+            if rule in (PathPaintRule.FILL_NONZERO, PathPaintRule.FILL_EVENODD):
+                tr = 0
+            elif rule is PathPaintRule.STROKE:
+                tr = 1
+            elif rule in (
+                PathPaintRule.STROKE_FILL_NONZERO,
+                PathPaintRule.STROKE_FILL_EVENODD,
+            ):
+                tr = 2
+            else:  # PathPaintRule.DONT_PAINT:
+                tr = 3
+
+            run_ops: list[str] = []
+
+            if run.run_style is not None:
+                merged_style = effective_style
+                style_dict_name = resource_registry.register_graphics_style(
+                    merged_style
+                )
+
+                if style_dict_name is not None:
+                    run_ops.append(f"{render_pdf_primitive(style_dict_name)} gs")
+
+                fill_color = merged_style.fill_color
+                stroke_color = merged_style.stroke_color
+
+                run_bbox = BoundingBox.from_points(
+                    [
+                        Point(run_x + anchor_offset, run_y - 0.8 * run.size),
+                        Point(run_x + anchor_offset + width, run_y + 0.2 * run.size),
+                    ]
+                )
+
+                if fill_color not in NO_EMIT_SET:
+                    if isinstance(fill_color, GradientPaint):
+                        run_ops.append(
+                            fill_color.emit_fill(resource_registry, run_bbox)
+                        )
+                    else:
+                        run_ops.append(fill_color.serialize().lower())
+                if stroke_color not in NO_EMIT_SET:
+                    if isinstance(stroke_color, GradientPaint):
+                        run_ops.append(
+                            stroke_color.emit_stroke(resource_registry, run_bbox)
+                        )
+                    else:
+                        run_ops.append(stroke_color.serialize().upper())
+
+                dash_pattern = merged_style.stroke_dash_pattern
+                dash_phase = merged_style.stroke_dash_phase
+                if dash_pattern not in NO_EMIT_SET:
+                    run_ops.append(
+                        render_pdf_primitive(dash_pattern)
+                        + f" {number_to_str(dash_phase)} d"
+                    )
+
+            run_ops.extend(
+                [
+                    "BT",
+                    f"/F{font.i} {number_to_str(run.size)} Tf",
+                    f"{number_to_str(tr)} Tr",
+                    f"1 0 0 -1 {number_to_str(run_x + anchor_offset)} {number_to_str(run_y)} Tm",
+                    font.encode_text(run.text),
+                    "ET",
+                ]
+            )
+
+            if run.run_style is not None:
+                run_ops = ["q"] + run_ops + ["Q"]
+
+            ops.extend(run_ops)
+
+        return " ".join(ops), last_item, initial_point
+
+    # pylint: disable=unused-argument
+    @force_nodocument
+    def render_debug(
+        self, resource_registry, style, last_item, initial_point, debug_stream, pfx
+    ):
+        rendered, resolved, initial_point = self.render(
+            resource_registry, style, last_item, initial_point
+        )
+        debug_stream.write(str(self) + "\n")
+        return rendered, resolved, initial_point
+
+
 class ImplicitClose(NamedTuple):
     """
     A path close element that is conditionally rendered depending on the value of
@@ -2779,6 +3213,11 @@ if TYPE_CHECKING:
         org=Point(0, 0), size=Point(0, 0), corner_radii=Point(0, 0)
     )
     ellipse: Renderable = Ellipse(radii=Point(0, 0), center=Point(0, 0))
+    text: Renderable = Text(
+        x=0,
+        y=0,
+        text_runs=(TextRun(text="", family="Sans serif", emphasis="", size=12.0),),
+    )
     implicit_close: Renderable = ImplicitClose()
     close: Renderable = Close()
 
@@ -3512,6 +3951,48 @@ class PaintedPath:
         )
         return self
 
+    def text(
+        self,
+        x: float,
+        y: float,
+        content: str,
+        *,
+        font_family: str = "helvetica",
+        font_style: str = "",  # "", "B", "I", "BI"
+        font_size: float = 12.0,
+        text_anchor: str = "start",  # "start" | "middle" | "end"
+    ):
+        """
+        Append a text run at (x, y) to this path.
+
+        The baseline is at (x, y). `text_anchor` controls alignment about x.
+        `font_style` accepts "", "B", "I", or "BI". `font_family` can be a single
+        name or a comma-separated fallback list (handled at render-time).
+
+        Returns:
+            self (to allow chaining)
+        """
+        # Normalize style just in case e.g. "ib" -> "BI"
+        s = "".join(sorted(font_style.upper()))
+
+        self.add_path_element(
+            Text(
+                x=x,
+                y=y,
+                text_runs=(
+                    TextRun(
+                        text=content,
+                        family=font_family,
+                        emphasis=s,
+                        size=font_size,
+                    ),
+                ),
+                text_anchor=text_anchor,
+            ),
+            _copy=False,
+        )
+        return self
+
     def close(self):
         """
         Explicitly close the current (sub)path.
@@ -3905,11 +4386,15 @@ class GraphicsContext:
                 alpha_paint.apply_page_ctm = paint_obj.apply_page_ctm
                 mask_rect.style.fill_color = alpha_paint
                 mask_rect.style.stroke_color = None
-                mask_rect.transform = Transform.identity()
+                mask_rect.style.stroke_width = 0
                 mask_rect.style.paint_rule = PathPaintRule.FILL_NONZERO
+
+                mask_gc = GraphicsContext()
+                mask_gc.add_item(mask_rect, _copy=False)
+
                 # use luminosity so gray intensity drives coverage
                 sm = PaintSoftMask(
-                    mask_rect,
+                    mask_gc,
                     invert=False,
                     use_luminosity=True,
                     matrix=paint_obj.gradient_transform,
@@ -4299,7 +4784,11 @@ class PaintSoftMask:
         for n in _iter_nodes(node):
             if isinstance(n, PaintedPath):
                 for paint in (n.style.fill_color, n.style.stroke_color):
-                    if isinstance(paint, GradientPaint) and paint.has_alpha():
+                    if (
+                        isinstance(paint, GradientPaint)
+                        and paint.gradient
+                        and paint.gradient.has_alpha()
+                    ):
                         bb = n.bounding_box(Point(0, 0), expand_for_stroke=False)[0]
                         if bb.width <= 0 or bb.height <= 0:
                             continue
@@ -4313,16 +4802,20 @@ class PaintSoftMask:
                         )
                         rect.style.fill_color = alpha_paint
                         rect.style.stroke_color = None
+                        rect.style.stroke_width = 0
                         rect.style.paint_rule = PathPaintRule.FILL_NONZERO
-                        layers.append(rect)
+
+                        layer_gc = GraphicsContext()
+                        layer_gc.add_item(rect, _copy=False)
+                        # multiply multiple alpha contributors together
+                        layer_gc.style.blend_mode = BlendMode.MULTIPLY
+                        layers.append(layer_gc)
 
         if not layers:
             return None
 
         A = GraphicsContext()
         for layer in layers:
-            # If multiple alpha layers exist, multiply them together
-            layer.style.blend_mode = BlendMode.MULTIPLY
             A.add_item(layer)
         return A
 
@@ -4489,8 +4982,6 @@ class PaintComposite:
         if not isinstance(backdrop, (PaintedPath, GraphicsContext)) or not isinstance(
             source, (PaintedPath, GraphicsContext)
         ):
-            print(type(backdrop))
-            print(type(source))
             raise TypeError("PaintComposite requires two PaintedPath instances.")
         self.backdrop = backdrop
         self.source = source
@@ -4558,6 +5049,167 @@ class PaintComposite:
         self, resource_registry, style, last_item, initial_point, debug_stream, pfx
     ):
         debug_stream.write(f"{pfx}<PaintComposite mode={self.mode}>\n")
+        return self.render(
+            resource_registry, style, last_item, initial_point, debug_stream, pfx
+        )
+
+
+class _BlendGroup:
+    __slots__ = ("context", "base_style", "resources")
+
+    def __init__(self, context: GraphicsContext, base_style: GraphicsStyle):
+        self.context = context
+        self.base_style = deepcopy(base_style)
+        self.resources = set()
+
+    def render(self, resource_registry):
+        stream, _, _ = self.context.render(
+            resource_registry,
+            style=self.base_style,
+            last_item=None,
+            initial_point=Point(0, 0),
+        )
+        self.resources = resource_registry.scan_stream(stream)
+        return stream
+
+    def get_bounding_box(self) -> tuple[float, float, float, float]:
+        bbox, _ = self.context.bounding_box(
+            Point(0, 0), style=self.base_style, expand_for_stroke=True
+        )
+        if not bbox.is_valid():
+            return (0.0, 0.0, 0.0, 0.0)
+        return bbox.to_tuple()
+
+    def get_resource_dictionary(
+        self,
+        gfxstate_objs_per_name,
+        pattern_objs_per_name,
+        shading_objs_per_name,
+        font_objs_per_index,
+        img_objs_per_index,
+    ):
+        resources_registered: dict[PDFResourceType, set] = {}
+        for rtype, resource_id in self.resources:
+            resources_registered.setdefault(rtype, set()).add(resource_id)
+
+        parts: list[str] = []
+
+        ext_g_states = resources_registered.get(PDFResourceType.EXT_G_STATE)
+        if ext_g_states:
+            serialized = "".join(
+                f"{Name(name).serialize()} {gfxstate_objs_per_name[name].id} 0 R"
+                for name in sorted(ext_g_states)
+                if name in gfxstate_objs_per_name
+            )
+            if serialized:
+                parts.append(f"{Name('ExtGState').serialize()}<<{serialized}>>")
+
+        patterns = resources_registered.get(PDFResourceType.PATTERN)
+        if patterns:
+            serialized = "".join(
+                f"{Name(name).serialize()} {pattern_objs_per_name[name].id} 0 R"
+                for name in sorted(patterns)
+                if name in pattern_objs_per_name
+            )
+            if serialized:
+                parts.append(f"{Name('Pattern').serialize()}<<{serialized}>>")
+
+        shadings = resources_registered.get(PDFResourceType.SHADING)
+        if shadings:
+            serialized = "".join(
+                f"{Name(name).serialize()} {shading_objs_per_name[name].id} 0 R"
+                for name in sorted(shadings)
+                if name in shading_objs_per_name
+            )
+            if serialized:
+                parts.append(f"{Name('Shading').serialize()}<<{serialized}>>")
+
+        fonts = resources_registered.get(PDFResourceType.FONT)
+        if fonts:
+            serialized = "".join(
+                f"{Name(f'F{idx}').serialize()} {font_objs_per_index[idx].id} 0 R"
+                for idx in sorted(fonts)
+                if idx in font_objs_per_index
+            )
+            if serialized:
+                parts.append(f"{Name('Font').serialize()}<<{serialized}>>")
+
+        xobjects = resources_registered.get(PDFResourceType.X_OBJECT)
+        if xobjects:
+            serialized = "".join(
+                f"{Name(f'I{idx}').serialize()} {img_objs_per_index[idx].id} 0 R"
+                for idx in sorted(xobjects)
+                if idx in img_objs_per_index
+            )
+            if serialized:
+                parts.append(f"{Name('XObject').serialize()}<<{serialized}>>")
+
+        return "<<" + "".join(parts) + ">>" if parts else "<<>>"
+
+
+class PaintBlendComposite:
+    __slots__ = ("backdrop", "source", "blend_mode", "_form_index")
+
+    def __init__(
+        self,
+        backdrop: Union[GraphicsContext, PaintedPath],
+        source: Union[GraphicsContext, PaintedPath],
+        blend_mode: BlendMode,
+    ):
+        if not isinstance(backdrop, (PaintedPath, GraphicsContext)) or not isinstance(
+            source, (PaintedPath, GraphicsContext)
+        ):
+            raise TypeError(
+                "PaintBlendComposite requires PaintedPath or GraphicsContext operands."
+            )
+        self.backdrop = backdrop
+        self.source = source
+        self.blend_mode = blend_mode
+        self._form_index: Optional[int] = None
+
+    def _ensure_form_index(self, resource_registry, base_style: GraphicsStyle) -> int:
+        if self._form_index is not None:
+            return self._form_index
+
+        group = GraphicsContext()
+        backdrop_node = self.backdrop
+        source_node = self.source
+
+        if hasattr(source_node, "style"):
+            source_node.style.blend_mode = self.blend_mode
+            if source_node.style.allow_transparency is False:
+                source_node.style.allow_transparency = GraphicsStyle.INHERIT
+
+        group.add_item(backdrop_node, _copy=False)
+        group.add_item(source_node, _copy=False)
+
+        effective_style = (
+            base_style if isinstance(base_style, GraphicsStyle) else GraphicsStyle()
+        )
+        blend_group = _BlendGroup(group, effective_style)
+        self._form_index = resource_registry.register_blend_form(blend_group)
+        self.backdrop = None
+        self.source = None
+        return self._form_index
+
+    # pylint: disable=unused-argument
+    def render(
+        self,
+        resource_registry,
+        style,
+        last_item,
+        initial_point,
+        debug_stream=None,
+        pfx=None,
+    ):
+        form_index = self._ensure_form_index(resource_registry, style)
+        rendered = f"q /I{form_index} Do Q"
+        return rendered, last_item, initial_point
+
+    def render_debug(
+        self, resource_registry, style, last_item, initial_point, debug_stream, pfx
+    ):
+        debug_stream.write(f"{pfx}<PaintBlendComposite mode={self.blend_mode}>\n")
         return self.render(
             resource_registry, style, last_item, initial_point, debug_stream, pfx
         )

@@ -1568,7 +1568,53 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/42870679?v=4",
       "profile": "https://rapteon.github.io",
       "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "Vidushi2709",
+      "name": "Vin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/159937181?v=4",
+      "profile": "http://vinspace.live",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Vedant817",
+      "name": "Vedant Mahajan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/113882531?v=4",
+      "profile": "https://vedantmahajan.vercel.app/",
+      "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "alhman",
+      "name": "alhman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23240822?v=4",
+      "profile": "https://www.jobsta.at",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Ai-Chetan",
+      "name": "Chetan Chaudhari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/175849359?v=4",
+      "profile": "https://ai-chetan.github.io/chetan-chaudhari/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ystepanoff",
+      "name": "Yegor Stepanov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12848470?v=4",
+      "profile": "https://github.com/ystepanoff",
+      "contributions": [
+        "translation"
       ]
     }
   ],

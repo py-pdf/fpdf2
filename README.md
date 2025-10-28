@@ -14,8 +14,8 @@
 
 [![issues closed](https://img.shields.io/github/issues-closed/py-pdf/fpdf2)](https://github.com/py-pdf/fpdf2/issues)
 [![PRs closed](https://img.shields.io/github/issues-pr-closed/py-pdf/fpdf2)](https://github.com/py-pdf/fpdf2/pulls)
-[![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-[![first-timers-only Friendly](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](http://www.firsttimersonly.com/)
+[![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](https://makeapullrequest.com)
+[![first-timers-only Friendly](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://www.firsttimersonly.com/)
 → come look at our [good first issues](https://github.com/py-pdf/fpdf2/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 # fpdf2
@@ -59,7 +59,7 @@ pip install git+https://github.com/py-pdf/fpdf2.git@master
 
 ## Features
 
- * Python 3.9+ support
+ * Python 3.10+ support
  * [Unicode](https://py-pdf.github.io/fpdf2/Unicode.html) (UTF-8) TrueType font subset embedding
  * Internal / external [links](https://py-pdf.github.io/fpdf2/Links.html)
  * Embedding images, including transparency and alpha channel
@@ -334,7 +334,14 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://techtracer.pages.dev"><img src="https://avatars.githubusercontent.com/u/48885301?v=4?s=100" width="100px;" alt="Tanmay Chaudhari"/><br /><sub><b>Tanmay Chaudhari</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=tanmayc07" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Malay-dev"><img src="https://avatars.githubusercontent.com/u/91375797?v=4?s=100" width="100px;" alt="Malay Kumar"/><br /><sub><b>Malay Kumar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Malay-dev" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://rapteon.github.io"><img src="https://avatars.githubusercontent.com/u/42870679?v=4?s=100" width="100px;" alt="Rapteon"/><br /><sub><b>Rapteon</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Rapteon" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://rapteon.github.io"><img src="https://avatars.githubusercontent.com/u/42870679?v=4?s=100" width="100px;" alt="Rapteon"/><br /><sub><b>Rapteon</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Rapteon" title="Code">💻</a> <a href="#ideas-Rapteon" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://vinspace.live"><img src="https://avatars.githubusercontent.com/u/159937181?v=4?s=100" width="100px;" alt="Vin"/><br /><sub><b>Vin</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Vidushi2709" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://vedantmahajan.vercel.app/"><img src="https://avatars.githubusercontent.com/u/113882531?v=4?s=100" width="100px;" alt="Vedant Mahajan"/><br /><sub><b>Vedant Mahajan</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Vedant817" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.jobsta.at"><img src="https://avatars.githubusercontent.com/u/23240822?v=4?s=100" width="100px;" alt="alhman"/><br /><sub><b>alhman</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aalhman" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ai-chetan.github.io/chetan-chaudhari/"><img src="https://avatars.githubusercontent.com/u/175849359?v=4?s=100" width="100px;" alt="Chetan Chaudhari"/><br /><sub><b>Chetan Chaudhari</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Ai-Chetan" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ystepanoff"><img src="https://avatars.githubusercontent.com/u/12848470?v=4?s=100" width="100px;" alt="Yegor Stepanov"/><br /><sub><b>Yegor Stepanov</b></sub></a><br /><a href="#translation-ystepanoff" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>

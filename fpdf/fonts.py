@@ -21,6 +21,7 @@ from typing import Optional, Tuple, Union
 
 from fontTools import ttLib
 from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.varLib import instancer
 
 try:
     import uharfbuzz as hb
@@ -224,8 +225,8 @@ class CoreFont:
         "emphasis",
     )
 
-    def __init__(self, fpdf, fontkey, style):
-        self.i = len(fpdf.fonts) + 1
+    def __init__(self, i, fontkey, style):
+        self.i = i
         self.type = "core"
         self.name = CORE_FONTS[fontkey]
         self.sp = 250  # strikethrough horizontal position
@@ -272,9 +273,19 @@ class TTFFont:
         "biggest_size_pt",
         "color_font",
         "unicode_range",
+        "palette_index",
     )
 
-    def __init__(self, fpdf, font_file_path, fontkey, style, unicode_range=None):
+    def __init__(
+        self,
+        fpdf,
+        font_file_path,
+        fontkey,
+        style,
+        unicode_range=None,
+        axes_dict=None,
+        palette_index=None,
+    ):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
@@ -287,6 +298,18 @@ class TTFFont:
         self.ttfont = ttLib.TTFont(
             self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
         )
+
+        if axes_dict is not None:
+            # Check if variable font.
+            if "fvar" not in self.ttfont:
+                raise AttributeError(f"{self.ttffile} is not a variable font")
+
+            instancer.instantiateVariableFont(
+                self.ttfont,
+                axes_dict,
+                inplace=True,
+                static=True,
+            )
 
         self.scale = 1000 / self.ttfont["head"].unitsPerEm
 
@@ -404,8 +427,11 @@ class TTFFont:
         self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self)
+        self.palette_index = palette_index if palette_index is not None else 0
         self.color_font = (
-            get_color_font_object(fpdf, self) if fpdf.render_color_fonts else None
+            get_color_font_object(fpdf, self, self.palette_index)
+            if fpdf.render_color_fonts
+            else None
         )
 
     # pylint: disable=no-member
@@ -450,6 +476,7 @@ class TTFFont:
         copy.biggest_size_pt = self.biggest_size_pt
         copy._hbfont = self._hbfont
         copy.color_font = self.color_font
+        copy.palette_index = self.palette_index
         return copy
 
     def close(self):

@@ -1,11 +1,13 @@
 # Named Destinations
 
-Named destinations allow you to create semantic bookmarks within PDF documents. Unlike simple page references, 
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Named destinations allow you to create semantic bookmarks within PDF documents. Unlike simple page references,
 named destinations remain valid even if page numbers change during document generation.
 
 ## Overview
 
-Named destinations are defined in section 12.3.2.4 of the PDF 2.0 specification. They provide a way to 
+Named destinations are defined in section 12.3.2.4 of the PDF 2.0 specification. They provide a way to
 create stable references to specific locations within a PDF document, which can be used in:
 
 - Internal links
