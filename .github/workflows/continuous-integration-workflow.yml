@@ -166,6 +166,8 @@ jobs:
           # Ensuring that those minimal versions remain compatible:
           sed -i '/requires-python/s/>=/~=/' pyproject.toml
           sed -i 's/>=/==/' pyproject.toml
+          # Removing field not supported in pyproject.toml at the time (prevent this: ValueError - invalid pyproject.toml config):
+          sed -i '/license.*=/d' pyproject.toml
           pip install .
           # Targeting only a subset of tests because: A) it's faster and B) some tests are dependant on a specific version of fonttools or Pillow
           # Deselect test involving TTF fonts due to differences with old fonttools version.
