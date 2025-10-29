@@ -7,26 +7,23 @@ name = "fpdf2"
 dynamic = ["version"]
 description = "Simple & fast PDF generation for Python"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 
 authors = [
   { name = "Olivier PLATHEY" },
-  { name = "Max" }
+  { name = "Max" },
+  { name = "Lucas Cimon" },
+  { name = " Anderson Herzogenrath da Costa (@andersonhc)" }
 ]
 
-maintainers = [
-  { name = "Lucas Cimon" }
-]
-
-keywords = ["pdf", "unicode", "png", "jpg", "ttf", "barcode"]
+keywords = ["pdf", "unicode", "png", "jpg", "ttf", "barcode", "library", "markdown"]
 
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -41,7 +38,9 @@ classifiers = [
 
 dependencies = [
   "defusedxml",
-  "Pillow>=8.0.0,!=9.2.*",
+  "Pillow>=8.0.0,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
+                            # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
+                            # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
   "fonttools>=4.34.0"
 ]
 
@@ -61,7 +60,7 @@ fpdf = [
 ]
 
 [tool.setuptools.dynamic]
-version = { attr = "fpdf.FPDF_VERSION" }
+version = { attr = "fpdf.fpdf:FPDF_VERSION" }
 
 
 
@@ -76,7 +75,7 @@ log_cli_level = "WARN"
 [tool.flake8]
 ignore = ["E203", "E221", "E241", "E251", "E701", "E731", "W503"]
 
-# --- 🔧 Formatage automatique ---
+
 [tool.black]
 line-length = 88
 target-version = ["py39", "py310", "py311", "py312"]
