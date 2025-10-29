@@ -16,7 +16,9 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.5] - Not released yet
+## [2.8.6] - Not released yet
+
+## [2.8.5] - 2025-10-29
 ### Added
 * documentation on how to combine `fpdf2` with **Bottle**, **CherryPy** & **Plone**: [link to documentation](https://py-pdf.github.io/fpdf2/UsageInWebAPI.html) - thanks to @tanmayc07 and @Vidushi2709
 * basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531) - thanks to @dlespiau
@@ -30,9 +32,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * native support for PDF/A compliance verification - including PDF/A-1B, 2B, 2U, 3B, 3U, 4, 4E and 4F: [link to documentation](https://py-pdf.github.io/fpdf2/pdfa.html). Accessible PDF/A documents (PDF/A 1A, 2A and 3A) are not yet supported.
 * `unicode_range` parameter for `add_font()` to restrict which unicode characters a font covers - _cf._ [issue #1586](https://github.com/py-pdf/fpdf2/issues/1586) - thanks to @Malay-dev
 * `variations` parameter added in `add_font()` to allow the use of variable fonts - _cf._ [issue #1544](https://github.com/py-pdf/fpdf2/issues/1544): [link to documentation](https://py-pdf.github.io/fpdf2/Unicode.html#variable-fonts) - thanks to @Rapteon
-* support for color font palette selection via a new `palette` parameter in `add_font()`, allowing users to choose alternate color palettes from color fonts (COLR/CPAL) and enabling different color schemes without embedding the font multiple times - _cf._ [issue #1578](https://github.com/py-pdf/fpdf2/issues/1578) - thanks to @Vedant817
-* Python 3.14 is now officially supported
+* support for color font palette selection via a new `palette` parameter in `add_font()`, allowing users to choose alternate color palettes from color fonts (COLR/CPAL) and enabling different color schemes without embedding the font multiple times - _cf._ [issue #1578](https://github.com/py-pdf/fpdf2/issues/1578), [PR #1621](https://github.com/py-pdf/fpdf2/pull/1621) : [link to documentation](https://py-pdf.github.io/fpdf2/Unicode.html#color-font-palette-selection)
 * added Ukrainian translation of the tutorial: [українська](https://py-pdf.github.io/fpdf2/Tutorial-ua.html) - thanks to @ystepanoff
+* Python 3.14 is now officially supported
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * issue with Markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
