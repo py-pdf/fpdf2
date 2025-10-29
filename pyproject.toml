@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "fonttools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fpdf2"
+dynamic = ["version"]
+description = "Simple & fast PDF generation for Python"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+
+authors = [
+  { name = "Olivier PLATHEY" },
+  { name = "Max" },
+  { name = "Lucas Cimon" },
+  { name = " Anderson Herzogenrath da Costa (@andersonhc)" }
+]
+
+keywords = ["pdf", "unicode", "png", "jpg", "ttf", "barcode", "library", "markdown"]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Topic :: Printing",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Processing :: Markup",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Graphics :: Presentation"
+]
+
+dependencies = [
+  "defusedxml",
+  "Pillow>=8.0.0,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
+                            # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
+                            # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
+  "fonttools>=4.34.0"
+]
+
+[project.urls]
+Homepage = "https://py-pdf.github.io/fpdf2/"
+Documentation = "https://py-pdf.github.io/fpdf2/"
+Code = "https://github.com/py-pdf/fpdf2"
+"Issue tracker" = "https://github.com/py-pdf/fpdf2/issues"
+
+[tool.setuptools]
+packages = ["fpdf"]
+
+[tool.setuptools.package-data]
+fpdf = [
+  "data/color_profiles/*.icc",
+  "data/color_profiles/*.LICENSE"
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "fpdf.FPDF_VERSION" }
+
+
+
+[project.entry-points."mkdocs.plugins"]
+check_toc = "docs.plugins.check_toc:CheckTocPlugin"
+
+[tool.pytest.ini_options]
+addopts = "--cov=fpdf --cov-report=xml"
+log_cli = true
+log_cli_level = "WARN"
+
+[tool.flake8]
+ignore = ["E203", "E221", "E241", "E251", "E701", "E731", "W503"]
+
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312", "py313"]
+skip-string-normalization = false
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+combine_as_imports = true
+include_trailing_comma = true
+multi_line_output = 3

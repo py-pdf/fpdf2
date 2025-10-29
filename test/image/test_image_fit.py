@@ -20,7 +20,7 @@ def test_image_fit_in_rect(tmp_path):
     pdf.image(
         HERE / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png",
         *rect1,
-        keep_aspect_ratio=True
+        keep_aspect_ratio=True,
     )
 
     rect2 = 100, 30, 60, 100
@@ -28,7 +28,7 @@ def test_image_fit_in_rect(tmp_path):
     pdf.image(
         HERE / "png_images/51a4d21670dc8dfa8ffc9e54afd62f5f.png",
         *rect2,
-        keep_aspect_ratio=True
+        keep_aspect_ratio=True,
     )
 
     assert_pdf_equal(pdf, HERE / "image_fit_in_rect.pdf", tmp_path)
