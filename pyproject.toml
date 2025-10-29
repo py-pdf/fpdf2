@@ -60,7 +60,7 @@ fpdf = [
 ]
 
 [tool.setuptools.dynamic]
-version = { attr = "fpdf.fpdf:FPDF_VERSION" }
+version = { attr = "fpdf.FPDF_VERSION" }
 
 
 
@@ -78,22 +78,9 @@ ignore = ["E203", "E221", "E241", "E251", "E701", "E731", "W503"]
 
 [tool.black]
 line-length = 88
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py310", "py311", "py312", "py313"]
 skip-string-normalization = false
 include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
 
 [tool.isort]
 profile = "black"
