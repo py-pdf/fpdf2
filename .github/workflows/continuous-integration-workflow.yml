@@ -217,7 +217,7 @@ jobs:
         run: |
           mkdir -p public/
           # Setting PDF manual version:
-          VERSION=$(python -c "import pkg_resources; print(pkg_resources.get_distribution('fpdf2').version)")
+          VERSION=$(python -c "import importlib.metadata; print(importlib.metadata.version('fpdf2'))")
           sed -i "s/author:.*/author: v$VERSION/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
           python -m mkdocs build
@@ -278,7 +278,7 @@ jobs:
         run: |
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
           pip install --upgrade build twine .
-          VERSION=$(python -c "import pkg_resources; print(pkg_resources.get_distribution('fpdf2').version)")
+          VERSION=$(python -c "import importlib.metadata; print(importlib.metadata.version('fpdf2'))")
           echo Current code version: $VERSION
           # Checking if current code version has already been released:
           if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$VERSION\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python -m build; twine check dist/*; fi
