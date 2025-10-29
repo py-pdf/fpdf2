@@ -1616,6 +1616,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "RaphaelFLT",
+      "name": "Raphaël FLT",
+      "avatar_url": "https://avatars.githubusercontent.com/u/143359117?v=4",
+      "profile": "https://github.com/RaphaelFLT",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
