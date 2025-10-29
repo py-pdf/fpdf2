@@ -8,12 +8,13 @@ dynamic = ["version"]
 description = "Simple & fast PDF generation for Python"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+license = "LGPL-3.0-only"
+license-files = ["LICENSE"]
 
 authors = [
   { name = "Olivier PLATHEY" },
   { name = "Max" },
-  { name = "Lucas Cimon" },
+  { name = "Lucas Cimon (@Lucas-C)" },
   { name = " Anderson Herzogenrath da Costa (@andersonhc)" }
 ]
 
@@ -22,7 +23,6 @@ keywords = ["pdf", "unicode", "png", "jpg", "ttf", "barcode", "library", "markdo
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -52,7 +52,7 @@ Code = "https://github.com/py-pdf/fpdf2"
 "Issue tracker" = "https://github.com/py-pdf/fpdf2/issues"
 
 [tool.setuptools]
-packages = ["fpdf"]
+packages = ["fpdf", "fpdf.data", "fpdf.data.color_profiles"]
 
 [tool.setuptools.package-data]
 fpdf = [
@@ -62,8 +62,6 @@ fpdf = [
 
 [tool.setuptools.dynamic]
 version = { attr = "fpdf.FPDF_VERSION" }
-
-
 
 [project.entry-points."mkdocs.plugins"]
 check_toc = "docs.plugins.check_toc:CheckTocPlugin"
@@ -75,7 +73,6 @@ log_cli_level = "WARN"
 
 [tool.flake8]
 ignore = ["E203", "E221", "E241", "E251", "E701", "E731", "W503"]
-
 
 [tool.black]
 line-length = 88
