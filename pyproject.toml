@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: OS Independent",
   "Topic :: Printing",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -38,7 +39,7 @@ classifiers = [
 
 dependencies = [
   "defusedxml",
-  "Pillow>=8.0.0,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
+  "Pillow>=8.3.2,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
                             # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
                             # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
   "fonttools>=4.34.0"
@@ -78,7 +79,7 @@ ignore = ["E203", "E221", "E241", "E251", "E701", "E731", "W503"]
 
 [tool.black]
 line-length = 88
-target-version = ["py310", "py311", "py312", "py313"]
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 skip-string-normalization = false
 include = '\.pyi?$'
 
