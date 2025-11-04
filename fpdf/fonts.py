@@ -374,9 +374,11 @@ class TTFFont:
             self.ttfont = ttLib.TTFont(
                 self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
             )
-        except Exception as exc:  # pragma: no cover - defensive messaging
+        except (ImportError, RuntimeError) as exc:  # pragma: no cover - defensive messaging
             # If the user passed a WOFF2 file but brotli is not installed, fontTools
-            # raises an error during parsing. Provide a clearer hint.
+            # raises an ImportError/RuntimeError during parsing. Provide a clearer hint
+            # only for that specific situation. Allow other exceptions (e.g. FileNotFoundError,
+            # OSError, parsing errors) to propagate normally so they aren't masked here.
             fname_str = str(self.ttffile).lower()
             if fname_str.endswith(".woff2"):
                 raise RuntimeError(
