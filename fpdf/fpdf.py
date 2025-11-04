@@ -34,6 +34,7 @@ from typing import (
     Iterator,
     NamedTuple,
     Optional,
+    TYPE_CHECKING,
     Union,
 )
 
@@ -43,6 +44,16 @@ try:
     from endesive import signer
 except ImportError:
     pkcs12, signer = None, None
+
+if TYPE_CHECKING:  # Help static type checkers / language servers locate optional deps
+    try:  # pragma: no cover - typing-only
+        import endesive  # type: ignore
+    except Exception:
+        pass
+    try:  # pragma: no cover - typing-only
+        import uharfbuzz  # type: ignore
+    except Exception:
+        pass
 
 try:
     from PIL.Image import Image
@@ -2309,7 +2320,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError('"fname" parameter is required')
 
         ext = splitext(str(fname))[1].lower()
-        if ext not in (".otf", ".otc", ".ttf", ".ttc"):
+        # Accept web-font containers as well (WOFF / WOFF2). These will be
+        # transparently handled by fontTools (WOFF uses zlib; WOFF2 requires
+        # an optional brotli dependency for decompression).
+        if ext not in (".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"
@@ -5949,7 +5963,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def table(self, *args: Any, **kwargs: Any) -> ContextManager[Table]:
+    def table(self, *args: Any, **kwargs: Any) -> Iterator[Table]:
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
