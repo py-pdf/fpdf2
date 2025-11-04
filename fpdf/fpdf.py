@@ -48,7 +48,7 @@ try:
     from cryptography.hazmat.primitives.serialization import pkcs12
     from endesive import signer
 except ImportError:
-    pkcs12, signer = None, None  # type: ignore[assignment]
+    pkcs12, signer = None, None
 
 try:
     from PIL.Image import Image  # pyright: ignore[reportAssignmentType]
@@ -2513,7 +2513,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError('"fname" parameter is required')
 
         ext = splitext(str(fname))[1].lower()
-        if ext not in (".otf", ".otc", ".ttf", ".ttc"):
+        # Accept web-font containers as well (WOFF / WOFF2). These will be
+        # transparently handled by fontTools (WOFF uses zlib; WOFF2 requires
+        # an optional brotli dependency for decompression).
+        if ext not in (".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"

@@ -35,6 +35,12 @@ from fontTools import ttLib
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.varLib import instancer
 
+if TYPE_CHECKING:  # Help static type checkers / language servers locate optional deps
+    try:  # pragma: no cover - typing-only
+        import uharfbuzz as hb  # type: ignore
+    except Exception:
+        hb = None  # type: ignore
+
 try:
     import uharfbuzz as hb
 
@@ -362,9 +368,23 @@ class TTFFont:
 
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
-        self.ttfont = ttLib.TTFont(
-            self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
-        )
+        try:
+            # Let fontTools handle a variety of container formats (TTF/OTF/WOFF/WOFF2).
+            # Note: WOFF2 support in fontTools requires a brotli backend (e.g. `brotli` or `brotlicffi`).
+            self.ttfont = ttLib.TTFont(
+                self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
+            )
+        except Exception as exc:  # pragma: no cover - defensive messaging
+            # If the user passed a WOFF2 file but brotli is not installed, fontTools
+            # raises an error during parsing. Provide a clearer hint.
+            fname_str = str(self.ttffile).lower()
+            if fname_str.endswith(".woff2"):
+                raise RuntimeError(
+                    "Could not open WOFF2 font. WOFF2 support requires an external Brotli "
+                    "library (install 'brotli' or 'brotlicffi'). Original error: "
+                    f"{exc!s}"
+                ) from exc
+            raise
 
         if axes_dict is not None:
             # Check if variable font.
@@ -516,7 +536,45 @@ class TTFFont:
     @property
     def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
-            self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+            # HarfBuzz expects an SFNT (TTF/OTF) blob. For safety and for
+            # WOFF/WOFF2 input we re-serialize the fontTools TTFont to a
+            # raw SFNT byte buffer and hand that to HarfBuzz. This avoids
+            # relying on harfbuzz to accept compressed web font containers.
+            try:
+                from io import BytesIO
+
+                buf = BytesIO()
+                # Ensure we have the decompressed tables in memory
+                self.ttfont.save(buf)
+                buf.seek(0)
+                ttfont_bytes = buf.read()
+            except Exception:
+                # Fallback: attempt to let HarfBuzz load from file path directly
+                self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+                return self._hbfont
+
+            # Try to create a HarfBuzz blob from bytes; if not available, write a
+            # temporary file as a last resort.
+            try:
+                blob = hb.Blob.from_bytes(ttfont_bytes)
+                face = hb.Face(blob)
+            except Exception:
+                import tempfile, os
+
+                tmp = tempfile.NamedTemporaryFile(suffix=".ttf", delete=False)
+                try:
+                    tmp.write(ttfont_bytes)
+                    tmp.flush()
+                    tmp.close()
+                    face = hb.Face(hb.Blob.from_file_path(tmp.name))
+                finally:
+                    try:
+                        os.unlink(tmp.name)
+                    except Exception:
+                        # Best-effort cleanup; if it fails, leave the temp file.
+                        pass
+
+            self._hbfont = HarfBuzzFont(face)
         return self._hbfont
 
     def __repr__(self) -> str:
