@@ -36,6 +36,13 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.varLib import instancer
 
 if TYPE_CHECKING:  # Help static type checkers / language servers locate optional deps
+    # NOTE: this block exists purely for static type checkers / IDEs.
+    # It imports `uharfbuzz as hb` so tools like mypy/pyright and editors can
+    # resolve the `hb` symbol and provide completions/type information.
+    # The actual runtime import (and fallback to `hb = None`) is performed
+    # further down in the file inside a try/except. Keeping this separate
+    # avoids runtime side-effects during type-checking and makes the intent
+    # explicit to reviewers who may see what looks like a duplicate import.
     try:  # pragma: no cover - typing-only
         import uharfbuzz as hb  # type: ignore
     except Exception:
@@ -538,11 +545,14 @@ class TTFFont:
     @property
     def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
-            # HarfBuzz expects an SFNT (TTF/OTF) blob. For safety and for
-            # WOFF/WOFF2 input we re-serialize the fontTools TTFont to a
-            # raw SFNT byte buffer and hand that to HarfBuzz. This avoids
-            # relying on harfbuzz to accept compressed web font containers.
-            try:
+            # Check if this is a WOFF/WOFF2 font that needs decompression
+            font_path_lower = str(self.ttffile).lower()
+            is_woff = font_path_lower.endswith(".woff") or font_path_lower.endswith(".woff2")
+            
+            if is_woff:
+                # For WOFF/WOFF2, we need to decompress to SFNT format for HarfBuzz.
+                # HarfBuzz cannot load compressed WOFF/WOFF2 files directly, so we
+                # re-serialize the fontTools TTFont to a raw SFNT byte buffer.
                 from io import BytesIO
 
                 buf = BytesIO()
@@ -550,33 +560,39 @@ class TTFFont:
                 self.ttfont.save(buf)
                 buf.seek(0)
                 ttfont_bytes = buf.read()
-            except Exception:
-                # Fallback: attempt to let HarfBuzz load from file path directly
-                self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
-                return self._hbfont
 
-            # Try to create a HarfBuzz blob from bytes; if not available, write a
-            # temporary file as a last resort.
-            try:
-                blob = hb.Blob.from_bytes(ttfont_bytes)
-                face = hb.Face(blob)
-            except Exception:
-                import tempfile, os
-
-                tmp = tempfile.NamedTemporaryFile(suffix=".ttf", delete=False)
+                # Try to create a HarfBuzz blob from bytes; if not available, write a
+                # temporary file as a last resort.
                 try:
-                    tmp.write(ttfont_bytes)
-                    tmp.flush()
-                    tmp.close()
-                    face = hb.Face(hb.Blob.from_file_path(tmp.name))
-                finally:
-                    try:
-                        os.unlink(tmp.name)
-                    except Exception:
-                        # Best-effort cleanup; if it fails, leave the temp file.
-                        pass
+                    blob = hb.Blob.from_bytes(ttfont_bytes)
+                    face = hb.Face(blob)
+                except Exception:
+                    import tempfile, os
 
-            self._hbfont = HarfBuzzFont(face)
+                    tmp = tempfile.NamedTemporaryFile(suffix=".ttf", delete=False)
+                    tmp_name = tmp.name
+                    try:
+                        tmp.write(ttfont_bytes)
+                        tmp.flush()
+                        tmp.close()
+                        face = hb.Face(hb.Blob.from_file_path(tmp_name))
+                    finally:
+                        try:
+                            os.unlink(tmp_name)
+                        except Exception as cleanup_error:
+                            # Log warning about failed cleanup - orphaned temp file may cause disk issues
+                            LOGGER.warning(
+                                "Failed to clean up temporary font file '%s': %s. "
+                                "This may leave an orphaned file on disk.",
+                                tmp_name,
+                                cleanup_error,
+                            )
+
+                self._hbfont = HarfBuzzFont(face)
+            else:
+                # For regular TTF/OTF fonts, load directly from file path (faster)
+                self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+        
         return self._hbfont
 
     def __repr__(self) -> str:

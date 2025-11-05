@@ -6365,7 +6365,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def table(self, *args: Any, **kwargs: Any) -> Iterator[Table]:
+    def table(self, *args: Any, **kwargs: Any) -> ContextManager[Table]:
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
