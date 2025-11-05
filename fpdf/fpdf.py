@@ -45,16 +45,6 @@ try:
 except ImportError:
     pkcs12, signer = None, None
 
-if TYPE_CHECKING:  # Help static type checkers / language servers locate optional deps
-    try:  # pragma: no cover - typing-only
-        import endesive  # type: ignore
-    except Exception:
-        pass
-    try:  # pragma: no cover - typing-only
-        import uharfbuzz  # type: ignore
-    except Exception:
-        pass
-
 try:
     from PIL.Image import Image
 except ImportError:
@@ -5963,7 +5953,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def table(self, *args: Any, **kwargs: Any) -> Iterator[Table]:
+    def table(self, *args: Any, **kwargs: Any) -> ContextManager[Table]:
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
