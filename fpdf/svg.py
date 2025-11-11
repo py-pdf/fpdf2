@@ -882,7 +882,8 @@ class SVGObject:
         return style_map
 
     @force_nodocument
-    def _convert_gradient_coordinate(self, value, default="0"):
+    @staticmethod
+    def _convert_gradient_coordinate(value, default="0"):
         """Convert SVG gradient coordinate (percentage or number) to float."""
         if value is None or value == "":
             value = default
@@ -904,7 +905,8 @@ class SVGObject:
                 return 0.0
 
     @force_nodocument
-    def _parse_gradient_stops(self, gradient_element):
+    @staticmethod
+    def _parse_gradient_stops(gradient_element):
         """Parse <stop> children of a gradient element."""
         stops = []
 
@@ -971,7 +973,8 @@ class SVGObject:
         return stops
 
     @force_nodocument
-    def _extract_gradient_id(self, url_value):
+    @staticmethod
+    def _extract_gradient_id(url_value):
         """Extract gradient ID from url(#id) format."""
         if not url_value or not isinstance(url_value, str):
             return None
@@ -1021,7 +1024,7 @@ class SVGObject:
         if transform_str:
             try:
                 transform = convert_transforms(transform_str)
-            except Exception as e:
+            except (ValueError, AttributeError, TypeError) as e:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = self._parse_gradient_stops(grad_element)
@@ -1099,7 +1102,7 @@ class SVGObject:
         if transform_str:
             try:
                 transform = convert_transforms(transform_str)
-            except Exception as e:
+            except (ValueError, AttributeError, TypeError) as e:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = self._parse_gradient_stops(grad_element)
