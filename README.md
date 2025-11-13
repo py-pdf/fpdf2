@@ -343,6 +343,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ystepanoff"><img src="https://avatars.githubusercontent.com/u/12848470?v=4?s=100" width="100px;" alt="Yegor Stepanov"/><br /><sub><b>Yegor Stepanov</b></sub></a><br /><a href="#translation-ystepanoff" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/RaphaelFLT"><img src="https://avatars.githubusercontent.com/u/143359117?v=4?s=100" width="100px;" alt="Raphaël FLT"/><br /><sub><b>Raphaël FLT</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=RaphaelFLT" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Ani07-05"><img src="https://avatars.githubusercontent.com/u/86768646?v=4?s=100" width="100px;" alt="Ani07-05"/><br /><sub><b>Ani07-05</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Ani07-05" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
