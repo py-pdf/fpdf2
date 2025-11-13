@@ -126,18 +126,10 @@ def test_svg_image_no_viewbox_nor_width_and_height():
 def test_svg_image_with_unsupported_color():
     pdf = fpdf.FPDF()
     pdf.add_page()
-    # This SVG now uses gradients which are supported, so it should not raise an error
-    pdf.image(SVG_SRCDIR / "unsupported-color.svg")
-    # Test an actually unsupported color format
+    fname = "unsupported-color.svg"
     with pytest.raises(ValueError) as error:
-        pdf.image(
-            BytesIO(
-                b'<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">'
-                b'  <rect x="10" y="10" width="80" height="80" fill="hsl(120, 100%, 50%)"/>'
-                b"</svg>"
-            )
-        )
-    assert "unsupported color specification" in str(error.value)
+        pdf.image(SVG_SRCDIR / fname)
+    assert fname in str(error.value)
 
 
 def test_svg_image_style_inherited_from_fpdf(tmp_path):
