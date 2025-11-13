@@ -59,7 +59,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -131,7 +131,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -198,7 +198,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -265,7 +265,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -332,7 +332,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -399,7 +399,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -466,7 +466,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1460-L1516" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -538,7 +538,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L785-L1457" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L801-L1747" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGObject:
     &#34;&#34;&#34;
@@ -566,6 +566,7 @@ in non-backward-compatible ways.</p>
         self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
         self.css_class_styles = {}
+        self.gradient_definitions = {}  # Store parsed gradients by ID
 
         # disabling bandit rule as we use defusedxml:
         svg_tree = parse_xml_str(svg_text)  # nosec B314
@@ -621,6 +622,273 @@ in non-backward-compatible ways.</p>
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
         return style_map
+
+    @force_nodocument
+    @staticmethod
+    def _convert_gradient_coordinate(value, default=&#34;0&#34;):
+        &#34;&#34;&#34;Convert SVG gradient coordinate (percentage or number) to float.&#34;&#34;&#34;
+        if value is None or value == &#34;&#34;:
+            value = default
+
+        value = value.strip()
+
+        if value.endswith(&#34;%&#34;):
+            return float(value[:-1]) / 100.0
+
+        try:
+            return float(value)
+        except ValueError:
+            try:
+                return resolve_length(value)
+            except ValueError:
+                LOGGER.warning(
+                    &#34;Could not parse gradient coordinate &#39;%s&#39;, using 0&#34;, value
+                )
+                return 0.0
+
+    @force_nodocument
+    @staticmethod
+    def _parse_gradient_stops(gradient_element):
+        &#34;&#34;&#34;Parse &lt;stop&gt; children of a gradient element.&#34;&#34;&#34;
+        stops = []
+
+        for stop_element in gradient_element:
+            tag_name = without_ns(stop_element.tag)
+            if tag_name != &#34;stop&#34;:
+                continue
+
+            offset_str = stop_element.attrib.get(&#34;offset&#34;)
+            if offset_str is None:
+                LOGGER.warning(&#34;Found &lt;stop&gt; without offset, skipping&#34;)
+                continue
+
+            offset_str = offset_str.strip()
+            if offset_str.endswith(&#34;%&#34;):
+                offset = float(offset_str[:-1]) / 100.0
+            else:
+                offset = float(offset_str)
+
+            offset = max(0.0, min(1.0, offset))
+
+            stop_color = None
+            stop_opacity = 1.0
+
+            style = stop_element.attrib.get(&#34;style&#34;, &#34;&#34;)
+            if style:
+                style_dict = html.parse_css_style(style)
+                stop_color = style_dict.get(&#34;stop-color&#34;)
+                stop_opacity_str = style_dict.get(&#34;stop-opacity&#34;)
+                if stop_opacity_str:
+                    try:
+                        stop_opacity = float(stop_opacity_str)
+                    except ValueError:
+                        LOGGER.warning(
+                            &#34;Invalid stop-opacity value: %s&#34;, stop_opacity_str
+                        )
+
+            if stop_color is None:
+                stop_color = stop_element.attrib.get(&#34;stop-color&#34;, &#34;black&#34;)
+
+            if &#34;stop-opacity&#34; in stop_element.attrib:
+                try:
+                    stop_opacity = float(stop_element.attrib.get(&#34;stop-opacity&#34;))
+                except ValueError:
+                    pass
+
+            try:
+                color_obj = svgcolor(stop_color)
+
+                if stop_opacity &lt; 1.0:
+                    if hasattr(color_obj, &#34;b&#34;):
+                        color_obj = type(color_obj)(
+                            color_obj.r, color_obj.g, color_obj.b, stop_opacity
+                        )
+                    elif hasattr(color_obj, &#34;g&#34;):
+                        color_obj = type(color_obj)(color_obj.g, stop_opacity)
+
+                stops.append((offset, color_obj))
+
+            except (ValueError, KeyError) as e:
+                LOGGER.warning(&#34;Could not parse stop color &#39;%s&#39;: %s&#34;, stop_color, e)
+                continue
+
+        return stops
+
+    @force_nodocument
+    @staticmethod
+    def _extract_gradient_id(url_value):
+        &#34;&#34;&#34;Extract gradient ID from url(#id) format.&#34;&#34;&#34;
+        if not url_value or not isinstance(url_value, str):
+            return None
+
+        match = re.search(r&#39;url\(\s*[&#34;\&#39;]?\s*#([^)&#34;\&#39;\s]+)&#39;, url_value)
+        if match:
+            return &#34;#&#34; + match.group(1)
+
+        return None
+
+    @force_nodocument
+    def _parse_linear_gradient(self, grad_element):
+        &#34;&#34;&#34;Parse a &lt;linearGradient&gt; element and store it in gradient_definitions.&#34;&#34;&#34;
+        grad_id = grad_element.attrib.get(&#34;id&#34;)
+        if not grad_id:
+            LOGGER.warning(&#34;Found &lt;linearGradient&gt; without id attribute, skipping&#34;)
+            return
+
+        if not grad_id.startswith(&#34;#&#34;):
+            grad_id = &#34;#&#34; + grad_id
+
+        x1 = grad_element.attrib.get(&#34;x1&#34;, &#34;0%&#34;)
+        y1 = grad_element.attrib.get(&#34;y1&#34;, &#34;0%&#34;)
+        x2 = grad_element.attrib.get(&#34;x2&#34;, &#34;100%&#34;)
+        y2 = grad_element.attrib.get(&#34;y2&#34;, &#34;0%&#34;)
+
+        x1_val = self._convert_gradient_coordinate(x1, &#34;0&#34;)
+        y1_val = self._convert_gradient_coordinate(y1, &#34;0&#34;)
+        x2_val = self._convert_gradient_coordinate(x2, &#34;1&#34;)
+        y2_val = self._convert_gradient_coordinate(y2, &#34;0&#34;)
+
+        units_str = grad_element.attrib.get(&#34;gradientUnits&#34;, &#34;objectBoundingBox&#34;)
+        if units_str == &#34;userSpaceOnUse&#34;:
+            units = GradientUnits.USER_SPACE_ON_USE
+        else:
+            units = GradientUnits.OBJECT_BOUNDING_BOX
+
+        spread_str = grad_element.attrib.get(&#34;spreadMethod&#34;, &#34;pad&#34;)
+        try:
+            spread_method = GradientSpreadMethod.coerce(spread_str)
+        except (ValueError, AttributeError):
+            spread_method = GradientSpreadMethod.PAD
+            LOGGER.warning(&#34;Invalid spreadMethod &#39;%s&#39;, using PAD&#34;, spread_str)
+
+        transform = None
+        transform_str = grad_element.attrib.get(&#34;gradientTransform&#34;)
+        if transform_str:
+            try:
+                transform = convert_transforms(transform_str)
+            except (ValueError, AttributeError, TypeError) as e:
+                LOGGER.warning(&#34;Could not parse gradientTransform: %s&#34;, e)
+
+        stops = self._parse_gradient_stops(grad_element)
+
+        if not stops:
+            LOGGER.warning(&#34;Linear gradient &#39;%s&#39; has no valid stops, skipping&#34;, grad_id)
+            return
+
+        gradient = shape_linear_gradient(
+            x1=x1_val,
+            y1=y1_val,
+            x2=x2_val,
+            y2=y2_val,
+            stops=stops,
+            spread_method=spread_method,
+        )
+
+        gradient_paint = GradientPaint(
+            gradient=gradient,
+            units=units,
+            gradient_transform=transform or Transform.identity(),
+            spread_method=spread_method,
+        )
+
+        self.gradient_definitions[grad_id] = gradient_paint
+
+        LOGGER.debug(&#34;Parsed linear gradient &#39;%s&#39; with %d stops&#34;, grad_id, len(stops))
+
+    @force_nodocument
+    def _parse_radial_gradient(self, grad_element):
+        &#34;&#34;&#34;Parse a &lt;radialGradient&gt; element and store it in gradient_definitions.&#34;&#34;&#34;
+        grad_id = grad_element.attrib.get(&#34;id&#34;)
+        if not grad_id:
+            LOGGER.warning(&#34;Found &lt;radialGradient&gt; without id attribute, skipping&#34;)
+            return
+
+        if not grad_id.startswith(&#34;#&#34;):
+            grad_id = &#34;#&#34; + grad_id
+
+        cx = grad_element.attrib.get(&#34;cx&#34;, &#34;50%&#34;)
+        cy = grad_element.attrib.get(&#34;cy&#34;, &#34;50%&#34;)
+        r = grad_element.attrib.get(&#34;r&#34;, &#34;50%&#34;)
+        fx = grad_element.attrib.get(&#34;fx&#34;, cx)
+        fy = grad_element.attrib.get(&#34;fy&#34;, cy)
+        fr = grad_element.attrib.get(&#34;fr&#34;, &#34;0%&#34;)
+
+        cx_val = self._convert_gradient_coordinate(cx, &#34;0.5&#34;)
+        cy_val = self._convert_gradient_coordinate(cy, &#34;0.5&#34;)
+        r_val = self._convert_gradient_coordinate(r, &#34;0.5&#34;)
+        fx_val = self._convert_gradient_coordinate(fx, str(cx_val))
+        fy_val = self._convert_gradient_coordinate(fy, str(cy_val))
+        fr_val = self._convert_gradient_coordinate(fr, &#34;0&#34;)
+
+        if r_val &lt;= 0:
+            LOGGER.warning(
+                &#34;Radial gradient &#39;%s&#39; has invalid radius %s, skipping&#34;, grad_id, r_val
+            )
+            return
+
+        units_str = grad_element.attrib.get(&#34;gradientUnits&#34;, &#34;objectBoundingBox&#34;)
+        units = (
+            GradientUnits.USER_SPACE_ON_USE
+            if units_str == &#34;userSpaceOnUse&#34;
+            else GradientUnits.OBJECT_BOUNDING_BOX
+        )
+
+        spread_str = grad_element.attrib.get(&#34;spreadMethod&#34;, &#34;pad&#34;)
+        try:
+            spread_method = GradientSpreadMethod.coerce(spread_str)
+        except (ValueError, AttributeError):
+            spread_method = GradientSpreadMethod.PAD
+
+        transform = None
+        transform_str = grad_element.attrib.get(&#34;gradientTransform&#34;)
+        if transform_str:
+            try:
+                transform = convert_transforms(transform_str)
+            except (ValueError, AttributeError, TypeError) as e:
+                LOGGER.warning(&#34;Could not parse gradientTransform: %s&#34;, e)
+
+        stops = self._parse_gradient_stops(grad_element)
+        if not stops:
+            LOGGER.warning(&#34;Radial gradient &#39;%s&#39; has no valid stops, skipping&#34;, grad_id)
+            return
+
+        gradient = shape_radial_gradient(
+            cx=cx_val,
+            cy=cy_val,
+            r=r_val,
+            stops=stops,
+            fx=fx_val,
+            fy=fy_val,
+            fr=fr_val,
+            spread_method=spread_method,
+        )
+
+        gradient_paint = GradientPaint(
+            gradient=gradient,
+            units=units,
+            gradient_transform=transform or Transform.identity(),
+            spread_method=spread_method,
+        )
+
+        self.gradient_definitions[grad_id] = gradient_paint
+        LOGGER.debug(&#34;Parsed radial gradient &#39;%s&#39; with %d stops&#34;, grad_id, len(stops))
+
+    @force_nodocument
+    def _apply_gradient_paint(self, stylable, svg_element, style_map=None):
+        &#34;&#34;&#34;Apply gradient paint to fill or stroke if a url(#gradientId) reference is found.&#34;&#34;&#34;
+        fill_value = _get_attr_or_style(svg_element, &#34;fill&#34;, style_map)
+        if fill_value:
+            grad_id = self._extract_gradient_id(fill_value)
+            if grad_id and grad_id in self.gradient_definitions:
+                stylable.style.fill_color = self.gradient_definitions[grad_id]
+                LOGGER.debug(&#34;Applied gradient %s to fill&#34;, grad_id)
+
+        stroke_value = _get_attr_or_style(svg_element, &#34;stroke&#34;, style_map)
+        if stroke_value:
+            grad_id = self._extract_gradient_id(stroke_value)
+            if grad_id and grad_id in self.gradient_definitions:
+                stylable.style.stroke_color = self.gradient_definitions[grad_id]
+                LOGGER.debug(&#34;Applied gradient %s to stroke&#34;, grad_id)
 
     @force_nodocument
     def extract_shape_info(self, root_tag):
@@ -828,6 +1096,10 @@ in non-backward-compatible ways.</p>
                 self.build_image(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
+            elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;linearGradient&#34;):
+                self._parse_linear_gradient(child)
+            elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;radialGradient&#34;):
+                self._parse_radial_gradient(child)
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;clipPath&#34;):
                 try:
                     clip_id = child.attrib[&#34;id&#34;]
@@ -935,6 +1207,7 @@ in non-backward-compatible ways.</p>
         style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
         apply_styles(pdf_path, path, style_map)
+        self._apply_gradient_paint(pdf_path, path, style_map)
         self.apply_clipping_path(pdf_path, path, style_map)
         svg_path = path.attrib.get(&#34;d&#34;)
         if svg_path is not None:
@@ -949,6 +1222,7 @@ in non-backward-compatible ways.</p>
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
         apply_styles(shape_path, shape, style_map)
+        self._apply_gradient_paint(shape_path, shape, style_map)
         self.apply_clipping_path(shape_path, shape, style_map)
         self.update_xref(shape.attrib.get(&#34;id&#34;), shape_path)
         return shape_path
@@ -1246,7 +1520,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L1025-L1050" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1309-L1334" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
     &#34;&#34;&#34;
@@ -1297,7 +1571,7 @@ written.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L919-L939" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1203-L1223" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_page_viewport(self, pdf, align_viewbox=True):
     &#34;&#34;&#34;
@@ -1345,7 +1619,7 @@ viewbox aspect ratio does not match that of the viewport.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f18141a234c5d1ae1fc052176fa332402599eb10/fpdf/svg.py#L941-L1023" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/54b52ad0f4f8705ba7998f6282d8f6ece384c6c1/fpdf/svg.py#L1225-L1307" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_rect_viewport(
     self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
