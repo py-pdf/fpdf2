@@ -381,7 +381,9 @@ class Table:
             )  # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
-            cell_idx = row.cells.index(cell)
+            cell_idx = next(
+                i for i, row_cell in enumerate(row.cells) if row_cell is cell
+            )
             (
                 self._borders_layout.cell_style_getter(
                     row_idx=i,
