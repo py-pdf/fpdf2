@@ -1474,7 +1474,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield path
             ctxt.add_item(path)
 
-    def draw_path(self, path, debug_stream=None):
+    def draw_path(self, path, debug_stream=None, _copy: bool = True):
         """
         Add a pre-constructed path to the document.
 
@@ -1483,9 +1483,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             debug_stream (TextIO): print a pretty tree of all items to be rendered
                 to the provided stream. To store the output in a string, use
                 `io.StringIO`.
+            _copy (bool): if true (the default), the path will be copied before being
+                added. This prevents modifications to a referenced object from
+                "retroactively" altering its style/shape and should be disabled with
+                caution.
         """
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
-            ctxt.add_item(path)
+            ctxt.add_item(path, _copy)
 
     def set_dash_pattern(self, dash=0, gap=0, phase=0):
         """
@@ -5040,9 +5044,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 # Alt text of vector graphics does NOT show as tool-tip in viewers, but should
                 # be processed by screen readers.
                 with self._marked_sequence(title=title, alt_text=alt_text):
-                    self.draw_path(path)
+                    self.draw_path(path, _copy=False)
             else:
-                self.draw_path(path)
+                self.draw_path(path, _copy=False)
         finally:
             self.set_xy(old_x, old_y)
         if link:
