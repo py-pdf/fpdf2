@@ -630,12 +630,12 @@ class GraphicsStyle:
         return new
 
     def __setattr__(self, name, value):
-        if not hasattr(self.__class__, name):
+        try:
+            super().__setattr__(name, value)
+        except AttributeError as e:
             raise AttributeError(
                 f'{self.__class__} does not have style "{name}" (a typo?)'
-            )
-
-        super().__setattr__(name, value)
+            ) from e
 
     # at some point it probably makes sense to turn this into a general compliance
     # property, but for now this is the simple approach.
