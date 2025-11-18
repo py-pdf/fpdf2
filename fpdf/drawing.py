@@ -606,13 +606,11 @@ class GraphicsStyle:
         explicitly set on the child. If both the parent and the child specify to
         inherit a given property, that property will preserve the inherit value.
         """
-        new = cls()
+        new = deepcopy(child)
         for prop in cls.__slots__:
-            cval = getattr(child, prop)
+            cval = getattr(new, prop)
             if cval is cls.INHERIT:
                 setattr(new, prop, getattr(parent, prop))
-            else:
-                setattr(new, prop, cval)
 
         return new
 
