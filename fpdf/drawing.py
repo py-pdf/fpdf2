@@ -607,7 +607,7 @@ class GraphicsStyle:
         inherit a given property, that property will preserve the inherit value.
         """
         new = cls()
-        for prop in cls.MERGE_PROPERTIES:
+        for prop in cls.__slots__:
             cval = getattr(child, prop)
             if cval is cls.INHERIT:
                 setattr(new, prop, getattr(parent, prop))
