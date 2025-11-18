@@ -4351,12 +4351,8 @@ class GraphicsContext:
                 emit_style.soft_mask.object_id = resource_registry.register_soft_mask(
                     emit_style.soft_mask
                 )
-            # ---- If fill/stroke use a GradientPaint with alpha, synthesize a soft mask now
-            # Compute bbox once so mask and color share the same mapping
-            bbox_for_units = self.bounding_box(
-                initial_point, style=self.style, expand_for_stroke=False
-            )[0]
 
+            # ---- If fill/stroke use a GradientPaint with alpha, synthesize a soft mask now
             def _attach_alpha_mask_if_needed(paint_obj: GradientPaint):
                 if not isinstance(paint_obj, GradientPaint):
                     return
@@ -4430,6 +4426,15 @@ class GraphicsContext:
             # manually inherit it and emit it here.
             fill_color = self.style.fill_color
             stroke_color = self.style.stroke_color
+
+            bbox_for_units = None
+            if isinstance(fill_color, GradientPaint) or isinstance(
+                stroke_color, GradientPaint
+            ):
+                # Compute bbox once so mask and color share the same mapping
+                bbox_for_units = self.bounding_box(
+                    initial_point, style=self.style, expand_for_stroke=False
+                )[0]
 
             if fill_color not in NO_EMIT_SET:
                 if isinstance(fill_color, GradientPaint):
