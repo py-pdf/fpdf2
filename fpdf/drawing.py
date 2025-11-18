@@ -615,22 +615,8 @@ class GraphicsStyle:
         return new
 
     def __init__(self):
-        self.allow_transparency = self.INHERIT
-        self.paint_rule = self.INHERIT
-        self.auto_close = self.INHERIT
-        self.intersection_rule = self.INHERIT
-        self.fill_color = self.INHERIT
-        self.fill_opacity = self.INHERIT
-        self.stroke_color = self.INHERIT
-        self.stroke_opacity = self.INHERIT
-        self.blend_mode = self.INHERIT
-        self.stroke_width = self.INHERIT
-        self.stroke_cap_style = self.INHERIT
-        self.stroke_join_style = self.INHERIT
-        self.stroke_miter_limit = self.INHERIT
-        self.stroke_dash_pattern = self.INHERIT
-        self.stroke_dash_phase = self.INHERIT
-        self.soft_mask = self.INHERIT
+        for key in self.__slots__:
+            setattr(self, key, self.INHERIT)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
