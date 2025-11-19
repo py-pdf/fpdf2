@@ -710,4 +710,6 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
 
 
 def _has_alpha(img):
+    if numpy is not None:
+        return (numpy.asarray(img.getchannel("A")) != 255).any()
     return any(c != 255 for c in img.getchannel("A").tobytes())
