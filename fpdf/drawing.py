@@ -606,33 +606,17 @@ class GraphicsStyle:
         explicitly set on the child. If both the parent and the child specify to
         inherit a given property, that property will preserve the inherit value.
         """
-        new = cls()
-        for prop in cls.MERGE_PROPERTIES:
-            cval = getattr(child, prop)
+        new = deepcopy(child)
+        for prop in cls.__slots__:
+            cval = getattr(new, prop)
             if cval is cls.INHERIT:
                 setattr(new, prop, getattr(parent, prop))
-            else:
-                setattr(new, prop, cval)
 
         return new
 
     def __init__(self):
-        self.allow_transparency = self.INHERIT
-        self.paint_rule = self.INHERIT
-        self.auto_close = self.INHERIT
-        self.intersection_rule = self.INHERIT
-        self.fill_color = self.INHERIT
-        self.fill_opacity = self.INHERIT
-        self.stroke_color = self.INHERIT
-        self.stroke_opacity = self.INHERIT
-        self.blend_mode = self.INHERIT
-        self.stroke_width = self.INHERIT
-        self.stroke_cap_style = self.INHERIT
-        self.stroke_join_style = self.INHERIT
-        self.stroke_miter_limit = self.INHERIT
-        self.stroke_dash_pattern = self.INHERIT
-        self.stroke_dash_phase = self.INHERIT
-        self.soft_mask = self.INHERIT
+        for key in self.__slots__:
+            setattr(self, key, self.INHERIT)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -646,12 +630,12 @@ class GraphicsStyle:
         return new
 
     def __setattr__(self, name, value):
-        if not hasattr(self.__class__, name):
+        try:
+            super().__setattr__(name, value)
+        except AttributeError as e:
             raise AttributeError(
                 f'{self.__class__} does not have style "{name}" (a typo?)'
-            )
-
-        super().__setattr__(name, value)
+            ) from e
 
     # at some point it probably makes sense to turn this into a general compliance
     # property, but for now this is the simple approach.
@@ -4351,12 +4335,8 @@ class GraphicsContext:
                 emit_style.soft_mask.object_id = resource_registry.register_soft_mask(
                     emit_style.soft_mask
                 )
-            # ---- If fill/stroke use a GradientPaint with alpha, synthesize a soft mask now
-            # Compute bbox once so mask and color share the same mapping
-            bbox_for_units = self.bounding_box(
-                initial_point, style=self.style, expand_for_stroke=False
-            )[0]
 
+            # ---- If fill/stroke use a GradientPaint with alpha, synthesize a soft mask now
             def _attach_alpha_mask_if_needed(paint_obj: GradientPaint):
                 if not isinstance(paint_obj, GradientPaint):
                     return
@@ -4430,6 +4410,15 @@ class GraphicsContext:
             # manually inherit it and emit it here.
             fill_color = self.style.fill_color
             stroke_color = self.style.stroke_color
+
+            bbox_for_units = None
+            if isinstance(fill_color, GradientPaint) or isinstance(
+                stroke_color, GradientPaint
+            ):
+                # Compute bbox once so mask and color share the same mapping
+                bbox_for_units = self.bounding_box(
+                    initial_point, style=self.style, expand_for_stroke=False
+                )[0]
 
             if fill_color not in NO_EMIT_SET:
                 if isinstance(fill_color, GradientPaint):
