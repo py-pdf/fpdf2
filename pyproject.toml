@@ -45,6 +45,16 @@ dependencies = [
   "fonttools>=4.34.0"
 ]
 
+[dependency-groups]
+dev = ["bandit", "black", "pre-commit", "pylint", "semgrep", "zizmor"]
+docs = ["lxml", "mkdocs", "mkdocs-git-revision-date-localized-plugin", "mkdocs-include-markdown-plugin", "mkdocs-macros-plugin", "mkdocs-material", "mkdocs-minify-plugin", "mkdocs-redirects", "mkdocs-with-pdf", "mknotebooks"]
+test = ["camelot-py[base]", "endesive[full]", "pytest", "pytest-cov", "qrcode", "tabula-py", "uharfbuzz"]
+full = [
+    {include-group = "dev"},
+    {include-group = "docs"},
+    {include-group = "test"},
+]
+
 [project.urls]
 Homepage = "https://py-pdf.github.io/fpdf2/"
 Documentation = "https://py-pdf.github.io/fpdf2/"
