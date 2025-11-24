@@ -71,7 +71,7 @@ jobs:
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Scan project with grype 🔎
-        uses: anchore/scan-action@3aaf50d765cfcceafa51d322ccb790e40f6cd8c5 # v7.2.0
+        uses: anchore/scan-action@40a61b52209e9d50e87917c5b901783d546b12d0 # v7.2.1
         with:
           path: "."
           fail-build: true
