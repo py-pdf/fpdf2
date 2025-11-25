@@ -53,7 +53,7 @@ jobs:
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade .[full]
+          pip install --upgrade .[dev]
       # Running zizmor 1st, because it is blocking PR merge
       - name: Run zizmor 🌈
         run: zizmor --format=sarif . > results.sarif
@@ -81,7 +81,7 @@ jobs:
         # TODO: temporarily executed on branches to test PR #1671 - Uncomment line above before merging
         run: |
           pip install guarddog
-          time guarddog pypi verify .[full]
+          time guarddog pypi verify .[dev]
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
         uses: crate-ci/typos@626c4bedb751ce0b7f03262ca97ddda9a076ae1c # v1.39.2
@@ -133,7 +133,7 @@ jobs:
             echo "Created empty $CONSTRAINTS_FILE"
           fi
           # --- Install dependencies respecting constraints ---
-          pip install --upgrade .[full] -c "$CONSTRAINTS_FILE"
+          pip install --upgrade .[dev,test] -c "$CONSTRAINTS_FILE"
       - name: Run tests ☑
         shell: bash
         env:
