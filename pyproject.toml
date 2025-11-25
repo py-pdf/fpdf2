@@ -65,6 +65,7 @@ docs = [
   "mkdocs-redirects", 
   "mkdocs-with-pdf", 
   "mknotebooks",
+  "pdoc3",
 ]
 test = [
   "camelot-py[base]",

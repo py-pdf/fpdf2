@@ -53,7 +53,7 @@ jobs:
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade .[dev]
+          pip install --upgrade .[dev,test]
       # Running zizmor 1st, because it is blocking PR merge
       - name: Run zizmor 🌈
         run: zizmor --format=sarif . > results.sarif
