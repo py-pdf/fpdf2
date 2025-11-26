@@ -80,7 +80,7 @@ jobs:
         # if: github.ref == 'refs/heads/master'
         # TODO: temporarily executed on branches to test PR #1671 - Uncomment line above before merging
         run: |
-          pip install guarddog tomllib
+          pip install guarddog
           python scripts/generate-dependencies-list.py pyproject.toml fpdf2-full-requirements.txt
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
