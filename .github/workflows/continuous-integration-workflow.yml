@@ -80,8 +80,9 @@ jobs:
         # if: github.ref == 'refs/heads/master'
         # TODO: temporarily executed on branches to test PR #1671 - Uncomment line above before merging
         run: |
-          pip install guarddog
-          time guarddog pypi verify .[dev]
+          pip install guarddog tomllib
+          python scripts/generate-dependencies-list.py pyproject.toml fpdf2-full-requirements.txt
+          time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
         uses: crate-ci/typos@626c4bedb751ce0b7f03262ca97ddda9a076ae1c # v1.39.2
