@@ -10,8 +10,7 @@ import tomllib
 def main(pyproject_path: str, out_path: str) -> int:
     pyproject_file = Path(pyproject_path)
     if not pyproject_file.is_file():
-        print(f"ERROR: pyproject.toml not found at {pyproject_file}", file=sys.stderr)
-        return 1
+        raise RuntimeError(f"pyproject.toml not found at {pyproject_file}")
 
     data = tomllib.loads(pyproject_file.read_text(encoding="utf-8"))
 
@@ -37,10 +36,9 @@ def main(pyproject_path: str, out_path: str) -> int:
     out_file = Path(out_path)
     out_file.write_text("\n".join(combined) + "\n", encoding="utf-8")
     print(f"Wrote {len(combined)} dependencies to {out_file}")
-    return 0
 
 
 if __name__ == "__main__":
     pyproject_arg = sys.argv[1] if len(sys.argv) > 1 else "pyproject.toml"
     out_arg = sys.argv[2] if len(sys.argv) > 2 else "fpdf2-full-requirements.txt"
-    raise SystemExit(main(pyproject_arg, out_arg))
+    main(pyproject_arg, out_arg)

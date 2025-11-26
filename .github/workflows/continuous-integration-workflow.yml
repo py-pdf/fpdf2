@@ -77,8 +77,7 @@ jobs:
           fail-build: true
       - name: Scan project dependencies with guarddog 🐶
         # GuardDog is very slow, we only execute it on the master branch:
-        # if: github.ref == 'refs/heads/master'
-        # TODO: temporarily executed on branches to test PR #1671 - Uncomment line above before merging
+        if: github.ref == 'refs/heads/master'
         run: |
           pip install guarddog
           python scripts/generate-dependencies-list.py pyproject.toml fpdf2-full-requirements.txt
