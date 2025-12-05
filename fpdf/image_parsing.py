@@ -370,7 +370,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(img, alpha_channel) and image_filter not in (
+        if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
@@ -394,7 +394,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         info["pal"] = img.palette.palette
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(img, alpha_channel) and image_filter not in (
+        if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
@@ -409,7 +409,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         alpha_channel = slice(3, None, 4)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(img, alpha_channel) and image_filter not in (
+        if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
@@ -709,6 +709,7 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
     return zlib.compress(data_with_padding, level=SETTINGS.compression_level)
 
 
-def _has_alpha(img, alpha_channel):
-    alpha = bytearray(img.tobytes())[alpha_channel]
-    return any(c != 255 for c in alpha)
+def _has_alpha(img):
+    if numpy is not None:
+        return (numpy.asarray(img.getchannel("A")) != 255).any()
+    return any(c != 255 for c in img.getchannel("A").tobytes())

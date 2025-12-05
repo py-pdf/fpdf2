@@ -201,7 +201,7 @@ logging.getLogger("fpdf.svg").propagate = False
 - basic stroke styling
 - inline CSS styling via `style="..."` attributes
 - clipping paths
-
+- gradients: `<linearGradient>` and `<radialGradient>` elements with stops, opacity, transforms, and spread methods
 
 ## Currently Unsupported Notable SVG Features ##
 
@@ -219,7 +219,6 @@ There are some common SVG features that are currently **unsupported**, but that 
 - `<symbol>`
 - `<marker>`
 - `<pattern>`
-- gradients: `<linearGradient>` & `<radialGradient>`
 - embedded non-image content (including nested SVGs)
 - many standard attributes
 - CSS styling via `<style>` tags or external *.css files.

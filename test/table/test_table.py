@@ -313,6 +313,18 @@ def test_table_with_internal_layout(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_internal_layout.pdf", tmp_path)
 
 
+def test_empty_table_with_internal_layout(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(borders_layout="INTERNAL") as table:
+        for y in range(3):
+            row = table.row()
+            for x in range(3):
+                row.cell()
+    assert_pdf_equal(pdf, HERE / "empty_table_with_internal_layout.pdf", tmp_path)
+
+
 def test_table_with_minimal_layout(tmp_path):
     pdf = FPDF()
     pdf.add_page()

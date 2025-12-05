@@ -15,7 +15,7 @@ from typing import NamedTuple, Optional, Tuple
 
 from fontTools.svgLib.path import parse_path
 
-from .enums import PathPaintRule
+from .enums import PathPaintRule, GradientUnits, GradientSpreadMethod
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -28,10 +28,12 @@ except ImportError:
 
 from . import html
 from .drawing_primitives import color_from_hex_string, color_from_rgb_string, Transform
+from .pattern import shape_linear_gradient, shape_radial_gradient
 
 from .drawing import (
     GraphicsContext,
     GraphicsStyle,
+    GradientPaint,
     PaintedPath,
     PathPen,
     ClippingPath,
@@ -277,7 +279,14 @@ def optional(value, converter=lambda noop: noop):
 # harder to assemble into something coherently understandable
 svg_attr_map = {
     # https://www.w3.org/TR/SVG11/painting.html#FillProperty
-    "fill": lambda colorstr: ("fill_color", optional(colorstr, svgcolor)),
+    "fill": lambda colorstr: (
+        "fill_color",
+        (
+            optional(colorstr, svgcolor)
+            if not (colorstr and colorstr.startswith("url("))
+            else None
+        ),
+    ),
     # https://www.w3.org/TR/SVG11/painting.html#FillRuleProperty
     "fill-rule": lambda fillrulestr: ("intersection_rule", inheritable(fillrulestr)),
     # https://www.w3.org/TR/SVG11/painting.html#FillOpacityProperty
@@ -286,7 +295,14 @@ svg_attr_map = {
         inheritable(filopstr, clamp_float(0.0, 1.0)),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeProperty
-    "stroke": lambda colorstr: ("stroke_color", optional(colorstr, svgcolor)),
+    "stroke": lambda colorstr: (
+        "stroke_color",
+        (
+            optional(colorstr, svgcolor)
+            if not (colorstr and colorstr.startswith("url("))
+            else None
+        ),
+    ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeWidthProperty
     "stroke-width": lambda valuestr: (
         "stroke_width",
@@ -808,6 +824,7 @@ class SVGObject:
         self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
         self.css_class_styles = {}
+        self.gradient_definitions = {}  # Store parsed gradients by ID
 
         # disabling bandit rule as we use defusedxml:
         svg_tree = parse_xml_str(svg_text)  # nosec B314
@@ -863,6 +880,273 @@ class SVGObject:
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
         return style_map
+
+    @force_nodocument
+    @staticmethod
+    def _convert_gradient_coordinate(value, default="0"):
+        """Convert SVG gradient coordinate (percentage or number) to float."""
+        if value is None or value == "":
+            value = default
+
+        value = value.strip()
+
+        if value.endswith("%"):
+            return float(value[:-1]) / 100.0
+
+        try:
+            return float(value)
+        except ValueError:
+            try:
+                return resolve_length(value)
+            except ValueError:
+                LOGGER.warning(
+                    "Could not parse gradient coordinate '%s', using 0", value
+                )
+                return 0.0
+
+    @force_nodocument
+    @staticmethod
+    def _parse_gradient_stops(gradient_element):
+        """Parse <stop> children of a gradient element."""
+        stops = []
+
+        for stop_element in gradient_element:
+            tag_name = without_ns(stop_element.tag)
+            if tag_name != "stop":
+                continue
+
+            offset_str = stop_element.attrib.get("offset")
+            if offset_str is None:
+                LOGGER.warning("Found <stop> without offset, skipping")
+                continue
+
+            offset_str = offset_str.strip()
+            if offset_str.endswith("%"):
+                offset = float(offset_str[:-1]) / 100.0
+            else:
+                offset = float(offset_str)
+
+            offset = max(0.0, min(1.0, offset))
+
+            stop_color = None
+            stop_opacity = 1.0
+
+            style = stop_element.attrib.get("style", "")
+            if style:
+                style_dict = html.parse_css_style(style)
+                stop_color = style_dict.get("stop-color")
+                stop_opacity_str = style_dict.get("stop-opacity")
+                if stop_opacity_str:
+                    try:
+                        stop_opacity = float(stop_opacity_str)
+                    except ValueError:
+                        LOGGER.warning(
+                            "Invalid stop-opacity value: %s", stop_opacity_str
+                        )
+
+            if stop_color is None:
+                stop_color = stop_element.attrib.get("stop-color", "black")
+
+            if "stop-opacity" in stop_element.attrib:
+                try:
+                    stop_opacity = float(stop_element.attrib.get("stop-opacity"))
+                except ValueError:
+                    pass
+
+            try:
+                color_obj = svgcolor(stop_color)
+
+                if stop_opacity < 1.0:
+                    if hasattr(color_obj, "b"):
+                        color_obj = type(color_obj)(
+                            color_obj.r, color_obj.g, color_obj.b, stop_opacity
+                        )
+                    elif hasattr(color_obj, "g"):
+                        color_obj = type(color_obj)(color_obj.g, stop_opacity)
+
+                stops.append((offset, color_obj))
+
+            except (ValueError, KeyError) as e:
+                LOGGER.warning("Could not parse stop color '%s': %s", stop_color, e)
+                continue
+
+        return stops
+
+    @force_nodocument
+    @staticmethod
+    def _extract_gradient_id(url_value):
+        """Extract gradient ID from url(#id) format."""
+        if not url_value or not isinstance(url_value, str):
+            return None
+
+        match = re.search(r'url\(\s*["\']?\s*#([^)"\'\s]+)', url_value)
+        if match:
+            return "#" + match.group(1)
+
+        return None
+
+    @force_nodocument
+    def _parse_linear_gradient(self, grad_element):
+        """Parse a <linearGradient> element and store it in gradient_definitions."""
+        grad_id = grad_element.attrib.get("id")
+        if not grad_id:
+            LOGGER.warning("Found <linearGradient> without id attribute, skipping")
+            return
+
+        if not grad_id.startswith("#"):
+            grad_id = "#" + grad_id
+
+        x1 = grad_element.attrib.get("x1", "0%")
+        y1 = grad_element.attrib.get("y1", "0%")
+        x2 = grad_element.attrib.get("x2", "100%")
+        y2 = grad_element.attrib.get("y2", "0%")
+
+        x1_val = self._convert_gradient_coordinate(x1, "0")
+        y1_val = self._convert_gradient_coordinate(y1, "0")
+        x2_val = self._convert_gradient_coordinate(x2, "1")
+        y2_val = self._convert_gradient_coordinate(y2, "0")
+
+        units_str = grad_element.attrib.get("gradientUnits", "objectBoundingBox")
+        if units_str == "userSpaceOnUse":
+            units = GradientUnits.USER_SPACE_ON_USE
+        else:
+            units = GradientUnits.OBJECT_BOUNDING_BOX
+
+        spread_str = grad_element.attrib.get("spreadMethod", "pad")
+        try:
+            spread_method = GradientSpreadMethod.coerce(spread_str)
+        except (ValueError, AttributeError):
+            spread_method = GradientSpreadMethod.PAD
+            LOGGER.warning("Invalid spreadMethod '%s', using PAD", spread_str)
+
+        transform = None
+        transform_str = grad_element.attrib.get("gradientTransform")
+        if transform_str:
+            try:
+                transform = convert_transforms(transform_str)
+            except (ValueError, AttributeError, TypeError) as e:
+                LOGGER.warning("Could not parse gradientTransform: %s", e)
+
+        stops = self._parse_gradient_stops(grad_element)
+
+        if not stops:
+            LOGGER.warning("Linear gradient '%s' has no valid stops, skipping", grad_id)
+            return
+
+        gradient = shape_linear_gradient(
+            x1=x1_val,
+            y1=y1_val,
+            x2=x2_val,
+            y2=y2_val,
+            stops=stops,
+            spread_method=spread_method,
+        )
+
+        gradient_paint = GradientPaint(
+            gradient=gradient,
+            units=units,
+            gradient_transform=transform or Transform.identity(),
+            spread_method=spread_method,
+        )
+
+        self.gradient_definitions[grad_id] = gradient_paint
+
+        LOGGER.debug("Parsed linear gradient '%s' with %d stops", grad_id, len(stops))
+
+    @force_nodocument
+    def _parse_radial_gradient(self, grad_element):
+        """Parse a <radialGradient> element and store it in gradient_definitions."""
+        grad_id = grad_element.attrib.get("id")
+        if not grad_id:
+            LOGGER.warning("Found <radialGradient> without id attribute, skipping")
+            return
+
+        if not grad_id.startswith("#"):
+            grad_id = "#" + grad_id
+
+        cx = grad_element.attrib.get("cx", "50%")
+        cy = grad_element.attrib.get("cy", "50%")
+        r = grad_element.attrib.get("r", "50%")
+        fx = grad_element.attrib.get("fx", cx)
+        fy = grad_element.attrib.get("fy", cy)
+        fr = grad_element.attrib.get("fr", "0%")
+
+        cx_val = self._convert_gradient_coordinate(cx, "0.5")
+        cy_val = self._convert_gradient_coordinate(cy, "0.5")
+        r_val = self._convert_gradient_coordinate(r, "0.5")
+        fx_val = self._convert_gradient_coordinate(fx, str(cx_val))
+        fy_val = self._convert_gradient_coordinate(fy, str(cy_val))
+        fr_val = self._convert_gradient_coordinate(fr, "0")
+
+        if r_val <= 0:
+            LOGGER.warning(
+                "Radial gradient '%s' has invalid radius %s, skipping", grad_id, r_val
+            )
+            return
+
+        units_str = grad_element.attrib.get("gradientUnits", "objectBoundingBox")
+        units = (
+            GradientUnits.USER_SPACE_ON_USE
+            if units_str == "userSpaceOnUse"
+            else GradientUnits.OBJECT_BOUNDING_BOX
+        )
+
+        spread_str = grad_element.attrib.get("spreadMethod", "pad")
+        try:
+            spread_method = GradientSpreadMethod.coerce(spread_str)
+        except (ValueError, AttributeError):
+            spread_method = GradientSpreadMethod.PAD
+
+        transform = None
+        transform_str = grad_element.attrib.get("gradientTransform")
+        if transform_str:
+            try:
+                transform = convert_transforms(transform_str)
+            except (ValueError, AttributeError, TypeError) as e:
+                LOGGER.warning("Could not parse gradientTransform: %s", e)
+
+        stops = self._parse_gradient_stops(grad_element)
+        if not stops:
+            LOGGER.warning("Radial gradient '%s' has no valid stops, skipping", grad_id)
+            return
+
+        gradient = shape_radial_gradient(
+            cx=cx_val,
+            cy=cy_val,
+            r=r_val,
+            stops=stops,
+            fx=fx_val,
+            fy=fy_val,
+            fr=fr_val,
+            spread_method=spread_method,
+        )
+
+        gradient_paint = GradientPaint(
+            gradient=gradient,
+            units=units,
+            gradient_transform=transform or Transform.identity(),
+            spread_method=spread_method,
+        )
+
+        self.gradient_definitions[grad_id] = gradient_paint
+        LOGGER.debug("Parsed radial gradient '%s' with %d stops", grad_id, len(stops))
+
+    @force_nodocument
+    def _apply_gradient_paint(self, stylable, svg_element, style_map=None):
+        """Apply gradient paint to fill or stroke if a url(#gradientId) reference is found."""
+        fill_value = _get_attr_or_style(svg_element, "fill", style_map)
+        if fill_value:
+            grad_id = self._extract_gradient_id(fill_value)
+            if grad_id and grad_id in self.gradient_definitions:
+                stylable.style.fill_color = self.gradient_definitions[grad_id]
+                LOGGER.debug("Applied gradient %s to fill", grad_id)
+
+        stroke_value = _get_attr_or_style(svg_element, "stroke", style_map)
+        if stroke_value:
+            grad_id = self._extract_gradient_id(stroke_value)
+            if grad_id and grad_id in self.gradient_definitions:
+                stylable.style.stroke_color = self.gradient_definitions[grad_id]
+                LOGGER.debug("Applied gradient %s to stroke", grad_id)
 
     @force_nodocument
     def extract_shape_info(self, root_tag):
@@ -1070,6 +1354,10 @@ class SVGObject:
                 self.build_image(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
+            elif child.tag in xmlns_lookup("svg", "linearGradient"):
+                self._parse_linear_gradient(child)
+            elif child.tag in xmlns_lookup("svg", "radialGradient"):
+                self._parse_radial_gradient(child)
             elif child.tag in xmlns_lookup("svg", "clipPath"):
                 try:
                     clip_id = child.attrib["id"]
@@ -1177,6 +1465,7 @@ class SVGObject:
         style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
         apply_styles(pdf_path, path, style_map)
+        self._apply_gradient_paint(pdf_path, path, style_map)
         self.apply_clipping_path(pdf_path, path, style_map)
         svg_path = path.attrib.get("d")
         if svg_path is not None:
@@ -1191,6 +1480,7 @@ class SVGObject:
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
         apply_styles(shape_path, shape, style_map)
+        self._apply_gradient_paint(shape_path, shape, style_map)
         self.apply_clipping_path(shape_path, shape, style_map)
         self.update_xref(shape.attrib.get("id"), shape_path)
         return shape_path
