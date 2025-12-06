@@ -7,27 +7,19 @@ from dataclasses import dataclass
 from io import BytesIO
 from math import ceil
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, BinaryIO, Iterable, Optional, Tuple, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Iterable,
+    Optional,
+    Tuple,
+    TypeAlias,
+    TypeGuard,
+    Union,
+    cast,
+)
 from urllib.request import urlopen
-
-try:
-    from PIL import Image, ImageCms, TiffImagePlugin, features as PIL_features
-
-    try:
-        from PIL.Image import Resampling
-
-        RESAMPLE = Resampling.LANCZOS
-    except ImportError:  # For Pillow < 9.1.0
-        # pylint: disable=no-member, useless-suppression
-        RESAMPLE = getattr(Image, "ANTIALIAS")
-except ImportError:
-    Image = None  # type: ignore[assignment]
-    PIL_features = None  # type: ignore[assignment]
-
-try:
-    import numpy
-except ImportError:
-    numpy = None  # type: ignore[assignment]
 
 from .errors import FPDFException
 from .image_datastructures import (
@@ -39,9 +31,30 @@ from .image_datastructures import (
 from .svg import SVGObject
 from .util import ImageType
 
+try:
+    from PIL import Image, ImageCms, TiffImagePlugin, features as PIL_features
+except ImportError:
+    Image = None  # type: ignore[assignment]
+    ImageCms = None  # type: ignore[assignment]
+    TiffImagePlugin = None  # type: ignore[assignment]
+    PIL_features = None  # type: ignore[assignment]
+
+try:
+    from PIL.Image import Resampling
+
+    RESAMPLE = Resampling.LANCZOS
+except (ImportError, AttributeError):
+    RESAMPLE = None  # type: ignore[assignment]
+
 if TYPE_CHECKING:
-    # This is only evaluated by the type checker, not at runtime
     from PIL.Image import Image as PILImage
+else:
+    PILImage: TypeAlias = Any
+
+try:
+    import numpy
+except ImportError:
+    numpy = None  # type: ignore[assignment]
 
 
 @dataclass
@@ -137,7 +150,7 @@ def preload_image(
     raster_name: str
     if isinstance(name, str):
         raster_name, img = name, None
-    elif isinstance(name, Image.Image):
+    elif _is_pil_image(name):
         bytes_ = name.tobytes()
         img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
@@ -182,6 +195,10 @@ def preload_image(
 
 def _is_svg(bytes_: bytes) -> bool:
     return bytes_.startswith(b"<?xml ") or bytes_.startswith(b"<svg ")
+
+
+def _is_pil_image(obj: Any) -> TypeGuard[PILImage]:
+    return Image is not None and isinstance(obj, Image.Image)
 
 
 def load_image(filename: str | Path | BinaryIO) -> BinaryIO:
@@ -276,16 +293,21 @@ def get_img_info(
     # Flag to check whether a cmyk image is jpeg or not, if set to True the decode array
     # is inverted in output.py
     jpeg_inverted = False
-    img_raw_data = None
+    img_raw_data: Optional[BinaryIO] = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
         img = Image.open(img_raw_data)
         is_pil_img = False
-    elif not isinstance(img, Image.Image):
+    elif not _is_pil_image(img):
         keep_bytes_io_open = isinstance(img, BytesIO)
-        img_raw_data = BytesIO(img) if isinstance(img, bytes) else img
+        if isinstance(img, bytes):
+            img_raw_data = BytesIO(img)
+        else:
+            img_raw_data = cast(BinaryIO, img)
+        assert img_raw_data is not None
         img = Image.open(img_raw_data)
         is_pil_img = False
+    assert _is_pil_image(img)
 
     img_altered = False
     if dims:
@@ -510,7 +532,7 @@ class temp_attr:
             delattr(self.obj, self.field)
 
 
-def ccitt_payload_location_from_pil(img: Image.Image) -> tuple[int, int]:
+def ccitt_payload_location_from_pil(img: "PILImage") -> tuple[int, int]:
     """
     returns the byte offset and length of the CCITT payload in the original TIFF data
     """
@@ -534,7 +556,7 @@ def ccitt_payload_location_from_pil(img: Image.Image) -> tuple[int, int]:
     return offset, length
 
 
-def transcode_monochrome(img: Image.Image) -> bytes:
+def transcode_monochrome(img: "PILImage") -> bytes:
     """
     Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
 
@@ -588,7 +610,7 @@ def transcode_monochrome(img: Image.Image) -> bytes:
 
 
 def _to_lzwdata(
-    img: Image.Image,
+    img: "PILImage",
     remove_slice: slice | None = None,
     select_slice: slice | None = None,
 ) -> bytes:
@@ -707,7 +729,7 @@ def clear_table() -> tuple[dict[bytes, int], int, int, int]:
     return table, next_code, bits_per_code, max_code_value
 
 
-def _to_data(img: Image.Image, image_filter: ImageFilter, **kwargs: Any) -> bytes:
+def _to_data(img: "PILImage", image_filter: ImageFilter, **kwargs: Any) -> bytes:
     if image_filter == "FlateDecode":
         return _to_zdata(img, **kwargs)
 
@@ -737,7 +759,7 @@ def _to_data(img: Image.Image, image_filter: ImageFilter, **kwargs: Any) -> byte
 
 
 def _to_zdata(
-    img: Image.Image,
+    img: "PILImage",
     remove_slice: slice | None = None,
     select_slice: slice | None = None,
 ) -> bytes:
@@ -761,7 +783,7 @@ def _to_zdata(
     return zlib.compress(data_with_padding, level=SETTINGS.compression_level)
 
 
-def _has_alpha(img: Image.Image) -> bool:
+def _has_alpha(img: "PILImage") -> bool:
     if numpy is not None:
         return cast(bool, (numpy.asarray(img.getchannel("A")) != 255).any())
     return any(c != 255 for c in img.getchannel("A").tobytes())

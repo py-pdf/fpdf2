@@ -357,7 +357,7 @@ class TTFFont:
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
-        self._hbfont: Optional[HarfBuzzFont] = None
+        self._hbfont: Optional["HarfBuzzFont"] = None
         self.fontkey = fontkey
         self.biggest_size_pt: float = 0
 
@@ -506,7 +506,7 @@ class TTFFont:
 
     # pylint: disable=no-member
     @property
-    def hbfont(self) -> HarfBuzzFont:
+    def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
             self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         return self._hbfont
