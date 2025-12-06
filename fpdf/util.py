@@ -6,44 +6,87 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
+import decimal
 import gc
 import os
 import warnings
 
 # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.9)
 from importlib import resources
-from numbers import Number
+from pathlib import Path
 from tracemalloc import get_traced_memory, is_tracing
-from typing import Iterable, NamedTuple, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Iterable,
+    NamedTuple,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
+
+if TYPE_CHECKING:
+    from PIL.Image import Image as PILImage
+
+    from .svg import SVGObject
+
+ImageType = Union[str, bytes, BinaryIO, "PILImage", Path, None]
+ImageClass = (str, bytes, BinaryIO, "PILImage", Path)
+ImageData = Union["SVGObject", "PILImage", bytes, BinaryIO, Path, None]
+SVGObjectType = TypeVar("SVGObjectType", bound="SVGObject")
+Number = Union[int, float, decimal.Decimal]
+NumberClass = (int, float, decimal.Decimal)
+_StrBytes = TypeVar("_StrBytes", str, bytes)
 
 # default block size from src/libImaging/Storage.c:
 PIL_MEM_BLOCK_SIZE_IN_MIB = 16
 
 
 class Padding(NamedTuple):
-    top: Number = 0
-    right: Number = 0
-    bottom: Number = 0
-    left: Number = 0
+    top: float = 0
+    right: float = 0
+    bottom: float = 0
+    left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[int, float, tuple, list]):
+    def new(cls, padding: Number | Sequence[Number] | "Padding") -> "Padding":
         """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
-        if isinstance(padding, (int, float)):
-            return Padding(padding, padding, padding, padding)
+        if isinstance(padding, NumberClass):
+            return Padding(
+                float(padding), float(padding), float(padding), float(padding)
+            )
         if len(padding) == 2:
-            return Padding(padding[0], padding[1], padding[0], padding[1])
+            return Padding(
+                float(padding[0]),
+                float(padding[1]),
+                float(padding[0]),
+                float(padding[1]),
+            )
         if len(padding) == 3:
-            return Padding(padding[0], padding[1], padding[2], padding[1])
+            return Padding(
+                float(padding[0]),
+                float(padding[1]),
+                float(padding[2]),
+                float(padding[1]),
+            )
         if len(padding) == 4:
-            return Padding(*padding)
+            return Padding(
+                float(padding[0]),
+                float(padding[1]),
+                float(padding[2]),
+                float(padding[3]),
+            )
 
         raise ValueError(
             f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
         )
 
 
-def buffer_subst(buffer, placeholder, value):
+def buffer_subst(buffer: bytearray, placeholder: str, value: str) -> bytearray:
     buffer_size = len(buffer)
     assert len(placeholder) == len(value), f"placeholder={placeholder} value={value}"
     buffer = buffer.replace(placeholder.encode(), value.encode(), 1)
@@ -51,7 +94,15 @@ def buffer_subst(buffer, placeholder, value):
     return buffer
 
 
-def escape_parens(s):
+@overload
+def escape_parens(s: str) -> str: ...
+
+
+@overload
+def escape_parens(s: bytes) -> bytes: ...
+
+
+def escape_parens(s: _StrBytes) -> _StrBytes:
     """Add a backslash character before , ( and )"""
     if isinstance(s, str):
         return (
@@ -79,7 +130,7 @@ def get_scale_factor(unit: Union[str, Number]) -> float:
     Raises:
         ValueError
     """
-    if isinstance(unit, Number):
+    if isinstance(unit, NumberClass):
         return float(unit)
 
     if unit == "pt":
@@ -94,10 +145,10 @@ def get_scale_factor(unit: Union[str, Number]) -> float:
 
 
 def convert_unit(
-    to_convert: Union[float, int, Iterable[Union[float, int, Iterable]]],
+    to_convert: Number | Iterable[Any],
     old_unit: Union[str, Number],
     new_unit: Union[str, Number],
-) -> Union[float, tuple]:
+) -> Union[float, tuple[Any, ...]]:
     """
      Convert a number or sequence of numbers from one unit to another.
 
@@ -113,7 +164,22 @@ def convert_unit(
     unit_conversion_factor = get_scale_factor(new_unit) / get_scale_factor(old_unit)
     if isinstance(to_convert, Iterable):
         return tuple(convert_unit(i, 1, unit_conversion_factor) for i in to_convert)
-    return to_convert / unit_conversion_factor
+    return float(to_convert) / unit_conversion_factor
+
+
+def number_to_str(number: Number) -> str:
+    """
+    Convert a decimal number to a minimal string representation (no trailing 0 or .).
+
+    Args:
+        number (Number): the number to be converted to a string.
+
+    Returns:
+        The number's string representation.
+    """
+    # this approach tries to produce minimal representations of floating point numbers
+    # but can also produce "-0".
+    return f"{number:.4f}".rstrip("0").rstrip(".")
 
 
 ROMAN_NUMERAL_MAP = (
@@ -133,7 +199,7 @@ ROMAN_NUMERAL_MAP = (
 )
 
 
-def int2roman(n):
+def int2roman(n: int) -> str:
     "Convert an integer to Roman numeral"
     result = ""
     if n is None:
@@ -173,7 +239,9 @@ def format_number(x: float, digits: int = 8) -> str:
     return s
 
 
-def get_parsed_unicode_range(unicode_range):
+def get_parsed_unicode_range(
+    unicode_range: str | Sequence[str | int | tuple[int, int]],
+) -> set[int]:
     """
     Parse unicode_range parameter into a set of codepoints.
 
@@ -190,7 +258,7 @@ def get_parsed_unicode_range(unicode_range):
     if unicode_range is not None and len(unicode_range) == 0:
         raise ValueError("unicode_range cannot be empty")
 
-    codepoints = set()
+    codepoints: Set[int] = set()
 
     if isinstance(unicode_range, str):
         unicode_range = [item.strip() for item in unicode_range.split(",")]
@@ -250,11 +318,11 @@ def get_parsed_unicode_range(unicode_range):
 ################################################################################
 
 
-def print_mem_usage(prefix):
+def print_mem_usage(prefix: str) -> None:
     print(get_mem_usage(prefix))
 
 
-def get_mem_usage(prefix) -> str:
+def get_mem_usage(prefix: str) -> str:
     _collected_count = gc.collect()
     rss = get_process_rss()
     # heap_size, stack_size = get_process_heap_and_stack_sizes()
@@ -289,7 +357,7 @@ def get_process_rss_as_mib() -> Union[Number, None]:
         return None
 
 
-def get_process_heap_and_stack_sizes() -> Tuple[str]:
+def get_process_heap_and_stack_sizes() -> Tuple[str, str]:
     heap_size_in_mib, stack_size_in_mib = "<unavailable>", "<unavailable>"
     pid = os.getpid()
     try:
@@ -300,8 +368,8 @@ def get_process_heap_and_stack_sizes() -> Tuple[str]:
     for line in maps_lines:
         words = line.split()
         addr_range, path = words[0], words[-1]
-        addr_start, addr_end = addr_range.split("-")
-        addr_start, addr_end = int(addr_start, 16), int(addr_end, 16)
+        addr_start_str, addr_end_str = addr_range.split("-")
+        addr_start, addr_end = int(addr_start_str, 16), int(addr_end_str, 16)
         size = addr_end - addr_start
         if path == "[heap]":
             heap_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
@@ -310,7 +378,7 @@ def get_process_heap_and_stack_sizes() -> Tuple[str]:
     return heap_size_in_mib, stack_size_in_mib
 
 
-def get_pymalloc_allocated_over_total_size() -> Tuple[str]:
+def get_pymalloc_allocated_over_total_size() -> str:
     """
     Get PyMalloc stats from sys._debugmallocstats()
     From experiments, not very reliable
@@ -354,6 +422,6 @@ def get_pillow_allocated_memory() -> str:
     # pylint: disable=c-extension-no-member,import-outside-toplevel
     from PIL import Image
 
-    stats = Image.core.get_stats()
+    stats = Image.core.get_stats()  # type: ignore[attr-defined]
     blocks_in_use = stats["allocated_blocks"] - stats["freed_blocks"]
     return f"{blocks_in_use * PIL_MEM_BLOCK_SIZE_IN_MIB:.1f} MiB"

@@ -1,21 +1,35 @@
-from abc import ABC
 import warnings
+from abc import ABC
+from typing import TYPE_CHECKING, Optional, Union
 
 from .syntax import PDFString, build_obj_dict, create_dictionary_string
 
+if TYPE_CHECKING:
+    from .encryption import StandardSecurityHandler
+    from .syntax import Destination
+
 
 class Action(ABC):
-    def __init__(self, next_action=None):
+    def __init__(self, next_action: Optional["Action"] = None) -> None:
         """
         Args:
             next (PDFObject | str): optional reference to another Action to trigger after this one
         """
         self.next = next_action
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         raise NotImplementedError
 
-    def _serialize(self, key_values=None, _security_handler=None, _obj_id=None):
+    def _serialize(
+        self,
+        key_values: Optional[dict[str, object]] = None,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         if key_values is None:
             key_values = {}
         if self.next:
@@ -25,11 +39,15 @@ class Action(ABC):
 
 
 class URIAction(Action):
-    def __init__(self, uri, next_action=None):
-        super().__init__(next)
+    def __init__(self, uri: str, next_action: Optional[Action] = None) -> None:
+        super().__init__(next_action)
         self.uri = uri
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         return super()._serialize(
             {"s": "/URI", "u_r_i": PDFString(self.uri, encrypt=True)},
             _security_handler=_security_handler,
@@ -38,13 +56,17 @@ class URIAction(Action):
 
 
 class NamedAction(Action):
-    def __init__(self, action_name, next_action=None):
-        super().__init__(next)
+    def __init__(self, action_name: str, next_action: Optional[Action] = None) -> None:
+        super().__init__(next_action)
         if action_name not in ("NextPage", "PrevPage", "FirstPage", "LastPage"):
             warnings.warn("Non-standard named action added")
         self.action_name = action_name
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         return super()._serialize(
             {"s": "/Named", "n": f"/{self.action_name}"},
             _security_handler=_security_handler,
@@ -53,13 +75,19 @@ class NamedAction(Action):
 
 
 class GoToAction(Action):
-    def __init__(self, dest, next_action=None):
+    def __init__(
+        self, dest: Union[str, "Destination"], next_action: Optional[Action] = None
+    ) -> None:
         super().__init__(next_action)
         if isinstance(dest, str) and dest.startswith("#"):
             dest = PDFString(dest[1:], encrypt=True)
         self.dest = dest
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         return super()._serialize(
             {"s": "/GoTo", "d": self.dest},
             _security_handler=_security_handler,
@@ -68,12 +96,18 @@ class GoToAction(Action):
 
 
 class GoToRemoteAction(Action):
-    def __init__(self, file, dest, next_action=None):
+    def __init__(
+        self, file: str, dest: "Destination", next_action: Optional[Action] = None
+    ) -> None:
         super().__init__(next_action)
         self.file = file
         self.dest = dest
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         return super()._serialize(
             {"s": "/GoToR", "f": PDFString(self.file, encrypt=True), "d": self.dest},
             _security_handler=_security_handler,
@@ -84,11 +118,15 @@ class GoToRemoteAction(Action):
 class LaunchAction(Action):
     "As of 2022, this does not seem honored by neither Adobe Acrobat nor Sumatra readers."
 
-    def __init__(self, file, next_action=None):
+    def __init__(self, file: str, next_action: Optional[Action] = None) -> None:
         super().__init__(next_action)
         self.file = file
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         return super()._serialize(
             {"s": "/Launch", "f": PDFString(self.file, encrypt=True)},
             _security_handler=_security_handler,
