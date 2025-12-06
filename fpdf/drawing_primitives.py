@@ -16,53 +16,50 @@ All higher-level drawing features (paths, patterns, gradients, etc.) build on
 top of these primitives.
 """
 
-import decimal
 import math
-
-# type alias:
 from collections.abc import Sequence
-from typing import NamedTuple, Optional, Union
+from dataclasses import dataclass
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Iterator,
+    Optional,
+    TypeAlias,
+    TypeVar,
+    Union,
+)
 
+from .util import Number, NumberClass, number_to_str
+
+if TYPE_CHECKING:
+    from .drawing import Renderable
+
+__pdoc__: dict[str, bool | str] = {}
 __pdoc__ = {"force_nodocument": False}
 
+Color: TypeAlias = Union["DeviceRGB", "DeviceGray", "DeviceCMYK"]
+ColorInput: TypeAlias = Number | Color | str | Sequence[Number]
+F = TypeVar("F", bound=Callable[..., object])
 
-def force_nodocument(item):
+
+def force_nodocument(item: F) -> F:
     """A decorator that forces pdoc not to document the decorated item (class or method)"""
     __pdoc__[item.__qualname__] = False
     return item
 
 
 @force_nodocument
-def force_document(item):
+def force_document(item: F) -> F:
     """A decorator that forces pdoc to document the decorated item (class or method)"""
     __pdoc__[item.__qualname__] = True
     return item
 
 
-Number = Union[int, float, decimal.Decimal]
-NumberClass = (int, float, decimal.Decimal)
-
-
-def check_range(value, minimum=0.0, maximum=1.0):
+def check_range(value: Number, minimum: float = 0.0, maximum: float = 1.0) -> Number:
     if not minimum <= value <= maximum:
         raise ValueError(f"{value} not in range [{minimum}, {maximum}]")
 
     return value
-
-
-def number_to_str(number):
-    """
-    Convert a decimal number to a minimal string representation (no trailing 0 or .).
-
-    Args:
-        number (Number): the number to be converted to a string.
-
-    Returns:
-        The number's string representation.
-    """
-    # this approach tries to produce minimal representations of floating point numbers
-    # but can also produce "-0".
-    return f"{number:.4f}".rstrip("0").rstrip(".")
 
 
 # We allow passing alpha in as None instead of a numeric quantity, which signals to the
@@ -70,14 +67,8 @@ def number_to_str(number):
 # causing it to be inherited from the parent.
 
 
-# this weird inheritance is used because for some reason normal NamedTuple usage doesn't
-# allow overriding __new__, even though it works just as expected this way.
-class DeviceRGB(
-    NamedTuple(
-        "DeviceRGB",
-        [("r", Number), ("g", Number), ("b", Number), ("a", Optional[Number])],
-    )
-):
+@dataclass(frozen=True, slots=True, init=False)
+class DeviceRGB:
     """A class representing a PDF DeviceRGB color."""
 
     # This follows a common PDF drawing operator convention where the operand is upcased
@@ -94,30 +85,44 @@ class DeviceRGB(
     # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
     # in the current graphics state dictionary and does not exist as a standalone
     # directive.
-    OPERATOR = "rg"
-    """The PDF drawing operator used to specify this type of color."""
 
-    def __new__(cls, r, g, b, a=None):
-        if a is not None:
-            check_range(a)
+    r: float
+    g: float
+    b: float
+    a: Optional[float]
 
-        return super().__new__(cls, check_range(r), check_range(g), check_range(b), a)
+    def __init__(
+        self,
+        r: Number,
+        g: Number,
+        b: Number,
+        a: Optional[Number] = None,
+    ) -> None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, "r", float(check_range(r)))
+        object.__setattr__(self, "g", float(check_range(g)))
+        object.__setattr__(self, "b", float(check_range(b)))
+        object.__setattr__(self, "a", float(check_range(a)) if a is not None else None)
 
     @property
-    def colors(self):
+    def operator(self) -> str:
+        "The PDF drawing operator used to specify this type of color."
+        return "rg"
+
+    @property
+    def colors(self) -> tuple[float, float, float]:
         "The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1."
-        return self[:-1]
+        return (self.r, self.g, self.b)
 
     @property
-    def colors255(self):
+    def colors255(self) -> tuple[float, float, float]:
         "The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255."
-        return tuple(255 * v for v in self.colors)
+        return (255 * self.r, 255 * self.g, 255 * self.b)
 
     def serialize(self) -> str:
-        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
+        return " ".join(number_to_str(val) for val in self.colors) + f" {self.operator}"
 
     def is_achromatic(self) -> bool:
-        # Treat tiny diffs as equal to avoid float noise
         return abs(self.r - self.g) < 1e-9 and abs(self.g - self.b) < 1e-9
 
     def to_gray(self) -> "DeviceGray":
@@ -125,7 +130,6 @@ class DeviceRGB(
         return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)
 
 
-__pdoc__["DeviceRGB.OPERATOR"] = False
 __pdoc__["DeviceRGB.r"] = "The red color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceRGB.g"] = "The green color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceRGB.b"] = "The blue color component. Must be in the interval [0, 1]."
@@ -140,40 +144,41 @@ transparency rather than specifying fully transparent or fully opaque.
 """
 
 
-# this weird inheritance is used because for some reason normal NamedTuple usage doesn't
-# allow overriding __new__, even though it works just as expected this way.
-class DeviceGray(
-    NamedTuple(
-        "DeviceGray",
-        [("g", Number), ("a", Optional[Number])],
-    )
-):
+@dataclass(frozen=True, slots=True, init=False)
+class DeviceGray:
     """A class representing a PDF DeviceGray color."""
 
-    OPERATOR = "g"
-    """The PDF drawing operator used to specify this type of color."""
+    g: float
+    a: Optional[float]
 
-    def __new__(cls, g, a=None):
-        if a is not None:
-            check_range(a)
-
-        return super().__new__(cls, check_range(g), a)
+    def __init__(
+        self,
+        g: Number,
+        a: Optional[Number] = None,
+    ) -> None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, "g", float(check_range(g)))
+        object.__setattr__(self, "a", float(check_range(a)) if a is not None else None)
 
     @property
-    def colors(self):
+    def operator(self) -> str:
+        """The PDF drawing operator used to specify this type of color."""
+        return "g"
+
+    @property
+    def colors(self) -> tuple[float, float, float]:
         "The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1."
         return self.g, self.g, self.g
 
     @property
-    def colors255(self):
+    def colors255(self) -> tuple[float, float, float]:
         "The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255."
-        return tuple(255 * v for v in self.colors)
+        return 255 * self.g, 255 * self.g, 255 * self.g
 
     def serialize(self) -> str:
-        return f"{number_to_str(self.g)} {self.OPERATOR}"
+        return f"{number_to_str(self.g)} {self.operator}"
 
 
-__pdoc__["DeviceGray.OPERATOR"] = False
 __pdoc__[
     "DeviceGray.g"
 ] = """
@@ -192,40 +197,43 @@ transparency rather than specifying fully transparent or fully opaque.
 """
 
 
-# this weird inheritance is used because for some reason normal NamedTuple usage doesn't
-# allow overriding __new__, even though it works just as expected this way.
-class DeviceCMYK(
-    NamedTuple(
-        "DeviceCMYK",
-        [
-            ("c", Number),
-            ("m", Number),
-            ("y", Number),
-            ("k", Number),
-            ("a", Optional[Number]),
-        ],
-    )
-):
+@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
     """A class representing a PDF DeviceCMYK color."""
 
-    OPERATOR = "k"
-    """The PDF drawing operator used to specify this type of color."""
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
 
-    def __new__(cls, c, m, y, k, a=None):
-        if a is not None:
-            check_range(a)
-
-        return super().__new__(
-            cls, check_range(c), check_range(m), check_range(y), check_range(k), a
-        )
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -> None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, "c", float(check_range(c)))
+        object.__setattr__(self, "m", float(check_range(m)))
+        object.__setattr__(self, "y", float(check_range(y)))
+        object.__setattr__(self, "k", float(check_range(k)))
+        object.__setattr__(self, "a", float(check_range(a)) if a is not None else None)
 
     @property
-    def colors(self):
+    def operator(self) -> str:
+        "The PDF drawing operator used to specify this type of color."
+        return "k"
+
+    @property
+    def colors(self) -> tuple[float, float, float, float]:
         "The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1."
-        return self[:-1]
+        return self.c, self.m, self.y, self.k
 
     def serialize(self) -> str:
-        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
+        return " ".join(number_to_str(val) for val in self.colors) + f" {self.operator}"
 
 
 __pdoc__["DeviceCMYK.OPERATOR"] = False
@@ -246,7 +254,9 @@ transparency rather than specifying fully transparent or fully opaque.
 """
 
 
-def rgb8(r, g, b, a=None):
+def rgb8(
+    r: Number, g: Number, b: Number, a: Optional[Number] = None
+) -> DeviceGray | DeviceRGB:
     """
     Produce a DeviceRGB color from the given 8-bit RGB values.
 
@@ -265,14 +275,14 @@ def rgb8(r, g, b, a=None):
     """
     if a is None:
         if r == g == b:
-            return DeviceGray(r / 255.0)
+            return DeviceGray(float(r) / 255.0)
     else:
-        a /= 255.0
+        a = float(a) / 255.0
 
-    return DeviceRGB(r / 255.0, g / 255.0, b / 255.0, a)
+    return DeviceRGB(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, a)
 
 
-def gray8(g, a=None):
+def gray8(g: Number, a: Optional[Number] = None) -> DeviceGray:
     """
     Produce a DeviceGray color from the given 8-bit gray value.
 
@@ -289,25 +299,33 @@ def gray8(g, a=None):
         ValueError: if any components are not in their valid interval.
     """
     if a is not None:
-        a /= 255.0
+        a = float(a) / 255.0
 
-    return DeviceGray(g / 255.0, a)
+    return DeviceGray(float(g) / 255.0, a)
 
 
-def convert_to_device_color(r, g=-1, b=-1):
+def convert_to_device_color(
+    r: Number | Color | str | Sequence[Number] | DeviceCMYK | DeviceGray | DeviceRGB,
+    g: Number = -1,
+    b: Number = -1,
+) -> DeviceGray | DeviceRGB | DeviceCMYK:
     if isinstance(r, (DeviceCMYK, DeviceGray, DeviceRGB)):
-        # Note: in this case, r is also a Sequence
         return r
-    if isinstance(r, str) and r.startswith("#"):
-        return color_from_hex_string(r)
+    if isinstance(r, str):
+        if r.startswith("#"):
+            return color_from_hex_string(r)
+        raise ValueError(f"Cannot convert string {r} to a color")
     if isinstance(r, Sequence):
+        assert not isinstance(r, str)
         r, g, b = r
     if (r, g, b) == (0, 0, 0) or g == -1:
         return DeviceGray(r / 255)
     return DeviceRGB(r / 255, g / 255, b / 255)
 
 
-def cmyk8(c, m, y, k, a=None):
+def cmyk8(
+    c: Number, m: Number, y: Number, k: Number, a: Optional[Number] = None
+) -> DeviceCMYK:
     """
     Produce a DeviceCMYK color from the given 8-bit CMYK values.
 
@@ -326,12 +344,14 @@ def cmyk8(c, m, y, k, a=None):
         ValueError: if any components are not in their valid interval.
     """
     if a is not None:
-        a /= 255.0
+        a = float(a) / 255.0
 
-    return DeviceCMYK(c / 255.0, m / 255.0, y / 255.0, k / 255.0, a)
+    return DeviceCMYK(
+        float(c) / 255.0, float(m) / 255.0, float(y) / 255.0, float(k) / 255.0, a
+    )
 
 
-def color_from_hex_string(hexstr):
+def color_from_hex_string(hexstr: str) -> DeviceRGB | DeviceGray:
     """
     Parse an RGB color from a css-style 8-bit hexadecimal color string.
 
@@ -354,24 +374,37 @@ def color_from_hex_string(hexstr):
 
     hlen = len(hexstr)
 
-    if hlen == 4:
-        return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]], a=None)
+    if hlen == 4:  # #RGB
+        r = int(hexstr[1] * 2, 16)
+        g = int(hexstr[2] * 2, 16)
+        b = int(hexstr[3] * 2, 16)
+        a = None
 
-    if hlen == 5:
-        return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]])
+    elif hlen == 5:  # #RGBA
+        r = int(hexstr[1] * 2, 16)
+        g = int(hexstr[2] * 2, 16)
+        b = int(hexstr[3] * 2, 16)
+        a = int(hexstr[4] * 2, 16)
 
-    if hlen == 7:
-        return rgb8(
-            *[int(hexstr[idx : idx + 2], base=16) for idx in range(1, hlen, 2)], a=None
-        )
+    elif hlen == 7:  # #RRGGBB
+        r = int(hexstr[1:3], 16)
+        g = int(hexstr[3:5], 16)
+        b = int(hexstr[5:7], 16)
+        a = None
 
-    if hlen == 9:
-        return rgb8(*[int(hexstr[idx : idx + 2], base=16) for idx in range(1, hlen, 2)])
+    elif hlen == 9:  # #RRGGBBAA
+        r = int(hexstr[1:3], 16)
+        g = int(hexstr[3:5], 16)
+        b = int(hexstr[5:7], 16)
+        a = int(hexstr[7:9], 16)
 
-    raise ValueError(f"{hexstr} could not be interpreted as a RGB(A) hex string")
+    else:
+        raise ValueError(f"{hexstr} could not be interpreted as a RGB(A) hex string")
+
+    return rgb8(r, g, b, a)
 
 
-def color_from_rgb_string(rgbstr):
+def color_from_rgb_string(rgbstr: str) -> DeviceRGB | DeviceGray:
     """
     Parse an RGB color from a css-style rgb(R, G, B, A) color string.
 
@@ -393,7 +426,8 @@ def color_from_rgb_string(rgbstr):
     colors = rgbstr.split(",")
 
     if len(colors) == 3:
-        return rgb8(*[int(c) for c in colors], a=None)
+        r, g, b = (int(c) for c in colors)
+        return rgb8(r, g, b, a=None)
 
     if len(colors) == 4:
         return rgb8(*[int(c) for c in colors])
@@ -401,7 +435,8 @@ def color_from_rgb_string(rgbstr):
     raise ValueError(f"{rgbstr} could not be interpreted as a rgb(R, G, B[, A]) color")
 
 
-class Point(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class Point:
     """
     An x-y coordinate pair within the two-dimensional coordinate frame.
     """
@@ -474,8 +509,7 @@ class Point(NamedTuple):
         Returns:
             The scalar result of the distance computation.
         """
-
-        return (self.x**2 + self.y**2) ** 0.5
+        return math.hypot(self.x, self.y)
 
     @force_document
     def __add__(self, other: "Point") -> "Point":
@@ -525,7 +559,7 @@ class Point(NamedTuple):
         return Point(x=-self.x, y=-self.y)
 
     @force_document
-    def __mul__(self, other: "Point") -> "Point":
+    def __mul__(self, other: Number) -> "Point":
         """
         Multiply a point by a scalar value.
 
@@ -537,11 +571,14 @@ class Point(NamedTuple):
             A Point whose coordinates are the result of the multiplication.
         """
         if isinstance(other, NumberClass):
-            return Point(self.x * other, self.y * other)
+            float_other = float(other)
+            return Point(self.x * float_other, self.y * float_other)
 
         return NotImplemented
 
-    __rmul__ = __mul__
+    @force_document
+    def __rmul__(self, other: Number) -> "Point":
+        return self.__mul__(other)
 
     @force_document
     def __truediv__(self, other: Number) -> "Point":
@@ -585,6 +622,19 @@ class Point(NamedTuple):
 
         return NotImplemented
 
+    def __iter__(self) -> Iterator[float]:
+        """Iterate over point coordinates in (x, y) order."""
+        yield self.x
+        yield self.y
+
+    def __len__(self) -> int:
+        """Length to mimic tuple-like behaviour for compatibility."""
+        return 2
+
+    def __getitem__(self, idx: int) -> float:
+        """Indexable access to coordinates in (x, y) order."""
+        return (self.x, self.y)[idx]
+
     # no __r(true|floor)div__ because division is not commutative!
 
     @force_document
@@ -618,7 +668,8 @@ class Point(NamedTuple):
         return f"(x={number_to_str(self.x)}, y={number_to_str(self.y)})"
 
 
-class Transform(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class Transform:
     """
     A representation of an affine transformation matrix for 2D shapes.
 
@@ -689,6 +740,23 @@ class Transform(NamedTuple):
     # [x' y' 1] = [x y 1] [ C D 0 ]
     #                     [ E F 1 ]
     # The identity transform is 1 0 0 1 0 0
+
+    def __iter__(self) -> Iterator[float]:
+        """Iterate over matrix components in (a, b, c, d, e, f) order."""
+        yield self.a
+        yield self.b
+        yield self.c
+        yield self.d
+        yield self.e
+        yield self.f
+
+    def __len__(self) -> int:
+        """Length to mimic tuple-like behaviour for compatibility."""
+        return 6
+
+    def __getitem__(self, idx: int) -> float:
+        """Indexable access to matrix components in (a, b, c, d, e, f) order."""
+        return (self.a, self.b, self.c, self.d, self.e, self.f)[idx]
 
     @classmethod
     def identity(cls) -> "Transform":
@@ -994,8 +1062,10 @@ class Transform(NamedTuple):
 
         return NotImplemented
 
-    # scalar multiplication is commutative
-    __rmul__ = __mul__
+    @force_document
+    def __rmul__(self, other: Number) -> "Transform":
+        # scalar multiplication is commutative
+        return self.__mul__(other)
 
     @force_document
     def __matmul__(self, other: "Transform") -> "Transform":
@@ -1061,3 +1131,5 @@ __pdoc__["Transform.c"] = False
 __pdoc__["Transform.d"] = False
 __pdoc__["Transform.e"] = False
 __pdoc__["Transform.f"] = False
+
+ColorClass = (DeviceRGB, DeviceGray, DeviceCMYK)
