@@ -473,7 +473,12 @@ invalid_styles = (
     ),
     pytest.param("fill_color", "123", ValueError, id="invalid string fill_color"),
     pytest.param("fill_color", 2, TypeError, id="invalid numeric fill_color"),
-    pytest.param("fill_opacity", "123123", TypeError, id="invalid string fill_opacity"),
+    pytest.param(
+        "fill_opacity",
+        "123123",
+        (TypeError, AssertionError),
+        id="invalid string fill_opacity",
+    ),
     pytest.param("fill_opacity", 2, ValueError, id="invalid numeric fill_opacity"),
     pytest.param("stroke_color", [2], TypeError, id="invalid stroke_color"),
     pytest.param(

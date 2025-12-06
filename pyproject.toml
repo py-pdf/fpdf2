@@ -50,6 +50,7 @@ dependencies = [
 dev = [
   "bandit",
   "black",
+  "mypy",
   "pre-commit",
   "pylint",
   "semgrep",
@@ -90,7 +91,8 @@ packages = ["fpdf", "fpdf.data", "fpdf.data.color_profiles"]
 [tool.setuptools.package-data]
 fpdf = [
   "data/color_profiles/*.icc",
-  "data/color_profiles/*.LICENSE"
+  "data/color_profiles/*.LICENSE",
+  "py.typed"
 ]
 
 [tool.setuptools.dynamic]
@@ -118,3 +120,43 @@ line_length = 88
 combine_as_imports = true
 include_trailing_comma = true
 multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+
+files = ["fpdf"]
+
+# Optional dependencies to ignore
+[[tool.mypy.overrides]]
+module = "defusedxml.ElementTree"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "endesive"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fontTools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "uharfbuzz"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pymemtrace.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pympler.*"
+ignore_missing_imports = true
+
+[tool.pyright]
+include = ["fpdf"]
+typeCheckingMode = "strict"
+pythonVersion = "3.14"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnnecessaryIsInstance = false
+reportUnnecessaryComparison = false
