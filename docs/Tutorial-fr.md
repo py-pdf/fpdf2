@@ -185,7 +185,7 @@ Des outils comme **VeraPDF** peuvent vérifier la conformité des documents PDF 
 verapdf --format text -v tutorial/tuto7.pdf
 ```
 
-Produit :
+Produit en sortie textuelle :
 ```
 PASS fpdf2/tutorial/tuto7.pdf 3b
 ```
