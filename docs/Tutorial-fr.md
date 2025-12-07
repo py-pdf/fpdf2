@@ -160,7 +160,7 @@ Comme alternative, une autre option pour changer le style de police et ajouter d
 
 ## Normes PDF/A
 
-**PDF/A-1** utilise la version PDF 1.4. Toutes les ressources (images, graphiques, polices) doivent être incorporées dans le document. La gestion des couleurs doit être précise et spécifiée de manière indépendante de la plateforme avec des profils ICC et les métadonnées du document doivent être fournies avec des métadonnées XMP.
+**PDF/A-1** est basé sur la spécification PDF 1.4. Toutes les ressources (images, graphiques, polices) doivent être incorporées dans le document. La gestion des couleurs doit être spécifiée de manière indépendante de la plateforme avec des profils ICC, et les métadonnées du document doivent être fournies avec des métadonnées XMP.
 
 **PDF/A-2** est basé sur la spécification PDF 1.7. Il permet la compression avec JPEG2000, les éléments transparents, les polices OpenType et les signatures numériques.
 
