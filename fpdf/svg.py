@@ -21,13 +21,13 @@ from fontTools.svgLib.path import parse_path
 from .enums import GradientSpreadMethod, GradientUnits, PathPaintRule, StrokeCapStyle
 
 try:
-    from defusedxml.ElementTree import Element, fromstring as parse_xml_str
+    from defusedxml.ElementTree import fromstring as parse_xml_str
 except ImportError:
     warnings.warn(
         "defusedxml could not be imported - fpdf2 will not be able to sanitize SVG images provided"
     )
     # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
-    from xml.etree.ElementTree import Element, fromstring as parse_xml_str  # nosec
+    from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec
 
 from . import html
 from .drawing import (
@@ -55,6 +55,7 @@ from .output import stream_content_for_raster_image
 from .pattern import shape_linear_gradient, shape_radial_gradient
 
 if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element  # nosec
     from .drawing import Renderable
     from .fpdf import FPDF
     from .output import ResourceCatalog
@@ -356,7 +357,7 @@ svg_attr_map = {
 @force_nodocument
 def apply_styles(
     stylable: PaintedPath | GraphicsContext,
-    svg_element: Element,
+    svg_element: "Element",
     computed_style: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
@@ -393,7 +394,7 @@ def apply_styles(
         stylable.transform = convert_transforms(tfstr)
 
 
-def _preserve_ws(style_map: Dict[str, Any], tag: Element) -> bool:
+def _preserve_ws(style_map: Dict[str, Any], tag: "Element") -> bool:
     # CSS ‘white-space’ wins; otherwise XML’s xml:space
     ws = (style_map.get("white-space") or "").strip()
     if ws in ("pre", "pre-wrap", "break-spaces"):
@@ -435,7 +436,7 @@ def _svg_font_style_to_emphasis(font_style: Optional[str], font_weight: str) -> 
 
 
 def _get_attr_or_style(
-    tag: Element, name: str, style_map: Optional[Dict[str, Any]] = None
+    tag: "Element", name: str, style_map: Optional[Dict[str, Any]] = None
 ) -> Optional[str]:
     """Return the value for a given attribute, honoring computed style overrides."""
     if style_map is not None:
@@ -451,7 +452,7 @@ def _get_attr_or_style(
 
 
 def _parse_font_attrs(
-    tag: Element, style_map: Optional[Dict[str, Any]] = None
+    tag: "Element", style_map: Optional[Dict[str, Any]] = None
 ) -> Tuple[Optional[str], str, Optional[float], str]:
     """Returns (font_family or None, font_style_emphasis, font_size_pt or None, text_anchor)"""
     family_value = _get_attr_or_style(tag, "font-family", style_map)
@@ -485,7 +486,7 @@ def _parse_font_attrs(
 
 
 def _parse_xy_delta(
-    tag: Element,
+    tag: "Element",
     style_map: Optional[Dict[str, Any]] = None,
     font_size: Optional[float] = None,
 ) -> Tuple[float, float, float, float]:
@@ -588,7 +589,7 @@ class ShapeBuilder:
     """A namespace within which methods for converting basic shapes can be looked up."""
 
     @staticmethod
-    def new_path(tag: Element, clipping_path: bool = False) -> PaintedPath:
+    def new_path(tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Create a new path with the appropriate styles."""
         path = PaintedPath()
         if clipping_path:
@@ -597,7 +598,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def rect(cls, tag: Element, clipping_path: bool = False) -> PaintedPath:
+    def rect(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
         x = resolve_length(tag.attrib.get("x", "0"))
@@ -649,7 +650,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def circle(cls, tag: Element, clipping_path: bool = False) -> PaintedPath:
+    def circle(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <circle> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
@@ -660,7 +661,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def ellipse(cls, tag: Element, clipping_path: bool = False) -> PaintedPath:
+    def ellipse(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <ellipse> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
@@ -685,7 +686,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def line(cls, tag: Element) -> PaintedPath:
+    def line(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <line> into a PDF path."""
         x1 = float(tag.attrib["x1"])
         y1 = float(tag.attrib["y1"])
@@ -698,7 +699,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def polyline(cls, tag: Element) -> PaintedPath:
+    def polyline(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <polyline> into a PDF path."""
         path = cls.new_path(tag)
         points = "M" + tag.attrib["points"]
@@ -706,7 +707,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def polygon(cls, tag: Element, clipping_path: bool = False) -> PaintedPath:
+    def polygon(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <polygon> into a PDF path."""
         path = cls.new_path(tag, clipping_path)
         points = "M" + tag.attrib["points"] + "Z"
@@ -862,7 +863,7 @@ class SVGObject:
         self.width: Optional[Percent | float] = None
         self.height: Optional[Percent | float] = None
         # disabling bandit rule as we use defusedxml:
-        svg_tree: Element = parse_xml_str(svg_text)  # nosec B314
+        svg_tree: "Element" = parse_xml_str(svg_text)  # nosec B314
 
         if svg_tree.tag not in xmlns_lookup("svg", "svg"):
             raise ValueError(f"root tag must be svg, not {svg_tree.tag}")
@@ -877,7 +878,7 @@ class SVGObject:
             key = "#" + key if not key.startswith("#") else key
             self.cross_references[key] = referenced
 
-    def _collect_css_styles(self, root_tag: Element) -> None:
+    def _collect_css_styles(self, root_tag: "Element") -> None:
         for node in root_tag.iter():
             if node.tag in xmlns_lookup("svg", "style"):
                 css_text = "".join(node.itertext() or [])
@@ -885,7 +886,7 @@ class SVGObject:
                     existing = self.css_class_styles.setdefault(class_name, {})
                     existing.update(declarations)
 
-    def _style_map_for(self, tag: Element) -> Dict[str, Any]:
+    def _style_map_for(self, tag: "Element") -> Dict[str, Any]:
         style_map = {}
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
@@ -942,7 +943,7 @@ class SVGObject:
     @force_nodocument
     @staticmethod
     def _parse_gradient_stops(
-        gradient_element: Element,
+        gradient_element: "Element",
     ) -> List[Tuple[float, DeviceRGB | DeviceGray]]:
         """Parse <stop> children of a gradient element."""
         stops: List[Tuple[float, DeviceRGB | DeviceGray]] = []
@@ -1020,7 +1021,7 @@ class SVGObject:
         return None
 
     @force_nodocument
-    def _parse_linear_gradient(self, grad_element: Element) -> None:
+    def _parse_linear_gradient(self, grad_element: "Element") -> None:
         """Parse a <linearGradient> element and store it in gradient_definitions."""
         grad_id: Optional[str] = grad_element.attrib.get("id")
         if not grad_id:
@@ -1088,7 +1089,7 @@ class SVGObject:
         LOGGER.debug("Parsed linear gradient '%s' with %d stops", grad_id, len(stops))
 
     @force_nodocument
-    def _parse_radial_gradient(self, grad_element: Element) -> None:
+    def _parse_radial_gradient(self, grad_element: "Element") -> None:
         """Parse a <radialGradient> element and store it in gradient_definitions."""
         grad_id = grad_element.attrib.get("id")
         if not grad_id:
@@ -1169,7 +1170,7 @@ class SVGObject:
     def _apply_gradient_paint(
         self,
         stylable: PaintedPath,
-        svg_element: Element,
+        svg_element: "Element",
         style_map: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Apply gradient paint to fill or stroke if a url(#gradientId) reference is found."""
@@ -1188,7 +1189,7 @@ class SVGObject:
                 LOGGER.debug("Applied gradient %s to stroke", grad_id)
 
     @force_nodocument
-    def extract_shape_info(self, root_tag: Element) -> None:
+    def extract_shape_info(self, root_tag: "Element") -> None:
         """Collect shape info from the given SVG."""
 
         width_str = root_tag.get("width")
@@ -1228,7 +1229,7 @@ class SVGObject:
             self.viewbox = [vx, vy, vw, vh]
 
     @force_nodocument
-    def convert_graphics(self, root_tag: Element) -> None:
+    def convert_graphics(self, root_tag: "Element") -> None:
         """Convert the graphics contained in the SVG into the PDF representation."""
         base_group = GraphicsContext()
         base_group.style.stroke_width = None
@@ -1398,7 +1399,7 @@ class SVGObject:
     # defs paths are not drawn immediately but are added to xrefs and can be referenced
     # later to be drawn.
     @force_nodocument
-    def handle_defs(self, defs: Element) -> None:
+    def handle_defs(self, defs: "Element") -> None:
         """Produce lookups for groups and paths inside the <defs> tag"""
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
@@ -1439,7 +1440,7 @@ class SVGObject:
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
     @force_nodocument
-    def build_xref(self, xref: Element) -> GraphicsContext:
+    def build_xref(self, xref: "Element") -> GraphicsContext:
         """Resolve a cross-reference to an already-seen SVG element by ID."""
         style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
@@ -1473,7 +1474,7 @@ class SVGObject:
     @force_nodocument
     def build_group(
         self,
-        group: Element,
+        group: "Element",
         pdf_group: Optional[GraphicsContext] = None,
         inherited_style: Optional[Dict[str, Any]] = None,
     ) -> GraphicsContext:
@@ -1529,7 +1530,7 @@ class SVGObject:
         return pdf_group
 
     @force_nodocument
-    def build_path(self, path: Element) -> PaintedPath:
+    def build_path(self, path: "Element") -> PaintedPath:
         """Convert an SVG <path> tag into a PDF path object."""
         style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
@@ -1543,7 +1544,7 @@ class SVGObject:
         return pdf_path
 
     @force_nodocument
-    def build_shape(self, shape: Element) -> PaintedPath:
+    def build_shape(self, shape: "Element") -> PaintedPath:
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
         style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
@@ -1556,7 +1557,7 @@ class SVGObject:
         return shape_path
 
     @force_nodocument
-    def build_clipping_path(self, shape: Element, clip_id: Optional[str]) -> None:
+    def build_clipping_path(self, shape: "Element", clip_id: Optional[str]) -> None:
         if shape.tag in shape_tags:
             style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
@@ -1582,7 +1583,7 @@ class SVGObject:
     def apply_clipping_path(
         self,
         stylable: PaintedPath,
-        svg_element: Element,
+        svg_element: "Element",
         style_map: Optional[Dict[str, Any]] = None,
     ) -> None:
         clip_value = None
@@ -1596,7 +1597,7 @@ class SVGObject:
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
-    def build_image(self, image: Element) -> "SVGImage":
+    def build_image(self, image: "Element") -> "SVGImage":
         href = None
         for key in xmlns_lookup("xlink", "href"):
             if key in image.attrib:
@@ -1632,7 +1633,7 @@ class SVGObject:
 
     @force_nodocument
     def build_text(
-        self, text_tag: Element, inherited_style: Optional[Dict[str, Any]] = None
+        self, text_tag: "Element", inherited_style: Optional[Dict[str, Any]] = None
     ) -> Optional[PaintedPath]:
         """
         Convert <text> (and simple <tspan>) into a PaintedPath with Text runs.
@@ -1668,7 +1669,7 @@ class SVGObject:
         pending_dy = 0.0
 
         def _style_for_run(
-            tag: Optional[Element], style_map_for_tag: Optional[Dict[str, Any]]
+            tag: Optional["Element"], style_map_for_tag: Optional[Dict[str, Any]]
         ) -> Optional[GraphicsStyle]:
             if tag is None or style_map_for_tag is None:
                 return None
@@ -1693,7 +1694,7 @@ class SVGObject:
             dy_extra: float = 0.0,
             abs_x: Optional[float] = None,
             abs_y: Optional[float] = None,
-            style_tag: Optional[Element] = None,
+            style_tag: Optional["Element"] = None,
             style_map_for_tag: Optional[Dict[str, Any]] = None,
         ) -> None:
             nonlocal pending_dx, pending_dy
