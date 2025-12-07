@@ -180,7 +180,7 @@ Pour y parvenir, voici un petit exemple :
 **PDF résultant :** `tuto7.pdf`
 
 
-Des outils comme **VeraPDF** peuvent vérifier la conformité des documents PDF produits :
+Des outils comme [VeraPDF](https://verapdf.org/) peuvent vérifier la conformité des documents PDF produits :
 ```bash
 verapdf --format text -v tutorial/tuto7.pdf
 ```
