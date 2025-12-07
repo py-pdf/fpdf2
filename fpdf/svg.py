@@ -15,20 +15,19 @@ import warnings
 from copy import deepcopy
 from os import PathLike
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, NamedTuple, Optional, Tuple
-from xml.etree.ElementTree import Element
 
 from fontTools.svgLib.path import parse_path
 
 from .enums import GradientSpreadMethod, GradientUnits, PathPaintRule, StrokeCapStyle
 
 try:
-    from defusedxml.ElementTree import fromstring as parse_xml_str
+    from defusedxml.ElementTree import Element, fromstring as parse_xml_str
 except ImportError:
     warnings.warn(
         "defusedxml could not be imported - fpdf2 will not be able to sanitize SVG images provided"
     )
     # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
-    from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec
+    from xml.etree.ElementTree import Element, fromstring as parse_xml_str  # nosec
 
 from . import html
 from .drawing import (
@@ -400,7 +399,7 @@ def _preserve_ws(style_map: Dict[str, Any], tag: Element) -> bool:
     if ws in ("pre", "pre-wrap", "break-spaces"):
         return True
     xml_space = tag.attrib.get("{http://www.w3.org/XML/1998/namespace}space")
-    return xml_space == "preserve"
+    return bool(xml_space == "preserve")
 
 
 def _collapse_ws(s: Optional[str], preserve: bool = False) -> str:
