@@ -177,7 +177,7 @@ Pour y parvenir, voici un petit exemple :
 {% include "../tutorial/tuto7.py" %}
 ```
 
-**PDF résultant :** `tuto7.pdf`
+**PDF résultant :** [tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
 
 
 Des outils comme [VeraPDF](https://verapdf.org/) peuvent vérifier la conformité des documents PDF produits :
