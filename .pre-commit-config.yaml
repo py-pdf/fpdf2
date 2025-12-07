@@ -29,7 +29,6 @@ repos:
       - id: mypy
         args:
           - --config-file=./pyproject.toml
-          - --no-warn-unused-ignores
         files: ^fpdf/.*\.py$
         additional_dependencies:
           - cryptography

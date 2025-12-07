@@ -240,7 +240,7 @@ def _decode_base64_image(base64Image: str) -> BytesIO:
 def is_iccp_valid(iccp: bytes, filename: str | Path) -> bool:
     "Checks the validity of an ICC profile"
     try:
-        profile = ImageCms.getOpenProfile(BytesIO(iccp))  # type: ignore[no-untyped-call]
+        profile = ImageCms.getOpenProfile(BytesIO(iccp))
     except ImageCms.PyCMSError:
         LOGGER.info("Invalid ICC Profile in file %s", filename)
         return False
@@ -318,7 +318,7 @@ def get_img_info(
         # Very simple logic for now:
         if img.format == "JPEG":
             image_filter = "DCTDecode"
-        elif img.mode == "1" and PIL_features.check("libtiff"):  # type: ignore[no-untyped-call]
+        elif img.mode == "1" and PIL_features.check("libtiff"):
             # The 2nd condition prevents from running in a bug sometimes,
             # cf. test_transcode_monochrome_and_libtiff_support_custom_tags()
             image_filter = "CCITTFaxDecode"
@@ -487,7 +487,7 @@ def get_img_info(
 
     if not is_pil_img:
         if keep_bytes_io_open:
-            img.fp = None  # type: ignore[attr-defined]
+            img.fp = None
         else:
             img.close()
 
@@ -592,7 +592,7 @@ def transcode_monochrome(img: "PILImage") -> bytes:
                 TiffImagePlugin.STRIPBYTECOUNTS: [tmp_strip_size],
                 TiffImagePlugin.STRIPOFFSETS: [0],
             }
-            return overrides.get(tag, pillow__getitem__(self, tag))  # type: ignore[no-untyped-call]
+            return overrides.get(tag, pillow__getitem__(self, tag))
 
         with temp_attr(
             TiffImagePlugin.ImageFileDirectory_v2, "__getitem__", __getitem__
