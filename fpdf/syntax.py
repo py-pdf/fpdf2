@@ -75,6 +75,7 @@ from typing import (
     Protocol,
     Sequence,
     TypeAlias,
+    Union,
     runtime_checkable,
 )
 
@@ -240,12 +241,12 @@ class PDFContentStream(PDFObject):
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
     _COMPRESSION_LEVEL = -1
 
-    def __init__(self, contents: bytes, compress: bool = False):
+    def __init__(self, contents: bytes | bytearray, compress: bool = False):
         super().__init__()
-        self._contents: bytes = (
+        self._contents = (
             zlib.compress(contents, level=self._COMPRESSION_LEVEL)
             if compress
-            else contents
+            else bytes(contents)
         )
         self.filter = Name("FlateDecode") if compress else None
         self.length = len(self._contents)
@@ -488,7 +489,7 @@ class PrimitiveSerializable(Protocol):
     def serialize(self) -> str: ...
 
 
-PDFScalar: TypeAlias = Raw | Name | str | bytes | bool | None | Number | "InheritType"
+PDFScalar: TypeAlias = Union[Raw, Name, str, bytes, bool, None, Number, "InheritType"]
 
 PDFPrimitive: TypeAlias = (
     PDFScalar

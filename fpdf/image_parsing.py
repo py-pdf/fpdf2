@@ -170,7 +170,7 @@ def preload_image(
         info = get_img_info(
             raster_name,
             img,
-            cast(ImageFilter, image_cache.image_filter),
+            image_cache.image_filter,
             dims,
         )
         info["i"] = len(image_cache.images) + 1
@@ -392,7 +392,7 @@ def get_img_info(
                 )
             offset, length = ccitt_payload_location_from_pil(img)
             img_raw_data.seek(offset)
-            ccittrawdata = img_raw_data.read(length)
+            ccittrawdata: bytes | bytearray = img_raw_data.read(length)
             fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)  # type: ignore[attr-defined]
             if fillorder is None or fillorder == 1:
                 # no FillOrder or msb-to-lsb: nothing to do
@@ -443,7 +443,7 @@ def get_img_info(
     elif img.mode == "P":
         dpn, bpc, colspace = 1, 8, "Indexed"
         info["data"] = _to_data(img, image_filter)
-        info["pal"] = img.palette.palette
+        info["pal"] = img.palette.palette if img.palette is not None else None
 
         # check if the P image has transparency
         if img.info.get("transparency", None) is not None and image_filter not in (
@@ -456,7 +456,7 @@ def get_img_info(
             )
     elif img.mode == "PA":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        info["pal"] = img.palette.palette
+        info["pal"] = img.palette.palette if img.palette is not None else None
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img) and image_filter not in (

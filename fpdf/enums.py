@@ -477,12 +477,13 @@ class TableBorderStyle:
     ) -> List[str]:
         """Return list with string for the draw command to change dash (empty if no change)"""
         dash_dict = self.dash_dict if pdf is None else pdf.dash_pattern
-        dash, gap, phase = dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]  # type: ignore[index]
+        dash, gap, phase = dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]
         if dash is None:
             return []
-        if dash <= 0:
+        if dash is None or dash <= 0:
             return ["[] 0 d"]
-        if gap <= 0:
+        assert phase is not None
+        if gap is None or gap <= 0:
             return [f"[{dash * scale:.3f}] {phase * scale:.3f} d"]
         return [f"[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d"]
 
@@ -1638,7 +1639,7 @@ class AccessPermission(IntFlag):
         "All flags enabled"
         result = 0
         for permission in list(AccessPermission):
-            access_permission = cast(AccessPermission, permission)
+            access_permission = permission
             result = result | access_permission.value
         return result
 

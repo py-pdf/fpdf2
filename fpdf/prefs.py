@@ -87,41 +87,41 @@ class ViewerPreferences:
         with each pair specifying the first and last pages in a sub-range of pages to be printed.
         The first page of the PDF file shall be denoted by 1.
         """
-        self.direction = direction  # type: ignore[assignment]
+        self.direction = direction
         """
         (`fpdf.enums.TextDirection`)
         The predominant reading order for text.
         """
-        self.duplex = duplex  # type: ignore[assignment]
+        self.duplex = duplex
         """
         (`fpdf.enums.Duplex`)
         The paper handling option that shall be used when printing the file from the print dialog.
         """
-        self.view_area = view_area  # type: ignore[assignment]
+        self.view_area = view_area
         """
         (`fpdf.enums.PageBoundaries`)
         The name of the page boundary representing the area of a page that shall be displayed when viewing the document on the screen.
         Default value: CropBox.
         """
-        self.view_clip = view_clip  # type: ignore[assignment]
+        self.view_clip = view_clip
         """
         (`fpdf.enums.PageBoundaries`)
         The name of the page boundary to which the contents of a page shall be clipped when viewing the document on the screen.
         Default value: CropBox.
         """
-        self.print_area = print_area  # type: ignore[assignment]
+        self.print_area = print_area
         """
         (`fpdf.enums.PageBoundaries`)
         The name of the page boundary representing the area of a page that shall be rendered when printing the document.
         Default value: CropBox.
         """
-        self.print_clip = print_clip  # type: ignore[assignment]
+        self.print_clip = print_clip
         """
         (`fpdf.enums.PageBoundaries`)
         The name of the page boundary to which the contents of a page shall be clipped when printing the document.
         Default value: CropBox.
         """
-        self.print_scaling = print_scaling  # type: ignore[assignment]
+        self.print_scaling = print_scaling
         """
         The page scaling option that shall be selected when a print dialogue is displayed for this document.
         Valid values are:

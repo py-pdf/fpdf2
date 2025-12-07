@@ -626,7 +626,7 @@ class GraphicsStyle:
         return cast(bool, allow_transparency)
 
     @allow_transparency.setter
-    def allow_transparency(self, new: bool) -> None:
+    def allow_transparency(self, new: bool | InheritType) -> None:
         return super().__setattr__("_allow_transparency", new)
 
     # If these are used in a nested graphics context inside of a painting path
@@ -647,7 +647,7 @@ class GraphicsStyle:
         elif new is self.INHERIT:
             super().__setattr__("_paint_rule", new)
         else:
-            super().__setattr__("_paint_rule", PathPaintRule.coerce(new))  # type: ignore[arg-type]
+            super().__setattr__("_paint_rule", PathPaintRule.coerce(new))
 
     @property
     def auto_close(self) -> bool | InheritType:
@@ -677,7 +677,7 @@ class GraphicsStyle:
         if new is self.INHERIT:
             super().__setattr__("_intersection_rule", new)
         else:
-            super().__setattr__("_intersection_rule", IntersectionRule.coerce(new))  # type: ignore[arg-type]
+            super().__setattr__("_intersection_rule", IntersectionRule.coerce(new))
 
     @property
     def fill_color(self) -> Color | GradientPaint | InheritType | str | None:
@@ -797,7 +797,9 @@ class GraphicsStyle:
         if value is self.INHERIT:
             super().__setattr__(PDFStyleKeys.BLEND_MODE.value, value)
         else:
-            super().__setattr__(PDFStyleKeys.BLEND_MODE.value, BlendMode.coerce(value).value)  # type: ignore[arg-type]
+            super().__setattr__(
+                PDFStyleKeys.BLEND_MODE.value, BlendMode.coerce(value).value
+            )
 
     @property
     def stroke_width(self) -> float | InheritType | None:
@@ -829,7 +831,9 @@ class GraphicsStyle:
         if value is self.INHERIT:
             super().__setattr__(PDFStyleKeys.STROKE_CAP_STYLE.value, value)
         else:
-            super().__setattr__(PDFStyleKeys.STROKE_CAP_STYLE.value, StrokeCapStyle.coerce(value))  # type: ignore[arg-type]
+            super().__setattr__(
+                PDFStyleKeys.STROKE_CAP_STYLE.value, StrokeCapStyle.coerce(value)
+            )
 
     @property
     def stroke_join_style(self) -> StrokeJoinStyle | InheritType:
@@ -846,7 +850,9 @@ class GraphicsStyle:
         if value is self.INHERIT:
             super().__setattr__(PDFStyleKeys.STROKE_JOIN_STYLE.value, value)
         else:
-            super().__setattr__(PDFStyleKeys.STROKE_JOIN_STYLE.value, StrokeJoinStyle.coerce(value))  # type: ignore[arg-type]
+            super().__setattr__(
+                PDFStyleKeys.STROKE_JOIN_STYLE.value, StrokeJoinStyle.coerce(value)
+            )
 
     @property
     def stroke_miter_limit(self) -> float | InheritType:
@@ -2420,7 +2426,9 @@ class Text(NamedTuple):
             return "", last_item, initial_point
 
         # Precise layout resolution with actual font metrics
-        layout: list[tuple[float, float, float, TextRun, "CoreFont" | "TTFFont"]] = []
+        layout: list[
+            tuple[float, float, float, TextRun, Union["CoreFont", "TTFFont"]]
+        ] = []
         pen_x = self.x
         pen_y = self.y
         min_x = pen_x
@@ -3590,7 +3598,7 @@ class GraphicsContext:
         return self._transform
 
     @transform.setter
-    def transform(self, tf: Transform) -> None:
+    def transform(self, tf: Optional[Transform]) -> None:
         self._transform = tf
 
     @property
@@ -3599,7 +3607,7 @@ class GraphicsContext:
         return self._clipping_path
 
     @clipping_path.setter
-    def clipping_path(self, new_clipath: ClippingPath) -> None:
+    def clipping_path(self, new_clipath: Optional[ClippingPath]) -> None:
         self._clipping_path = new_clipath
 
     def add_item(

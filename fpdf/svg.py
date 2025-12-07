@@ -169,8 +169,11 @@ def resolve_length(length_str: str, default_unit: str = "pt") -> float:
 def resolve_angle(angle_str: str, default_unit: str = "deg") -> float:
     """Convert an angle value to our canonical angle unit, radians"""
     m = unit_splitter.match(angle_str)
+    value: str | float
     if m is not None:
         value, unit = m.groups()
+    else:
+        value = angle_str
     if not unit:
         unit = default_unit
 

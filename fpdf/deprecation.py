@@ -22,7 +22,7 @@ def support_deprecated_txt_arg(fn: Callable[P, R]) -> Callable[P, R]:
     """Decorator converting `txt=` arguments into `text=` arguments"""
 
     @wraps(fn)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:  # pylint: disable=no-member
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         txt_value = kwargs.pop("txt", None)
         if txt_value is not None:
             if "text" in kwargs:
@@ -48,9 +48,7 @@ def deprecated_parameter(
 
     def decorator(fn: Callable[P, R]) -> Callable[P, R]:
         @wraps(fn)
-        def wrapper(
-            *args: P.args, **kwargs: P.kwargs  # pylint: disable=no-member
-        ) -> R:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             for name, version in deprecated_info:
                 if kwargs.pop(name, _sentinel) is not _sentinel:
                     warnings.warn(

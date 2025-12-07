@@ -223,7 +223,7 @@ class StandardSecurityHandler:
         LOGGER.debug("Encrypting %s", text)
         return (
             self.encrypt_stream(text, obj_id)
-            if isinstance(text, (bytearray, bytes))
+            if isinstance(text, (bytes, bytearray))
             else self.encrypt_string(text, obj_id)
         )
 
@@ -237,9 +237,9 @@ class StandardSecurityHandler:
         except UnicodeEncodeError:
             return f'<{hexlify(bytearray(self.encrypt_bytes(BOM_UTF16_BE + string.encode("utf-16-be"), obj_id))).decode("latin-1")}>'
 
-    def encrypt_stream(self, stream: bytes, obj_id: int) -> bytes:
+    def encrypt_stream(self, stream: bytes | bytearray, obj_id: int) -> bytes:
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
-            return stream
+            return bytes(stream)
         return bytes(self.encrypt_bytes(stream, obj_id))
 
     def is_aes_algorithm(self) -> bool:
@@ -248,7 +248,7 @@ class StandardSecurityHandler:
             EncryptionMethod.AES_256,
         )
 
-    def encrypt_bytes(self, data: bytes, obj_id: int) -> Sequence[int]:
+    def encrypt_bytes(self, data: bytes | bytearray, obj_id: int) -> Sequence[int]:
         """
         PDF32000 reference - Algorithm 1: Encryption of data using the RC4 or AES algorithms
         Append object ID and generation ID to the key and encrypt the data
@@ -270,7 +270,9 @@ class StandardSecurityHandler:
             return self.encrypt_AES_cryptography(key, data)
         return ARC4().encrypt(key, data)
 
-    def encrypt_AES_cryptography(self, key: bytes, data: bytes) -> bytes:
+    def encrypt_AES_cryptography(
+        self, key: bytes, data: bytes | bytearray
+    ) -> bytearray:
         """Encrypts an array of bytes using AES algorithms (AES 128 or AES 256)"""
         iv = bytearray(self.get_random_bytes(16))
         padder = PKCS7(128).padder()
@@ -428,9 +430,9 @@ class StandardSecurityHandler:
     @classmethod
     def compute_hash(
         cls: Type["StandardSecurityHandler"],
-        input_password: bytes,
+        input_password: bytes | bytearray,
         salt: bytes,
-        user_key: bytes = bytearray(),
+        user_key: bytes | bytearray = bytearray(),
     ) -> bytes:
         """
         Algorithm 2B - section 7.6.4.3.4 of the ISO 32000-2:2020
@@ -467,7 +469,7 @@ class StandardSecurityHandler:
         for security handlers of revision 6
         Algorithm 8 - Section 7.6.4.4.7 of the ISO 32000-2:2020
         """
-        user_password = self.prepare_string(self.user_password)
+        user_password: bytes | bytearray = self.prepare_string(self.user_password)
         if not user_password:
             user_password = bytearray()
         user_validation_salt = self.get_random_bytes(8)

@@ -53,7 +53,7 @@ class Padding(NamedTuple):
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Number | Sequence[Number] | "Padding") -> "Padding":
+    def new(cls, padding: Union[Number, Sequence[Number], "Padding"]) -> "Padding":
         """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
         if isinstance(padding, NumberClass):
             return Padding(

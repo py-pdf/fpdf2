@@ -49,6 +49,7 @@ dependencies = [
 dev = [
   "bandit",
   "black",
+  "mypy",
   "pre-commit",
   "pylint",
   "semgrep",

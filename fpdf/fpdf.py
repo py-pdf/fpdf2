@@ -267,7 +267,7 @@ def check_page(fn: Callable[P, R]) -> Callable[P, R]:
     """Decorator to protect drawing methods"""
 
     @wraps(fn)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:  # pylint: disable=no-member
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         self = args[0]
         if (not hasattr(self, "page") or not self.page) and not (
             kwargs.get("dry_run") or kwargs.get("split_only")
@@ -4590,14 +4590,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # This is the case of a nested call to this method: we do nothing
             yield
             return
-        self._out = lambda *args, **kwargs: None
+        self._out = lambda *args, **kwargs: None  # type: ignore[method-assign]
         prev_page, prev_pages_count, prev_x, prev_y = (
             self.page,
             self.pages_count,
             self.x,
             self.y,
         )
-        annots = PDFArray(self.pages[self.page].annots)
+        annots = self.pages[self.page].annots or PDFArray()
         self._push_local_stack()
         try:
             yield
@@ -5042,7 +5042,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 link=link,
             )
             page_break_triggered = page_break_triggered or new_page
-        if text_line.trailing_nl:
+        if text_line is not None and text_line.trailing_nl:
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
         return page_break_triggered

@@ -298,11 +298,11 @@ class ImageParagraph:
                 "ImageParagraph.build_line() must be called before render()."
             )
         is_svg = isinstance(self.info, VectorImageInfo)
-
+        native_h = h = float(0)
         if self.height:
             h = self.height
         else:
-            native_h: float = cast(float, self.info["h"]) / self.region.pdf.k
+            native_h = cast(float, self.info["h"]) / self.region.pdf.k
         if self.width:
             w = self.width
         else:
