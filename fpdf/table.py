@@ -250,17 +250,18 @@ class Table:
             pagebreak_height = rows_info[i].pagebreak_height
             # pylint: disable=protected-access
             page_break = self._fpdf._perform_page_break_if_need_be(pagebreak_height)
-            if (
-                page_break
-                and self._fpdf.y + pagebreak_height > self._fpdf.page_break_trigger
-            ):
-                # Restoring original position on page:
-                self._fpdf.x = prev_x
-                self._fpdf.y = prev_y
-                self._fpdf.l_margin = prev_l_margin
-                raise ValueError(
-                    f"The row with index {i} is too high and cannot be rendered on a single page"
-                )
+            # Modification pour issue #1460 : On autorise le dépassement de page
+            # if (
+            #     page_break
+            #     and self._fpdf.y + pagebreak_height > self._fpdf.page_break_trigger
+            # ):
+            #     # Restoring original position on page:
+            #     self._fpdf.x = prev_x
+            #     self._fpdf.y = prev_y
+            #     self._fpdf.l_margin = prev_l_margin
+            #     raise ValueError(
+            #         f"The row with index {i} is too high and cannot be rendered on a single page"
+            #     )
             if page_break and repeat_headings and i >= self._num_heading_rows:
                 # repeat headings on top:
                 self._fpdf.y += self._outer_border_margin[1]
@@ -278,13 +279,61 @@ class Table:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
+    def _get_span_origin(self, row_idx, col_idx):
+        """
+        Helper to find the origin cell of a rowspan when encountering a None placeholder.
+        Returns (cell, row_index_of_origin)
+        """
+        # On remonte les lignes vers le haut pour trouver la cellule non-None
+        for k in range(row_idx - 1, -1, -1):
+            cell = self.rows[k].cells[col_idx]
+            if cell is not None:
+                # On a trouvé la cellule mère.
+                # On vérifie si son rowspan est assez grand pour arriver jusqu'à nous
+                if cell.rowspan > (row_idx - k):
+                    return cell, k
+                return None, None
+        return None, None
+
     def _render_table_row(self, i, row_layout_info, cell_x_positions, **kwargs):
         row = self.rows[i]
         y = self._fpdf.y  # remember current y position, reset after each cell
 
         for j, cell in enumerate(row.cells):
             if cell is None:
+                # --- START MODIFICATION: Ghost borders management ---
+                # If the cell is None, it might be the continuation of a rowspan.
+                origin_cell, origin_idx = self._get_span_origin(i, j)
+
+                if origin_cell and origin_cell.border:
+                    # Calculate position and width as if it were a real cell
+                    col_width = self._get_col_width(origin_idx, j, origin_cell.colspan)
+                    x1 = cell_x_positions[j]
+                    y1 = self._fpdf.y
+                    x2 = x1 + col_width
+                    y2 = y1 + row_layout_info.height
+
+                    # Draw vertical borders (Left and Right)
+                    # Note: We assume a full border (1) or 'LTRB'.
+                    # Ideally we should parse origin_cell.border to check if L or R are required.
+                    self._fpdf.line(x1, y1, x1, y2)  # Left
+                    self._fpdf.line(x2, y1, x2, y2)  # Right
+
+                    # --- CALCULATE END OF SPAN ---
+                    current_span_progress = i - origin_idx + 1
+                    total_span_rows = origin_cell.rowspan
+                    is_end_of_span = current_span_progress == total_span_rows
+
+                    # SECURITY: Is this the very last row of the entire table?
+                    is_last_table_row = i == len(self.rows) - 1
+
+                    # If we are at the end of the span OR at the end of the table, draw the bottom line
+                    if is_end_of_span or is_last_table_row:
+                        self._fpdf.line(x1, y2, x2, y2)  # Bottom
+
+                # Continue to the next cell
                 continue
+                # --- END MODIFICATION ---
             self._render_table_cell(
                 i,
                 j,
@@ -414,7 +463,12 @@ class Table:
                 x1 = self._fpdf.l_margin
                 x2 = x1 + self._width
                 y1 = y1 - self._outer_border_margin[1]
-                y2 = y2 + self._outer_border_margin[1]
+                # If the cell height exceeds the page break threshold, we clip the border
+                # so that it does not visually extend beyond the page limit.
+                if y1 + cell_height > self._fpdf.page_break_trigger:
+                    y2 = self._fpdf.page_break_trigger
+                else:
+                    y2 = y1 + cell_height
 
                 if j == 0:
                     # lhs border
