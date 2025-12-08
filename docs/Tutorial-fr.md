@@ -154,11 +154,11 @@ Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()]
 
 Comme alternative, une autre option pour changer le style de police et ajouter des liens est d'utiliser la méthode `write_html()`. Celle-ci permet de lire du HTML pour produire du texte, changer le style de police ou encore ajouter des liens.
 
-# Tuto 7 - Création de documents PDF/A
+## Tuto 7 - Création de documents PDF/A
 
 **Nouveau dans** :octicons-tag-24: **2.8.3**
 
-## Normes PDF/A
+### Normes PDF/A
 
 **PDF/A-1** est basé sur la spécification PDF 1.4. Toutes les ressources (images, graphiques, polices) doivent être incorporées dans le document. La gestion des couleurs doit être spécifiée de manière indépendante de la plateforme avec des profils ICC, et les métadonnées du document doivent être fournies avec des métadonnées XMP.
 
@@ -166,7 +166,7 @@ Comme alternative, une autre option pour changer le style de police et ajouter d
 
 La seule extension pour **PDF/A-3** est la possibilité d'incorporer n'importe quel fichier possible.
 
-## Classes de conformité
+### Classes de conformité
 
 **Niveau A (accessible)** englobe toutes les exigences de la norme, y compris la cartographie de la structure du contenu et l'ordre de lecture correct du contenu du document. Le contenu textuel doit être extractible et la structure doit refléter la séquence de lecture naturelle.
 
