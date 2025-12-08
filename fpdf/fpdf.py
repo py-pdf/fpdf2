@@ -5109,7 +5109,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y: Optional[float] = None,
         w: float = 0,
         h: float = 0,
-        type: Literal["DEPRECATED"] = "DEPRECATED",
+        type: str | Literal["DEPRECATED"] | None = "",
         link: Optional[str | int] = "",
         title: Optional[str] = None,
         alt_text: Optional[str] = None,
