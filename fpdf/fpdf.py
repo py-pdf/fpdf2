@@ -5851,7 +5851,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             s = s.encode("latin1")
         if not self.page:
             raise FPDFException("No page open, you need to call add_page() first")
-        self.pages[self.page].contents += s + b"\n"  # type: ignore[operator]
+        page_contents = self.pages[self.page].contents
+        if isinstance(page_contents, bytearray):
+            page_contents.extend(s)
+            page_contents.append(0x0A)  # newline
+        else:
+            page_contents += s + b"\n"  # type: ignore[operator]
 
     @check_page
     @support_deprecated_txt_arg

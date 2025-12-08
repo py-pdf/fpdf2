@@ -56,6 +56,7 @@ from .pattern import shape_linear_gradient, shape_radial_gradient
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element  # nosec
+
     from .drawing import Renderable
     from .fpdf import FPDF
     from .output import ResourceCatalog

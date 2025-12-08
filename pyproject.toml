@@ -150,3 +150,10 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "pympler.*"
 ignore_missing_imports = true
+
+[tool.pyright]
+include = ["fpdf"]
+typeCheckingMode = "strict"
+pythonVersion = "3.14"
+reportMissingImports = true
+reportMissingTypeStubs = false
