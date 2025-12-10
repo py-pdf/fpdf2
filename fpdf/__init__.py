@@ -31,6 +31,7 @@ from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
 from .util import get_scale_factor
+from .fpdf_renderer import *
 
 try:
     # This module only exists in PyFPDF, it has been removed in fpdf2 since v2.5.7:
@@ -85,6 +86,7 @@ __all__ = [
     "FPDF_FONT_DIR",
     # Utility functions:
     "get_scale_factor",
+    "FPDFRenderer",
 ]
 
 __pdoc__ = {name: name.startswith("FPDF_") for name in __all__}
