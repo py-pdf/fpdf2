@@ -71,7 +71,7 @@ class RendererTemplate(RendererBase):
         #print(f"draw_path with scaling: {scaling}")
         fill_opacity = None
         stroke_opacity = None
-        if rgbFace: 
+        if rgbFace and len(rgbFace) >=3: 
             p.set_fill_color(rgbFace[0]*255, rgbFace[1]*255, rgbFace[2]*255)
 
             if len(rgbFace) == 4:
