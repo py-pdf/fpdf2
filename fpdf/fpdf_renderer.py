@@ -133,8 +133,8 @@ class RendererTemplate(RendererBase):
                                     #print(f"Closing polygon path. idx: {i}")
                                     
                                     if (i == length -1):
-                                        pth.close() # close the path and add to context
-                                        ctxt.add_item(pth)
+                                        pth.close() # close the path and add to context without copying
+                                        ctxt.add_item(pth, _copy=False)
                                         pth = None
                                     else:
                                         pth.paint_rule = PathPaintRule.FILL_EVENODD
@@ -145,7 +145,8 @@ class RendererTemplate(RendererBase):
                                     print (f'Unhandled path command in polygon: {c[i]} at vertex {vtx}')
                             if pth is not None:
                                 #print(f"path was not closed - adding to context")
-                                ctxt.add_item(pth)
+                                # add to context without copying
+                                ctxt.add_item(pth, _copy=False)
                                 pth = None
 
                             
