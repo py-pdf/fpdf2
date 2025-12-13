@@ -15,7 +15,8 @@ Gives direct access to some classes defined in submodules:
 * `fpdf.template.FlexTemplate`
 """
 
-import warnings, sys
+import sys
+import warnings
 
 from .deprecation import WarnOnDeprecatedModuleAttributes
 from .enums import Align, TextMode, XPos, YPos
@@ -23,19 +24,19 @@ from .errors import FPDFException
 from .fonts import FontFace, TextStyle
 from .fpdf import (
     FPDF,
-    TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
+    TitleStyle,
 )
-from .html import HTMLMixin, HTML2FPDF
+from .html import HTML2FPDF, HTMLMixin
 from .prefs import ViewerPreferences
-from .template import Template, FlexTemplate
+from .template import FlexTemplate, Template
 from .util import get_scale_factor
 
 try:
     # This module only exists in PyFPDF, it has been removed in fpdf2 since v2.5.7:
     # pylint: disable=import-self
-    from . import ttfonts
+    from . import ttfonts  # type: ignore[attr-defined]
 
     warnings.warn(
         "You have both PyFPDF & fpdf2 installed. "
