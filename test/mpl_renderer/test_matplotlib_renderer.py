@@ -282,7 +282,6 @@ def gen_fig_bezier(plt, w_inch, h_inch):
 
 def test_mpl_figure_with_lineplot():
     from matplotlib import pyplot as plt
-    plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
     
     w_inch = 4
@@ -327,3 +326,58 @@ def gen_fig_lineplot(plt, w_inch, h_inch):
     ax.autoscale_view()
     
     return fig
+
+
+def test_mplrenderer_speed_test():
+    import time
+    from matplotlib import pyplot as plt
+    plt.switch_backend(default_backend)
+
+    ROUNDS = 1000
+    w_inch = 4
+    h_inch = 3
+    w_mm = w_inch * 25.4
+    h_mm = h_inch * 25.4
+
+    fig = gen_fig_lineplot(plt, w_inch, h_inch)
+    
+    svg_buffer = io.BytesIO()
+    fig.savefig(svg_buffer, format="svg")
+    svg_buffer.seek(0)
+    plt.close(fig)
+
+    pdf_svg = create_fpdf(210, 297)
+
+    t0 = time.time()
+    for i in range(ROUNDS):    
+        x=(i/10)
+        y=(i%20)*10
+        pdf_svg.image(svg_buffer, x=x, y=y, w=w_mm, h=h_mm)
+    
+    pdf_svg.output(GENERATED_PDF_DIR / "test_speed_figure_svg.pdf")
+    total_svg = time.time() - t0
+    print(f"SVG backend time for {ROUNDS} rounds: {total_svg:.2f} seconds")
+    
+
+
+    plt.switch_backend("module://fpdf.fpdf_renderer")
+
+    # Re-generate the figure to use FPDFRenderer backend
+    fig = gen_fig_lineplot(plt, w_inch, h_inch)
+
+    pdf_fpdf = create_fpdf(210, 297)
+
+    t0 = time.time()
+    for i in range(ROUNDS):
+        x=(i/10)
+        y=(i%20)*10
+        # plot scale
+        scale = float(w_mm / fig.bbox.width)
+        origin = (x, 297-y)  # FPDF uses bottom-left of page as origin
+        fig.savefig(fname=None, fpdf=pdf_fpdf, origin=origin, scale=scale)
+    
+    plt.close(fig)
+    pdf_fpdf.output(GENERATED_PDF_DIR / "test_speed_figure_fpdf.pdf")
+
+    total_fpdf = time.time() - t0
+    print(f"FPDF backend time for {ROUNDS} rounds: {total_fpdf:.2f} seconds")
