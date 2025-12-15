@@ -8,6 +8,7 @@ from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 
 from fpdf import FPDF
 import pytest
@@ -21,9 +22,11 @@ logging.getLogger("fpdf.svg").setLevel(logging.ERROR)
 
 def create_fpdf(w_mm, h_mm):
     pdf = FPDF(unit="mm", format=(w_mm, h_mm))
-    pdf.add_font("dejavusans", "", str(font_file))
-    pdf.set_font("dejavusans", "", 8)
+    print(f"Adding font from file: {font_file}")
+    pdf.add_font("dejavu sans", "", str(font_file))
     pdf.add_page()
+    font_manager.fontManager.addfont(str(font_file))
+    mpl.rcParams["font.sans-serif"] = ["dejavu sans"]
     return pdf
 
 def test_mpl_simple_figure():
@@ -315,13 +318,12 @@ def test_mpl_figure_with_lineplot():
 def gen_fig_lineplot(plt, w_inch, h_inch):
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))    
     
-    t = [i * 0.01 for i in range(3)]
+    t = [i * 0.01 for i in range(1000)]
     s = [sin(value) + cos(value*value) for value in t]
     ax.plot(t, s, 'blue', linewidth=1)
-    # ax.set_title("Line Plot Figure")
-    ax.set_title("O")
-    # ax.set_xlabel("t")
-    # ax.set_ylabel("sin(t) + cos(t^2)")
+    ax.set_title("Line Plot Figure")
+    ax.set_xlabel("t")
+    ax.set_ylabel("sin(t) + cos(t^2)")
     ax.autoscale_view()
-    ax.set_axis_off()
+    
     return fig
