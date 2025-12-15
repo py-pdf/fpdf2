@@ -19,6 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.6] - Not released yet
 ### Added
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
+* Direct FPDF renderer for matplotlib images 
+
 ### Fixed
 * a bug when rendering empty tables with `INTERNAL` layout, that caused an extra border to be rendered due to an erroneous use of `list.index()` - _cf._ [issue #1669](https://github.com/py-pdf/fpdf2/issues/1669)
 ### Changed
