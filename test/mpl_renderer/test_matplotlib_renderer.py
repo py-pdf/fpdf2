@@ -381,3 +381,54 @@ def test_mplrenderer_speed_test():
 
     total_fpdf = time.time() - t0
     print(f"FPDF backend time for {ROUNDS} rounds: {total_fpdf:.2f} seconds")
+
+
+def test_mpl_figure_with_linestyles():
+    from matplotlib import pyplot as plt
+    plt.rcParams["font.sans-serif"][0] = "Arial"
+    plt.switch_backend(default_backend)
+    
+    w_inch = 4
+    h_inch = 3
+    w_mm = w_inch * 25.4
+    h_mm = h_inch * 25.4
+
+    fig = gen_fig_linestyles(plt, w_inch, h_inch)
+    
+    svg_buffer = io.BytesIO()
+    fig.savefig(svg_buffer, format="svg")
+    svg_buffer.seek(0)
+
+
+    pdf_svg = create_fpdf(w_mm, h_mm)
+    pdf_svg.image(svg_buffer, x=0, y=0, w=w_mm, h=h_mm)        
+    pdf_svg.output(GENERATED_PDF_DIR / "test_linestyles_figure_svg.pdf")
+    
+    plt.switch_backend("module://fpdf.fpdf_renderer")
+
+    # Re-generate the figure to use FPDFRenderer backend
+    fig = gen_fig_linestyles(plt, w_inch, h_inch)
+
+    pdf_fpdf = create_fpdf(w_mm, h_mm)
+
+    scale = float(w_mm / fig.bbox.width)
+    origin = (0, 0+h_mm)  # FPDF uses bottom-left as origin
+
+    fig.savefig(fname=None, fpdf=pdf_fpdf, origin=origin, scale=scale)
+    pdf_fpdf.output(GENERATED_PDF_DIR / "test_linestyles_figure_fpdf.pdf")
+
+def gen_fig_linestyles(plt, w_inch, h_inch):
+    fig, ax = plt.subplots(figsize=(w_inch, h_inch))    
+    
+    t = [i * 0.1 for i in range(100)]
+    ax.plot(t, [0.5]*100, color='blue', linestyle='solid', linewidth=2, label='solid')
+    ax.plot(t, [0.4]*100, color='orange', linestyle='dashed', linewidth=2, label='dashed')
+    ax.plot(t, [0.3]*100, color='green', linestyle='dashdot', linewidth=2, label='dashdot')
+    ax.plot(t, [0.2]*100, color='red', linestyle='dotted', linewidth=2, label='dotted')
+    ax.set_title("Line Styles Figure")
+    ax.set_xlabel("t")
+    ax.set_ylabel("Value")
+    ax.autoscale_view()
+    ax.legend()
+    
+    return fig

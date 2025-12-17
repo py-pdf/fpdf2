@@ -61,7 +61,7 @@ class RendererTemplate(RendererBase):
             clip_x0,clip_y0 = self._trans.transform(clip_rect[0:2])
             clip_x1,clip_y1 = self._trans.transform(clip_rect[2:4])
 
-        #print(f"clip-rect xformed: {x0:.1f},{y0:.1f} -> {x1:.1f},{y1:.1f}\n")
+        
         #else:
         #print(f"clip-path: {gc.get_clip_path()}\n")
         c,v = zip(*[(c,v.tolist()) for v,c in path.iter_segments(transform=tran)])
@@ -85,7 +85,8 @@ class RendererTemplate(RendererBase):
             #print(f"stroke_opacity: { rgb[3]}")
             stroke_opacity = rgb[3]
 
-
+        _, dash_array = gc.get_dashes()
+        
         line_width = gc.get_linewidth()
         line_width_px = line_width * self.dpi / 72.0  # points to pixels
         mm_line_width = line_width_px * self._scale
@@ -95,7 +96,16 @@ class RendererTemplate(RendererBase):
                 #p.set_draw_color(rgb[0]*255, rgb[1]*255, rgb[2]*255)
                 #print(f"draw_path: color rgb: {rgb}, line_width: {line_width} pt -> mm_line_width: {mm_line_width:.2f} mm")
                 #print(f"line_width: {line_width} pt -> mm_line_width: {mm_line_width:.2f} mm")
-                
+                if dash_array and len(dash_array) >= 2:
+                    # Scale dash array from points to mm
+                    mm_dash_array = [ (d * PT_TO_MM) for d in dash_array]
+
+                    if len(mm_dash_array) >2:
+                        # make sure we have even number of elements
+                        print("Warning: dash array has more than two elements - ignoring extra ones")
+                    dash = mm_dash_array[0]-mm_line_width
+                    gap = mm_dash_array[1]+mm_line_width
+                    p.set_dash_pattern(dash= dash, gap=gap)                
                 # print(f'Path commands: {c}: {v}')
 
                 match c:
