@@ -43,15 +43,13 @@ class RendererTemplate(RendererBase):
         # calc font scaling factor to get matplotlib font sizes to match FPDF sizes if width is scaled
         fig_w_mm = fig_width * scale
         fig_w_inch = fig_width / dpi
-        
+
         shrink_ratio_w = (fig_w_mm / 25.4) / fig_w_inch
         if fpdf:
             self._font_scaling = shrink_ratio_w
             # print(f"Font scaling factor: {self._font_scaling}")
 
-
-    def draw_gouraud_triangles(self, gc, triangles_array, colors_array,
-                               transform):
+    def draw_gouraud_triangles(self, gc, triangles_array, colors_array, transform):
         raise NotImplementedError("draw_gouraud_triangles not implemented yet")
 
     def draw_path(self, gc, path, transform, rgbFace=None):
@@ -140,7 +138,7 @@ class RendererTemplate(RendererBase):
                     # Path combinations: Starts with MOVETO, and can end with CLOSEPOLY
                     case [path.MOVETO, *_]:
                         # print(f"polygon: \n{c}\n{v}\n")
-                        
+
                         pth = None
                         length = len(c)
                         with p.drawing_context() as ctxt:
