@@ -86,7 +86,6 @@ __all__ = [
     "FPDF_FONT_DIR",
     # Utility functions:
     "get_scale_factor",
-    "FPDFRenderer",
 ]
 
 __pdoc__ = {name: name.startswith("FPDF_") for name in __all__}

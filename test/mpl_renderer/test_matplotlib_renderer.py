@@ -1,17 +1,17 @@
-# pylint: disable=no-self-use, protected-access
 from cmath import cos, sin
 import io
 import logging
 import os
+import time
 from pathlib import Path
-
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.path import Path as MplPath
 from matplotlib import font_manager
 
 from fpdf import FPDF
-import pytest
 
 default_backend = plt.get_backend()
 HERE = Path(__file__).resolve().parent
@@ -32,7 +32,6 @@ def create_fpdf(w_mm, h_mm):
 
 
 def test_mpl_simple_figure():
-    from matplotlib import pyplot as plt
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
@@ -41,7 +40,7 @@ def test_mpl_simple_figure():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig(plt, w_inch, h_inch)
+    fig = gen_fig(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -54,7 +53,7 @@ def test_mpl_simple_figure():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig(plt, w_inch, h_inch)
+    fig = gen_fig(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -66,7 +65,7 @@ def test_mpl_simple_figure():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_simple_figure_fpdf.pdf")
 
 
-def gen_fig(plt, w_inch, h_inch):
+def gen_fig(w_inch, h_inch):
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
     ax.plot([0, 1], [0, 1], "blue", linewidth=2)
     ax.set_title("Simple Figure")
@@ -76,7 +75,6 @@ def gen_fig(plt, w_inch, h_inch):
 
 
 def test_mpl_figure_with_arrows():
-    from matplotlib import pyplot as plt
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
@@ -86,7 +84,7 @@ def test_mpl_figure_with_arrows():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_arrows(plt, w_inch, h_inch)
+    fig = gen_fig_arrows(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -99,7 +97,7 @@ def test_mpl_figure_with_arrows():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_arrows(plt, w_inch, h_inch)
+    fig = gen_fig_arrows(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -109,7 +107,7 @@ def test_mpl_figure_with_arrows():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_arrows_figure_fpdf.pdf")
 
 
-def gen_fig_arrows(plt, w_inch, h_inch):
+def gen_fig_arrows(w_inch, h_inch):
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
     ax.plot([0, 1], [1, 0], "blue", linewidth=2)
     ax.set_title("Arrows Figure")
@@ -123,8 +121,6 @@ def gen_fig_arrows(plt, w_inch, h_inch):
 
 
 def test_mpl_figure_with_labels():
-    from matplotlib import pyplot as plt
-
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
 
@@ -133,7 +129,7 @@ def test_mpl_figure_with_labels():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_labels(plt, w_inch, h_inch)
+    fig = gen_fig_labels(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, dpi=600, format="png")
@@ -146,7 +142,7 @@ def test_mpl_figure_with_labels():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_labels(plt, w_inch, h_inch)
+    fig = gen_fig_labels(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -156,7 +152,7 @@ def test_mpl_figure_with_labels():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_labels_figure_fpdf.pdf")
 
 
-def gen_fig_labels(plt, w_inch, h_inch):
+def gen_fig_labels(w_inch, h_inch):
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
     ax.plot([0, 1], [1, 0], "blue", linewidth=2)
     ax.set_title("Labels Figure")
@@ -183,7 +179,6 @@ def gen_fig_labels(plt, w_inch, h_inch):
 
 
 def test_mpl_figure_with_legend():
-    from matplotlib import pyplot as plt
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
@@ -193,7 +188,7 @@ def test_mpl_figure_with_legend():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_legend(plt, w_inch, h_inch)
+    fig = gen_fig_legend(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -206,7 +201,7 @@ def test_mpl_figure_with_legend():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_legend(plt, w_inch, h_inch)
+    fig = gen_fig_legend(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -217,7 +212,8 @@ def test_mpl_figure_with_legend():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_legend_figure_fpdf.pdf")
 
 
-def gen_fig_legend(plt, w_inch, h_inch):
+def gen_fig_legend(w_inch, h_inch):
+
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
     ax.plot([0, 1], [1, 0], "blue", linewidth=1)
     ax.plot([0, 1], [0, 1], "green", linewidth=1)
@@ -229,8 +225,6 @@ def gen_fig_legend(plt, w_inch, h_inch):
 
 
 def test_mpl_figure_with_bezier():
-    from matplotlib import pyplot as plt
-
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
 
@@ -239,7 +233,7 @@ def test_mpl_figure_with_bezier():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_bezier(plt, w_inch, h_inch)
+    fig = gen_fig_bezier(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -252,7 +246,7 @@ def test_mpl_figure_with_bezier():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_bezier(plt, w_inch, h_inch)
+    fig = gen_fig_bezier(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -263,10 +257,7 @@ def test_mpl_figure_with_bezier():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_bezier_figure_fpdf.pdf")
 
 
-def gen_fig_bezier(plt, w_inch, h_inch):
-    import matplotlib.patches as mpatches
-
-    from matplotlib.path import Path as MplPath
+def gen_fig_bezier(w_inch, h_inch):
 
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
 
@@ -308,7 +299,6 @@ def gen_fig_bezier(plt, w_inch, h_inch):
 
 
 def test_mpl_figure_with_lineplot():
-    from matplotlib import pyplot as plt
 
     plt.switch_backend(default_backend)
 
@@ -317,7 +307,7 @@ def test_mpl_figure_with_lineplot():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_lineplot(plt, w_inch, h_inch)
+    fig = gen_fig_lineplot(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -330,7 +320,7 @@ def test_mpl_figure_with_lineplot():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_lineplot(plt, w_inch, h_inch)
+    fig = gen_fig_lineplot(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -341,7 +331,7 @@ def test_mpl_figure_with_lineplot():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_lineplot_figure_fpdf.pdf")
 
 
-def gen_fig_lineplot(plt, w_inch, h_inch):
+def gen_fig_lineplot(w_inch, h_inch):
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
 
     t = [i * 0.01 for i in range(1000)]
@@ -356,8 +346,6 @@ def gen_fig_lineplot(plt, w_inch, h_inch):
 
 
 def test_mplrenderer_speed_test():
-    import time
-    from matplotlib import pyplot as plt
 
     plt.switch_backend(default_backend)
 
@@ -367,7 +355,7 @@ def test_mplrenderer_speed_test():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_lineplot(plt, w_inch, h_inch)
+    fig = gen_fig_lineplot(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -389,7 +377,7 @@ def test_mplrenderer_speed_test():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_lineplot(plt, w_inch, h_inch)
+    fig = gen_fig_lineplot(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(210, 297)
 
@@ -410,8 +398,6 @@ def test_mplrenderer_speed_test():
 
 
 def test_mpl_figure_with_linestyles():
-    from matplotlib import pyplot as plt
-
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
 
@@ -420,7 +406,7 @@ def test_mpl_figure_with_linestyles():
     w_mm = w_inch * 25.4
     h_mm = h_inch * 25.4
 
-    fig = gen_fig_linestyles(plt, w_inch, h_inch)
+    fig = gen_fig_linestyles(w_inch, h_inch)
 
     svg_buffer = io.BytesIO()
     fig.savefig(svg_buffer, format="svg")
@@ -433,7 +419,7 @@ def test_mpl_figure_with_linestyles():
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
     # Re-generate the figure to use FPDFRenderer backend
-    fig = gen_fig_linestyles(plt, w_inch, h_inch)
+    fig = gen_fig_linestyles(w_inch, h_inch)
 
     pdf_fpdf = create_fpdf(w_mm, h_mm)
 
@@ -444,7 +430,7 @@ def test_mpl_figure_with_linestyles():
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_linestyles_figure_fpdf.pdf")
 
 
-def gen_fig_linestyles(plt, w_inch, h_inch):
+def gen_fig_linestyles(w_inch, h_inch):
     fig, ax = plt.subplots(figsize=(w_inch, h_inch))
 
     t = [i * 0.1 for i in range(100)]

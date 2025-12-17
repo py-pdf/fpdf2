@@ -5,27 +5,30 @@ Just need to tell MatPlotLib to use this renderer and then do fig.savefig.
 """
 
 from contextlib import nullcontext
-from matplotlib._pylab_helpers import Gcf
+import logging
 from matplotlib.backend_bases import (
     FigureCanvasBase,
     FigureManagerBase,
     GraphicsContextBase,
     RendererBase,
 )
-from matplotlib.figure import Figure
-from matplotlib.transforms import Affine2D, IdentityTransform
+from matplotlib.transforms import Affine2D
 import matplotlib as mpl
 
-from fpdf.drawing import ClippingPath, PaintedPath
+from fpdf.drawing import PaintedPath
 from fpdf.enums import PathPaintRule
 
 PT_TO_MM = 0.3527777778  # 1 point = 0.3527777778 mm
+
+
+_log = logging.getLogger(__name__)
 
 
 class RendererTemplate(RendererBase):
     """Removed draw_markers, draw_path_collection and draw_quad_mesh - all optional, we can add later"""
 
     def __init__(self, figure, dpi, fpdf, scale, transform, fig_width, fig_height):
+        del fig_height  # unused for now
         super().__init__()
         self.figure = figure
         # print (f'FPDF: dpi: {dpi}')
@@ -114,7 +117,7 @@ class RendererTemplate(RendererBase):
 
                     if len(mm_dash_array) > 2:
                         # make sure we have even number of elements
-                        print(
+                        _log.warning(
                             "Warning: dash array has more than two elements - ignoring extra ones"
                         )
                     dash = mm_dash_array[0] - mm_line_width
@@ -167,8 +170,10 @@ class RendererTemplate(RendererBase):
                                         pth.move_to(*v[i])  # start a new sub-path
 
                                 else:
-                                    print(
-                                        f"Unhandled path command in polygon: {c[i]} at vertex {vtx}"
+                                    _log.warning(
+                                        "Unhandled path command in polygon: %d at vertex %s",
+                                        c[i],
+                                        vtx,
                                     )
                             if pth is not None:
                                 # print(f"path was not closed - adding to context")
@@ -177,10 +182,10 @@ class RendererTemplate(RendererBase):
                                 pth = None
 
                     case _:
-                        print(f"draw_path: Unmatched {c}")
+                        _log.warning("draw_path: Unmatched %d", c)
 
     def draw_image(self, gc, x, y, im, transform=None):
-        print(f"draw_image at {x},{y} size {im.get_size()}")
+        _log.warning("draw_image at %d,%d size %s", x, y, im.get_size())
         raise NotImplementedError("draw_image not implemented yet")
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
@@ -225,7 +230,7 @@ class RendererTemplate(RendererBase):
             tw = max_x - min_x
             th = max_y - min_y
         else:
-            print(f"Unknown prop type: {type(prop)}")
+            _log.warning("Unknown prop type: %s", type(prop))
             tw = None
             th = None
 
@@ -331,7 +336,7 @@ class FigureCanvasTemplate(FigureCanvasBase):
     # wx-based backends for an example.
     manager_class = FigureManagerTemplate
 
-    def draw(self):
+    def draw(self, *args, **kwargs):
         """
         Draw the figure using the renderer.
 
@@ -340,6 +345,13 @@ class FigureCanvasTemplate(FigureCanvasBase):
         deferred work (like computing limits auto-limits and tick
         values) that users may want access to before saving to disk.
         """
+        if args or kwargs:
+            _log.warning(
+                "draw() got arguments that will not be used for now: %s, %s",
+                args,
+                kwargs,
+            )
+
         # print (f'Draw: {self._fpdf}')
         width = self.figure.bbox.width
         height = self.figure.bbox.height
@@ -357,11 +369,13 @@ class FigureCanvasTemplate(FigureCanvasBase):
         # You should provide a print_xxx function for every file format
         # you can write.
 
-        # If the file type is not in the base set of filetypes,
-        # you should add it to the class-scope filetypes dictionary as follows:
-        filetypes = {**FigureCanvasBase.filetypes, "fpdf": "My magic FPDF format"}
+    # If the file type is not in the base set of filetypes,
+    # you should add it to the class-scope filetypes dictionary as follows:
+    filetypes = {**FigureCanvasBase.filetypes, "fpdf": "My magic FPDF format"}
 
     def print_fpdf(self, filename, **kwargs):
+        del filename  # filename is not used for now
+
         self._fpdf = self._trans = origin = scale = None
         self._scale = 1.0
         self._facecolor = self._edgecolor = None
@@ -395,21 +409,21 @@ class FigureCanvasTemplate(FigureCanvasBase):
                 case "bbox_inches_restore":
                     pass  # ignore for now
                 case _:
-                    pass
-                    print(f"Unrecognised keyword {k} -> {v}")
+                    _log.warning("Unrecognised keyword %s -> %s", k, v)
 
-        fig_width = self.figure.bbox.width
-        fig_height = self.figure.bbox.height
+        # fig_width = self.figure.bbox.width
+        # fig_height = self.figure.bbox.height
 
         # Build our transformation do scale and offset for whole figure
         if origin and scale:
-            fig_height_mm = fig_height * scale
+            # fig_height_mm = fig_height * scale
             # print(f"print_fpdf: fig_width={fig_width}, fig_height={fig_height}, fig_height_mm={fig_height_mm}")
             self._trans = Affine2D().scale(self._scale).scale(1, -1).translate(*origin)
 
         self.draw()
 
-    def get_default_filetype(self):
+    @classmethod
+    def get_default_filetype(cls):
         return "fpdf"
 
 
