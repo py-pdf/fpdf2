@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "fonttools","matplotlib"]
+requires = ["setuptools>=61.0", "wheel", "fonttools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -42,8 +42,7 @@ dependencies = [
   "Pillow>=8.3.2,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
                             # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
                             # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
-  "fonttools>=4.34.0",
-  "matplotlib>=3.6.0",     # minimum version tested
+  "fonttools>=4.34.0"
 ]
 
 [project.optional-dependencies]
@@ -75,7 +74,8 @@ test = [
   "pytest-cov",
   "qrcode",
   "tabula-py",
-  "uharfbuzz"
+  "uharfbuzz",
+  "matplotlib"
 ]
 
 [project.urls]
