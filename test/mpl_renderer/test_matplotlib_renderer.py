@@ -13,6 +13,8 @@ from matplotlib import font_manager
 
 from fpdf import FPDF
 
+from test.conftest import assert_pdf_equal
+
 default_backend = plt.get_backend()
 HERE = Path(__file__).resolve().parent
 GENERATED_PDF_DIR = HERE / "generated_pdf"
@@ -31,7 +33,7 @@ def create_fpdf(w_mm, h_mm):
     return pdf
 
 
-def test_mpl_simple_figure():
+def test_mpl_simple_figure(tmp_path):
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
@@ -48,7 +50,9 @@ def test_mpl_simple_figure():
 
     pdf_svg = create_fpdf(w_mm, h_mm)
     pdf_svg.image(svg_buffer, x=0, y=0, w=w_mm, h=h_mm)
-    pdf_svg.output(GENERATED_PDF_DIR / "test_simple_figure_svg.pdf")
+    assert_pdf_equal(
+        pdf_svg, GENERATED_PDF_DIR / "test_simple_figure_svg.pdf", tmp_path, generate=True
+    )
 
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
@@ -63,6 +67,7 @@ def test_mpl_simple_figure():
     fig.savefig(fname=None, fpdf=pdf_fpdf, origin=origin, scale=scale)
 
     pdf_fpdf.output(GENERATED_PDF_DIR / "test_simple_figure_fpdf.pdf")
+    assert_pdf_equal(pdf_fpdf, GENERATED_PDF_DIR / "test_simple_figure_svg.pdf", tmp_path, ignore_original_obj_ids=True, ignore_id_changes=True)
 
 
 def gen_fig(w_inch, h_inch):
