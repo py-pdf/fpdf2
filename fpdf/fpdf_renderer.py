@@ -5,7 +5,6 @@ Just need to tell MatPlotLib to use this renderer and then do fig.savefig.
 """
 
 from contextlib import nullcontext
-from matplotlib import _api
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
     FigureCanvasBase,
@@ -41,16 +40,19 @@ class RendererTemplate(RendererBase):
             fpdf.set_draw_color(0, 0, 0)
             fpdf.set_fill_color(255, 255, 255)
 
-        # calc font scaling factor to get matplotlib font sizes to match FPDF sizes when using SVG
-        fig_h_mm = fig_height * scale
+        # calc font scaling factor to get matplotlib font sizes to match FPDF sizes if width is scaled
         fig_w_mm = fig_width * scale
         fig_w_inch = fig_width / dpi
-        fig_h_inch = fig_height / dpi
-        shrink_ratio_h = (fig_h_mm / 25.4) / fig_h_inch
+        
         shrink_ratio_w = (fig_w_mm / 25.4) / fig_w_inch
         if fpdf:
             self._font_scaling = shrink_ratio_w
             # print(f"Font scaling factor: {self._font_scaling}")
+
+
+    def draw_gouraud_triangles(self, gc, triangles_array, colors_array,
+                               transform):
+        raise NotImplementedError("draw_gouraud_triangles not implemented yet")
 
     def draw_path(self, gc, path, transform, rgbFace=None):
         # self.check_gc(gc, rgbFace)
@@ -62,8 +64,8 @@ class RendererTemplate(RendererBase):
         # tran = transform + self._trans
         tran = transform + self._trans
         clip_rect = None
+        clip_x0, clip_y0, clip_x1, clip_y1 = None, None, None, None
         if gc.get_clip_rectangle():
-            #    print(f"clip-rect in: {gc.get_clip_rectangle().x0:.1f},{gc.get_clip_rectangle().y0:.1f} -> {gc.get_clip_rectangle().x1:.1f},{gc.get_clip_rectangle().y1:.1f}\n")
             clip_rect = gc.get_clip_rectangle().extents
             clip_x0, clip_y0 = self._trans.transform(clip_rect[0:2])
             clip_x1, clip_y1 = self._trans.transform(clip_rect[2:4])
@@ -73,8 +75,6 @@ class RendererTemplate(RendererBase):
         c, v = zip(*[(c, v.tolist()) for v, c in path.iter_segments(transform=tran)])
 
         p = self._fpdf
-        scaling = self._trans.get_matrix()[0, 0]
-        # print(f"draw_path with scaling: {scaling}")
         fill_opacity = None
         stroke_opacity = None
         if rgbFace is not None and len(rgbFace) >= 3:
@@ -100,7 +100,7 @@ class RendererTemplate(RendererBase):
             p.rect_clip(clip_x0, clip_y0, clip_x1 - clip_x0, clip_y1 - clip_y0)
             if clip_rect is not None
             else nullcontext()
-        ) as clip:
+        ):
 
             with p.local_context(
                 stroke_opacity=stroke_opacity,
@@ -138,9 +138,9 @@ class RendererTemplate(RendererBase):
                         p.polyline(v)
 
                     # Path combinations: Starts with MOVETO, and can end with CLOSEPOLY
-                    case [path.MOVETO, *rest]:
+                    case [path.MOVETO, *_]:
                         # print(f"polygon: \n{c}\n{v}\n")
-
+                        
                         pth = None
                         length = len(c)
                         with p.drawing_context() as ctxt:
@@ -168,7 +168,6 @@ class RendererTemplate(RendererBase):
                                         pth.paint_rule = PathPaintRule.FILL_EVENODD
                                         pth.move_to(*v[i])  # start a new sub-path
 
-                                    pass
                                 else:
                                     print(
                                         f"Unhandled path command in polygon: {c[i]} at vertex {vtx}"
@@ -182,9 +181,9 @@ class RendererTemplate(RendererBase):
                     case _:
                         print(f"draw_path: Unmatched {c}")
 
-    def draw_image(self, gc, x, y, im):
+    def draw_image(self, gc, x, y, im, transform=None):
         print(f"draw_image at {x},{y} size {im.get_size()}")
-        pass
+        raise NotImplementedError("draw_image not implemented yet")
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
 
@@ -200,7 +199,7 @@ class RendererTemplate(RendererBase):
             )
 
         # We're expecting a FontProperties instance
-        elif isinstance(prop, mpl.font_manager.FontProperties):
+        if isinstance(prop, mpl.font_manager.FontProperties):
             # print(f"font prop size: {prop.get_size()} name: {prop.get_name()}, self._font_scaling: {self._font_scaling}")
             self._fpdf.set_font(
                 prop.get_name(), size=prop.get_size() * self._font_scaling
@@ -209,8 +208,8 @@ class RendererTemplate(RendererBase):
             tw, th, _ = self.get_text_width_height_descent(s, prop, ismath)
             tw *= self._font_scaling * PT_TO_MM / self.dpi * 72.0
             th *= self._font_scaling * PT_TO_MM / self.dpi * 72.0
-            tw_prerotate = tw
-            th_prerotate = th
+            # tw_prerotate = tw
+            # th_prerotate = th
 
             # print(f'Text width/height before rotation: {tw_prerotate:.1f}/{th_prerotate:.1f} mm')
             # print(f'scale x: {self.figure.bbox.width}, y: {self.figure.bbox.height}')
@@ -239,7 +238,6 @@ class RendererTemplate(RendererBase):
         x, y = trans.transform((x, y))
 
         # print(f'- [{x:.1f},{y:.1f}] {s}')
-        ha = mtext.get_ha() if mtext else "left"
         # print(f'Text \'{s}\' ha: {ha}, angle: {angle}')
         color = gc.get_rgb()
         self._fpdf.set_text_color(
@@ -250,11 +248,6 @@ class RendererTemplate(RendererBase):
         # print (f'Text width rotated: {tw:.1f}, height: {th:.1f}')
         match angle:
             case 0:
-                # if ha == "right":
-                #     x -= tw
-                # if ha == "center":
-                #     x -= tw / 2
-                # x+=0.7  # FPDF text positioning seems to be a bit off to left
                 self._fpdf.text(x, y, s)
 
             case _:
