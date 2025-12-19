@@ -50,12 +50,6 @@ def test_mpl_simple_figure():
     pdf_svg = create_fpdf(w_mm, h_mm)
     pdf_svg.image(svg_buffer, x=0, y=0, w=w_mm, h=h_mm)
     pdf_svg.output(GENERATED_PDF_DIR / "test_simple_figure_svg.pdf")
-    # assert_pdf_equal(
-    #     pdf_svg,
-    #     GENERATED_PDF_DIR / "test_simple_figure_svg.pdf",
-    #     tmp_path,
-    #     generate=True,
-    # )
 
     plt.switch_backend("module://fpdf.fpdf_renderer")
 
