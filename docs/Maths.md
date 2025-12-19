@@ -223,6 +223,8 @@ If you have trouble with the SVG export, you can also render the matplotlib figu
 
 ### Using fpdf2 renderer ###
 
+_New in [:octicons-tag-24: 2.8.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 The new _experimental_ fpdf2 renderer for matplotlib allows direct rendering to the FPDF2 document. This provides a large performance benefit compared to using SVG (over x3 faster) or PNG intermediate rendering. There are a couple of down sides to this method of rendering the plots:
 
  1. The `bbox_inches='tight'` -option cannot be used on savefig (or it can cause a lot of weird stuff)
