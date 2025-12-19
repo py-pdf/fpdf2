@@ -52,13 +52,6 @@ class RendererTemplate(RendererBase):
         raise NotImplementedError("draw_gouraud_triangles not implemented yet")
 
     def draw_path(self, gc, path, transform, rgbFace=None):
-        # self.check_gc(gc, rgbFace)
-        # gc.paint()
-
-        # Unzip the path segments into 2 arrays - commands and vertices, the transform sorts scaling and positioning
-        # print(f"draw_path transform: {transform.get_matrix()}, _trans: {self._trans.get_matrix()}")
-        # print(f"transform: {transform.get_matrix()},\n_trans: {self._trans.get_matrix()}\n\n")
-        # tran = transform + self._trans
         tran = transform + self._trans
         clip_rect = None
         clip_x0, clip_y0, clip_x1, clip_y1 = None, None, None, None
