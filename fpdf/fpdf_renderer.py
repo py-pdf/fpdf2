@@ -21,7 +21,7 @@ from fpdf.enums import PathPaintRule
 PT_TO_MM = 0.3527777778  # 1 point = 0.3527777778 mm
 
 
-_log = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class RendererTemplate(RendererBase):
@@ -113,7 +113,7 @@ class RendererTemplate(RendererBase):
 
                     if len(mm_dash_array) > 2:
                         # make sure we have even number of elements
-                        _log.warning(
+                        LOGGER.warning(
                             "Warning: dash array has more than two elements - ignoring extra ones"
                         )
                     dash = mm_dash_array[0] - mm_line_width
@@ -166,7 +166,7 @@ class RendererTemplate(RendererBase):
                                         pth.move_to(*v[i])  # start a new sub-path
 
                                 else:
-                                    _log.warning(
+                                    LOGGER.warning(
                                         "Unhandled path command in polygon: %d at vertex %s",
                                         c[i],
                                         vtx,
@@ -178,10 +178,10 @@ class RendererTemplate(RendererBase):
                                 pth = None
 
                     case _:
-                        _log.warning("draw_path: Unmatched %d", c)
+                        LOGGER.warning("draw_path: Unmatched %d", c)
 
     def draw_image(self, gc, x, y, im, transform=None):
-        _log.warning("draw_image at %d,%d size %s", x, y, im.get_size())
+        LOGGER.warning("draw_image at %d,%d size %s", x, y, im.get_size())
         raise NotImplementedError("draw_image not implemented yet")
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
@@ -226,7 +226,7 @@ class RendererTemplate(RendererBase):
             tw = max_x - min_x
             th = max_y - min_y
         else:
-            _log.warning("Unknown prop type: %s", type(prop))
+            LOGGER.warning("Unknown prop type: %s", type(prop))
             tw = None
             th = None
 
@@ -342,7 +342,7 @@ class FigureCanvasTemplate(FigureCanvasBase):
         values) that users may want access to before saving to disk.
         """
         if args or kwargs:
-            _log.warning(
+            LOGGER.warning(
                 "draw() got arguments that will not be used for now: %s, %s",
                 args,
                 kwargs,
@@ -405,7 +405,7 @@ class FigureCanvasTemplate(FigureCanvasBase):
                 case "bbox_inches_restore":
                     pass  # ignore for now
                 case _:
-                    _log.warning("Unrecognised keyword %s -> %s", k, v)
+                    LOGGER.warning("Unrecognised keyword %s -> %s", k, v)
 
         # fig_width = self.figure.bbox.width
         # fig_height = self.figure.bbox.height
