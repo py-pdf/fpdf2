@@ -13,7 +13,7 @@ from matplotlib import font_manager
 
 from fpdf import FPDF
 
-from test.conftest import assert_pdf_equal
+#from test.conftest import assert_pdf_equal
 
 default_backend = plt.get_backend()
 HERE = Path(__file__).resolve().parent
@@ -33,7 +33,7 @@ def create_fpdf(w_mm, h_mm):
     return pdf
 
 
-def test_mpl_simple_figure(tmp_path):
+def test_mpl_simple_figure():
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
     plt.switch_backend(default_backend)
