@@ -13,7 +13,7 @@ from matplotlib import font_manager
 
 from fpdf import FPDF
 
-#from test.conftest import assert_pdf_equal
+# from test.conftest import assert_pdf_equal
 
 default_backend = plt.get_backend()
 HERE = Path(__file__).resolve().parent
