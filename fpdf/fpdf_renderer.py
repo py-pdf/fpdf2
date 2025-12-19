@@ -38,10 +38,6 @@ class RendererTemplate(RendererBase):
         self._trans = transform
         self._scale = scale
 
-        # some safe defaults
-        if fpdf:
-            fpdf.set_draw_color(0, 0, 0)
-            fpdf.set_fill_color(255, 255, 255)
 
         # calc font scaling factor to get matplotlib font sizes to match FPDF sizes if width is scaled
         fig_w_mm = fig_width * scale
