@@ -69,6 +69,7 @@ docs = [
   "mkdocs-with-pdf", 
   "mknotebooks",
   "pdoc3",
+  "matplotlib",
 ]
 test = [
   "camelot-py[base]",
