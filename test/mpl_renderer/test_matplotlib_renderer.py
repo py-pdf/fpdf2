@@ -15,20 +15,19 @@ from fpdf import FPDF
 
 # from test.conftest import assert_pdf_equal
 
-default_backend = plt.get_backend()
+DEFAULT_BACKEND = plt.get_backend()
 HERE = Path(__file__).resolve().parent
 GENERATED_PDF_DIR = HERE / "generated_pdf"
 os.makedirs(GENERATED_PDF_DIR, exist_ok=True)
-font_file = HERE / "../fonts/DejaVuSans.ttf"
-logging.getLogger("fpdf.svg").setLevel(logging.ERROR)
+FONT_FILE = HERE / "../fonts/DejaVuSans.ttf"
 
 
 def create_fpdf(w_mm, h_mm):
     pdf = FPDF(unit="mm", format=(w_mm, h_mm))
-    print(f"Adding font from file: {font_file}")
-    pdf.add_font("dejavu sans", "", str(font_file))
+    print(f"Adding font from file: {FONT_FILE}")
+    pdf.add_font("dejavu sans", "", str(FONT_FILE))
     pdf.add_page()
-    font_manager.fontManager.addfont(str(font_file))
+    font_manager.fontManager.addfont(str(FONT_FILE))
     mpl.rcParams["font.sans-serif"] = ["dejavu sans"]
     return pdf
 
@@ -36,7 +35,7 @@ def create_fpdf(w_mm, h_mm):
 def test_mpl_simple_figure():
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
     w_inch = 4
     h_inch = 3
     w_mm = w_inch * 25.4
@@ -86,7 +85,7 @@ def gen_fig(w_inch, h_inch):
 def test_mpl_figure_with_arrows():
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     w_inch = 4
     h_inch = 3
@@ -131,7 +130,7 @@ def gen_fig_arrows(w_inch, h_inch):
 
 def test_mpl_figure_with_labels():
     plt.rcParams["font.sans-serif"][0] = "Arial"
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     w_inch = 4
     h_inch = 3
@@ -190,7 +189,7 @@ def gen_fig_labels(w_inch, h_inch):
 def test_mpl_figure_with_legend():
 
     plt.rcParams["font.sans-serif"][0] = "Arial"
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     w_inch = 4
     h_inch = 3
@@ -235,7 +234,7 @@ def gen_fig_legend(w_inch, h_inch):
 
 def test_mpl_figure_with_bezier():
     plt.rcParams["font.sans-serif"][0] = "Arial"
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     w_inch = 4
     h_inch = 3
@@ -309,7 +308,7 @@ def gen_fig_bezier(w_inch, h_inch):
 
 def test_mpl_figure_with_lineplot():
 
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     w_inch = 4
     h_inch = 3
@@ -356,7 +355,7 @@ def gen_fig_lineplot(w_inch, h_inch):
 
 def test_mplrenderer_speed_test():
 
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     ROUNDS = 1000
     w_inch = 4
@@ -408,7 +407,7 @@ def test_mplrenderer_speed_test():
 
 def test_mpl_figure_with_linestyles():
     plt.rcParams["font.sans-serif"][0] = "Arial"
-    plt.switch_backend(default_backend)
+    plt.switch_backend(DEFAULT_BACKEND)
 
     w_inch = 4
     h_inch = 3
