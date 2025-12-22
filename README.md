@@ -345,6 +345,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/RaphaelFLT"><img src="https://avatars.githubusercontent.com/u/143359117?v=4?s=100" width="100px;" alt="Raphaël FLT"/><br /><sub><b>Raphaël FLT</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=RaphaelFLT" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Ani07-05"><img src="https://avatars.githubusercontent.com/u/86768646?v=4?s=100" width="100px;" alt="Ani07-05"/><br /><sub><b>Ani07-05</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Ani07-05" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ByZay"><img src="https://avatars.githubusercontent.com/u/235472384?v=4?s=100" width="100px;" alt="ByZay"/><br /><sub><b>ByZay</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=ByZay" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://oberg.org"><img src="https://avatars.githubusercontent.com/u/10665776?v=4?s=100" width="100px;" alt="bruce oberg"/><br /><sub><b>bruce oberg</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Abruceoberg" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
