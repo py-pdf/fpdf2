@@ -220,3 +220,73 @@ If you have trouble with the SVG export, you can also render the matplotlib figu
 ```python
 {% include "../tutorial/equation_matplotlib_raster.py" %}
 ```
+
+### Using fpdf2 renderer ###
+
+_New in [:octicons-tag-24: 2.8.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+The new _experimental_ fpdf2 renderer for matplotlib allows direct rendering to the FPDF2 document. This provides a large performance benefit compared to using SVG (over x3 faster) or PNG intermediate rendering. There are a couple of down sides to this method of rendering the plots:
+
+ 1. The `bbox_inches='tight'` -option cannot be used on savefig (or it can cause a lot of weird stuff)
+ 2. One must calculate the _origin_ and _scale_ parameters for setting the layout on pdf document
+
+The following code samples demonstrate the use of the new codepath:
+
+#### Original code using SVG ####
+
+```python
+        fig, ax = plt.subplots(figsize=(w_inch, h_inch))    
+        
+        t = [i * 0.01 for i in range(1000)]
+        s = [sin(value) + cos(value*value) for value in t]
+        ax.plot(t, s, 'blue', linewidth=1)
+        ax.set_title("Line Plot Figure")
+        ax.set_xlabel("t")
+        ax.set_ylabel("sin(t) + cos(t^2)")
+        ax.autoscale_view()
+
+        # Save plot to SVG
+        buffer = BytesIO()
+        fig.savefig(buffer, format='svg', dpi=300, pad_inches=0.1)
+
+        plt.close(fig)
+        buffer.seek(0)
+
+        # Draw SVG to PDF
+        pdf.image(buffer, x=x, y=y, w=w, h=h)
+```
+
+
+#### New FPDF rendering ####
+
+```python
+    import matplotlib as mpl
+    mpl.use("module://fpdf.fpdf_renderer")
+```
+...
+
+```python
+        fig, ax = plt.subplots(figsize=(w_inch, h_inch))    
+        
+        t = [i * 0.01 for i in range(1000)]
+        s = [sin(value) + cos(value*value) for value in t]
+        ax.plot(t, s, 'blue', linewidth=1)
+        ax.set_title("Line Plot Figure")
+        ax.set_xlabel("t")
+        ax.set_ylabel("sin(t) + cos(t^2)")
+        ax.autoscale_view()
+
+        # Calc scale and origin
+        if w == 0:
+            w = fig.bbox.width
+        scale = float(w / fig.bbox.width)
+        if h == 0:
+            h = fig.bbox.height * scale
+        origin = (float(x), float(y + h))  # FPDF uses bottom-left as origin
+
+        # Call savefig directly with fpdf object and origin & scale
+        fig.savefig (fname=None, fpdf=pdf, origin=origin, scale=scale)
+        plt.close(fig)
+```
+
+
