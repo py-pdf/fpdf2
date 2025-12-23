@@ -1,7 +1,6 @@
 # pylint: disable=no-self-use, protected-access, redefined-outer-name, unused-argument
 
 import copy
-import io
 import math
 from pathlib import Path
 import re
@@ -554,20 +553,6 @@ class TestPathElements:
         assert isinstance(last_item, end_class)
         assert last_item.end_point == pytest.approx(end_point)
 
-    @pytest.mark.parametrize(
-        "point, element, expected, end_point, end_class", parameters.path_elements
-    )
-    def test_render_debug(self, point, element, expected, end_point, end_class):
-        start = Move(point)
-        dbg = io.StringIO()
-        style = GraphicsStyle()
-        style.auto_close = False
-        rendered, last_item, _ = element.render_debug({}, style, start, point, dbg, "")
-
-        assert rendered == expected
-        assert isinstance(last_item, end_class)
-        assert last_item.end_point == pytest.approx(end_point)
-
 
 class TestDrawingContext:
     def test_add_item(self):
@@ -601,41 +586,6 @@ class TestDrawingContext:
         result = ctx.render(resource_catalog, start, 1, 10, style)
 
         assert result == "q 1 0 0 -1 0 10 cm q 0 0 m 10 10 l h B Q Q"
-
-    def test_empty_render_debug(self):
-        ctx = DrawingContext()
-        ctx.add_item(GraphicsContext())
-
-        resource_catalog = ResourceCatalog()
-        start = Point(0, 0)
-        style = GraphicsStyle()
-        dbg = io.StringIO()
-
-        result = ctx.render_debug(resource_catalog, start, 1, 10, style, dbg)
-
-        assert result == ""
-
-    def test_render_debug(self, auto_pdf):
-        dbg = io.StringIO()
-
-        with auto_pdf.drawing_context(debug_stream=dbg) as ctx:
-            ctx.add_item(PaintedPath().line_to(10, 10))
-
-        assert dbg.getvalue() == (
-            "ROOT\n"
-            " └─ GraphicsContext {\n"
-            "        paint_rule: PathPaintRule.AUTO (inherited)\n"
-            "        allow_transparency: True (inherited)\n"
-            "        auto_close: True (inherited)\n"
-            "        intersection_rule: IntersectionRule.NONZERO (inherited)\n"
-            "        stroke_width: 0.20002499999999995 (inherited)\n"
-            "        stroke_dash_pattern: () (inherited)\n"
-            "        stroke_dash_phase: 0 (inherited)\n"
-            "    }┐\n"
-            "     ├─ Move(pt=Point(x=0, y=0))\n"
-            "     ├─ Line(pt=Point(x=10, y=10))\n"
-            "     └─ ImplicitClose() resolved to h\n"
-        )
 
     def test_concurrent_drawing_context(self, auto_pdf):
         with auto_pdf.drawing_context() as _:
@@ -771,25 +721,6 @@ class CommonPathTests:
 
         assert rend1 == rend2 == rend3
         assert rend3 != rend4
-
-    @pytest.mark.parametrize(
-        "method_calls, elements, rendered", parameters.painted_path_elements
-    )
-    def test_render_debug(self, method_calls, elements, rendered):
-        resource_catalog = ResourceCatalog()
-        style = GraphicsStyle()
-        style.paint_rule = "auto"
-        point = Point(0, 0)
-        start = Move(point)
-        dbg = io.StringIO()
-
-        pth = self.path_class()
-
-        for method, args in method_calls:
-            method(pth, *args)
-
-        rend, _, __ = pth.render(resource_catalog, style, start, point, dbg, "")
-        assert rend == rendered[self.comp_index]
 
 
 class TestPaintedPath(CommonPathTests):
@@ -964,28 +895,6 @@ class TestGraphicsContext:
 
         rend2, _, __ = gfx.render(
             resource_catalog, style, start, point, _push_stack=False
-        )
-
-        assert rend2 == "1 2 m 3 4 l"
-
-    def test_render_debug(self):
-        point = Point(0, 0)
-        start = Move(point)
-        resource_catalog = ResourceCatalog()
-        style = GraphicsStyle()
-        style.paint_rule = "auto"
-        dbg = io.StringIO()
-
-        gfx = GraphicsContext()
-        gfx.add_item(Move(Point(1, 2)))
-        gfx.add_item(Line(Point(3, 4)))
-
-        rend1, _, __ = gfx.render_debug(resource_catalog, style, start, point, dbg, "")
-
-        assert rend1 == "q 1 2 m 3 4 l Q"
-
-        rend2, _, __ = gfx.render_debug(
-            resource_catalog, style, start, point, dbg, "", _push_stack=False
         )
 
         assert rend2 == "1 2 m 3 4 l"
