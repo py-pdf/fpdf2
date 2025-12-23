@@ -165,9 +165,9 @@ from .util import (
 FPDF_VERSION = "2.8.5"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
-    "a3": (841.89, 1190.55),
-    "a4": (595.28, 841.89),
-    "a5": (420.94, 595.28),
+    "a3": (841.89, 1190.55),  # 297mm × 420mm
+    "a4": (595.28, 841.89),  # 210mm × 297mm
+    "a5": (419.53, 595.28),  # 148mm x 210mm
     "letter": (612, 792),
     "legal": (612, 1008),
 }
@@ -219,6 +219,11 @@ def get_page_format(format, k=None):
     if isinstance(format, str):
         format = format.lower()
         if format in PAGE_FORMATS:
+            if format == "a5":
+                warnings.warn(
+                    # This warning should be removed in the next release:
+                    "Dimensions for page format A5 were fixed in release 2.8.5"
+                )
             return PAGE_FORMATS[format]
         raise FPDFPageFormatException(format, unknown=True)
 
