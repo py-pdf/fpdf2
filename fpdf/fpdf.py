@@ -34,6 +34,7 @@ from typing import (
     Iterator,
     NamedTuple,
     Optional,
+    TYPE_CHECKING,
     Union,
 )
 
@@ -2318,7 +2319,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError('"fname" parameter is required')
 
         ext = splitext(str(fname))[1].lower()
-        if ext not in (".otf", ".otc", ".ttf", ".ttc"):
+        # Accept web-font containers as well (WOFF / WOFF2). These will be
+        # transparently handled by fontTools (WOFF uses zlib; WOFF2 requires
+        # an optional brotli dependency for decompression).
+        if ext not in (".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"
