@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.6] - Not released yet
 ### Added
+* support for interactive PDF form fields (AcroForms), including `text_field()` and `checkbox()` - _cf._ [issue #257](https://github.com/py-pdf/fpdf2/issues/257)
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 ### Fixed
 * the `A5` value that could be specified as page `format` to the `FPDF` constructor was slightly incorrect, and the corresponding page dimensions have been fixed. This could lead to a minor change in your documents dimensions if you used this `A5` page format. - _cf._ [issue #1699](https://github.com/py-pdf/fpdf2/issues/1699)
