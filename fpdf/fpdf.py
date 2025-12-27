@@ -88,6 +88,7 @@ from .enums import (
     Corner,
     DocumentCompliance,
     EncryptionMethod,
+    FieldFlag,
     FileAttachmentAnnotationName,
     MethodReturnValue,
     OutputIntentSubType,
@@ -113,6 +114,7 @@ from .errors import (
     PDFAComplianceError,
 )
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
+from .forms import Checkbox, TextField
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_datastructures import (
@@ -3129,6 +3131,127 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
+
+    # ---- Interactive Form Fields ----
+
+    @check_page
+    def text_field(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        value: str = "",
+        font_size: float = 12,
+        font_color_gray: float = 0,
+        background_color: tuple = None,
+        border_color: tuple = (0, 0, 0),
+        border_width: float = 1,
+        max_length: int = None,
+        multiline: bool = False,
+        password: bool = False,
+        read_only: bool = False,
+        required: bool = False,
+    ):
+        """
+        Adds an interactive text input field to the page.
+
+        Args:
+            name (str): unique name for this field
+            x (float): horizontal position (from the left) of the field
+            y (float): vertical position (from the top) of the field
+            w (float): width of the field
+            h (float): height of the field
+            value (str): initial text value
+            font_size (float): font size in points
+            font_color_gray (float): gray value 0.0-1.0 for text color (0=black, 1=white)
+            background_color (tuple): optional RGB tuple (0-1 range) for background
+            border_color (tuple): RGB tuple (0-1 range) for border
+            border_width (float): border width
+            max_length (int): maximum number of characters allowed
+            multiline (bool): if True, allow multiple lines of text
+            password (bool): if True, mask entered characters
+            read_only (bool): if True, field cannot be edited
+            required (bool): if True, field must be filled before form submission
+        """
+        self._set_min_pdf_version("1.4")
+
+        field = TextField(
+            field_name=name,
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            width=w * self.k,
+            height=h * self.k,
+            value=value,
+            font_size=font_size,
+            font_color_gray=font_color_gray,
+            background_color=background_color,
+            border_color=border_color,
+            border_width=border_width,
+            max_length=max_length,
+            multiline=multiline,
+            password=password,
+            read_only=read_only,
+            required=required,
+        )
+
+        field._generate_appearance()
+        self.pages[self.page].annots.append(field)
+
+        return field
+
+    @check_page
+    def checkbox(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        size: float = 12,
+        checked: bool = False,
+        background_color: tuple = (1, 1, 1),
+        border_color: tuple = (0, 0, 0),
+        check_color_gray: float = 0,
+        border_width: float = 1,
+        read_only: bool = False,
+        required: bool = False,
+    ):
+        """
+        Adds an interactive checkbox to the page.
+
+        Args:
+            name (str): unique name for this checkbox
+            x (float): horizontal position (from the left) of the checkbox
+            y (float): vertical position (from the top) of the checkbox
+            size (float): size of the checkbox
+            checked (bool): initial checked state
+            background_color (tuple): RGB tuple (0-1 range) for background
+            border_color (tuple): RGB tuple (0-1 range) for border
+            check_color_gray (float): gray value 0.0-1.0 for checkmark (0=black)
+            border_width (float): border width
+            read_only (bool): if True, checkbox cannot be toggled
+            required (bool): if True, checkbox must be checked before form submission
+        """
+        self._set_min_pdf_version("1.4")
+
+        field = Checkbox(
+            field_name=name,
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            size=size * self.k,
+            checked=checked,
+            background_color=background_color,
+            border_color=border_color,
+            check_color_gray=check_color_gray,
+            border_width=border_width,
+            read_only=read_only,
+            required=required,
+        )
+
+        field._generate_appearance()
+        self.pages[self.page].annots.append(field)
+
+        return field
 
     @check_page
     @support_deprecated_txt_arg

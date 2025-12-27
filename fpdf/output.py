@@ -21,6 +21,7 @@ from fontTools import subset as ftsubset
 from .annotations import PDFAnnotation
 from .drawing import PaintSoftMask, Transform
 from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
+from .forms import FormField
 from .errors import FPDFException
 from .fonts import CORE_FONTS, CoreFont, TTFFont
 from .font_type_3 import Type3Font
@@ -224,9 +225,21 @@ class PDFInfo(PDFObject):
 
 
 class AcroForm:
-    def __init__(self, fields, sig_flags):
+    """Represents the AcroForm dictionary in the document catalog."""
+
+    def __init__(
+        self,
+        fields,
+        sig_flags=None,
+        need_appearances: bool = True,
+        default_appearance: str = None,
+        default_resources: str = None,
+    ):
         self.fields = fields
         self.sig_flags = sig_flags
+        self.need_appearances = need_appearances
+        self.d_a = default_appearance
+        self.d_r = default_resources
 
     def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = build_obj_dict(
@@ -1047,6 +1060,16 @@ class OutputProducer:
         for page_obj in self.fpdf.pages.values():
             for annot_obj in page_obj.annots:
                 if isinstance(annot_obj, PDFAnnotation):  # distinct from AnnotationDict
+                    # For form fields, add their appearance XObjects first
+                    if isinstance(annot_obj, FormField):
+                        # Add appearance stream XObjects
+                        if hasattr(annot_obj, '_appearance_normal') and annot_obj._appearance_normal:
+                            self._add_pdf_obj(annot_obj._appearance_normal)
+                        if hasattr(annot_obj, '_appearance_off') and annot_obj._appearance_off:
+                            self._add_pdf_obj(annot_obj._appearance_off)
+                        if hasattr(annot_obj, '_appearance_yes') and annot_obj._appearance_yes:
+                            self._add_pdf_obj(annot_obj._appearance_yes)
+
                     self._add_pdf_obj(annot_obj)
                     if isinstance(annot_obj.v, Signature):
                         assert (
@@ -1785,10 +1808,46 @@ class OutputProducer:
         catalog_obj.struct_tree_root = struct_tree_root_obj
         catalog_obj.outlines = outline_dict_obj
         catalog_obj.metadata = xmp_metadata_obj
-        if sig_annotation_obj:
-            flags = SignatureFlag.SIGNATURES_EXIST + SignatureFlag.APPEND_ONLY
+
+        # Collect all form fields from all pages
+        all_form_fields = []
+        for page_obj in fpdf.pages.values():
+            for annot_obj in page_obj.annots:
+                if isinstance(annot_obj, FormField):
+                    all_form_fields.append(annot_obj)
+
+        # Build AcroForm if there are form fields or a signature
+        if all_form_fields or sig_annotation_obj:
+            # Combine signature and form fields
+            acro_fields = []
+            sig_flags = None
+
+            if sig_annotation_obj:
+                acro_fields.append(sig_annotation_obj)
+                sig_flags = SignatureFlag.SIGNATURES_EXIST + SignatureFlag.APPEND_ONLY
+
+            acro_fields.extend(all_form_fields)
+
+            # Build default resources with standard fonts for form fields
+            default_resources = None
+            default_appearance = None
+            if all_form_fields:
+                # /DR dictionary with Helvetica and ZapfDingbats fonts
+                # These are standard PDF fonts that don't require embedding
+                default_resources = (
+                    "<</Font <<"
+                    "/Helv <</Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding>> "
+                    "/ZaDb <</Type /Font /Subtype /Type1 /BaseFont /ZapfDingbats>>"
+                    ">>>>"
+                )
+                default_appearance = "(/Helv 0 Tf 0 g)"
+
             catalog_obj.acro_form = AcroForm(
-                fields=PDFArray([sig_annotation_obj]), sig_flags=flags
+                fields=PDFArray(acro_fields),
+                sig_flags=sig_flags,
+                need_appearances=True,
+                default_appearance=default_appearance,
+                default_resources=default_resources,
             )
         if fpdf.zoom_mode in ZOOM_CONFIGS:
             zoom_config = [
