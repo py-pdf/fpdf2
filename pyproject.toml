@@ -15,7 +15,8 @@ authors = [
   { name = "Olivier PLATHEY" },
   { name = "Max" },
   { name = "Lucas Cimon (@Lucas-C)" },
-  { name = " Anderson Herzogenrath da Costa (@andersonhc)" }
+  { name = "Georg Mischler (@gmischler)" },
+  { name = "Anderson Herzogenrath da Costa (@andersonhc)" }
 ]
 
 keywords = ["pdf", "unicode", "png", "jpg", "ttf", "barcode", "library", "markdown"]

@@ -667,7 +667,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @property
     def default_page_dimensions(self):
-        "Return a pair (width, height) in the unit specified to FPDF constructor"
+        "Return a pair (width, height) in points units (1/72 of inch)"
         return (
             (self.dw_pt, self.dh_pt)
             if self.def_orientation == PageOrientation.PORTRAIT
