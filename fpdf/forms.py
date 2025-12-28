@@ -131,6 +131,8 @@ class TextField(FormField):
         self._multiline = multiline
         self._value_str = value or ""
         self.max_len = max_length
+        # Default Appearance (/DA): PDF content stream fragment specifying font and color.
+        # Format: "/FontName FontSize Tf GrayLevel g" (e.g., "/Helv 12 Tf 0 g" = Helvetica 12pt black)
         self.d_a = f"/Helv {font_size:.2f} Tf {font_color_gray:.2f} g"
 
     def _generate_appearance(self, font_name: str = "Helv", font_size: float = None):
@@ -230,6 +232,8 @@ class Checkbox(FormField):
         self._background_color = background_color
         self._border_color = border_color
         self._check_color_gray = check_color_gray
+        # Default Appearance (/DA): PDF content stream fragment for the checkmark.
+        # Uses ZapfDingbats font (/ZaDb) which contains the checkmark character.
         self.d_a = f"/ZaDb {size * 0.8:.2f} Tf {check_color_gray:.2f} g"
         self.a_s = Name("Yes") if checked else Name("Off")
 

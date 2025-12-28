@@ -6,6 +6,8 @@ from pathlib import Path
 
 from fpdf import FPDF
 
+from test.conftest import assert_pdf_equal
+
 
 HERE = Path(__file__).resolve().parent
 
@@ -22,10 +24,7 @@ def test_text_field_basic(tmp_path):
         border_color=(0, 0, 0),
         background_color=(1, 1, 1),
     )
-    output_path = tmp_path / "text_field_basic.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
-    assert output_path.stat().st_size > 0
+    assert_pdf_equal(pdf, HERE / "text_field_basic.pdf", tmp_path)
 
 
 def test_text_field_multiline(tmp_path):
@@ -41,9 +40,7 @@ def test_text_field_multiline(tmp_path):
         border_color=(0, 0, 0),
         background_color=(1, 1, 1),
     )
-    output_path = tmp_path / "text_field_multiline.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
+    assert_pdf_equal(pdf, HERE / "text_field_multiline.pdf", tmp_path)
 
 
 def test_text_field_readonly(tmp_path):
@@ -57,9 +54,7 @@ def test_text_field_readonly(tmp_path):
         value="Cannot edit",
         read_only=True,
     )
-    output_path = tmp_path / "text_field_readonly.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
+    assert_pdf_equal(pdf, HERE / "text_field_readonly.pdf", tmp_path)
 
 
 def test_checkbox_unchecked(tmp_path):
@@ -72,9 +67,7 @@ def test_checkbox_unchecked(tmp_path):
         size=10,
         checked=False,
     )
-    output_path = tmp_path / "checkbox_unchecked.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
+    assert_pdf_equal(pdf, HERE / "checkbox_unchecked.pdf", tmp_path)
 
 
 def test_checkbox_checked(tmp_path):
@@ -87,9 +80,7 @@ def test_checkbox_checked(tmp_path):
         size=10,
         checked=True,
     )
-    output_path = tmp_path / "checkbox_checked.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
+    assert_pdf_equal(pdf, HERE / "checkbox_checked.pdf", tmp_path)
 
 
 def test_checkbox_readonly(tmp_path):
@@ -103,9 +94,7 @@ def test_checkbox_readonly(tmp_path):
         checked=True,
         read_only=True,
     )
-    output_path = tmp_path / "checkbox_readonly.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
+    assert_pdf_equal(pdf, HERE / "checkbox_readonly.pdf", tmp_path)
 
 
 def test_form_with_multiple_fields(tmp_path):
@@ -152,7 +141,4 @@ def test_form_with_multiple_fields(tmp_path):
     )
     pdf.text(18, 65, "I agree to the terms")
 
-    output_path = tmp_path / "form_multiple_fields.pdf"
-    pdf.output(output_path)
-    assert output_path.exists()
-    assert output_path.stat().st_size > 0
+    assert_pdf_equal(pdf, HERE / "form_multiple_fields.pdf", tmp_path)

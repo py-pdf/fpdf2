@@ -1062,7 +1062,10 @@ class OutputProducer:
                 if isinstance(annot_obj, PDFAnnotation):  # distinct from AnnotationDict
                     # For form fields, add their appearance XObjects first
                     if isinstance(annot_obj, FormField):
-                        # Add appearance stream XObjects
+                        # Add appearance stream XObjects before the annotation that references them.
+                        # These attributes are set by _generate_appearance() which is called
+                        # during field creation. TextField uses _appearance_normal; Checkbox
+                        # uses _appearance_off and _appearance_yes for its toggle states.
                         if hasattr(annot_obj, '_appearance_normal') and annot_obj._appearance_normal:
                             self._add_pdf_obj(annot_obj._appearance_normal)
                         if hasattr(annot_obj, '_appearance_off') and annot_obj._appearance_off:
@@ -1840,6 +1843,9 @@ class OutputProducer:
                     "/ZaDb <</Type /Font /Subtype /Type1 /BaseFont /ZapfDingbats>>"
                     ">>>>"
                 )
+                # Default Appearance string (/DA) per PDF spec 12.7.3.3.
+                # The parentheses are required - this is a PDF literal string value.
+                # Format: "(content_stream_fragment)" e.g., "(/Helv 0 Tf 0 g)"
                 default_appearance = "(/Helv 0 Tf 0 g)"
 
             catalog_obj.acro_form = AcroForm(
