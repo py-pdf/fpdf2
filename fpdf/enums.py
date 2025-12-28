@@ -59,6 +59,8 @@ class FieldFlag(IntFlag):
     "The field is a set of radio buttons (vs checkboxes)."
     PUSH_BUTTON = 1 << 16
     "The field is a push button that does not retain a permanent value."
+    # Note: RADIOS_IN_UNISON intentionally shares bit 25 with RICH_TEXT per PDF spec.
+    # These flags apply to different field types (buttons vs text) so no conflict occurs.
     RADIOS_IN_UNISON = 1 << 25
     "Radio buttons with the same value are selected/deselected in unison."
 

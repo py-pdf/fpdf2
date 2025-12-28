@@ -6,9 +6,9 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from .annotations import PDFAnnotation, DEFAULT_ANNOT_FLAGS
-from .enums import AnnotationFlag, FieldFlag
-from .syntax import Name, PDFArray, PDFContentStream, PDFObject, PDFString
+from .annotations import PDFAnnotation
+from .enums import FieldFlag
+from .syntax import Name, PDFArray, PDFContentStream, PDFString
 
 
 class PDFFormXObject(PDFContentStream):
@@ -178,9 +178,8 @@ class TextField(FormField):
         commands.append("EMC")
 
         content = "\n".join(commands)
-        resources = "<</ProcSet [/PDF /Text] /Font <</Helv 2 0 R>>>>"
 
-        self._appearance_normal = PDFFormXObject(content, width, height, resources)
+        self._appearance_normal = PDFFormXObject(content, width, height)
         return self._appearance_normal
 
 

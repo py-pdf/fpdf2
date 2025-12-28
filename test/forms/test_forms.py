@@ -1,131 +1,158 @@
 """
-Test script for interactive PDF form fields.
-Creates a sample PDF with text fields and checkboxes to verify cross-reader compatibility.
+Tests for interactive PDF form fields (AcroForms).
 """
 
-import sys
-sys.path.insert(0, r'g:\Stuff\Study\Open Source\fpdf2')
+from pathlib import Path
 
 from fpdf import FPDF
 
 
-def create_test_form():
-    """Create a test PDF form with various form fields."""
+HERE = Path(__file__).resolve().parent
+
+
+def test_text_field_basic(tmp_path):
+    """Test basic text field creation."""
     pdf = FPDF()
     pdf.add_page()
-    
-    # Title
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, "Interactive PDF Form Test", ln=True, align="C")
-    pdf.ln(10)
-    
-    # Instructions
-    pdf.set_font("Helvetica", "", 10)
-    pdf.multi_cell(0, 5, 
-        "This form demonstrates fpdf2's interactive form field support. "
-        "You should be able to fill in the text fields and check the checkboxes "
-        "in any PDF reader that supports AcroForms (Adobe Acrobat, Sumatra, browsers, etc.)."
-    )
-    pdf.ln(10)
-    
-    # Form fields
-    pdf.set_font("Helvetica", "", 12)
-    
-    # Text field - First Name
-    pdf.text(10, 60, "First Name:")
     pdf.text_field(
-        name="first_name",
-        x=50, y=55,
+        name="test_field",
+        x=10, y=10,
         w=60, h=8,
-        value="",
+        value="initial",
         border_color=(0, 0, 0),
         background_color=(1, 1, 1),
     )
-    
-    # Text field - Last Name
-    pdf.text(10, 75, "Last Name:")
+    output_path = tmp_path / "text_field_basic.pdf"
+    pdf.output(output_path)
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
+
+
+def test_text_field_multiline(tmp_path):
+    """Test multiline text field creation."""
+    pdf = FPDF()
+    pdf.add_page()
     pdf.text_field(
-        name="last_name",
-        x=50, y=70,
-        w=60, h=8,
-        value="",
-        border_color=(0, 0, 0),
-        background_color=(1, 1, 1),
-    )
-    
-    # Text field - Email
-    pdf.text(10, 90, "Email:")
-    pdf.text_field(
-        name="email",
-        x=50, y=85,
-        w=100, h=8,
-        value="",
-        border_color=(0, 0, 0),
-        background_color=(0.95, 0.95, 1),  # Light blue background
-    )
-    
-    # Text field - Comments (multiline)
-    pdf.text(10, 110, "Comments:")
-    pdf.text_field(
-        name="comments",
-        x=50, y=105,
-        w=140, h=30,
-        value="",
+        name="multiline_field",
+        x=10, y=10,
+        w=100, h=30,
+        value="line1",
         multiline=True,
         border_color=(0, 0, 0),
         background_color=(1, 1, 1),
     )
-    
-    # Checkbox - Subscribe
-    pdf.checkbox(
-        name="subscribe",
-        x=10, y=150,
-        size=5,
-        checked=False,
-    )
-    pdf.text(18, 153, "Subscribe to newsletter")
-    
-    # Checkbox - Terms (pre-checked)
-    pdf.checkbox(
-        name="agree_terms",
-        x=10, y=162,
-        size=5,
-        checked=True,
-    )
-    pdf.text(18, 165, "I agree to the terms and conditions")
-    
-    # Checkbox - Read-only (to test that flag)
-    pdf.checkbox(
-        name="readonly_check",
-        x=10, y=174,
-        size=5,
-        checked=True,
-        read_only=True,
-    )
-    pdf.text(18, 177, "This checkbox is read-only (cannot be changed)")
-    
-    # Read-only text field
-    pdf.text(10, 195, "Read-only:")
+    output_path = tmp_path / "text_field_multiline.pdf"
+    pdf.output(output_path)
+    assert output_path.exists()
+
+
+def test_text_field_readonly(tmp_path):
+    """Test read-only text field."""
+    pdf = FPDF()
+    pdf.add_page()
     pdf.text_field(
         name="readonly_field",
-        x=50, y=190,
+        x=10, y=10,
         w=60, h=8,
         value="Cannot edit",
         read_only=True,
-        border_color=(0.5, 0.5, 0.5),
-        background_color=(0.9, 0.9, 0.9),
     )
-    
-    # Save the PDF
-    output_path = r"g:\Stuff\Study\Open Source\fpdf2\test_form_output.pdf"
+    output_path = tmp_path / "text_field_readonly.pdf"
     pdf.output(output_path)
-    print(f"PDF form created: {output_path}")
-    print("\nPlease test this PDF in:")
-    print("  - Adobe Acrobat Reader")
-    print("  - Sumatra PDF")
-    print("  - Chrome/Firefox PDF viewer")
-    print("  - Mobile PDF viewers")
+    assert output_path.exists()
 
 
-if __name__ == "__main__":
-    create_test_form()
+def test_checkbox_unchecked(tmp_path):
+    """Test unchecked checkbox creation."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.checkbox(
+        name="unchecked_box",
+        x=10, y=10,
+        size=10,
+        checked=False,
+    )
+    output_path = tmp_path / "checkbox_unchecked.pdf"
+    pdf.output(output_path)
+    assert output_path.exists()
+
+
+def test_checkbox_checked(tmp_path):
+    """Test pre-checked checkbox creation."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.checkbox(
+        name="checked_box",
+        x=10, y=10,
+        size=10,
+        checked=True,
+    )
+    output_path = tmp_path / "checkbox_checked.pdf"
+    pdf.output(output_path)
+    assert output_path.exists()
+
+
+def test_checkbox_readonly(tmp_path):
+    """Test read-only checkbox."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.checkbox(
+        name="readonly_box",
+        x=10, y=10,
+        size=10,
+        checked=True,
+        read_only=True,
+    )
+    output_path = tmp_path / "checkbox_readonly.pdf"
+    pdf.output(output_path)
+    assert output_path.exists()
+
+
+def test_form_with_multiple_fields(tmp_path):
+    """Test form with multiple fields of different types."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 12)
+
+    # Add text fields
+    pdf.text(10, 20, "First Name:")
+    pdf.text_field(
+        name="first_name",
+        x=50, y=15,
+        w=60, h=8,
+        value="",
+        border_color=(0, 0, 0),
+        background_color=(1, 1, 1),
+    )
+
+    pdf.text(10, 35, "Last Name:")
+    pdf.text_field(
+        name="last_name",
+        x=50, y=30,
+        w=60, h=8,
+        value="",
+        border_color=(0, 0, 0),
+        background_color=(1, 1, 1),
+    )
+
+    # Add checkboxes
+    pdf.checkbox(
+        name="subscribe",
+        x=10, y=50,
+        size=5,
+        checked=False,
+    )
+    pdf.text(18, 53, "Subscribe to newsletter")
+
+    pdf.checkbox(
+        name="agree_terms",
+        x=10, y=62,
+        size=5,
+        checked=True,
+    )
+    pdf.text(18, 65, "I agree to the terms")
+
+    output_path = tmp_path / "form_multiple_fields.pdf"
+    pdf.output(output_path)
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
