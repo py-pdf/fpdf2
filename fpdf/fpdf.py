@@ -5220,7 +5220,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 alt_text,
                 keep_aspect_ratio,
             )
-        assert not isinstance(img, SVGObject)
+        if TYPE_CHECKING:
+            assert not isinstance(img, SVGObject)
         return self._raster_image(
             name,
             img,
@@ -5267,7 +5268,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if not isinstance(x, NumberClass):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
-        x = float(x)
+        if TYPE_CHECKING:
+            x = float(x)
         if keep_aspect_ratio:
             x, y, w, h = info.scale_inside_box(x, y, w, h)
         if self.oversized_images and info["usages"] == 1 and not dims:
@@ -5286,7 +5288,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.link(x, y, w, h, link)
 
         self._resource_catalog.add(
-            PDFResourceType.X_OBJECT, cast(int, info["i"]), self.page
+            PDFResourceType.X_OBJECT, info["i"], self.page  # type: ignore
         )
         info["rendered_width"] = w
         info["rendered_height"] = h

@@ -49,8 +49,8 @@ class ImageInfo(dict[str, object]):
         Make an image fit within a bounding box, maintaining its proportions.
         In the reduced dimension it will be centered within the available space.
         """
-        img_w = cast(float, self["w"])
-        img_h = cast(float, self["h"])
+        img_w: float = self["w"]  # type: ignore
+        img_h: float = self["h"]  # type: ignore
         ratio = img_w / img_h
         if h * ratio < w:
             new_w = h * ratio
@@ -69,8 +69,8 @@ class RasterImageInfo(ImageInfo):
     def size_in_document_units(
         self, w: float, h: float, scale: float = 1
     ) -> tuple[float, float]:
-        img_w = cast(float, self["w"])
-        img_h = cast(float, self["h"])
+        img_w: float = self["w"]  # type: ignore
+        img_h: float = self["h"]  # type: ignore
         if w == 0 and h == 0:  # Put image at 72 dpi
             w = img_w / scale
             h = img_h / scale
