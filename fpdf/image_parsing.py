@@ -18,7 +18,6 @@ from typing import (
     TypeAlias,
     TypeGuard,
     Union,
-    cast,
     no_type_check,
 )
 from urllib.request import urlopen
@@ -179,17 +178,17 @@ def preload_image(
         info["i"] = len(image_cache.images) + 1
         info["usages"] = 1
         info["iccp_i"] = None
-        iccp = cast(bytes | None, info.get("iccp"))
+        iccp = info.get("iccp")
         if iccp is not None:
             LOGGER.debug(
                 "ICC profile found for image %s - It will be inserted in the PDF document",
                 raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info["iccp_i"] = image_cache.icc_profiles[iccp]
+                info["iccp_i"] = image_cache.icc_profiles[iccp]  # type: ignore[index]
             else:
                 iccp_i = len(image_cache.icc_profiles)
-                image_cache.icc_profiles[iccp] = iccp_i
+                image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
                 info["iccp_i"] = iccp_i
             info["iccp"] = None
         image_cache.images[raster_name] = info
@@ -307,7 +306,7 @@ def get_img_info(
         if isinstance(img, bytes):
             img_raw_data = BytesIO(img)
         else:
-            img_raw_data = cast(BinaryIO, img)
+            img_raw_data = img  # type: ignore[assignment]
         assert img_raw_data is not None
         img = Image.open(img_raw_data)
         is_pil_img = False
@@ -794,6 +793,7 @@ def _to_zdata(
 
 
 def _has_alpha(img: "PILImage") -> bool:
+    alpha_channel = img.getchannel("A")
     if numpy is not None:
-        return cast(bool, (numpy.asarray(img.getchannel("A")) != 255).any())
-    return any(c != 255 for c in img.getchannel("A").tobytes())
+        return (numpy.asarray(alpha_channel) != 255).any()  # type: ignore[no-any-return]
+    return any(c != 255 for c in alpha_channel.tobytes())
