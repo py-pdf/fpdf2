@@ -73,6 +73,7 @@ jobs:
       - name: Run type checkers 🔎
         run: |
           mypy
+          pyright
       - name: Scan project with grype 🔎
         uses: anchore/scan-action@3c9a191a0fbab285ca6b8530b5de5a642cba332f # v7.2.2
         with:

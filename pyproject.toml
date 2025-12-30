@@ -52,6 +52,7 @@ dev = [
   "black",
   "mypy",
   "pre-commit",
+  "pyright",
   "pylint",
   "semgrep",
   "zizmor",

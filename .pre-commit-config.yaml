@@ -38,6 +38,19 @@ repos:
           - numpy
           - Pillow
           - uharfbuzz
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.407
+    hooks:
+      - id: pyright
+        files: ^fpdf/.*\.py$
+        additional_dependencies:
+          - cryptography
+          - defusedxml
+          - endesive
+          - fonttools
+          - numpy
+          - Pillow
+          - uharfbuzz
   - repo: local
     hooks:
     -   id: no-print-in-sources

@@ -5287,7 +5287,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._resource_catalog.add(
             PDFResourceType.X_OBJECT, cast(int, info["i"]), self.page
         )
-        return RasterImageInfo(**info, rendered_width=w, rendered_height=h)
+        info["rendered_width"] = w
+        info["rendered_height"] = h
+        return info
 
     def x_by_align(
         self,

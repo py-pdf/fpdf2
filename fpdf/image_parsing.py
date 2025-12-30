@@ -168,7 +168,7 @@ def preload_image(
         raster_name, img = str(name), None
     info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
     if info is not None:
-        info["usages"] = cast(int, info["usages"]) + 1
+        info["usages"] = info["usages"] + 1  # type: ignore[operator]
     else:
         info = get_img_info(
             raster_name,
