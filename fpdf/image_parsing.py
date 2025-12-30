@@ -793,7 +793,20 @@ def _to_zdata(
 
 
 def _has_alpha(img: "PILImage") -> bool:
+    """
+    Return True if the image has any non-opaque alpha channel values.
+
+    For the alpha band, `getextrema()` yields the min & max values across all pixels:
+    - (255, 255): every pixel is fully opaque, so we can fast-return False.
+    - (x, x) where x != 255: the channel is a flat non-opaque mask, so True.
+    Otherwise we need to scan for any value different from 255 (using NumPy if available).
+    """
     alpha_channel = img.getchannel("A")
+    lo, hi = alpha_channel.getextrema()
+    if lo == 255 and hi == 255:
+        return False
+    if lo == hi:
+        return True
     if numpy is not None:
         return (numpy.asarray(alpha_channel) != 255).any()  # type: ignore[no-any-return]
     return any(c != 255 for c in alpha_channel.tobytes())
