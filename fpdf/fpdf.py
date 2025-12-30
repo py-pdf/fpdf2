@@ -5129,7 +5129,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             skip_leading_spaces=skip_leading_spaces,
         )
 
-    @check_page
     def image(
         self,
         name: ImageType,
@@ -5194,6 +5193,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Returns: an instance of a subclass of `ImageInfo`.
         """
+        if not self.page:
+            raise FPDFException("No page open, you need to call add_page() first")
         if type:
             warnings.warn(
                 (

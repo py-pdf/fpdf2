@@ -10,7 +10,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Unicode.html>
 """
 
 # pyright: reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportUnknownMemberType=false
-# pyright: reportUnknownVariableType=false, reportOptionalMemberAccess=false
+# pyright: reportUnknownVariableType=false, reportOptionalMemberAccess=false, reportCallIssue=false, reportArgumentType=false
 
 import logging
 import re

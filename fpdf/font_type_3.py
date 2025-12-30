@@ -1054,6 +1054,7 @@ class SBIXColorFont(Type3Font):
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyf_metrics = self.base_font.ttfont["glyf"].get(glyph.glyph_name)
+        assert glyf_metrics is not None
         x_min = glyf_metrics.xMin + sbix_glyph.originOffsetX
         x_max = glyf_metrics.xMax + sbix_glyph.originOffsetX
         y_min = glyf_metrics.yMin + sbix_glyph.originOffsetY
