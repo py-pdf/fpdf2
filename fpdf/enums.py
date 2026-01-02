@@ -20,6 +20,63 @@ class SignatureFlag(IntEnum):
     """
 
 
+class FieldFlag(IntFlag):
+    """
+    Flags for form field properties (/Ff entry in field dictionary).
+    These can be combined with bitwise OR (|) operator.
+    cf. PDF spec section 12.7.3.1 "Field flags common to all field types"
+    and sections 12.7.4.* for type-specific flags.
+    """
+
+    # Common to all field types
+    READ_ONLY = 1
+    "The user may not change the value of the field."
+    REQUIRED = 2
+    "The field shall have a value before the form can be submitted."
+    NO_EXPORT = 4
+    "The field shall not be exported by a submit-form action."
+
+    # Text field specific flags (12.7.4.3)
+    MULTILINE = 4096
+    "The field may contain multiple lines of text."
+    PASSWORD = 8192
+    "The field is intended for entering a secure password."
+    FILE_SELECT = 1 << 20
+    "The field shall allow the user to select a file."
+    DO_NOT_SPELL_CHECK = 1 << 22
+    "Text entered shall not be spell-checked."
+    DO_NOT_SCROLL = 1 << 23
+    "The field shall not scroll to accommodate more text."
+    COMB = 1 << 24
+    "The field shall be divided into equally spaced positions (for character entry)."
+    RICH_TEXT = 1 << 25
+    "The value of this field shall be a rich text string."
+
+    # Button field specific flags (12.7.4.2)
+    NO_TOGGLE_TO_OFF = 1 << 14
+    "For radio buttons: exactly one button shall be selected at all times."
+    RADIO = 1 << 15
+    "The field is a set of radio buttons (vs checkboxes)."
+    PUSH_BUTTON = 1 << 16
+    "The field is a push button that does not retain a permanent value."
+    # Note: RADIOS_IN_UNISON intentionally shares bit 25 with RICH_TEXT per PDF spec.
+    # These flags apply to different field types (buttons vs text) so no conflict occurs.
+    RADIOS_IN_UNISON = 1 << 25
+    "Radio buttons with the same value are selected/deselected in unison."
+
+    # Choice field specific flags (12.7.4.4)
+    COMBO = 1 << 17
+    "The field is a combo box (vs list box)."
+    EDIT = 1 << 18
+    "The combo box includes an editable text box."
+    SORT = 1 << 19
+    "The field's option items shall be sorted alphabetically."
+    MULTI_SELECT = 1 << 21
+    "More than one of the field's option items may be selected."
+    COMMIT_ON_SEL_CHANGE = 1 << 26
+    "Value shall be committed as soon as a selection is made."
+
+
 class CoerciveEnum(Enum):
     "An enumeration that provides a helper to coerce strings into enumeration members."
 

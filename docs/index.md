@@ -36,6 +36,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * Table of contents & [document outline](DocumentOutlineAndTableOfContents.md)
 * [Document encryption](Encryption.md) & [document signing](Signing.md)
 * [Annotations](Annotations.md), including text highlights, and [file attachments](FileAttachments.md)
+* Interactive [Forms](Forms.md) (AcroForms), including text fields and checkboxes
 * [Presentation mode](Presentations.md) with control over page display duration & transitions
 * Optional basic Markdown-like styling: `**bold**, __italics__`
 * It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fonttools](https://pypi.org/project/fonttools/)
