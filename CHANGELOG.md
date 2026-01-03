@@ -19,11 +19,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.6] - Not released yet
 ### Added
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
+* mypy and pyright checks in the CI pipeline to enforce strict typing
 ### Fixed
 * the `A5` value that could be specified as page `format` to the `FPDF` constructor was slightly incorrect, and the corresponding page dimensions have been fixed. This could lead to a minor change in your documents dimensions if you used this `A5` page format. - _cf._ [issue #1699](https://github.com/py-pdf/fpdf2/issues/1699)
 * a bug when rendering empty tables with `INTERNAL` layout, that caused an extra border to be rendered due to an erroneous use of `list.index()` - _cf._ [issue #1669](https://github.com/py-pdf/fpdf2/issues/1669)
 ### Changed
 * improved performance when rendering paths, SVGs, and opaque raster images with an alpha channel - _cf._ [PR #1675](https://github.com/py-pdf/fpdf2/pull/1675)
+* typing annotations added across the codebase as part of the strict typing rollout
 
 ## [2.8.5] - 2025-10-29
 ### Added

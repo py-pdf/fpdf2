@@ -6,16 +6,16 @@ import unicodedata
 from collections import deque
 from dataclasses import dataclass, replace
 from operator import itemgetter
-from typing import List, Tuple
+from typing import Optional, TypedDict
 
 from .enums import TextDirection
 
-MAX_DEPTH = 125
+MAX_DEPTH: int = 125
 
 # BidiBrackets 15.1.0 2023-01-18
 # Loaded from https://www.unicode.org/Public/UNIDATA/BidiBrackets.txt
 # This table can be dropped when the information is added on "unicodedata"
-BIDI_BRACKETS = {
+BIDI_BRACKETS: dict[str, dict[str, str]] = {
     "(": {"pair": ")", "type": "o"},
     ")": {"pair": "(", "type": "c"},
     "[": {"pair": "]", "type": "o"},
@@ -158,8 +158,8 @@ class BidiCharacter:
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -> None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -170,13 +170,13 @@ class BidiCharacter:
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -> str:
         return "R" if self.embedding_level % 2 else "L"
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -> None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"character_index: {self.character_index} character: {self.character}"
             + f" bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}"
@@ -199,7 +199,7 @@ class DirectionalStatus:
 class IsolatingRun:
     __slots__ = ["characters", "previous_direction", "next_direction"]
 
-    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+    def __init__(self, characters: list[BidiCharacter], sos: str, eos: str) -> None:
         self.characters = characters
         self.previous_direction = sos
         self.next_direction = eos
@@ -288,16 +288,16 @@ class IsolatingRun:
             if bidi_char.bidi_class == "EN" and last_strong_type == "L":
                 bidi_char.set_class("L")
 
-    def pair_brackets(self) -> List[Tuple[int, int]]:
+    def pair_brackets(self) -> list[tuple[int, int]]:
         """
         Calculate all the bracket pairs on an isolate run, to be used on rule N0
         How to calculate bracket pairs:
         - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
         - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
         """
-        open_brackets = []
+        open_brackets: list[tuple[str, int]] = []
         open_bracket_count = 0
-        bracket_pairs = []
+        bracket_pairs: list[tuple[int, int]] = []
         for index, char in enumerate(self.characters):
             if char.character in BIDI_BRACKETS and char.bidi_class == "ON":
                 if BIDI_BRACKETS[char.character]["type"] == "o":
@@ -321,7 +321,7 @@ class IsolatingRun:
         return sorted(bracket_pairs, key=itemgetter(0))
 
     def resolve_neutral_types(self) -> None:
-        def previous_strong(index: int):
+        def previous_strong(index: int) -> str:
             if index == 0:
                 return self.previous_direction
             if self.characters[index - 1].bidi_class == "L":
@@ -330,7 +330,7 @@ class IsolatingRun:
                 return "R"
             return previous_strong(index - 1)
 
-        def next_strong(index: int):
+        def next_strong(index: int) -> str:
             if index >= len(self.characters) - 1:
                 return self.next_direction
             if self.characters[index + 1].bidi_class == "L":
@@ -446,21 +446,42 @@ def auto_detect_base_direction(
     return TextDirection.LTR
 
 
-def calculate_isolate_runs(paragraph: List[BidiCharacter]) -> List[IsolatingRun]:
+def calculate_isolate_runs(paragraph: list[BidiCharacter]) -> list[IsolatingRun]:
     # BD13 and X10
-    level_run = []
-    lr = []
-    lr_embedding_level = paragraph[0].embedding_level
+    class LevelRun(TypedDict):
+        level: int
+        text: list[BidiCharacter]
+        complete: bool
+        sos: str
+        eos: str
+
+    level_run: list[LevelRun] = []
+    lr: list[BidiCharacter] = []
+    lr_embedding_level: int = paragraph[0].embedding_level
 
     for bidi_char in paragraph:
         if bidi_char.embedding_level != lr_embedding_level:
             level_run.append(
-                {"level": lr_embedding_level, "text": lr, "complete": False}
+                {
+                    "level": lr_embedding_level,
+                    "text": lr,
+                    "complete": False,
+                    "sos": "",
+                    "eos": "",
+                }
             )
             lr = []
             lr_embedding_level = bidi_char.embedding_level
         lr.append(bidi_char)
-    level_run.append({"level": lr_embedding_level, "text": lr, "complete": False})
+    level_run.append(
+        {
+            "level": lr_embedding_level,
+            "text": lr,
+            "complete": False,
+            "sos": "",
+            "eos": "",
+        }
+    )
 
     def level_to_direction(level: int) -> str:
         if level % 2 == 0:
@@ -468,42 +489,42 @@ def calculate_isolate_runs(paragraph: List[BidiCharacter]) -> List[IsolatingRun]
         return "R"
 
     # compute sos, eos for each level run
-    for index, lr in enumerate(level_run):
-        if lr["complete"]:
+    for index, lr1 in enumerate(level_run):
+        if lr1["complete"]:
             continue
         if index == 0:
-            sos = level_to_direction(lr["level"])
+            sos = level_to_direction(lr1["level"])
         else:
-            sos = level_to_direction(max(lr["level"], level_run[index - 1]["level"]))
+            sos = level_to_direction(max(lr1["level"], level_run[index - 1]["level"]))
         if index == len(level_run) - 1:
-            eos = level_to_direction(lr["level"])
+            eos = level_to_direction(lr1["level"])
         else:
-            if lr["text"][-1].original_bidi_class in ("LRI", "RLI", "FSI"):
+            if lr1["text"][-1].original_bidi_class in ("LRI", "RLI", "FSI"):
                 # X10 - last char is an isolator without matching PDI - set EOS to embedding level
-                eos = level_to_direction(lr["level"])
+                eos = level_to_direction(lr1["level"])
             else:
                 eos = level_to_direction(
-                    max(lr["level"], level_run[index + 1]["level"])
+                    max(lr1["level"], level_run[index + 1]["level"])
                 )
-        lr["sos"] = sos
-        lr["eos"] = eos
+        lr1["sos"] = sos
+        lr1["eos"] = eos
 
     # combine levels runs to create isolate runs
-    isolate_runs = []
-    for index, lr in enumerate(level_run):
-        if lr["complete"]:
+    isolate_runs: list[IsolatingRun] = []
+    for index, lr2 in enumerate(level_run):
+        if lr2["complete"]:
             continue
-        sos = lr["sos"]
-        eos = lr["eos"]
-        ir_chars = lr["text"]
-        lr["complete"] = True
-        if lr["text"][-1].original_bidi_class in ("LRI", "RLI", "FSI"):
+        sos = lr2["sos"]
+        eos = lr2["eos"]
+        ir_chars = lr2["text"]
+        lr2["complete"] = True
+        if lr2["text"][-1].original_bidi_class in ("LRI", "RLI", "FSI"):
             for nlr in level_run[index + 1 :]:
                 if (
-                    nlr["level"] == lr["level"]
+                    nlr["level"] == lr2["level"]
                     and nlr["text"][0].original_bidi_class == "PDI"
                 ):
-                    lr["text"] += nlr["text"]
+                    lr2["text"] += nlr["text"]
                     nlr["complete"] = True
                     eos = nlr["eos"]
                     if nlr["text"][-1].original_bidi_class not in ("LRI", "RLI", "FSI"):
@@ -523,8 +544,11 @@ class BidiParagraph:
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -> None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -535,35 +559,35 @@ class BidiParagraph:
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -> List[BidiCharacter]:
+    def get_characters(self) -> list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -> List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -> list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -> List[BidiCharacter]:
+    def get_reordered_characters(self) -> tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -> tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -> str:
         "Used for conformance validation"
         return "".join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -> tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -> List[BidiCharacter]:
+    def get_bidi_characters(self) -> None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status="N",
@@ -573,7 +597,7 @@ class BidiParagraph:
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -697,8 +721,8 @@ class BidiParagraph:
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -> tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = ""
@@ -732,7 +756,7 @@ class BidiParagraph:
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -> tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -769,8 +793,8 @@ class BidiParagraph:
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level >= level:
                     rev.append(bidi_char)

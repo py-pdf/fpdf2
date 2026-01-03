@@ -5,7 +5,7 @@ class FPDFException(Exception):
 class FPDFPageFormatException(FPDFException):
     """Error is thrown when a bad page format is given"""
 
-    def __init__(self, argument, unknown=False, one=False):
+    def __init__(self, argument: str, unknown: bool = False, one: bool = False) -> None:
         super().__init__()
         if unknown and one:
             raise TypeError(
@@ -16,13 +16,13 @@ class FPDFPageFormatException(FPDFException):
         self.unknown = unknown
         self.one = one
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}"
             f"({self.argument!r}, {self.unknown!r}, {self.one!r})"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.unknown:
             res = f"Unknown page format: {self.argument}"
         elif self.one:
@@ -35,16 +35,16 @@ class FPDFPageFormatException(FPDFException):
 class FPDFUnicodeEncodingException(FPDFException):
     """Error is thrown when a character that cannot be encoded by the chosen encoder is provided"""
 
-    def __init__(self, text_index, character, font_name):
+    def __init__(self, text_index: int, character: str, font_name: str) -> None:
         super().__init__()
         self.text_index = text_index
         self.character = character
         self.font_name = font_name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({repr(self.text_index), repr(self.character), repr(self.font_name)})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f'Character "{self.character}" at index {self.text_index} in text is outside the range of characters'
             f' supported by the font used: "{self.font_name}".'

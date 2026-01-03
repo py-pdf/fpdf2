@@ -1,3 +1,4 @@
+# pyright: reportUnknownArgumentType=false, reportUnknownMemberType=false
 # pylint: disable=fixme,protected-access
 """
 This module is in work-in-progress state.
@@ -5,16 +6,26 @@ Hint tables / hint streams have not been implemented yet,
 and there are a few "TODO" comment remaining.
 cf. https://github.com/py-pdf/fpdf2/issues/62
 """
-from .output import ContentWithoutID, OutputProducer, PDFHeader
+from typing import TYPE_CHECKING, Optional
+
+from .output import ContentWithoutID, OutputProducer, PDFCatalog, PDFHeader, PDFInfo
 from .sign import sign_content
-from .syntax import PDFArray, PDFContentStream, PDFObject
-from .syntax import iobj_ref as pdf_ref
+from .syntax import (
+    DestinationXYZ,
+    PDFArray,
+    PDFContentStream,
+    PDFObject,
+    iobj_ref as pdf_ref,
+)
 from .util import buffer_subst
 
 try:
     from endesive import signer
 except ImportError:
     signer = None
+
+if TYPE_CHECKING:
+    from .encryption import StandardSecurityHandler
 
 HINT_STREAM_OFFSET_LENGTH_PLACEHOLDER = "0%1%2%3%4%5%6%7%8%9%a%b%c%d"
 FIRST_PAGE_END_OFFSET_PLACEHOLDER = "1%2%3%4%5%6%"
@@ -23,7 +34,7 @@ FILE_LENGTH_PLACEHOLDER = "3%4%5%6%7%8%"
 
 
 class PDFLinearization(PDFObject):
-    def __init__(self, pages_count):
+    def __init__(self, pages_count: int) -> None:
         super().__init__()
         self.linearized = "1"  # Version
         self.n = pages_count
@@ -39,29 +50,33 @@ class PDFLinearization(PDFObject):
 class PDFXrefAndTrailer(ContentWithoutID):
     PREV_MAIN_XREF_START_PLACEHOLDER = "0%1*2+3-2/1^"
 
-    def __init__(self, output_builder):
+    def __init__(self, output_builder: OutputProducer) -> None:
         self.output_builder = output_builder
         self.count = output_builder.obj_id + 1
         self.start_obj_id = 1
         # Must be set before the call to serialize():
-        self.catalog_obj = None
-        self.info_obj = None
-        self.first_xref = None
-        self.main_xref = None
+        self.catalog_obj: Optional[PDFCatalog] = None
+        self.info_obj: Optional[PDFInfo] = None
+        self.first_xref: Optional["PDFXrefAndTrailer"] = None
+        self.main_xref: Optional["PDFXrefAndTrailer"] = None
         # Computed at serialize() time based on output_builder.buffer size:
-        self.startxref = None
+        self.startxref: Optional[str] = None
 
     @property
-    def is_first_xref(self):
+    def is_first_xref(self) -> bool:
         return bool(self.main_xref)
 
     @property
-    def is_main_xref(self):
+    def is_main_xref(self) -> bool:
         return bool(self.first_xref)
 
-    def serialize(self, _security_handler=None):
+    def serialize(
+        self, _security_handler: Optional["StandardSecurityHandler"] = None
+    ) -> str:
         builder = self.output_builder
-        out = []
+        assert builder is not None
+        assert builder.buffer is not None
+        out: list[str] = []
         self.startxref = str(len(builder.buffer))
         if self.is_main_xref:
             builder.buffer = buffer_subst(
@@ -81,26 +96,33 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append("trailer")
         out.append("<<")
         if self.is_main_xref:
+            assert self.first_xref is not None
             out.append(f"/Size {self.count - self.first_xref.count}")
         else:
             if self.is_first_xref:
+                assert self.main_xref is not None
                 out.append(f"/Size {self.main_xref.count}")
                 out.append(f"/Prev {self.PREV_MAIN_XREF_START_PLACEHOLDER}")
             else:
                 out.append(f"/Size {self.count}")
+            assert self.catalog_obj is not None
+            assert self.info_obj is not None
             out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
             out.append(f"/Info {pdf_ref(self.info_obj.id)}")
             fpdf = builder.fpdf
             file_id = fpdf.file_id()
             if file_id == -1:
-                file_id = fpdf._default_file_id(builder.buffer)
+                file_id = fpdf._default_file_id(  # pyright: ignore[reportPrivateUsage]
+                    builder.buffer
+                )
             if file_id:
                 out.append(f"/ID [{file_id}]")
         out.append(">>")
         out.append("startxref")
         startxref = self.startxref
         if self.is_main_xref:
-            startxref = self.first_xref.startxref
+            assert self.first_xref is not None
+            startxref = str(self.first_xref.startxref or "0")
         if self.is_first_xref:
             startxref = "0"
         out.append(startxref)
@@ -109,7 +131,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
 
 
 class PDFHintStream(PDFContentStream):
-    def __init__(self, contents, compress=False):
+    def __init__(self, contents: bytes, compress: bool = False) -> None:
         super().__init__(contents=contents, compress=compress)
         self.s = None  # (Required) Shared object hint table
         self.t = None  # (Present only if thumbnail images exist) Thumbnail hint table
@@ -125,7 +147,7 @@ class PDFHintStream(PDFContentStream):
 
 
 class LinearizedOutputProducer(OutputProducer):
-    def bufferize(self):
+    def bufferize(self) -> bytearray:
         fpdf = self.fpdf
 
         # 1. Setup - Insert all PDF objects
@@ -143,7 +165,7 @@ class LinearizedOutputProducer(OutputProducer):
         # Part 4: Document catalogue and other required document-level objects
         catalog_obj = self._add_catalog()
         # Part 5: Primary hint stream (may precede or follow part 6)
-        hint_stream_obj = PDFHintStream("")  # TODO
+        hint_stream_obj = PDFHintStream("".encode("latin-1"))  # TODO
         self.pdf_objs.append(hint_stream_obj)
         # Part 6: First-page section (may precede or follow part 5)
         page_objs = self._add_pages(slice(0, 1))
@@ -198,13 +220,13 @@ class LinearizedOutputProducer(OutputProducer):
                 and pdf_obj is not hint_stream_obj
             ):
                 self.obj_id += 1
-                pdf_obj.obj_id = self.obj_id
+                pdf_obj.id = self.obj_id
         # The hint streams shall be assigned the last object numbers in the file:
         self.obj_id += 1
         hint_stream_obj.id = self.obj_id
 
         # 2. Plumbing - Inject all PDF object references required:
-        linearization_obj.o = page_objs[0].id
+        linearization_obj.o = page_objs[0].id  # type: ignore[assignment]
         pages_root_obj.kids = PDFArray(page_objs)
         self._finalize_catalog(
             catalog_obj,
@@ -215,10 +237,11 @@ class LinearizedOutputProducer(OutputProducer):
             struct_tree_root_obj=struct_tree_root_obj,
             outline_dict_obj=outline_dict_obj,
         )
-        dests = []
+        dests: list[DestinationXYZ] = []
         for page_obj in page_objs:
             page_obj.parent = pages_root_obj
             page_obj.resources = resources_dict_obj
+            assert page_obj.annots is not None
             for annot in page_obj.annots:
                 if annot.dest:
                     dests.append(annot.dest)
@@ -228,10 +251,15 @@ class LinearizedOutputProducer(OutputProducer):
                 # Avoid serializing an empty PDFArray:
                 page_obj.annots = None
         for outline_item in outline_items:
-            dests.append(outline_item.dest)
+            if outline_item.dest is not None:
+                dests.append(outline_item.dest)
         # Assigning the .page_ref property of all Destination objects:
         for dest in dests:
-            dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
+            dest.page_ref = pdf_ref(  # pyright: ignore[reportAttributeAccessIssue]
+                page_objs[
+                    dest.page_number - 1  # pyright: ignore[reportAttributeAccessIssue]
+                ].id
+            )
         for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
         main_xref.first_xref = first_xref
@@ -286,15 +314,15 @@ class LinearizedOutputProducer(OutputProducer):
             f"{len(self.buffer): 12d}",
         )
 
-        if fpdf._sign_key:
+        if fpdf._sign_key:  # pyright: ignore[reportPrivateUsage]
             self.buffer = sign_content(
-                signer,
+                signer,  # pyright: ignore[reportArgumentType]
                 self.buffer,
-                fpdf._sign_key,
-                fpdf._sign_cert,
-                fpdf._sign_extra_certs,
-                fpdf._sign_hashalgo,
-                fpdf._sign_time,
+                fpdf._sign_key,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_cert,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_extra_certs,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_hashalgo,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_time,  # pyright: ignore[reportPrivateUsage]
             )
 
         return self.buffer

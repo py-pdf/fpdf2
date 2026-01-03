@@ -11,12 +11,12 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableO
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Sequence
 
 from .enums import Align, XPos, YPos
 from .fonts import TextStyle
-from .syntax import Destination, PDFObject, PDFString
 from .structure_tree import StructElem
+from .syntax import DestinationXYZ, PDFObject, PDFString
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -29,11 +29,17 @@ class OutlineSection:
     name: str
     level: int
     page_number: int
-    dest: Destination
+    dest: DestinationXYZ
     struct_elem: Optional[StructElem]
 
-    # With __slots__ used, we need an __init__ method in order to define default values:
-    def __init__(self, name, level, page_number, dest, struct_elem=None):
+    def __init__(
+        self,
+        name: str,
+        level: int,
+        page_number: int,
+        dest: DestinationXYZ,
+        struct_elem: Optional[StructElem] = None,
+    ) -> None:
         self.name = name
         self.level = level
         self.page_number = page_number
@@ -58,47 +64,52 @@ class OutlineItemDictionary(PDFObject):
     def __init__(
         self,
         title: str,
-        dest: Destination = None,
-        struct_elem: StructElem = None,
-    ):
+        dest: Optional[DestinationXYZ] = None,
+        struct_elem: Optional[StructElem] = None,
+    ) -> None:
         super().__init__()
         self.title = PDFString(title, encrypt=True)
-        self.parent = None
-        self.prev = None
-        self.next = None
-        self.first = None
-        self.last = None
-        self.count = 0
-        self.dest = dest
-        self.struct_elem = struct_elem
+        self.parent: Optional[OutlineDictionary | OutlineItemDictionary] = None
+        self.prev: Optional[OutlineItemDictionary] = None
+        self.next: Optional[OutlineItemDictionary] = None
+        self.first: Optional[OutlineItemDictionary] = None
+        self.last: Optional[OutlineItemDictionary] = None
+        self.count: int = 0
+        self.dest: Optional[DestinationXYZ] = dest
+        self.struct_elem: Optional[StructElem] = struct_elem
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"OutlineItemDictionary(title={self.title}, dest={self.dest})"
 
 
 class OutlineDictionary(PDFObject):
     __slots__ = ("_id", "type", "first", "last", "count")  # RAM usage optimization
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.type = "/Outlines"
         self.first = None
         self.last = None
         self.count = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"OutlineDictionary(count={self.count})"
 
 
-def build_outline_objs(sections):
+def build_outline_objs(
+    sections: Sequence[OutlineSection],
+) -> Iterator[OutlineDictionary | OutlineItemDictionary]:
     """
     Build PDF objects constitutive of the documents outline,
     and yield them one by one, starting with the outline dictionary
     """
     outline = OutlineDictionary()
     yield outline
-    outline_items = []
-    last_outline_item_per_level = {}
+
+    outline_items: list[OutlineItemDictionary] = []
+    last_outline_item_per_level: dict[int, OutlineItemDictionary] = {}
+    parent_outline_item: OutlineDictionary | OutlineItemDictionary
+
     for section in sections:
         outline_item = OutlineItemDictionary(
             title=section.name,
@@ -106,19 +117,27 @@ def build_outline_objs(sections):
             struct_elem=section.struct_elem,
         )
         yield outline_item
+
         if section.level in last_outline_item_per_level:
             last_outline_item_at_level = last_outline_item_per_level[section.level]
             last_outline_item_at_level.next = outline_item
             outline_item.prev = last_outline_item_at_level
+
         if section.level - 1 in last_outline_item_per_level:
             parent_outline_item = last_outline_item_per_level[section.level - 1]
         else:
             parent_outline_item = outline
+
         outline_item.parent = parent_outline_item
         if parent_outline_item.first is None:
-            parent_outline_item.first = outline_item
-        parent_outline_item.last = outline_item
+            parent_outline_item.first = (  # pyright: ignore[reportAttributeAccessIssue]
+                outline_item
+            )
+        parent_outline_item.last = (  # pyright: ignore[reportAttributeAccessIssue]
+            outline_item
+        )
         parent_outline_item.count += 1
+
         outline_items.append(outline_item)
         last_outline_item_per_level[section.level] = outline_item
         last_outline_item_per_level = {
@@ -126,7 +145,6 @@ def build_outline_objs(sections):
             for level, oitem in last_outline_item_per_level.items()
             if level <= section.level
         }
-    return [outline] + outline_items
 
 
 class TableOfContents:
@@ -142,18 +160,18 @@ class TableOfContents:
     def __init__(
         self,
         text_style: Optional[TextStyle] = None,
-        use_section_title_styles=False,
-        level_indent=7.5,
-        line_spacing=1.5,
-        ignore_pages_before_toc=True,
-    ):
+        use_section_title_styles: bool = False,
+        level_indent: float = 7.5,
+        line_spacing: float = 1.5,
+        ignore_pages_before_toc: bool = True,
+    ) -> None:
         self.text_style = text_style or TextStyle()
         self.use_section_title_styles = use_section_title_styles
         self.level_indent = level_indent
         self.line_spacing = line_spacing
         self.ignore_pages_before_toc = ignore_pages_before_toc
 
-    def get_text_style(self, pdf: "FPDF", item: OutlineSection):
+    def get_text_style(self, pdf: "FPDF", item: OutlineSection) -> TextStyle:
         if self.use_section_title_styles and pdf.section_title_styles[item.level]:
             return pdf.section_title_styles[item.level]
         if isinstance(self.text_style.l_margin, (str, Align)):
@@ -162,7 +180,7 @@ class TableOfContents:
             )
         return self.text_style
 
-    def render_toc_item(self, pdf: "FPDF", item: OutlineSection):
+    def render_toc_item(self, pdf: "FPDF", item: OutlineSection) -> None:
         link = pdf.add_link(page=item.page_number)
         page_label = pdf.pages[item.page_number].get_label()
 
@@ -224,8 +242,9 @@ class TableOfContents:
                 h=pdf.font_size * self.line_spacing,
             )
 
-    def render_toc(self, pdf: "FPDF", outline: List[OutlineSection]):
+    def render_toc(self, pdf: "FPDF", outline: list[OutlineSection]) -> None:
         "This method can be overridden by subclasses to customize the Table of Contents style."
+        assert pdf.toc_placeholder is not None
         for section in outline:
             if (
                 self.ignore_pages_before_toc

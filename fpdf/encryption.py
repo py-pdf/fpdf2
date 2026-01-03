@@ -8,6 +8,8 @@ in non-backward-compatible ways.
 Usage documentation at: <https://py-pdf.github.io/fpdf2/Encryption.html>
 """
 
+# pyright: reportPossiblyUnboundVariable=false
+
 import hashlib
 import logging
 import math
@@ -16,12 +18,17 @@ import unicodedata
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
 from os import urandom
-from typing import Callable, Iterable, Type, Union
+from typing import TYPE_CHECKING, Callable, Iterator, Optional, Sequence, Type, Union
 
 from .enums import AccessPermission, EncryptionMethod
 from .errors import FPDFException
-from .syntax import Name, PDFObject, PDFString, build_obj_dict
-from .syntax import create_dictionary_string as pdf_dict
+from .syntax import (
+    Name,
+    PDFObject,
+    PDFString,
+    build_obj_dict,
+    create_dictionary_string as pdf_dict,
+)
 
 # try to use cryptography for AES encryption
 try:
@@ -33,6 +40,8 @@ try:
 except ImportError as error:
     import_error = error
 
+if TYPE_CHECKING:
+    from .fpdf import FPDF
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,7 +60,7 @@ class ARC4:
 
     MOD = 256
 
-    def KSA(self, key: bytes) -> list:
+    def KSA(self, key: bytes) -> list[int]:
         key_length = len(key)
         S = list(range(self.MOD))
         j = 0
@@ -60,7 +69,7 @@ class ARC4:
             S[i], S[j] = S[j], S[i]
         return S
 
-    def PRGA(self, S: list) -> Iterable[int]:
+    def PRGA(self, S: list[int]) -> Iterator[int]:
         i = 0
         j = 0
         while True:
@@ -70,9 +79,9 @@ class ARC4:
             K = S[(S[i] + S[j]) % self.MOD]
             yield K
 
-    def encrypt(self, key: bytes, text: Union[bytes, bytearray]) -> list:
+    def encrypt(self, key: bytes, text: bytes | bytearray) -> list[int]:
         keystream = self.PRGA(self.KSA(key))
-        res = []
+        res: list[int] = []
         for c in text:
             res.append(c ^ next(keystream))
         return res
@@ -138,19 +147,15 @@ class StandardSecurityHandler:
 
     def __init__(
         self,
-        fpdf,
+        fpdf: "FPDF",
         owner_password: str,
-        user_password: Union[str, None] = None,
-        permission: AccessPermission = AccessPermission.all(),
+        user_password: Optional[str] = None,
+        permission: int | AccessPermission = AccessPermission.all(),
         encryption_method: EncryptionMethod = EncryptionMethod.RC4,
         encrypt_metadata: bool = False,
     ):
         self.fpdf = fpdf
-        self.access_permission = (
-            0b11111111111111111111000011000000
-            if permission is None
-            else (0b11111111111111111111000011000000 | permission)
-        )
+        self.access_permission = 0b11111111111111111111000011000000 | permission
         self.owner_password = owner_password
         self.user_password = user_password if user_password else ""
         self.encryption_method = encryption_method
@@ -169,23 +174,23 @@ class StandardSecurityHandler:
         if self.encryption_method == EncryptionMethod.AES_128:
             self.version = 4
             self.revision = 4
-            fpdf._set_min_pdf_version("1.6")
+            fpdf._set_min_pdf_version("1.6")  # pyright: ignore[reportPrivateUsage]
             self.cf = CryptFilter(mode="AESV2", length=self.key_length)
         elif self.encryption_method == EncryptionMethod.AES_256:
             self.version = 5
             self.revision = 6
-            fpdf._set_min_pdf_version("2.0")
+            fpdf._set_min_pdf_version("2.0")  # pyright: ignore[reportPrivateUsage]
             self.key_length = 256
             self.cf = CryptFilter(mode="AESV3", length=self.key_length)
         elif self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
             self.version = 4
             self.revision = 4
-            fpdf._set_min_pdf_version("1.6")
+            fpdf._set_min_pdf_version("1.6")  # pyright: ignore[reportPrivateUsage]
             self.cf = CryptFilter(mode="V2", length=self.key_length)
         else:
             self.version = 2
             self.revision = 3
-            fpdf._set_min_pdf_version("1.5")
+            fpdf._set_min_pdf_version("1.5")  # pyright: ignore[reportPrivateUsage]
             # not including crypt filter because it's only required on V=4
             # if needed, it would be CryptFilter(mode=V2)
 
@@ -216,7 +221,7 @@ class StandardSecurityHandler:
         LOGGER.debug("Encrypting %s", text)
         return (
             self.encrypt_stream(text, obj_id)
-            if isinstance(text, (bytearray, bytes))
+            if isinstance(text, (bytes, bytearray))
             else self.encrypt_string(text, obj_id)
         )
 
@@ -230,9 +235,9 @@ class StandardSecurityHandler:
         except UnicodeEncodeError:
             return f'<{hexlify(bytearray(self.encrypt_bytes(BOM_UTF16_BE + string.encode("utf-16-be"), obj_id))).decode("latin-1")}>'
 
-    def encrypt_stream(self, stream: bytes, obj_id: int) -> bytes:
+    def encrypt_stream(self, stream: bytes | bytearray, obj_id: int) -> bytes:
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
-            return stream
+            return bytes(stream)
         return bytes(self.encrypt_bytes(stream, obj_id))
 
     def is_aes_algorithm(self) -> bool:
@@ -241,7 +246,7 @@ class StandardSecurityHandler:
             EncryptionMethod.AES_256,
         )
 
-    def encrypt_bytes(self, data: bytes, obj_id: int):
+    def encrypt_bytes(self, data: bytes | bytearray, obj_id: int) -> Sequence[int]:
         """
         PDF32000 reference - Algorithm 1: Encryption of data using the RC4 or AES algorithms
         Append object ID and generation ID to the key and encrypt the data
@@ -263,7 +268,9 @@ class StandardSecurityHandler:
             return self.encrypt_AES_cryptography(key, data)
         return ARC4().encrypt(key, data)
 
-    def encrypt_AES_cryptography(self, key: bytes, data: bytes) -> bytes:
+    def encrypt_AES_cryptography(
+        self, key: bytes, data: bytes | bytearray
+    ) -> bytearray:
         """Encrypts an array of bytes using AES algorithms (AES 128 or AES 256)"""
         iv = bytearray(self.get_random_bytes(16))
         padder = PKCS7(128).padder()
@@ -346,7 +353,7 @@ class StandardSecurityHandler:
                 )
 
         # Bidirectional characters
-        def has_character(string: str, fun: Callable) -> bool:
+        def has_character(string: str, fun: Callable[[str], bool]) -> bool:
             return any(fun(char) for char in string)
 
         if has_character(prepared_string, stringprep.in_table_d1):
@@ -386,16 +393,16 @@ class StandardSecurityHandler:
         PDF32000 reference - Algorithm 3: Computing the encryption dictionary's O (owner password) value
         The security handler is only using revision 3 or 4, so the legacy r2 version is not implemented here
         """
-        m = self.padded_password(self.owner_password)
+        m = bytes(self.padded_password(self.owner_password))
         for _ in range(51):
             m = md5(m)
         rc4key = m[: (math.ceil(self.key_length / 8))]
         result = self.padded_password(self.user_password)
         for i in range(20):
-            new_key = []
+            new_key: list[int] = []
             for k in rc4key:
                 new_key.append(k ^ i)
-            result = ARC4().encrypt(bytes(new_key), result)
+            result = bytearray(ARC4().encrypt(bytes(new_key), result))
         return bytes(result).hex()
 
     def generate_user_password(self) -> str:
@@ -409,10 +416,10 @@ class StandardSecurityHandler:
         result = bytearray(m.digest())
         key = self.k
         for i in range(20):
-            new_key = []
+            new_key: list[int] = []
             for k in key:
                 new_key.append(k ^ i)
-            result = ARC4().encrypt(bytes(new_key), result)
+            result = bytearray(ARC4().encrypt(bytes(new_key), result))
         result.extend(
             (result[x] ^ self.DEFAULT_PADDING[x]) for x in range(16)
         )  # add 16 bytes of random padding
@@ -421,9 +428,9 @@ class StandardSecurityHandler:
     @classmethod
     def compute_hash(
         cls: Type["StandardSecurityHandler"],
-        input_password: bytes,
+        input_password: bytes | bytearray,
         salt: bytes,
-        user_key: bytes = bytearray(),
+        user_key: bytes | bytearray = bytearray(),
     ) -> bytes:
         """
         Algorithm 2B - section 7.6.4.3.4 of the ISO 32000-2:2020
@@ -460,7 +467,7 @@ class StandardSecurityHandler:
         for security handlers of revision 6
         Algorithm 8 - Section 7.6.4.4.7 of the ISO 32000-2:2020
         """
-        user_password = self.prepare_string(self.user_password)
+        user_password: bytes | bytearray = self.prepare_string(self.user_password)
         if not user_password:
             user_password = bytearray()
         user_validation_salt = self.get_random_bytes(8)

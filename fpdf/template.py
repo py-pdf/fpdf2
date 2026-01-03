@@ -8,18 +8,24 @@ __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
-import os, csv, json, locale, warnings
+import csv
+import json
+import locale
+import os
+import warnings
+from typing import Any, Optional, Sequence
 
 from .deprecation import get_stack_level
+from .enums import WrapMode
 from .errors import FPDFException
 from .fpdf import FPDF
 
 
-def _rgb(col):
+def _rgb(col: int) -> tuple[float, float, float]:
     return (col // 65536), (col // 256 % 256), (col % 256)
 
 
-def _rgb_as_str(col):
+def _rgb_as_str(col: int) -> str:
     r, g, b = _rgb(col)
     if (r == 0 and g == 0 and b == 0) or g == -1:
         return f"{r / 255:.3f} g"
@@ -36,7 +42,9 @@ class FlexTemplate:
     Usage documentation at: <https://py-pdf.github.io/fpdf2/Templates.html>
     """
 
-    def __init__(self, pdf, elements=None):
+    def __init__(
+        self, pdf: FPDF, elements: Optional[Sequence[dict[str, Any]]] = None
+    ) -> None:
         """
         Args:
             pdf (fpdf.fpdf.FPDF): All content will be added to this `FPDF` instance.
@@ -47,7 +55,7 @@ class FlexTemplate:
         if not isinstance(pdf, FPDF):
             raise TypeError("'pdf' must be an instance of fpdf.FPDF()")
         self.pdf = pdf
-        self.splitting_pdf = None  # for split_multicell()
+        self.splitting_pdf: Optional[FPDF] = None  # for split_multicell()
         if elements:
             self.load_elements(elements)
         self.handlers = {
@@ -60,9 +68,9 @@ class FlexTemplate:
             "C39": self._code39,
             "W": self._write,
         }
-        self.texts = {}
+        self.texts: dict[str, Any] = {}
 
-    def load_elements(self, elements):
+    def load_elements(self, elements: Sequence[dict[str, Any]]) -> None:
         """
         Load a template definition.
 
@@ -93,8 +101,8 @@ class FlexTemplate:
             "dash_pattern": (dict, type(None)),
         }
 
-        self.elements = elements
-        self.keys = []
+        self.elements: Sequence[dict[str, Any]] = elements
+        self.keys: list[str] = []
         for e in elements:
             # priority is optional, but we need a default for sorting.
             if not "priority" in e:
@@ -136,11 +144,11 @@ class FlexTemplate:
                     e["dash_pattern"]["phase"] = 0
 
             for k, t in key_config.items():
-                if k in e and not isinstance(e[k], t):
+                if k in e and not isinstance(e[k], t):  # type: ignore[arg-type]
                     ttype = (
                         t.__name__
                         if isinstance(t, type)
-                        else " or ".join([f"'{x.__name__}'" for x in t])
+                        else " or ".join([f"'{x.__name__}'" for x in t])  # type: ignore[attr-defined]
                     )
                     raise TypeError(
                         f"Value of element item '{k}' must be {ttype}, not '{type(e[k]).__name__}'."
@@ -148,7 +156,7 @@ class FlexTemplate:
             self.keys.append(e["name"].lower())
 
     @staticmethod
-    def _parse_colorcode(s):
+    def _parse_colorcode(s: str) -> int:
         """Allow hex and oct values for colors"""
         if s[:2] in ["0x", "0X"]:
             return int(s, 16)
@@ -157,7 +165,7 @@ class FlexTemplate:
         return int(s)
 
     @staticmethod
-    def _parse_multiline(s):
+    def _parse_multiline(s: str) -> Optional[bool]:
         i = int(s)
         if i > 0:
             return True
@@ -165,7 +173,7 @@ class FlexTemplate:
             return False
         return None
 
-    def parse_json(self, infile: os.PathLike, encoding: str = "utf-8"):
+    def parse_json(self, infile: os.PathLike[str], encoding: str = "utf-8") -> None:
         """
         Load the template definition from a JSON file.
         The data must be structured as an array of objects, with names and values exactly
@@ -198,11 +206,11 @@ class FlexTemplate:
 
     def parse_csv(
         self,
-        infile: os.PathLike,
+        infile: os.PathLike[str],
         delimiter: str = ",",
         decimal_sep: str = ".",
-        encoding: str = None,
-    ):
+        encoding: Optional[str] = None,
+    ) -> None:
         """
         Load the template definition from a CSV file.
 
@@ -216,7 +224,7 @@ class FlexTemplate:
                 Default is the system default encoding.
         """
 
-        def _varsep_float(s, default="0"):
+        def _varsep_float(s: str, default: str = "0") -> float:
             """Convert to float with given decimal separator"""
             # glad to have nonlocal scoping...
             return float((s.strip() or default).replace(decimal_sep, "."))
@@ -250,7 +258,7 @@ class FlexTemplate:
             for row in csv.reader(f, delimiter=delimiter):
                 # fill in blanks for any missing items
                 row.extend([""] * (len(key_config) - len(row)))
-                kargs = {}
+                kargs: dict[str, Any] = {}
                 for val, cfg in zip(row, key_config):
                     vs = val.strip()
                     if not vs:
@@ -267,11 +275,11 @@ class FlexTemplate:
                             kargs["priority"] = 0
                         # otherwise, let the type handlers use their own defaults
                     else:
-                        kargs[cfg[0]] = cfg[1](vs)
+                        kargs[cfg[0]] = cfg[1](vs)  # type: ignore[operator]
                 self.elements.append(kargs)
         self.keys = [val["name"].lower() for val in self.elements]
 
-    def __setitem__(self, name, value):
+    def __setitem__(self, name: str, value: Any) -> None:
         assert isinstance(
             name, str
         ), f"name must be of type 'str', not '{type(name).__name__}'."
@@ -283,13 +291,13 @@ class FlexTemplate:
     # setitem shortcut (may be further extended)
     set = __setitem__
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         assert isinstance(
             name, str
         ), f"name must be of type 'str', not '{type(name).__name__}'."
         return name.lower() in self.keys
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Any:
         assert isinstance(
             name, str
         ), f"name must be of type 'str', not '{type(name).__name__}'."
@@ -304,7 +312,7 @@ class FlexTemplate:
             (x["text"] for x in self.elements if x["name"].lower() == key), None
         )
 
-    def split_multicell(self, text, element_name):
+    def split_multicell(self, text: str, element_name: str) -> list[str]:
         """
         Split a string between words, for the parts to fit into a given element
         width. Additional splits will be made replacing any '\\n' characters.
@@ -325,6 +333,7 @@ class FlexTemplate:
         if not self.splitting_pdf:
             self.splitting_pdf = FPDF()
             self.splitting_pdf.add_page()
+        assert self.splitting_pdf is not None
         style = ""
         if element.get("bold"):
             style += "B"
@@ -333,7 +342,7 @@ class FlexTemplate:
         if element.get("underline"):
             style += "U"
         self.splitting_pdf.set_font(element["font"], style, element["size"])
-        return self.splitting_pdf.multi_cell(
+        return self.splitting_pdf.multi_cell(  # type: ignore[return-value]
             w=element["x2"] - element["x1"],
             h=element["y2"] - element["y1"],
             text=str(text),
@@ -345,35 +354,35 @@ class FlexTemplate:
 
     def _text(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text="",
-        font="helvetica",
-        size=10,
-        scale=1.0,
-        bold=False,
-        italic=False,
-        underline=False,
-        align="",
-        foreground=0,
-        background=None,
-        multiline=None,
-        wrapmode="WORD",
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = "",
+        font: str = "helvetica",
+        size: float = 10,
+        scale: float = 1.0,
+        bold: bool = False,
+        italic: bool = False,
+        underline: bool = False,
+        align: str = "",
+        foreground: int = 0,
+        background: Optional[int] = None,
+        multiline: Optional[bool] = None,
+        wrapmode: str = "WORD",
+        **__: Any,
+    ) -> None:
         if not text:
             return
         pdf = self.pdf
-        if pdf.text_color != _rgb_as_str(foreground):
+        if pdf.text_color != _rgb_as_str(foreground):  # type: ignore[comparison-overlap]
             pdf.set_text_color(*_rgb(foreground))
         if background is None:
             fill = False
         else:
             fill = True
-            if pdf.fill_color != _rgb_as_str(background):
+            if pdf.fill_color != _rgb_as_str(background):  # type: ignore[comparison-overlap]
                 pdf.set_fill_color(*_rgb(background))
 
         font = font.strip().lower()
@@ -401,15 +410,15 @@ class FlexTemplate:
                 border=0,
                 align=align,
                 fill=fill,
-                wrapmode=wrapmode,
+                wrapmode=WrapMode.coerce(wrapmode),
             )
         else:  # trim to fit exactly the space defined
-            text = pdf.multi_cell(
+            text = pdf.multi_cell(  # type: ignore[index,assignment]
                 w=width,
                 h=height,
                 text=text,
                 align=align,
-                wrapmode=wrapmode,
+                wrapmode=WrapMode.coerce(wrapmode),
                 dry_run=True,
                 output="LINES",
             )[0]
@@ -417,112 +426,172 @@ class FlexTemplate:
 
     def _line(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        dash_pattern=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        size: float = 0,
+        scale: float = 1.0,
+        foreground: int = 0,
+        dash_pattern: Optional[tuple[float, float, float]] = None,
+        **__: Any,
+    ) -> None:
+        assert self.pdf.draw_color is not None
         if self.pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
         self.pdf.set_line_width(size * scale)
         if dash_pattern is not None:
             # Save dash_pattern to restore after this line
             restore_dash_pattern = self.pdf.dash_pattern
-            self.pdf.set_dash_pattern(**dash_pattern)
+            if isinstance(dash_pattern, dict):
+                self.pdf.set_dash_pattern(
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "dash", 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "gap", 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "phase", 0
+                    ),
+                )
+            else:
+                self.pdf.set_dash_pattern(
+                    dash_pattern[0], dash_pattern[1], dash_pattern[2]
+                )
         self.pdf.line(x1, y1, x2, y2)
         if dash_pattern is not None:
-            self.pdf.set_dash_pattern(**restore_dash_pattern)
+            self.pdf.set_dash_pattern(
+                **restore_dash_pattern  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
 
     def _rect(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        background=None,
-        dash_pattern=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        size: float = 0,
+        scale: float = 1.0,
+        foreground: int = 0,
+        background: Optional[int] = None,
+        dash_pattern: Optional[tuple[float, float, float]] = None,
+        **__: Any,
+    ) -> None:
         pdf = self.pdf
+        assert pdf.draw_color is not None
         if pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = "D"
         else:
             style = "FD"
-            if pdf.fill_color != _rgb_as_str(background):
+            if pdf.fill_color != _rgb_as_str(background):  # type: ignore[comparison-overlap]
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
         if dash_pattern is not None:
             # Save dash_pattern to restore after this rect
             restore_dash_pattern = self.pdf.dash_pattern
-            pdf.set_dash_pattern(**dash_pattern)
+            if isinstance(dash_pattern, dict):
+                pdf.set_dash_pattern(
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "dash", 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "gap", 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "phase", 0
+                    ),
+                )
+            else:
+                pdf.set_dash_pattern(dash_pattern[0], dash_pattern[1], dash_pattern[2])
         pdf.rect(x1, y1, x2 - x1, y2 - y1, style=style)
         if dash_pattern is not None:
-            self.pdf.set_dash_pattern(**restore_dash_pattern)
+            self.pdf.set_dash_pattern(
+                **restore_dash_pattern  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
 
     def _ellipse(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        background=None,
-        dash_pattern=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        size: float = 0,
+        scale: float = 1.0,
+        foreground: int = 0,
+        background: Optional[int] = None,
+        dash_pattern: Optional[tuple[float, float, float]] = None,
+        **__: Any,
+    ) -> None:
         pdf = self.pdf
+        assert pdf.draw_color is not None
         if pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = "D"
         else:
             style = "FD"
-            if pdf.fill_color != _rgb_as_str(background):
+            if pdf.fill_color != _rgb_as_str(background):  # type: ignore[comparison-overlap]
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
         if dash_pattern is not None:
             # Save dash_pattern to restore after this ellipse
             restore_dash_pattern = self.pdf.dash_pattern
-            pdf.set_dash_pattern(**dash_pattern)
+            if isinstance(dash_pattern, dict):
+                pdf.set_dash_pattern(
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "dash", 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "gap", 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        "phase", 0
+                    ),
+                )
+            else:
+                pdf.set_dash_pattern(dash_pattern[0], dash_pattern[1], dash_pattern[2])
         pdf.ellipse(x1, y1, x2 - x1, y2 - y1, style=style)
         if dash_pattern is not None:
-            self.pdf.set_dash_pattern(**restore_dash_pattern)
+            self.pdf.set_dash_pattern(
+                **restore_dash_pattern  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
 
-    def _image(self, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
+    def _image(
+        self,
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = "",
+        **__: Any,
+    ) -> None:
         if text:
             self.pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link="")
 
     def _barcode(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text="",
-        font="interleaved 2of5 nt",
-        size=1,
-        scale=1.0,
-        foreground=0,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = "",
+        font: str = "interleaved 2of5 nt",
+        size: float = 1,
+        scale: float = 1.0,
+        foreground: int = 0,
+        **__: Any,
+    ) -> None:
         # pylint: disable=unused-argument
         pdf = self.pdf
+        assert pdf.fill_color is not None
         if pdf.fill_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         font = font.lower().strip()
@@ -531,20 +600,20 @@ class FlexTemplate:
 
     def _code39(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        y2=0,
-        text="",
-        size=1.5,
-        scale=1.0,
-        foreground=0,
-        x=None,
-        y=None,
-        w=None,
-        h=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        y2: float = 0,
+        text: str = "",
+        size: float = 1.5,
+        scale: float = 1.0,
+        foreground: int = 0,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+        w: Optional[float] = None,
+        h: Optional[float] = None,
+        **__: Any,
+    ) -> None:
         if x is not None or y is not None or w is not None or h is not None:
             warnings.warn(
                 (
@@ -555,6 +624,7 @@ class FlexTemplate:
                 stacklevel=get_stack_level(),
             )
         pdf = self.pdf
+        assert pdf.fill_color is not None
         if pdf.fill_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         h = y2 - y1
@@ -566,27 +636,27 @@ class FlexTemplate:
     # templates (using write method) 2014-02-22
     def _write(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text="",
-        font="helvetica",
-        size=10,
-        scale=1.0,
-        bold=False,
-        italic=False,
-        underline=False,
-        link="",
-        foreground=0,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = "",
+        font: str = "helvetica",
+        size: float = 10,
+        scale: float = 1.0,
+        bold: bool = False,
+        italic: bool = False,
+        underline: bool = False,
+        link: Optional[int | str] = "",
+        foreground: int = 0,
+        **__: Any,
+    ) -> None:
         # pylint: disable=unused-argument
         if not text:
             return
         pdf = self.pdf
-        if pdf.text_color != _rgb_as_str(foreground):
+        if pdf.text_color != _rgb_as_str(foreground):  # type: ignore[comparison-overlap]
             pdf.set_text_color(*_rgb(foreground))
         font = font.strip().lower()
         style = ""
@@ -604,7 +674,13 @@ class FlexTemplate:
         pdf.set_xy(x1, y1)
         pdf.write(5, text, link)
 
-    def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
+    def render(
+        self,
+        offsetx: float = 0.0,
+        offsety: float = 0.0,
+        rotate: float = 0.0,
+        scale: float = 1.0,
+    ) -> None:
         """
         Add the contents of the template to the PDF document.
 
@@ -635,15 +711,15 @@ class FlexTemplate:
                     with self.pdf.rotation(rotate, offsetx, offsety):
                         if "rotate" in ele and ele["rotate"]:
                             with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
-                                self.handlers[handler_name](**ele)
+                                self.handlers[handler_name](**ele)  # type: ignore[operator]
                         else:
-                            self.handlers[handler_name](**ele)
+                            self.handlers[handler_name](**ele)  # type: ignore[operator]
                 else:
                     if "rotate" in ele and ele["rotate"]:
                         with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
-                            self.handlers[handler_name](**ele)
+                            self.handlers[handler_name](**ele)  # type: ignore[operator]
                     else:
-                        self.handlers[handler_name](**ele)
+                        self.handlers[handler_name](**ele)  # type: ignore[operator]
         self.texts = {}  # reset modified entries for the next page
 
 
@@ -660,17 +736,17 @@ class Template(FlexTemplate):
     # pylint: disable=redefined-builtin
     def __init__(
         self,
-        infile=None,
-        elements=None,
-        format="A4",
-        orientation="portrait",
-        unit="mm",
-        title="",
-        author="",
-        subject="",
-        creator="",
-        keywords="",
-    ):
+        infile: Optional[os.PathLike[str]] = None,
+        elements: Optional[Sequence[dict[str, Any]]] = None,
+        format: str = "A4",
+        orientation: str = "portrait",
+        unit: str = "mm",
+        title: str = "",
+        author: str = "",
+        subject: str = "",
+        creator: str = "",
+        keywords: str = "",
+    ) -> None:
         """
         Args:
             infile (str): [**DEPRECATED since 2.2.0**] unused, will be removed in a later version
@@ -714,14 +790,14 @@ class Template(FlexTemplate):
         pdf.set_keywords(keywords)
         super().__init__(pdf=pdf, elements=elements)
 
-    def add_page(self):
+    def add_page(self) -> None:
         """Finish the current page, and proceed to the next one."""
         if self.pdf.page:
             self.render()
         self.pdf.add_page()
 
     # pylint: disable=arguments-differ
-    def render(self, outfile=None, dest=None):
+    def render(self, outfile: Optional[str] = None, dest: Optional[str] = None) -> None:  # type: ignore[override]
         """
         Finish the document and process all pending data.
 

@@ -182,7 +182,7 @@ class UnicodeScript(IntEnum):
     UNKNOWN = 999
 
 
-UNICODE_RANGE_TO_SCRIPT = (
+UNICODE_RANGE_TO_SCRIPT: tuple[tuple[int, int, int], ...] = (
     (0, 64, 0),
     (65, 90, 1),
     (91, 96, 0),

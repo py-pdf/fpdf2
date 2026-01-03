@@ -9,15 +9,27 @@ in non-backward-compatible ways.
 Usage documentation at: <https://py-pdf.github.io/fpdf2/Unicode.html>
 """
 
-import re, warnings
-from copy import deepcopy
-import logging
+# pyright: reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportUnknownMemberType=false
+# pyright: reportUnknownVariableType=false, reportOptionalMemberAccess=false, reportCallIssue=false, reportArgumentType=false
 
+import logging
+import re
+import warnings
 from bisect import bisect_left
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass, replace
-from functools import lru_cache
-from typing import Optional, Tuple, Union
+from functools import cache
+from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Iterator,
+    Optional,
+    Protocol,
+    Sequence,
+    Union,
+)
 
 from fontTools import ttLib
 from fontTools.pens.ttGlyphPen import TTGlyphPen
@@ -27,22 +39,58 @@ try:
     import uharfbuzz as hb
 
     # pylint: disable=no-member
-    class HarfBuzzFont(hb.Font):
+    class HarfBuzzFont(hb.Font):  # type: ignore[misc]
         "uharfbuzz.Font than can be deepcopied"
 
+        ptem: float
+
         # cf. issue #1075, avoids: TypeError: no default __reduce__ due to non-trivial __cinit__
-        def __deepcopy__(self, _memo):
+        def __deepcopy__(self: "HarfBuzzFont", memo: dict[int, Any]) -> "HarfBuzzFont":
             return self
 
 except ImportError:
     hb = None
 
 from .deprecation import get_stack_level
-from .drawing_primitives import convert_to_device_color, DeviceGray, DeviceRGB
-from .enums import FontDescriptorFlags, TextEmphasis, Align
-from .syntax import Name, PDFObject
+from .drawing_primitives import (
+    DeviceCMYK,
+    DeviceGray,
+    DeviceRGB,
+    convert_to_device_color,
+)
+from .enums import Align, FontDescriptorFlags, TextEmphasis
 from .font_type_3 import get_color_font_object
+from .syntax import Name, PDFObject
 from .util import escape_parens
+
+if TYPE_CHECKING:
+    from .fpdf import FPDF
+
+    class HBGlyphInfo(Protocol):
+        codepoint: int
+        cluster: int
+        flags: Any
+
+    class HBGlyphPosition(Protocol):
+        position: tuple[int, int, int, int]
+        x_advance: int
+        y_advance: int
+        x_offset: int
+        y_offset: int
+
+    class HBBuffer(Protocol):
+        direction: str
+        glyph_infos: list[HBGlyphInfo]
+        glyph_positions: list[HBGlyphPosition]
+        language: str
+        script: str
+        cluster_level: int  # IntEnum BufferClusterLevel
+
+        def add_str(
+            self, text: str, item_offset: int = 0, item_length: int = -1
+        ) -> None: ...
+        def guess_segment_properties(self) -> None: ...
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -65,13 +113,22 @@ class FontFace:
     emphasis: Optional[TextEmphasis]  # None means "no override"
     #                                   Whereas "" means "no emphasis"
     #                                   This can be a combination: B | U
-    size_pt: Optional[int]
+    size_pt: Optional[float]
     # Colors are single number grey scales or (red, green, blue) tuples:
-    color: Optional[Union[DeviceGray, DeviceRGB]]
-    fill_color: Optional[Union[DeviceGray, DeviceRGB]]
+    color: Optional[Union[DeviceGray, DeviceRGB, DeviceCMYK]]
+    fill_color: Optional[Union[DeviceGray, DeviceRGB, DeviceCMYK]]
 
     def __init__(
-        self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
+        self,
+        family: Optional[str] = None,
+        emphasis: Optional[TextEmphasis | str | int] = None,
+        size_pt: Optional[float] = None,
+        color: Optional[
+            DeviceRGB | DeviceGray | DeviceCMYK | str | float | Sequence[float]
+        ] = None,
+        fill_color: Optional[
+            DeviceRGB | DeviceGray | DeviceCMYK | str | float | Sequence[float]
+        ] = None,
     ):
         self.family = family
         self.emphasis = None if emphasis is None else TextEmphasis.coerce(emphasis)
@@ -88,12 +145,14 @@ class FontFace:
     """
 
     @staticmethod
-    def _override(current_value, override_value):
+    def _override(current_value: Any, override_value: Any) -> Any:
         """Override the current value if an override value is provided"""
         return current_value if override_value is None else override_value
 
     @staticmethod
-    def combine(default_style, override_style):
+    def combine(
+        default_style: Optional["FontFace"], override_style: Optional["FontFace"]
+    ) -> Optional["FontFace"]:
         """
         Create a combined FontFace with all the supplied features of the two styles. When both
         the default and override styles provide a feature, prefer the override style.
@@ -132,15 +191,21 @@ class TextStyle(FontFace):
         self,
         font_family: Optional[str] = None,  # None means "no override"
         #                                     Whereas "" means "no emphasis"
-        font_style: Optional[str] = None,
-        font_size_pt: Optional[int] = None,
-        color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
-        fill_color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
+        font_style: Optional[str | TextEmphasis] = None,
+        font_size_pt: Optional[float] = None,
+        color: Optional[
+            Union[str, float, Sequence[float], DeviceGray, DeviceRGB, DeviceCMYK]
+        ] = None,  # grey scale or (red, green, blue),
+        fill_color: Optional[
+            Union[float, Sequence[float], DeviceGray, DeviceRGB, DeviceCMYK]
+        ] = None,  # grey scale or (red, green, blue),
         underline: bool = False,
-        t_margin: Optional[int] = None,
-        l_margin: Union[Optional[int], Optional[Align], Optional[str]] = None,
-        b_margin: Optional[int] = None,
-    ):
+        t_margin: Optional[float] = None,
+        l_margin: Optional[float | Align | str] = None,
+        b_margin: Optional[float] = None,
+    ) -> None:
+        if isinstance(font_style, TextEmphasis):
+            font_style = font_style.style
         super().__init__(
             font_family,
             ((font_style or "") + "U") if underline else font_style,
@@ -151,7 +216,7 @@ class TextStyle(FontFace):
         self.t_margin = t_margin or 0
 
         if isinstance(l_margin, (int, float)):
-            self.l_margin = l_margin
+            self.l_margin: Optional[float | Align] = float(l_margin)
         elif l_margin:
             self.l_margin = Align.coerce(l_margin)
         else:
@@ -159,25 +224,25 @@ class TextStyle(FontFace):
 
         self.b_margin = b_margin or 0
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             super().__repr__()[:-1]
             + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
         )
 
     # override parent method
-    def replace(
+    def replace(  # type: ignore[override]
         self,
         /,
-        font_family=None,
-        emphasis=None,
-        font_size_pt=None,
-        color=None,
-        fill_color=None,
-        t_margin=None,
-        l_margin=None,
-        b_margin=None,
-    ):
+        font_family: Optional[str] = None,
+        emphasis: Optional[TextEmphasis] = None,
+        font_size_pt: Optional[float] = None,
+        color: Optional[DeviceGray | DeviceRGB | DeviceCMYK] = None,
+        fill_color: Optional[DeviceGray | DeviceRGB | DeviceCMYK] = None,
+        t_margin: Optional[float] = None,
+        l_margin: Optional[float | Align] = None,
+        b_margin: Optional[float] = None,
+    ) -> "TextStyle":
         """
         Create a new TextStyle instance, with new values for some attributes.
         Same as `dataclasses.replace()`
@@ -195,7 +260,7 @@ class TextStyle(FontFace):
 
 
 class TitleStyle(TextStyle):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         warnings.warn(
             (
                 "fpdf.TitleStyle is deprecated since 2.8.0."
@@ -225,7 +290,7 @@ class CoreFont:
         "emphasis",
     )
 
-    def __init__(self, i, fontkey, style):
+    def __init__(self, i: int, fontkey: str, style: str) -> None:
         self.i = i
         self.type = "core"
         self.name = CORE_FONTS[fontkey]
@@ -237,15 +302,17 @@ class CoreFont:
         self.fontkey = fontkey
         self.emphasis = TextEmphasis.coerce(style)
 
-    def get_text_width(self, text, font_size_pt, _):
+    def get_text_width(
+        self, text: str, font_size_pt: float, _: Optional[dict[str, Any]]
+    ) -> tuple[int, float]:
         return (len(text), sum(self.cw[c] for c in text) * font_size_pt * 0.001)
 
     # Disabling this check - method kept as is to have same method/signature on CoreConf and TTFFont:
     # pylint: disable=no-self-use
-    def encode_text(self, text):
+    def encode_text(self, text: str) -> str:
         return f"({escape_parens(text)}) Tj"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"CoreFont(i={self.i}, fontkey={self.fontkey})"
 
 
@@ -278,20 +345,20 @@ class TTFFont:
 
     def __init__(
         self,
-        fpdf,
-        font_file_path,
-        fontkey,
-        style,
-        unicode_range=None,
-        axes_dict=None,
-        palette_index=None,
+        fpdf: "FPDF",
+        font_file_path: Path,
+        fontkey: str,
+        style: str,
+        unicode_range: Optional[set[int]] = None,
+        axes_dict: Optional[dict[str, float]] = None,
+        palette_index: Optional[int] = None,
     ):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
-        self._hbfont = None
+        self._hbfont: Optional["HarfBuzzFont"] = None
         self.fontkey = fontkey
-        self.biggest_size_pt = 0
+        self.biggest_size_pt: float = 0
 
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
@@ -310,12 +377,16 @@ class TTFFont:
                 inplace=True,
                 static=True,
             )
-
-        self.scale = 1000 / self.ttfont["head"].unitsPerEm
+        upem: float = float(self.ttfont["head"].unitsPerEm)
+        self.scale: float = 1000 / upem
 
         # check if the font is a TrueType and missing a .notdef glyph
         # if it is missing, provide a fallback glyph
-        if "glyf" in self.ttfont and ".notdef" not in self.ttfont["glyf"]:
+        if (
+            "glyf" in self.ttfont
+            and ".notdef"
+            not in self.ttfont["glyf"]  # pyright: ignore[reportOperatorIssue]
+        ):
             LOGGER.warning(
                 (
                     "TrueType Font '%s' is missing the '.notdef' glyph. "
@@ -330,7 +401,7 @@ class TTFFont:
                 self.ttfont["head"].yMin,
                 self.ttfont["head"].yMax,
             )
-            pen = TTGlyphPen(self.ttfont["glyf"])
+            pen = TTGlyphPen(self.ttfont["glyf"])  # pyright: ignore[reportArgumentType]
             pen.moveTo((xMin, yMin))
             pen.lineTo((xMax, yMin))
             pen.lineTo((xMax, yMax))
@@ -343,10 +414,17 @@ class TTFFont:
             pen.lineTo((xMin, yMax))
             pen.closePath()
 
-            self.ttfont["glyf"][".notdef"] = pen.glyph()
-            self.ttfont["hmtx"][".notdef"] = (xMax - xMin, yMax - yMin)
+            self.ttfont["glyf"][  # pyright: ignore[reportIndexIssue]
+                ".notdef"
+            ] = pen.glyph()
+            self.ttfont["hmtx"][".notdef"] = (  # pyright: ignore[reportIndexIssue]
+                xMax - xMin,
+                yMax - yMin,
+            )
 
-        default_width = round(self.scale * self.ttfont["hmtx"].metrics[".notdef"][0])
+        default_width: float = round(
+            self.scale * self.ttfont["hmtx"].metrics[".notdef"][0]
+        )
 
         os2_table = self.ttfont["OS/2"]
         post_table = self.ttfont["post"]
@@ -380,12 +458,12 @@ class TTFFont:
         )
 
         # a map unicode_char -> char_width
-        self.cw = defaultdict(lambda: default_width)
+        self.cw: dict[int, float] = defaultdict(lambda: default_width)
 
         # fonttools cmap = unicode char to glyph name
         # saving only the keys we have a tuple with
         # the unicode characters available on the font
-        self.cmap = self.ttfont.getBestCmap()
+        self.cmap: dict[int, str] = self.ttfont.getBestCmap()
         if not self.cmap:
             raise NotImplementedError(
                 "Font not supported as it does not have a unicode cmap table - cf. issue #1396"
@@ -394,7 +472,7 @@ class TTFFont:
         if unicode_range is not None and len(unicode_range) != 0:
             self.cmap = {
                 codepoint: glyph_id
-                for codepoint, glyph_id in self.cmap.items()
+                for codepoint, glyph_id in self.cmap.items()  # pyright: ignore[reportUnknownVariableType]
                 if codepoint in unicode_range
             }
 
@@ -403,7 +481,7 @@ class TTFFont:
         # (shaped with harfbuz)
         self.glyph_ids = {}
 
-        for char in self.cmap:
+        for char in self.cmap:  # pyright: ignore[]
             # take glyph associated to char
             glyph = self.cmap[char]
 
@@ -418,7 +496,7 @@ class TTFFont:
 
             self.glyph_ids[char] = self.ttfont.getGlyphID(glyph)
 
-        self.missing_glyphs = []
+        self.missing_glyphs: list[int] = []
 
         self.name = re.sub("[ ()]", "", self.ttfont["name"].getBestFullName())
         self.up = round(post_table.underlinePosition * self.scale)
@@ -436,15 +514,15 @@ class TTFFont:
 
     # pylint: disable=no-member
     @property
-    def hbfont(self):
+    def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
             self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         return self._hbfont
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self: "TTFFont", memo: dict[int, Any]) -> "TTFFont":
         """
         The aim here is that FPDFRecorder.__init__() does NOT deepcopy all fonts attributes
         but instead share references to immutable objects
@@ -479,24 +557,34 @@ class TTFFont:
         copy.palette_index = self.palette_index
         return copy
 
-    def close(self):
+    def close(self) -> None:
         self.ttfont.close()
         self._hbfont = None
 
-    def escape_text(self, text):
+    def escape_text(self, text: str) -> str:
         if self.color_font:
             encoded = text.encode("latin-1", errors="replace")
             return escape_parens(encoded.decode("latin-1", errors="ignore"))
         return escape_parens(text.encode("utf-16-be").decode("latin-1"))
 
-    def get_text_width(self, text, font_size_pt, text_shaping_params):
+    def get_text_width(
+        self,
+        text: str,
+        font_size_pt: float,
+        text_shaping_params: Optional[dict[str, Any]],
+    ) -> tuple[int, float]:
         if font_size_pt > self.biggest_size_pt:
             self.biggest_size_pt = font_size_pt
         if text_shaping_params:
             return self.shaped_text_width(text, font_size_pt, text_shaping_params)
         return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
 
-    def shaped_text_width(self, text, font_size_pt, text_shaping_params):
+    def shaped_text_width(
+        self,
+        text: str,
+        font_size_pt: float,
+        text_shaping_params: Optional[dict[str, Any]],
+    ) -> tuple[int, float]:
         """
         When texts are shaped, the length of a string is not always the sum of all individual character widths
         This method will invoke harfbuzz to perform the text shaping and return the sum of "x_advance"
@@ -510,7 +598,7 @@ class TTFFont:
         if glyph_positions is None:
             return (0, 0)
 
-        text_width = 0
+        text_width: float = 0
         for pos in glyph_positions:
             text_width += (
                 round(self.scale * pos.x_advance + 0.001) * font_size_pt * 0.001
@@ -519,35 +607,62 @@ class TTFFont:
 
     # Disabling this check - looks like cython confuses pylint:
     # pylint: disable=no-member
-    def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_params):
+    def perform_harfbuzz_shaping(
+        self,
+        text: str,
+        font_size_pt: float,
+        text_shaping_params: Optional[dict[str, Any]],
+    ) -> tuple[Sequence["HBGlyphInfo"], Sequence["HBGlyphPosition"]]:
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
         self.hbfont.ptem = font_size_pt
+        if TYPE_CHECKING:
+            buf: HBBuffer
         buf = hb.Buffer()
         buf.cluster_level = 1
         buf.add_str("".join(text))
         buf.guess_segment_properties()
-        features = text_shaping_params["features"]
-        if text_shaping_params["fragment_direction"]:
+        features = (
+            text_shaping_params["features"] if text_shaping_params is not None else {}
+        )
+        if text_shaping_params is None:
+            text_shaping_params = {}
+        if (
+            "fragment_direction" in text_shaping_params
+            and text_shaping_params["fragment_direction"] is not None
+        ):
             buf.direction = text_shaping_params["fragment_direction"].value
-        if text_shaping_params["script"]:
+        if (
+            "script" in text_shaping_params
+            and text_shaping_params["script"] is not None
+        ):
             buf.script = text_shaping_params["script"]
-        if text_shaping_params["language"]:
+        if (
+            "language" in text_shaping_params
+            and text_shaping_params["language"] is not None
+        ):
             buf.language = text_shaping_params["language"]
         hb.shape(self.hbfont, buf, features)
         return buf.glyph_infos, buf.glyph_positions
 
-    def encode_text(self, text):
+    def encode_text(self, text: str) -> str:
         txt_mapped = ""
         for char in text:
             uni = ord(char)
             # Instead of adding the actual character to the stream its code is
             # mapped to a position in the font's subset
-            txt_mapped += chr(self.subset.pick(uni))
+            mapped_char: Optional[int] = self.subset.pick(uni)
+            if mapped_char is not None:
+                txt_mapped += chr(mapped_char)
         return f"({self.escape_text(txt_mapped)}) Tj"
 
-    def shape_text(self, text, font_size_pt, text_shaping_params):
+    def shape_text(
+        self,
+        text: str,
+        font_size_pt: float,
+        text_shaping_params: Optional[dict[str, Any]],
+    ) -> Sequence[dict[str, Any]]:
         """
         This method will invoke harfbuzz for text shaping, include the mapping code
         of the glyphs on the subset and map input characters to the cluster codes
@@ -565,7 +680,7 @@ class TTFFont:
         # (ligature or substitution) - the glyph should have both unicodes and it should be translated
         # properly on the CID to GID mapping
         #
-        def get_cluster_from_text_index(cluster_list, index):
+        def get_cluster_from_text_index(cluster_list: Sequence[int], index: int) -> int:
             pos = bisect_left(cluster_list, index)
             if pos == 0:
                 return cluster_list[0]
@@ -574,7 +689,7 @@ class TTFFont:
             return cluster_list[pos]
 
         cluster_list = list(sorted(int(gi.cluster) for gi in glyph_infos))
-        cluster_mapping = {}
+        cluster_mapping: dict[int, list[int]] = {}
         for i in range(len(text)):
             cl = get_cluster_from_text_index(cluster_list, i)
             if cl in cluster_mapping:
@@ -596,6 +711,8 @@ class TTFFont:
                 glyph_name=gname,
                 glyph_width=gwidth,
             )
+            if glyph is None:
+                continue
             force_positioning = False
             if (
                 gwidth != glyph_positions[cluster_seq].x_advance
@@ -620,14 +737,14 @@ class TTFFont:
 class PDFFontDescriptor(PDFObject):
     def __init__(
         self,
-        ascent,
-        descent,
-        cap_height,
-        flags,
-        font_b_box,
-        italic_angle,
-        stem_v,
-        missing_width,
+        ascent: float,
+        descent: float,
+        cap_height: float,
+        flags: FontDescriptorFlags,
+        font_b_box: str,
+        italic_angle: int,
+        stem_v: float,
+        missing_width: float,
     ):
         super().__init__()
         self.type = Name("FontDescriptor")
@@ -639,7 +756,7 @@ class PDFFontDescriptor(PDFObject):
         self.italic_angle = italic_angle
         self.stem_v = stem_v
         self.missing_width = missing_width
-        self.font_name = None
+        self.font_name: Optional[str] = None
 
 
 @dataclass(order=True)
@@ -653,11 +770,11 @@ class Glyph:
     # RAM usage optimization:
     __slots__ = ("glyph_id", "unicode", "glyph_name", "glyph_width")
     glyph_id: int
-    unicode: Tuple
+    unicode: int | tuple[int, ...]
     glyph_name: str
     glyph_width: int
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.glyph_id
 
 
@@ -673,45 +790,45 @@ class SubsetMap:
     the lowest possible representation.
     """
 
-    def __init__(self, font: TTFFont):
+    def __init__(self, font: TTFFont) -> None:
         super().__init__()
         self.font = font
-        self._next = 0
+        self._next: int = 0
 
         # 0x00 ".notdef" and 0x20 "space" are reserved
         self._reserved = [0x00, 0x20]
 
         # Maps Glyph instances to character IDs (integers):
-        self._char_id_per_glyph = {}
+        self._char_id_per_glyph: dict[Optional[Glyph], int] = {}
         for x in self._reserved:
             glyph = self.get_glyph(unicode=x)
             if glyph:
                 self._char_id_per_glyph[glyph] = int(x)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"SubsetMap(font={self.font}, _next={self._next},"
             f" _reserved={self._reserved}, _char_id_per_glyph={self._char_id_per_glyph})"
         )
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._char_id_per_glyph)
 
-    def items(self):
+    def items(self) -> Iterator[tuple[Optional[Glyph], int]]:
         for glyph, char_id in self._char_id_per_glyph.items():
             yield glyph, char_id
 
     # pylint: disable=method-cache-max-size-none
-    @lru_cache(maxsize=None)
-    def pick(self, unicode: int):
+    @cache
+    def pick(self, unicode: int) -> Optional[int]:
         glyph = self.get_glyph(unicode=unicode)
         if glyph is None and unicode not in self.font.missing_glyphs:
             self.font.missing_glyphs.append(unicode)
         return self.pick_glyph(glyph)
 
-    def pick_glyph(self, glyph):
-        char_id = self._char_id_per_glyph.get(glyph)
-        if glyph and char_id is None:
+    def pick_glyph(self, glyph: Optional[Glyph]) -> Optional[int]:
+        char_id = self._char_id_per_glyph.get(glyph, None)
+        if glyph is not None and char_id is None:
             while self._next in self._reserved:
                 self._next += 1
                 if self._next > self._reserved[0]:
@@ -722,30 +839,43 @@ class SubsetMap:
         return char_id
 
     # pylint: disable=method-cache-max-size-none
-    @lru_cache(maxsize=None)
+    @cache
     def get_glyph(
-        self, glyph=None, unicode=None, glyph_name=None, glyph_width=None
-    ) -> Glyph:
-        if glyph:
-            return Glyph(glyph, tuple(unicode), glyph_name, glyph_width)
+        self,
+        glyph: Optional[int] = None,
+        unicode: Optional[int | tuple[int, ...]] = None,
+        glyph_name: Optional[str] = None,
+        glyph_width: Optional[int] = None,
+    ) -> Optional[Glyph]:
+        if (
+            glyph
+            and unicode is not None
+            and glyph_name is not None
+            and glyph_width is not None
+        ):
+            return Glyph(glyph, unicode, glyph_name, glyph_width)
+        if unicode is None or not isinstance(unicode, int):
+            return None
         glyph_id = self.font.glyph_ids.get(unicode)
         if isinstance(unicode, int) and glyph_id is not None:
             return Glyph(
                 glyph_id,
                 (unicode,),
                 self.font.cmap[unicode],
-                self.font.cw[unicode],
+                int(self.font.cw[unicode]),
             )
         if unicode == 0x00:
             glyph_id = next(iter(self.font.cmap))
             return Glyph(glyph_id, (0x00,), ".notdef", 0)
         if unicode == 0x20:
             glyph_id = next(iter(self.font.cmap))
-            return Glyph(glyph_id, (0x20,), "space", self.font.cw[0x20])
+            return Glyph(glyph_id, (0x20,), "space", int(self.font.cw[0x20]))
         return None
 
-    def get_all_glyph_names(self):
-        return [glyph.glyph_name for glyph in self._char_id_per_glyph]
+    def get_all_glyph_names(self) -> Sequence[str]:
+        return [
+            glyph.glyph_name for glyph in self._char_id_per_glyph if glyph is not None
+        ]
 
 
 # Standard fonts

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from time import perf_counter
 from timeit import timeit
+from tracemalloc import get_traced_memory, is_tracing
 from types import SimpleNamespace
 import functools
 import gc
@@ -14,13 +15,13 @@ import pathlib
 import shutil
 import sys
 import tracemalloc
+from typing import Optional
 import warnings
 
 from subprocess import check_output, CalledProcessError, PIPE
 
 import pytest
 
-from fpdf.util import get_process_rss_as_mib, print_mem_usage
 from fpdf.template import Template
 
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
@@ -62,6 +63,9 @@ EMOJI_TEST_TEXT = (
     "just a tap or two. Looking back, who knew those humble :-P and ;-) would evolve into the expressive rainbow of emojis 🌈 that color "
     "our digital world today?"
 )
+
+# default block size from src/libImaging/Storage.c:
+PIL_MEM_BLOCK_SIZE_IN_MIB = 16
 
 
 def assert_same_file(file1, file2):
@@ -440,3 +444,117 @@ def trace_malloc(request):
         print("[tracemalloc] Top 10 differences:")
         for stat in top_stats[:10]:
             print(stat)
+
+
+################################################################################
+################### Utility functions to track memory usage ####################
+################################################################################
+
+
+def print_mem_usage(prefix: str) -> None:
+    print(get_mem_usage(prefix))
+
+
+def get_mem_usage(prefix: str) -> str:
+    _collected_count = gc.collect()
+    rss = get_process_rss()
+    # heap_size, stack_size = get_process_heap_and_stack_sizes()
+    # objs_size_sum = get_gc_managed_objs_total_size()
+    pillow = get_pillow_allocated_memory()
+    # malloc_stats = "Malloc stats: " + get_pymalloc_allocated_over_total_size()
+    malloc_stats = ""
+    if is_tracing():
+        malloc_stats = "Malloc stats: " + get_tracemalloc_traced_memory()
+    return f"{prefix:<40} {malloc_stats} | Pillow: {pillow} | Process RSS: {rss}"
+
+
+def get_process_rss() -> str:
+    rss_as_mib = get_process_rss_as_mib()
+    if rss_as_mib:
+        return f"{rss_as_mib:.1f} MiB"
+    return "<unavailable>"
+
+
+def get_process_rss_as_mib() -> Optional[float]:
+    "Inspired by psutil source code"
+    pid = os.getpid()
+    try:
+        with open(f"/proc/{pid}/statm", encoding="utf8") as statm:
+            return (
+                int(statm.readline().split()[1])
+                * os.sysconf("SC_PAGE_SIZE")
+                / 1024
+                / 1024
+            )
+    except FileNotFoundError:  # /proc files only exist under Linux
+        return None
+
+
+def get_process_heap_and_stack_sizes() -> tuple[str, str]:
+    heap_size_in_mib, stack_size_in_mib = "<unavailable>", "<unavailable>"
+    pid = os.getpid()
+    try:
+        with open(f"/proc/{pid}/maps", encoding="utf8") as maps_file:
+            maps_lines = list(maps_file)
+    except FileNotFoundError:  # This file only exists under Linux
+        return heap_size_in_mib, stack_size_in_mib
+    for line in maps_lines:
+        words = line.split()
+        addr_range, path = words[0], words[-1]
+        addr_start_str, addr_end_str = addr_range.split("-")
+        addr_start, addr_end = int(addr_start_str, 16), int(addr_end_str, 16)
+        size = addr_end - addr_start
+        if path == "[heap]":
+            heap_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
+        elif path == "[stack]":
+            stack_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
+    return heap_size_in_mib, stack_size_in_mib
+
+
+def get_pymalloc_allocated_over_total_size() -> str:
+    """
+    Get PyMalloc stats from sys._debugmallocstats()
+    From experiments, not very reliable
+    """
+    try:
+        # pylint: disable=import-outside-toplevel
+        from pymemtrace.debug_malloc_stats import get_debugmallocstats
+
+        allocated, total = -1, -1
+        for line in get_debugmallocstats().decode().splitlines():
+            if line.startswith("Total"):
+                total = int(line.split()[-1].replace(",", ""))
+            elif line.startswith("# bytes in allocated blocks"):
+                allocated = int(line.split()[-1].replace(",", ""))
+        return f"{allocated / 1024 / 1024:.1f} / {total / 1024 / 1024:.1f} MiB"
+    except ImportError:
+        warnings.warn("pymemtrace could not be imported - Run: pip install pymemtrace")
+        return "<unavailable>"
+
+
+def get_gc_managed_objs_total_size() -> str:
+    "From experiments, not very reliable"
+    try:
+        # pylint: disable=import-outside-toplevel
+        from pympler.muppy import get_objects, getsizeof
+
+        objs_total_size = sum(getsizeof(obj) for obj in get_objects())
+        return f"{objs_total_size / 1024 / 1024:.1f} MiB"
+    except ImportError:
+        warnings.warn("pympler could not be imported - Run: pip install pympler")
+        return "<unavailable>"
+
+
+def get_tracemalloc_traced_memory() -> str:
+    "Requires python -X tracemalloc"
+    current, peak = get_traced_memory()
+    return f"{current / 1024 / 1024:.1f} (peak={peak / 1024 / 1024:.1f}) MiB"
+
+
+def get_pillow_allocated_memory() -> str:
+    # pylint: disable=c-extension-no-member,import-outside-toplevel
+    from PIL import Image
+
+    stats = Image.core.get_stats()  # type: ignore[attr-defined]
+    blocks_in_use = stats["allocated_blocks"] - stats["freed_blocks"]
+    return f"{blocks_in_use * PIL_MEM_BLOCK_SIZE_IN_MIB:.1f} MiB"

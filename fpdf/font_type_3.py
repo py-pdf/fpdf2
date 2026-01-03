@@ -9,14 +9,26 @@ different color font technologies, including:
 - SVG (fonts with embedded SVG glyphs)
 """
 
+# muting pyright due to too many fontTools issues
+# pyright: reportAttributeAccessIssue=false, reportUnknownVariableType=false, reportPrivateUsage=false
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAssignmentType=false
+
 import logging
 import math
+from collections import UserList
 from io import BytesIO
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Optional,
+    Protocol,
+    Sequence,
+    Union,
+)
 
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
 from fontTools.ttLib.tables.C_O_L_R_ import table_C_O_L_R_
-from collections import UserList
 
 # pylint: disable=no-name-in-module
 from fontTools.ttLib.tables.otTables import (
@@ -30,17 +42,17 @@ from fontTools.ttLib.tables.otTables import (
 )
 from fontTools.varLib.varStore import VarStoreInstancer
 
-from .drawing_primitives import DeviceRGB, DeviceGray, DeviceCMYK, Transform
 from .drawing import (
     BoundingBox,
     ClippingPath,
     GlyphPathPen,
     GradientPaint,
     GraphicsContext,
-    PaintComposite,
     PaintBlendComposite,
+    PaintComposite,
     PaintedPath,
 )
+from .drawing_primitives import DeviceCMYK, DeviceGray, DeviceRGB, Transform
 from .enums import (
     BlendMode,
     CompositingOperation,
@@ -53,6 +65,7 @@ from .pattern import SweepGradient, shape_linear_gradient, shape_radial_gradient
 if TYPE_CHECKING:
     from .fonts import TTFFont
     from .fpdf import FPDF
+    from .svg import SVGObject
 
 LOGGER = logging.getLogger(__name__)
 
@@ -87,34 +100,34 @@ class Type3FontGlyph:
     )
     obj_id: int
     glyph_id: int
-    unicode: Tuple
+    unicode: int
     glyph_name: str
     glyph_width: int
     glyph: str
-    _glyph_bounds: Tuple[int, int, int, int]
+    _glyph_bounds: tuple[int, int, int, int]
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.glyph_id
 
 
 class Type3Font:
 
     def __init__(self, fpdf: "FPDF", base_font: "TTFFont"):
-        self.i = 1
-        self.type = "type3"
-        self.fpdf = fpdf
-        self.base_font = base_font
-        self.upem = self.base_font.ttfont["head"].unitsPerEm
-        self.scale = 1000 / self.upem
-        self.images_used = set()
-        self.graphics_style_used = set()
-        self.patterns_used = set()
-        self.glyphs: List[Type3FontGlyph] = []
+        self.i: int = 1
+        self.type: str = "type3"
+        self.fpdf: "FPDF" = fpdf
+        self.base_font: "TTFFont" = base_font
+        self.upem: int = self.base_font.ttfont["head"].unitsPerEm
+        self.scale: float = 1000 / self.upem  # pyright: ignore[reportUnknownMemberType]
+        self.images_used: set[int] = set()
+        self.graphics_style_used: set[str] = set()
+        self.patterns_used: set[str] = set()
+        self.glyphs: list[Type3FontGlyph] = []
 
-    def get_notdef_glyph(self, glyph_id) -> Type3FontGlyph:
+    def get_notdef_glyph(self, glyph_id: int) -> Type3FontGlyph:
         notdef = Type3FontGlyph()
         notdef.glyph_id = glyph_id
         notdef.unicode = glyph_id
@@ -123,7 +136,7 @@ class Type3Font:
         notdef.glyph = f"{round(notdef.glyph_width * self.scale + 0.001)} 0 d0"
         return notdef
 
-    def get_space_glyph(self, glyph_id) -> Type3FontGlyph:
+    def get_space_glyph(self, glyph_id: int) -> Type3FontGlyph:
         space = Type3FontGlyph()
         space.glyph_id = glyph_id
         space.unicode = 0x20
@@ -137,7 +150,7 @@ class Type3Font:
         space.glyph = f"{round(space.glyph_width * self.scale + 0.001)} 0 d0"
         return space
 
-    def load_glyphs(self):
+    def load_glyphs(self) -> None:
         WHITES = {
             0x0009,
             0x000A,
@@ -162,6 +175,8 @@ class Type3Font:
             0x3000,
         }
         for glyph, char_id in self.base_font.subset.items():
+            if glyph is None:
+                continue
             if glyph.unicode in WHITES or glyph.glyph_name in ("space", "uni00A0"):
                 self.glyphs.append(self.get_space_glyph(char_id))
                 continue
@@ -173,7 +188,7 @@ class Type3Font:
                 continue
             self.add_glyph(glyph.glyph_name, char_id)
 
-    def add_glyph(self, glyph_name, char_id):
+    def add_glyph(self, glyph_name: str, char_id: int) -> None:
         g = Type3FontGlyph()
         g.glyph_id = char_id
         g.unicode = char_id
@@ -182,7 +197,7 @@ class Type3Font:
         self.glyphs.append(g)
 
     @classmethod
-    def get_target_ppem(cls, font_size_pt: int) -> int:
+    def get_target_ppem(cls, font_size_pt: float) -> float:
         # Calculating the target ppem:
         # https://learn.microsoft.com/en-us/typography/opentype/spec/ttch01#display-device-characteristics
         # ppem = point_size * dpi / 72
@@ -190,7 +205,7 @@ class Type3Font:
         # so we can simplify the calculation.
         return font_size_pt
 
-    def load_glyph_image(self, glyph: Type3FontGlyph):
+    def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
         raise NotImplementedError("Method must be implemented on child class")
 
     def glyph_exists(self, glyph_name: str) -> bool:
@@ -221,11 +236,22 @@ class SVGColorFont(Type3Font):
         bio = BytesIO(glyph_svg_data)
         bio.seek(0)
         _, img, _ = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+        if TYPE_CHECKING:
+            assert isinstance(img, SVGObject)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         img.base_group.transform = Transform.scaling(self.scale, self.scale)
         output_stream = self.fpdf.draw_vector_glyph(img.base_group, self)
         glyph.glyph = f"{round(w * self.scale)} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
         glyph.glyph_width = w
+
+
+class ColrV0Layer(Protocol):
+    name: str
+    colorID: int
+
+
+class ColrV1Paint(Protocol):
+    Paint: Paint
 
 
 class COLRFont(Type3Font):
@@ -243,11 +269,13 @@ class COLRFont(Type3Font):
     drawing API to render the glyphs as vector graphics.
     """
 
-    def __init__(self, fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0):
+    def __init__(
+        self, fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0
+    ) -> None:
         super().__init__(fpdf, base_font)
         colr_table: table_C_O_L_R_ = self.base_font.ttfont["COLR"]
-        self.colrv0_glyphs = []
-        self.colrv1_glyphs = []
+        self.colrv0_glyphs: dict[str, tuple[ColrV0Layer]] = {}
+        self.colrv1_glyphs: dict[str, ColrV1Paint] = {}
         self.version = colr_table.version
         self.colrv1_clip_boxes = {}
         self.colr_var_instancer = None
@@ -333,7 +361,9 @@ class COLRFont(Type3Font):
         glyph.glyph = f"{round(w * self.scale)} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
         glyph.glyph_width = w
 
-    def get_color(self, color_index: int, alpha=1) -> DeviceRGB:
+    def get_color(self, color_index: int, alpha: float = 1) -> DeviceRGB:
+        if self.palette is None:  # should never happen
+            return DeviceRGB(0, 0, 0, 1)
         if color_index == 0xFFFF:
             # Palette entry 0xFFFF requests the application text foreground color.
             text_color = getattr(self.fpdf, "text_color", DeviceGray(0))
@@ -357,7 +387,7 @@ class COLRFont(Type3Font):
         a *= alpha
         return DeviceRGB(r, g, b, a)
 
-    def draw_glyph_colrv0(self, layers):
+    def draw_glyph_colrv0(self, layers: Sequence[ColrV0Layer]) -> GraphicsContext:
         gc = GraphicsContext()
         for layer in layers:
             path = PaintedPath()
@@ -367,10 +397,10 @@ class COLRFont(Type3Font):
             glyph.draw(pen)
             path.style.fill_color = self.get_color(layer.colorID)
             path.style.stroke_color = self.get_color(layer.colorID)
-            gc.add_item(item=path, _copy=False)
+            gc.add_item(item=path, clone=False)
         return gc
 
-    def draw_glyph_colrv1(self, glyph_name):
+    def draw_glyph_colrv1(self, glyph_name: str) -> GraphicsContext:
         gc = GraphicsContext()
         clip_path = self._build_clip_path(glyph_name)
         if clip_path is not None:
@@ -392,15 +422,15 @@ class COLRFont(Type3Font):
         parent: GraphicsContext,
         target_path: Optional[PaintedPath] = None,
         ctm: Optional[Transform] = None,
-        visited_glyphs: Optional[set] = None,
-    ) -> Tuple[GraphicsContext, Optional[PaintedPath]]:
+        visited_glyphs: Optional[set[str]] = None,
+    ) -> tuple[GraphicsContext, Optional[PaintedPath]]:
         """
         Draw a COLRv1 Paint object into the given GraphicsContext.
         This is an implementation of the COLR version 1 rendering algorithm:
         https://learn.microsoft.com/en-us/typography/opentype/spec/colr#colr-version-1-rendering-algorithm
         """
         paint = self._unwrap_paint(paint)
-        ctm: Transform = ctm or Transform.identity()
+        ctm = ctm or Transform.identity()
 
         if visited_glyphs is None:
             visited_glyphs = set()
@@ -417,7 +447,7 @@ class COLRFont(Type3Font):
                     ctm=ctm,
                     visited_glyphs=visited_glyphs,
                 )
-            parent.add_item(item=group, _copy=False)
+            parent.add_item(item=group, clone=False)
             return parent, target_path
 
         if paint.Format in (
@@ -433,7 +463,7 @@ class COLRFont(Type3Font):
             return parent, target_path
 
         if paint.Format == PaintFormat.PaintLinearGradient:
-            stops = [
+            stops: list[tuple[float, DeviceRGB]] = [
                 (stop.StopOffset, self.get_color(stop.PaletteIndex, stop.Alpha))
                 for stop in paint.ColorLine.ColorStop
             ]
@@ -443,7 +473,7 @@ class COLRFont(Type3Font):
                 spread_method = GradientSpreadMethod.REPEAT
             else:  # PAD
                 spread_method = GradientSpreadMethod.PAD
-            gradient = shape_linear_gradient(
+            linear_gradient = shape_linear_gradient(
                 paint.x0,
                 paint.y0,
                 paint.x1,
@@ -452,7 +482,7 @@ class COLRFont(Type3Font):
             )
             target_path = target_path or self.get_paint_surface()
             target_path.style.fill_color = GradientPaint(
-                gradient=gradient,
+                gradient=linear_gradient,
                 units=GradientUnits.USER_SPACE_ON_USE,
                 gradient_transform=ctm,
                 apply_page_ctm=False,
@@ -468,10 +498,10 @@ class COLRFont(Type3Font):
                 for cs in paint.ColorLine.ColorStop
             ]
             t_min, t_max, norm_stops = _normalize_color_line(raw)
-            c0 = (paint.x0, paint.y0)
-            r0 = paint.r0
-            c1 = (paint.x1, paint.y1)
-            r1 = paint.r1
+            c0: tuple[float, float] = (paint.x0, paint.y0)
+            r0: float = paint.r0
+            c1: tuple[float, float] = (paint.x1, paint.y1)
+            r1: float = paint.r1
             (fx, fy) = _lerp_pt(c0, c1, t_min)
             (cx, cy) = _lerp_pt(c0, c1, t_max)
             fr = max(_lerp(r0, r1, t_min), 0.0)
@@ -482,7 +512,7 @@ class COLRFont(Type3Font):
                 spread_method = GradientSpreadMethod.REPEAT
             else:  # PAD
                 spread_method = GradientSpreadMethod.PAD
-            gradient = shape_radial_gradient(
+            radial_gradient = shape_radial_gradient(
                 cx=cx,
                 cy=cy,
                 r=r,
@@ -493,7 +523,7 @@ class COLRFont(Type3Font):
             )
             target_path = target_path or self.get_paint_surface()
             target_path.style.fill_color = GradientPaint(
-                gradient=gradient,
+                gradient=radial_gradient,
                 units=GradientUnits.USER_SPACE_ON_USE,
                 gradient_transform=ctm,
                 apply_page_ctm=False,
@@ -529,7 +559,7 @@ class COLRFont(Type3Font):
             )
 
             # Build a lazy sweep gradient object (bbox-resolved at emit time)
-            gradient = SweepGradient(
+            sweep_gradient = SweepGradient(
                 cx=cx,
                 cy=cy,
                 start_angle=start_angle,
@@ -542,7 +572,7 @@ class COLRFont(Type3Font):
 
             target_path = target_path or self.get_paint_surface()
             target_path.style.fill_color = GradientPaint(
-                gradient=gradient,
+                gradient=sweep_gradient,
                 units=GradientUnits.USER_SPACE_ON_USE,
                 gradient_transform=ctm,
                 apply_page_ctm=False,
@@ -573,12 +603,12 @@ class COLRFont(Type3Font):
                 visited_glyphs=visited_glyphs,
             )
             if surface_path is not None:
-                group.add_item(item=surface_path, _copy=False)
-            parent.add_item(item=group, _copy=False)
+                group.add_item(item=surface_path, clone=False)
+            parent.add_item(item=group, clone=False)
             return parent, None
 
         if paint.Format == PaintFormat.PaintColrGlyph:
-            ref = getattr(paint, "Glyph", None) or getattr(paint, "GlyphID", None)
+            ref: str = getattr(paint, "Glyph", None) or getattr(paint, "GlyphID", None)  # type: ignore[assignment]
             if isinstance(ref, int):
                 ref_name = self.base_font.ttfont.getGlyphName(ref)
             else:
@@ -602,7 +632,7 @@ class COLRFont(Type3Font):
                     ctm=ctm,
                     visited_glyphs=visited_glyphs,
                 )
-                parent.add_item(item=group, _copy=False)
+                parent.add_item(item=group, clone=False)
             finally:
                 visited_glyphs.remove(ref_name)
             return parent, target_path
@@ -655,7 +685,7 @@ class COLRFont(Type3Font):
                 visited_glyphs=visited_glyphs,
             )
             if backdrop_path is not None:
-                backdrop_node.add_item(item=backdrop_path, _copy=False)
+                backdrop_node.add_item(item=backdrop_path, clone=False)
 
             source_node = GraphicsContext()
             _, source_path = self.draw_colrv1_paint(
@@ -665,25 +695,31 @@ class COLRFont(Type3Font):
                 visited_glyphs=visited_glyphs,
             )
             if source_path is not None:
-                source_node.add_item(item=source_path, _copy=False)
+                source_node.add_item(item=source_path, clone=False)
 
             composite_type, composite_mode = self.get_composite_mode(
                 paint.CompositeMode
             )
             if composite_type == "Blend":
+                if TYPE_CHECKING:
+                    assert isinstance(composite_mode, BlendMode)
                 parent.add_item(
                     item=PaintBlendComposite(
                         backdrop=backdrop_node,
                         source=source_node,
                         blend_mode=composite_mode,
                     ),
-                    _copy=False,
+                    clone=False,
                 )
             elif composite_type == "Compositing":
+                if TYPE_CHECKING:
+                    assert isinstance(composite_mode, CompositeMode)
                 composite_node = PaintComposite(
-                    backdrop=backdrop_node, source=source_node, operation=composite_mode
+                    backdrop=backdrop_node,
+                    source=source_node,
+                    operation=composite_mode,  # pyright: ignore[reportArgumentType]
                 )
-                parent.add_item(item=composite_node, _copy=False)
+                parent.add_item(item=composite_node, clone=False)
             else:
                 raise ValueError("Composite operation not supported - {composite_type}")
             return parent, None
@@ -691,7 +727,7 @@ class COLRFont(Type3Font):
         raise NotImplementedError(f"Unknown PaintFormat: {paint.Format}")
 
     @classmethod
-    def _sweep_angles(cls, start_deg: float, end_deg: float) -> Tuple[float, float]:
+    def _sweep_angles(cls, start_deg: float, end_deg: float) -> tuple[float, float]:
         start_norm = math.fmod(start_deg, 360.0)
         if start_norm < 0.0:
             start_norm += 360.0
@@ -772,7 +808,12 @@ class COLRFont(Type3Font):
         return paint_surface
 
     @classmethod
-    def get_composite_mode(cls, composite_mode: CompositeMode):
+    def get_composite_mode(
+        cls, composite_mode: CompositeMode
+    ) -> (
+        tuple[Literal["Compositing"], CompositingOperation]
+        | tuple[Literal["Blend"], BlendMode]
+    ):
         """Get the FPDF BlendMode for a given CompositeMode."""
 
         map_compositing_operation = {
@@ -818,7 +859,7 @@ class COLRFont(Type3Font):
 
         raise NotImplementedError(f"Unknown composite mode: {composite_mode}")
 
-    def _unwrap_paint(self, paint: Paint) -> Paint:
+    def _unwrap_paint(self, paint: Paint) -> Union[Paint, "VarTableWrapper"]:
         mapped_format = PAINT_VAR_MAPPING.get(paint.Format)
         if mapped_format is None or self.colr_var_instancer is None:
             return paint
@@ -839,7 +880,9 @@ class COLRFont(Type3Font):
         clip_path.rectangle(x_min, y_min, x_max - x_min, y_max - y_min)
         return clip_path
 
-    def _resolve_clip_box(self, clip) -> Optional[tuple]:
+    def _resolve_clip_box(
+        self, clip: Any
+    ) -> Optional[tuple[float, float, float, float]]:
         if clip is None:
             return None
         if (
@@ -860,11 +903,11 @@ class COLRFont(Type3Font):
 class VarTableWrapper:
     def __init__(
         self,
-        wrapped,
+        wrapped: Any,
         instancer: VarStoreInstancer,
-        var_index_map=None,
+        var_index_map: Any = None,
         format_override: Optional[int] = None,
-    ):
+    ) -> None:
         assert not isinstance(wrapped, VarTableWrapper)
         self._wrapped = wrapped
         self._instancer = instancer
@@ -874,10 +917,10 @@ class VarTableWrapper:
             attr: idx for idx, attr in enumerate(wrapped.getVariableAttrs())
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"VarTableWrapper({self._wrapped!r})"
 
-    def _get_var_index_for_attr(self, attr_name):
+    def _get_var_index_for_attr(self, attr_name: str) -> Any:
         offset = self._var_attrs.get(attr_name)
         if offset is None:
             return None
@@ -892,14 +935,14 @@ class VarTableWrapper:
                 pass
         return var_idx
 
-    def _get_delta_for_attr(self, attr_name, var_idx):
+    def _get_delta_for_attr(self, attr_name: str, var_idx: Any) -> Any:
         delta = self._instancer[var_idx]
         converter = self._wrapped.getConverterByName(attr_name)
         if hasattr(converter, "fromInt"):
             delta = converter.fromInt(delta)
         return delta
 
-    def __getattr__(self, attr_name):
+    def __getattr__(self, attr_name: str) -> Any:
         if attr_name == "Format" and self._format_override is not None:
             return self._format_override
 
@@ -962,7 +1005,7 @@ class CBDTColorFont(Type3Font):
             f"{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n"
             f"/I{info['i']} Do\nQ"
         )
-        self.images_used.add(info["i"])
+        self.images_used.add(info["i"])  # type: ignore[arg-type]
         glyph.glyph_width = w
 
 
@@ -975,17 +1018,17 @@ class SBIXColorFont(Type3Font):
             .strikes[self.get_strike_index()]
             .glyphs.get(glyph_name)
         )
-        return glyph and glyph.graphicType
+        return glyph is not None and glyph.graphicType is not None
 
     def get_strike_index(self) -> int:
         target_ppem = self.get_target_ppem(self.base_font.biggest_size_pt)
-        ppem_list = [
+        ppem_list: list[int] = [
             ppem
             for ppem in self.base_font.ttfont["sbix"].strikes.keys()
             if ppem >= target_ppem
         ]
         if not ppem_list:
-            return max(list(self.base_font.ttfont["sbix"].strikes.keys()))
+            return max(list(self.base_font.ttfont["sbix"].strikes.keys()))  # type: ignore[no-any-return]
         return min(ppem_list)
 
     def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
@@ -1011,6 +1054,7 @@ class SBIXColorFont(Type3Font):
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyf_metrics = self.base_font.ttfont["glyf"].get(glyph.glyph_name)
+        assert glyf_metrics is not None
         x_min = glyf_metrics.xMin + sbix_glyph.originOffsetX
         x_max = glyf_metrics.xMax + sbix_glyph.originOffsetX
         y_min = glyf_metrics.yMin + sbix_glyph.originOffsetY
@@ -1022,7 +1066,7 @@ class SBIXColorFont(Type3Font):
             f"{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n"
             f"/I{info['i']} Do\nQ"
         )
-        self.images_used.add(info["i"])
+        self.images_used.add(info["i"])  # type: ignore[arg-type]
         glyph.glyph_width = w
 
 
@@ -1051,19 +1095,25 @@ def get_color_font_object(
     return None
 
 
-def _lerp(a, b, t):
+def _lerp(a: float, b: float, t: float) -> float:
+    """ "Scalar linear interpolation"""
     return a + (b - a) * t
 
 
-def _lerp_pt(p0, p1, t):
+def _lerp_pt(
+    p0: tuple[float, float], p1: tuple[float, float], t: float
+) -> tuple[float, float]:
+    """2d vector interpolation"""
     return (_lerp(p0[0], p1[0], t), _lerp(p0[1], p1[1], t))
 
 
-def _normalize_color_line(stops):
+def _normalize_color_line(
+    stops: list[tuple[float, DeviceRGB]],
+) -> tuple[float, float, list[tuple[float, DeviceRGB]]]:
     # stops: list[(offset, DeviceRGB)]
     s = sorted(((max(0.0, min(1.0, t)), c) for t, c in stops), key=lambda x: x[0])
     # collapse identical offsets (last wins per spec-ish behavior)
-    out = []
+    out: list[tuple[float, DeviceRGB]] = []
     for t, c in s:
         if out and abs(out[-1][0] - t) < 1e-6:
             out[-1] = (t, c)
