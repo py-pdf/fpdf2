@@ -67,3 +67,4 @@ nosetests.xml
 *.*~
 *.swo
 *.swp
+test/mpl_renderer/generated_pdf/*.pdf
