@@ -490,7 +490,7 @@ def get_img_info(
 
     if not is_pil_img:
         if keep_bytes_io_open:
-            img.fp = None
+            setattr(img, "fp", None)
         else:
             img.close()
 
