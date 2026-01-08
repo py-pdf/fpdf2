@@ -93,6 +93,19 @@ In case of special "false positive" cases,
 checks can be disabled locally with `#pylint disable=XXX` code comments,
 or globally through the `.pylintrc` file.
 
+## Static typing
+Strict typing is enforced in CI with `mypy` and `pyright` (see `pyproject.toml`). Run them locally before pushing, or enable the pre-commit hook so they run automatically:
+```
+pip install fpdf2[dev]
+mypy
+pyright
+```
+
+General guidelines:
+- Use `# type: ignore[...]` sparingly
+- Prefer real types over `Any`
+- Keep casts to unavoidable spots
+
 ## Pre-commit hook
 This project uses `git` **pre-commit hooks**: https://pre-commit.com
 

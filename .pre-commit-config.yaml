@@ -23,6 +23,34 @@ repos:
     rev: v1.30.2
     hooks:
       - id: typos
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.19.0'
+    hooks:
+      - id: mypy
+        args:
+          - --config-file=./pyproject.toml
+        files: ^fpdf/.*\.py$
+        additional_dependencies:
+          - cryptography
+          - defusedxml
+          - endesive
+          - fonttools
+          - numpy
+          - Pillow
+          - uharfbuzz
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.407
+    hooks:
+      - id: pyright
+        files: ^fpdf/.*\.py$
+        additional_dependencies:
+          - cryptography
+          - defusedxml
+          - endesive
+          - fonttools
+          - numpy
+          - Pillow
+          - uharfbuzz
   - repo: local
     hooks:
     -   id: no-print-in-sources

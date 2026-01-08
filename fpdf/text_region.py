@@ -3,15 +3,31 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/TextRegion.html>
 """
 
 import math
-from typing import NamedTuple, Sequence, List, NewType
+from abc import ABC, abstractmethod
+from types import TracebackType
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Type,
+    Union,
+    cast,
+)
 
+from .enums import Align, WrapMode, XPos, YPos
 from .errors import FPDFException
-from .enums import Align, XPos, YPos, WrapMode
-from .image_datastructures import VectorImageInfo
+from .image_datastructures import RasterImageInfo, VectorImageInfo
 from .image_parsing import preload_image
-from .line_break import MultiLineBreak, FORM_FEED
+from .line_break import FORM_FEED, MultiLineBreak
 from .util import get_scale_factor
 
+if TYPE_CHECKING:
+    from .fpdf import FPDF
+    from .line_break import Fragment, TextLine
+    from .svg import SVGObject
+    from .util import ImageData
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -22,25 +38,26 @@ class Extents(NamedTuple):
     right: float
 
 
-class TextRegionMixin:
+class TextRegionMixin(ABC):
     """Mix-in to be added to FPDF() in order to support text regions."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.__current_text_region: Optional["TextRegion"] = None
         self.clear_text_region()
         super().__init__(*args, **kwargs)
 
-    def register_text_region(self, region):
-        self.__current_text_region = region
+    def register_text_region(
+        self, region: Union["TextRegion", "ParagraphCollectorMixin"]
+    ) -> None:
+        self.__current_text_region = cast("TextRegion", region)
 
-    def is_current_text_region(self, region):
+    def is_current_text_region(
+        self, region: Union["TextRegion", "ParagraphCollectorMixin"]
+    ) -> bool:
         return self.__current_text_region == region
 
-    def clear_text_region(self):
+    def clear_text_region(self) -> None:
         self.__current_text_region = None
-
-
-# forward declaration for LineWrapper.
-Paragraph = NewType("Paragraph", None)
 
 
 class LineWrapper(NamedTuple):
@@ -49,8 +66,8 @@ class LineWrapper(NamedTuple):
     top/bottom margins when rendering the line.
     """
 
-    line: Sequence
-    paragraph: Paragraph
+    line: "TextLine"
+    paragraph: "Paragraph"
     first_line: bool = False
     last_line: bool = False
 
@@ -58,46 +75,47 @@ class LineWrapper(NamedTuple):
 class Bullet:
     def __init__(
         self,
-        bullet_fragments,
-        text_line,
-        bullet_r_margin,
-    ):
-        self.fragments = bullet_fragments
+        bullet_fragments: Sequence["Fragment"],
+        text_line: Optional["TextLine"],
+        bullet_r_margin: float,
+    ) -> None:
+        self.fragments: Sequence["Fragment"] = bullet_fragments
         self.text_line = text_line
         self.r_margin = bullet_r_margin
-        self.rendered_flag = False
+        self.rendered_flag: bool = False
 
-    def get_fragments_width(self):
-        fragments_width = 0
+    def get_fragments_width(self) -> float:
+        fragments_width: float = 0
         for frag in self.fragments:
             fragments_width += frag.get_width()
         return fragments_width
 
 
-class Paragraph:  # pylint: disable=function-redefined
+class Paragraph:
     def __init__(
         self,
-        region,
-        text_align=None,
-        line_height=None,
+        region: Union["TextRegion", "ParagraphCollectorMixin"],
+        text_align: Optional[str | Align] = None,
+        line_height: Optional[float] = None,
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: float = 0,
-        bullet_r_margin=None,
+        bullet_r_margin: Optional[float] = None,
         bullet_string: str = "",
         skip_leading_spaces: bool = False,
-        wrapmode: WrapMode = None,
+        wrapmode: Optional[WrapMode] = None,
         first_line_indent: float = 0,
     ):
         self._region = region
-        self.pdf = region.pdf
+        self.pdf: "FPDF" = region.pdf
+        self.text_align: Optional[Align] = None
         if text_align:
-            text_align = Align.coerce(text_align)
-            if text_align not in (Align.L, Align.C, Align.R, Align.J):
+            text_align_conv: Align = Align.coerce(text_align)
+            if text_align_conv not in (Align.L, Align.C, Align.R, Align.J):
                 raise ValueError(
-                    f"Text_align must be 'LEFT', 'CENTER', 'RIGHT', or 'JUSTIFY', not '{text_align.value}'."
+                    f"Text_align must be 'LEFT', 'CENTER', 'RIGHT', or 'JUSTIFY', not '{text_align_conv.value}'."
                 )
-        self.text_align = text_align
+            self.text_align = text_align_conv
         if line_height is None:
             self.line_height = region.line_height
         else:
@@ -110,52 +128,70 @@ class Paragraph:  # pylint: disable=function-redefined
             self.wrapmode = self._region.wrapmode
         else:
             self.wrapmode = WrapMode.coerce(wrapmode)
-        self._text_fragments = []
+        self._text_fragments: list["Fragment"] = []
         if bullet_r_margin is None:
             # Default value of 2 to be multiplied by the conversion factor
             # for bullet_r_margin is given in mm
             bullet_r_margin = 2 * get_scale_factor("mm") / self.pdf.k
         if bullet_string:
-            self.bullet = Bullet(
-                *self.generate_bullet_frags_and_tl(bullet_string, bullet_r_margin),
-                bullet_r_margin,
+            bullet_frags_and_tl = self.generate_bullet_frags_and_tl(
+                bullet_string, bullet_r_margin
+            )
+            assert isinstance(bullet_frags_and_tl, tuple)
+            self.bullet: Optional[Bullet] = Bullet(
+                bullet_frags_and_tl[0], bullet_frags_and_tl[1], bullet_r_margin
             )
         else:
             self.bullet = None
         self.first_line_indent = first_line_indent
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"Paragraph(text_align={self.text_align}, line_height={self.line_height}, top_margin={self.top_margin},"
             f" bottom_margin={self.bottom_margin}, skip_leading_spaces={self.skip_leading_spaces}, wrapmode={self.wrapmode},"
             f" #text_fragments={len(self._text_fragments)})"
         )
 
-    def __enter__(self):
+    def __enter__(self) -> "Paragraph":
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self._region.end_paragraph()
 
-    def write(self, text: str, link=None):
+    def write(self, text: str, link: Optional[str | int] = None) -> None:
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         normalized_string = self.pdf.normalize_text(text).replace("\r", "")
         # YYY _preload_font_styles() should accept a "link" argument.
-        fragments = self.pdf._preload_font_styles(normalized_string, markdown=False)
+        fragments = (
+            self.pdf._preload_font_styles(  # pyright: ignore[reportPrivateUsage]
+                normalized_string, markdown=False
+            )
+        )
         if link:
             for frag in fragments:
                 frag.link = link
         self._text_fragments.extend(fragments)
 
-    def generate_bullet_frags_and_tl(self, bullet_string: str, bullet_r_margin: float):
+    def generate_bullet_frags_and_tl(
+        self, bullet_string: str, bullet_r_margin: float
+    ) -> Optional[tuple[Sequence["Fragment"], Optional["TextLine"]]]:
         if not bullet_string:
             return None
         bullet_string = self.pdf.normalize_text(bullet_string)
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
-        bullet_fragments = self.pdf._preload_font_styles(bullet_string, markdown=False)
-        fragments_width = 0
+        bullet_fragments = (
+            self.pdf._preload_font_styles(  # pyright: ignore[reportPrivateUsage]
+                bullet_string, markdown=False
+            )
+        )
+        fragments_width: float = 0
         for frag in bullet_fragments:
             fragments_width += frag.get_width()
         bullet_line_break = MultiLineBreak(
@@ -174,17 +210,21 @@ class Paragraph:  # pylint: disable=function-redefined
         bullet_text_line = bullet_line_break.get_line()
         return bullet_fragments, bullet_text_line
 
-    def ln(self, h=None):
+    def ln(self, h: Optional[float] = None) -> None:
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if h is None:
             h = self.pdf.font_size * self.line_height
-        fragment = self.pdf._preload_font_styles("\n", markdown=False)[0]
+        fragment = self.pdf._preload_font_styles(  # pyright: ignore[reportPrivateUsage]
+            "\n", markdown=False
+        )[  # pyright: ignore[reportPrivateUsage]
+            0
+        ]
         fragment.graphics_state["font_size_pt"] = h * fragment.k
         self._text_fragments.append(fragment)
 
-    def build_lines(self, print_sh) -> List[LineWrapper]:
-        text_lines = []
+    def build_lines(self, print_sh: bool) -> list[LineWrapper]:
+        text_lines: list[LineWrapper] = []
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self._region.get_width,
@@ -216,28 +256,29 @@ class Paragraph:  # pylint: disable=function-redefined
 class ImageParagraph:
     def __init__(
         self,
-        region,
-        name,
-        align=None,
-        width: float = None,
-        height: float = None,
+        region: Union["TextRegion", "ParagraphCollectorMixin"],
+        name: str,
+        align: Optional[str | Align] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         fill_width: bool = False,
-        keep_aspect_ratio=False,
-        top_margin=0,
-        bottom_margin=0,
-        link=None,
-        title=None,
-        alt_text=None,
-    ):
+        keep_aspect_ratio: bool = False,
+        top_margin: float = 0,
+        bottom_margin: float = 0,
+        link: Optional[str | int] = None,
+        title: Optional[str] = None,
+        alt_text: Optional[str] = None,
+    ) -> None:
         self.region = region
         self.name = name
+        self.align: Optional[Align] = None
         if align:
-            align = Align.coerce(align)
-            if align not in (Align.L, Align.C, Align.R):
+            align_conv = Align.coerce(align)
+            if align_conv not in (Align.L, Align.C, Align.R):
                 raise ValueError(
-                    f"Align must be 'LEFT', 'CENTER', or 'RIGHT', not '{align.value}'."
+                    f"Align must be 'LEFT', 'CENTER', or 'RIGHT', not '{align_conv.value}'."
                 )
-        self.align = align
+            self.align = align_conv
         self.width = width
         self.height = height
         self.fill_width = fill_width
@@ -247,9 +288,11 @@ class ImageParagraph:
         self.link = link
         self.title = title
         self.alt_text = alt_text
-        self.img = self.info = None
+        self.img: Optional[ImageData] = None
+        self.info: Optional[RasterImageInfo | VectorImageInfo] = None
+        self.line: ImageParagraph = self
 
-    def build_line(self):
+    def build_line(self) -> "ImageParagraph":
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
         self.name, self.img, self.info = preload_image(
@@ -257,28 +300,33 @@ class ImageParagraph:
         )
         return self
 
-    def render(self, col_left, col_width, max_height):
-        if not self.img:
+    def render(
+        self, col_left: float, col_width: float, max_height: float
+    ) -> Optional[RasterImageInfo | VectorImageInfo]:
+        if self.info is None:
             raise RuntimeError(
                 "ImageParagraph.build_line() must be called before render()."
             )
         is_svg = isinstance(self.info, VectorImageInfo)
-
-        # pylint: disable=possibly-used-before-assignment
+        native_h = h = float(0)
         if self.height:
             h = self.height
         else:
-            native_h = self.info["h"] / self.region.pdf.k
+            native_h = cast(float, self.info["h"]) / self.region.pdf.k
         if self.width:
             w = self.width
         else:
-            native_w = self.info["w"] / self.region.pdf.k
+            native_w: float = cast(float, self.info["w"]) / self.region.pdf.k
             if native_w > col_width or self.fill_width:
                 w = col_width
             else:
                 w = native_w
         if not self.height:
-            h = w * native_h / native_w
+            h = (
+                w
+                * native_h
+                / native_w  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
         if h > max_height:
             return None
         x = col_left
@@ -287,11 +335,31 @@ class ImageParagraph:
                 x += col_width - w
             elif self.align == Align.C:
                 x += (col_width - w) / 2
+        return_info: VectorImageInfo | RasterImageInfo
         if is_svg:
-            return self.region.pdf._vector_image(
+            return_info = (
+                self.region.pdf._vector_image(  # pyright: ignore[reportPrivateUsage]
+                    name=self.name,
+                    svg=cast("SVGObject", self.img),
+                    info=cast(VectorImageInfo, self.info),
+                    x=x,
+                    y=None,
+                    w=w,
+                    h=h,
+                    link=self.link,
+                    title=self.title,
+                    alt_text=self.alt_text,
+                    keep_aspect_ratio=self.keep_aspect_ratio,
+                )
+            )
+            return return_info
+        if TYPE_CHECKING:
+            assert not isinstance(self.img, SVGObject) and self.img is not None
+        return_info = (
+            self.region.pdf._raster_image(  # pyright: ignore[reportPrivateUsage]
                 name=self.name,
-                svg=self.img,
-                info=self.info,
+                img=self.img,
+                info=cast(RasterImageInfo, self.info),
                 x=x,
                 y=None,
                 w=w,
@@ -299,39 +367,28 @@ class ImageParagraph:
                 link=self.link,
                 title=self.title,
                 alt_text=self.alt_text,
+                dims=None,
                 keep_aspect_ratio=self.keep_aspect_ratio,
             )
-        return self.region.pdf._raster_image(
-            name=self.name,
-            img=self.img,
-            info=self.info,
-            x=x,
-            y=None,
-            w=w,
-            h=h,
-            link=self.link,
-            title=self.title,
-            alt_text=self.alt_text,
-            dims=None,
-            keep_aspect_ratio=self.keep_aspect_ratio,
         )
+        return return_info
 
 
-class ParagraphCollectorMixin:
+class ParagraphCollectorMixin(ABC):
     def __init__(
         self,
-        pdf,
-        *args,
-        text=None,
-        text_align="LEFT",
+        pdf: "FPDF",
+        *args: Any,
+        text: Optional[str] = None,
+        text_align: str | Align = "LEFT",
         line_height: float = 1.0,
         print_sh: bool = False,
         skip_leading_spaces: bool = False,
-        wrapmode: WrapMode = None,
-        img=None,
-        img_fill_width=False,
-        **kwargs,
-    ):
+        wrapmode: Optional[WrapMode] = None,
+        img: Optional[str] = None,
+        img_fill_width: bool = False,
+        **kwargs: Any,
+    ) -> None:
         self.pdf = pdf
         self.text_align = Align.coerce(text_align)  # default for auto paragraphs
         if self.text_align not in (Align.L, Align.C, Align.R, Align.J):
@@ -340,34 +397,41 @@ class ParagraphCollectorMixin:
             )
         self.line_height = line_height
         self.print_sh = print_sh
-        self.wrapmode = WrapMode.coerce(wrapmode)
+        self.wrapmode = (
+            WrapMode.coerce(wrapmode) if wrapmode is not None else WrapMode.CHAR
+        )
         self.skip_leading_spaces = skip_leading_spaces
-        self._paragraphs = []
-        self._active_paragraph = None
-        super().__init__(pdf, *args, **kwargs)
+        self._paragraphs: list[Paragraph | ImageParagraph] = []
+        self._active_paragraph: Optional[str] = None
+        super().__init__(pdf, *args, **kwargs)  # type: ignore[call-arg]
         if text:
             self.write(text)
         if img:
             self.image(img, fill_width=img_fill_width)
 
-    def __enter__(self):
+    def __enter__(self) -> "ParagraphCollectorMixin":
         if self.pdf.is_current_text_region(self):
             raise FPDFException(
                 f"Unable to enter the same {self.__class__.__name__} context recursively."
             )
         self._page = self.pdf.page
-        self.pdf._push_local_stack()
+        self.pdf._push_local_stack()  # pyright: ignore[reportPrivateUsage]
         self.pdf.page = 0
         self.pdf.register_text_region(self)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.pdf.clear_text_region()
         self.pdf.page = self._page
-        self.pdf._pop_local_stack()
+        self.pdf._pop_local_stack()  # pyright: ignore[reportPrivateUsage]
         self.render()
 
-    def _check_paragraph(self):
+    def _check_paragraph(self) -> None:
         if self._active_paragraph == "EXPLICIT":
             raise FPDFException(
                 "Conflicts with active paragraph. Either close the current paragraph or write your text inside it."
@@ -381,27 +445,33 @@ class ParagraphCollectorMixin:
             self._paragraphs.append(p)
             self._active_paragraph = "AUTO"
 
-    def write(self, text: str, link=None):  # pylint: disable=unused-argument
+    def write(
+        self,
+        text: str,
+        link: Optional[str | int] = None,  # pylint: disable=unused-argument
+    ) -> None:
         self._check_paragraph()
-        self._paragraphs[-1].write(text)
+        if isinstance(self._paragraphs[-1], Paragraph):
+            self._paragraphs[-1].write(text)
 
-    def ln(self, h=None):
+    def ln(self, h: Optional[float] = None) -> None:
         self._check_paragraph()
-        self._paragraphs[-1].ln(h)
+        if isinstance(self._paragraphs[-1], Paragraph):
+            self._paragraphs[-1].ln(h)
 
     def paragraph(
         self,
-        text_align=None,
-        line_height=None,
+        text_align: Optional[Align] = None,
+        line_height: Optional[float] = None,
         skip_leading_spaces: bool = False,
-        top_margin=0,
-        bottom_margin=0,
-        indent=0,
-        bullet_string="",
-        bullet_r_margin=None,
-        wrapmode: WrapMode = None,
-        first_line_indent=0,
-    ):
+        top_margin: Optional[float] = 0,
+        bottom_margin: Optional[float] = 0,
+        indent: Optional[float] = 0,
+        bullet_string: Optional[str] = "",
+        bullet_r_margin: Optional[float] = None,
+        wrapmode: Optional[WrapMode] = None,
+        first_line_indent: Optional[float] = 0,
+    ) -> Paragraph:
         """
         Args:
             text_align (Align, optional): the horizontal alignment of the paragraph.
@@ -426,18 +496,18 @@ class ParagraphCollectorMixin:
             line_height=line_height,
             skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
             wrapmode=wrapmode,
-            top_margin=top_margin,
-            bottom_margin=bottom_margin,
-            indent=indent,
-            first_line_indent=first_line_indent,
-            bullet_string=bullet_string,
+            top_margin=top_margin or 0,
+            bottom_margin=bottom_margin or 0,
+            indent=indent or 0,
+            first_line_indent=first_line_indent or 0,
+            bullet_string=bullet_string or "",
             bullet_r_margin=bullet_r_margin,
         )
         self._paragraphs.append(p)
         self._active_paragraph = "EXPLICIT"
         return p
 
-    def end_paragraph(self):
+    def end_paragraph(self) -> None:
         if not self._active_paragraph:
             raise FPDFException("No active paragraph to end.")
         # self._paragraphs[-1].write("\n")
@@ -445,18 +515,18 @@ class ParagraphCollectorMixin:
 
     def image(
         self,
-        name,
-        align=None,
-        width: float = None,
-        height: float = None,
+        name: str,
+        align: Optional[str | Align] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         fill_width: bool = False,
-        keep_aspect_ratio=False,
-        top_margin=0,
-        bottom_margin=0,
-        link=None,
-        title=None,
-        alt_text=None,
-    ):
+        keep_aspect_ratio: bool = False,
+        top_margin: float = 0,
+        bottom_margin: float = 0,
+        link: Optional[str | int] = None,
+        title: Optional[str] = None,
+        alt_text: Optional[str] = None,
+    ) -> None:
         if self._active_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
         if self._active_paragraph:
@@ -477,11 +547,17 @@ class ParagraphCollectorMixin:
         )
         self._paragraphs.append(p)
 
+    @abstractmethod
+    def render(self) -> None: ...
+
+    @abstractmethod
+    def get_width(self, height: float) -> float: ...
+
 
 class TextRegion(ParagraphCollectorMixin):
     """Abstract base class for all text region subclasses."""
 
-    def current_x_extents(self, y, height):
+    def current_x_extents(self, y: float, height: float) -> tuple[float, float]:
         """
         Return the horizontal extents of the current line.
         Columnar regions simply return the boundaries of the column.
@@ -491,7 +567,9 @@ class TextRegion(ParagraphCollectorMixin):
         """
         raise NotImplementedError()
 
-    def _render_image_paragraph(self, paragraph):
+    def _render_image_paragraph(
+        self, paragraph: ImageParagraph
+    ) -> Optional[RasterImageInfo | VectorImageInfo]:
         if paragraph.top_margin and self.pdf.y > self.pdf.t_margin:
             self.pdf.y += paragraph.top_margin
         col_left, col_right = self.current_x_extents(self.pdf.y, 0)
@@ -504,12 +582,17 @@ class TextRegion(ParagraphCollectorMixin):
                 self.pdf.y += margin
         return rendered
 
-    def _render_column_lines(self, text_lines, top, bottom):
+    def _render_column_lines(
+        self,
+        text_lines: list[ImageParagraph | LineWrapper],
+        top: float,
+        bottom: float,
+    ) -> float:
         if not text_lines:
             return 0  # no rendered height
         self.pdf.y = top
-        prev_line_height = 0
-        last_line_height = None
+        prev_line_height: float = 0
+        last_line_height: Optional[float] = None
         rendered_lines = 0
         for tl_wrapper in text_lines:
             if isinstance(tl_wrapper, ImageParagraph):
@@ -539,7 +622,7 @@ class TextRegion(ParagraphCollectorMixin):
                     # => page break
                     last_line_height = prev_line_height
                     break
-                prev_line_height = last_line_height
+                prev_line_height = last_line_height or 0
                 last_line_height = text_line.height
                 col_left, col_right = self.current_x_extents(self.pdf.y, 0)
                 if self.pdf.x < col_left or self.pdf.x >= col_right:
@@ -550,7 +633,8 @@ class TextRegion(ParagraphCollectorMixin):
                         cur_bullet.get_fragments_width() + cur_bullet.r_margin
                     )
                     self.pdf.x -= bullet_indent_shift
-                    self.pdf._render_styled_text_line(
+                    assert cur_bullet.text_line is not None
+                    self.pdf._render_styled_text_line(  # pyright: ignore[reportPrivateUsage]
                         cur_bullet.text_line,
                         h=cur_bullet.text_line.height,
                         border=0,
@@ -562,7 +646,7 @@ class TextRegion(ParagraphCollectorMixin):
                     self.pdf.x += bullet_indent_shift
                 # Don't check the return, we never render past the bottom here.
                 self.pdf.x += text_line.indent
-                self.pdf._render_styled_text_line(
+                self.pdf._render_styled_text_line(  # pyright: ignore[reportPrivateUsage]
                     text_line,
                     h=text_line.height,
                     border=0,
@@ -581,10 +665,10 @@ class TextRegion(ParagraphCollectorMixin):
                     break
         if rendered_lines:
             del text_lines[:rendered_lines]
-        return last_line_height
+        return last_line_height or 0
 
-    def collect_lines(self):
-        text_lines = []
+    def collect_lines(self) -> list[ImageParagraph | LineWrapper]:
+        text_lines: list[ImageParagraph | LineWrapper] = []
         for paragraph in self._paragraphs:
             if isinstance(paragraph, ImageParagraph):
                 line = paragraph.build_line()
@@ -596,10 +680,10 @@ class TextRegion(ParagraphCollectorMixin):
                 text_lines.extend(cur_lines)
         return text_lines
 
-    def render(self):
+    def render(self) -> None:
         raise NotImplementedError()
 
-    def get_width(self, height):
+    def get_width(self, height: float) -> float:
         start, end = self.current_x_extents(self.pdf.y, height)
         if self.pdf.x > start and self.pdf.x < end:
             start = self.pdf.x
@@ -607,10 +691,19 @@ class TextRegion(ParagraphCollectorMixin):
         return res
 
 
-class TextColumnarMixin:
+class TextColumnarMixin(ABC):
     """Enable a TextRegion to perform page breaks"""
 
-    def __init__(self, pdf, *args, l_margin=None, r_margin=None, **kwargs):
+    pdf: "FPDF"
+
+    def __init__(
+        self,
+        pdf: "FPDF",
+        *args: Any,
+        l_margin: Optional[float] = None,
+        r_margin: Optional[float] = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.l_margin = pdf.l_margin if l_margin is None else l_margin
         left = self.l_margin
@@ -618,7 +711,7 @@ class TextColumnarMixin:
         right = pdf.w - self.r_margin
         self._set_left_right(left, right)
 
-    def _set_left_right(self, left, right):
+    def _set_left_right(self, left: Optional[float], right: Optional[float]) -> None:
         left = self.pdf.l_margin if left is None else left
         right = (self.pdf.w - self.pdf.r_margin) if right is None else right
         if right <= left:
@@ -630,15 +723,16 @@ class TextColumnarMixin:
 
 
 class TextColumns(TextRegion, TextColumnarMixin):
+
     def __init__(
         self,
-        pdf,
-        *args,
+        pdf: "FPDF",
+        *args: Any,
         ncols: int = 1,
         gutter: float = 10,
         balance: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(pdf, *args, **kwargs)
         self._cur_column = 0
         self._ncols = ncols
@@ -648,12 +742,12 @@ class TextColumns(TextRegion, TextColumnarMixin):
         # We calculate the column extents once in advance, and store them for lookup.
         c_left = self.extents.left
         self._cols = [Extents(c_left, c_left + col_width)]
-        for i in range(1, ncols):  # pylint: disable=unused-variable
+        for _ in range(1, ncols):
             c_left += col_width + gutter
             self._cols.append(Extents(c_left, c_left + col_width))
         self._first_page_top = max(self.pdf.t_margin, self.pdf.y)
 
-    def __enter__(self):
+    def __enter__(self) -> "TextColumns":
         super().__enter__()
         self._first_page_top = max(self.pdf.t_margin, self.pdf.y)
         if self.balance:
@@ -661,14 +755,19 @@ class TextColumns(TextRegion, TextColumnarMixin):
             self.pdf.x = self._cols[self._cur_column].left
         return self
 
-    def new_column(self):
+    def new_column(self) -> None:
         "End the current column and continue at the top of the next one."
-        if self._paragraphs:
+        if self._paragraphs and isinstance(self._paragraphs[-1], Paragraph):
             self._paragraphs[-1].write(FORM_FEED)
         else:
             self.write(FORM_FEED)
 
-    def _render_page_lines(self, text_lines, top, bottom):
+    def _render_page_lines(
+        self,
+        text_lines: list[ImageParagraph | LineWrapper],
+        top: float,
+        bottom: float,
+    ) -> None:
         """Rendering a set of lines in one or several columns on one page."""
         balancing = False
         next_y = self.pdf.y
@@ -682,7 +781,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
             page_bottom = bottom
             if not text_lines:
                 return
-            tot_height = sum(l.line.height for l in text_lines)
+            tot_height = sum(l.line.height or 0 for l in text_lines)
             col_height = tot_height / self._ncols
             avail_height = bottom - top
             if col_height < avail_height:
@@ -691,7 +790,8 @@ class TextColumns(TextRegion, TextColumnarMixin):
                 bottom = top + col_height
                 # A bit more generous: Try to keep the rightmost column the shortest.
                 lines_per_column = math.ceil(len(text_lines) / self._ncols) + 0.5
-                mult_height = text_lines[0].line.height * lines_per_column
+                first_line_height = text_lines[0].line.height or 0
+                mult_height = first_line_height * lines_per_column
                 if mult_height > col_height:
                     bottom = top + mult_height
                 if bottom > page_bottom:
@@ -714,7 +814,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
                 next_y = self.pdf.y
         self.pdf.y = next_y
 
-    def render(self):
+    def render(self) -> None:
         if not self._paragraphs:
             return
         text_lines = self.collect_lines()
@@ -725,13 +825,15 @@ class TextColumns(TextRegion, TextColumnarMixin):
         self._render_page_lines(text_lines, first_page_top, page_bottom)
         # Note: text_lines is progressively emptied by ._render_column_lines()
         while text_lines:
-            page_break = self.pdf._perform_page_break_if_need_be(self.pdf.h)
+            page_break = self.pdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
+                self.pdf.h
+            )
             if not page_break:
                 # Can happen when rendering a footer in the wrong place - cf. issue #1222
                 break
             self._cur_column = 0
             self._render_page_lines(text_lines, self.pdf.y, page_bottom)
 
-    def current_x_extents(self, y, height):
+    def current_x_extents(self, y: float, height: float) -> tuple[float, float]:
         left, right = self._cols[self._cur_column]
         return left, right
