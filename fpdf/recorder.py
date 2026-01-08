@@ -45,7 +45,7 @@ class FPDFRecorder:
 
     def __init__(self, pdf: "FPDF", accept_page_break: bool = True) -> None:
         self.pdf = pdf
-        self._initial: dict[str, Any] = deepcopy(self.pdf.__dict__)
+        self._initial: dict[str, Any] = deepcopy(vars(self.pdf))
         self._calls: list[CallRecord] = []
         if not accept_page_break:
             self.accept_page_break = False
@@ -57,8 +57,10 @@ class FPDFRecorder:
         return attr
 
     def rewind(self) -> None:
-        self.pdf.__dict__ = self._initial
-        self._initial = deepcopy(self.pdf.__dict__)
+        pdf_dict = vars(self.pdf)
+        pdf_dict.clear()
+        pdf_dict.update(self._initial)
+        self._initial = deepcopy(pdf_dict)
 
     def replay(self) -> None:
         for call in self._calls:
