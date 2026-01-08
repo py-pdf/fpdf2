@@ -48,39 +48,39 @@ el.replaceWith(d);
 <dl>
 <dt id="fpdf.image_datastructures.ImageCache"><code class="flex name class">
 <span>class <span class="ident">ImageCache</span></span>
-<span>(</span><span>images: Dict[str, dict] = &lt;factory&gt;,<br>icc_profiles: Dict[bytes, int] = &lt;factory&gt;,<br>image_filter: str = 'AUTO')</span>
+<span>(</span><span>images: dict[str, <a title="fpdf.image_datastructures.RasterImageInfo" href="#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a> | <a title="fpdf.image_datastructures.VectorImageInfo" href="#fpdf.image_datastructures.VectorImageInfo">VectorImageInfo</a>] = &lt;factory&gt;,<br>icc_profiles: dict[bytes, int] = &lt;factory&gt;,<br>image_filter: Literal['AUTO', 'FlateDecode', 'DCTDecode', 'JPXDecode', 'LZWDecode', 'CCITTFaxDecode'] = 'AUTO')</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L72-L83" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L90-L101" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class ImageCache:
-    # Map image identifiers to dicts describing the raster images
-    images: Dict[str, dict] = field(default_factory=dict)
+    # Map image identifiers to dicts describing raster or vector images
+    images: dict[str, RasterImageInfo | VectorImageInfo] = field(default_factory=dict)
     # Map icc profiles (bytes) to their index (number)
-    icc_profiles: Dict[bytes, int] = field(default_factory=dict)
+    icc_profiles: dict[bytes, int] = field(default_factory=dict)
     # Must be one of SUPPORTED_IMAGE_FILTERS values
-    image_filter: str = &#34;AUTO&#34;
+    image_filter: ImageFilter = &#34;AUTO&#34;
 
-    def reset_usages(self):
+    def reset_usages(self) -&gt; None:
         for img in self.images.values():
             img[&#34;usages&#34;] = 0</code></pre>
 </details>
-<div class="desc"><p>ImageCache(images: Dict[str, dict] = <factory>, icc_profiles: Dict[bytes, int] = <factory>, image_filter: str = 'AUTO')</p></div>
+<div class="desc"><p>ImageCache(images: dict[str, fpdf.image_datastructures.RasterImageInfo | fpdf.image_datastructures.VectorImageInfo] = <factory>, icc_profiles: dict[bytes, int] = <factory>, image_filter: Literal['AUTO', 'FlateDecode', 'DCTDecode', 'JPXDecode', 'LZWDecode', 'CCITTFaxDecode'] = 'AUTO')</p></div>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.image_datastructures.ImageCache.icc_profiles"><code class="name">var <span class="ident">icc_profiles</span> : Dict[bytes, int]</code></dt>
+<dt id="fpdf.image_datastructures.ImageCache.icc_profiles"><code class="name">var <span class="ident">icc_profiles</span> : dict[bytes, int]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.ImageCache.image_filter"><code class="name">var <span class="ident">image_filter</span> : str</code></dt>
+<dt id="fpdf.image_datastructures.ImageCache.image_filter"><code class="name">var <span class="ident">image_filter</span> : Literal['AUTO', 'FlateDecode', 'DCTDecode', 'JPXDecode', 'LZWDecode', 'CCITTFaxDecode']</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.ImageCache.images"><code class="name">var <span class="ident">images</span> : Dict[str, dict]</code></dt>
+<dt id="fpdf.image_datastructures.ImageCache.images"><code class="name">var <span class="ident">images</span> : dict[str, <a title="fpdf.image_datastructures.RasterImageInfo" href="#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a> | <a title="fpdf.image_datastructures.VectorImageInfo" href="#fpdf.image_datastructures.VectorImageInfo">VectorImageInfo</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -88,15 +88,15 @@ class ImageCache:
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.image_datastructures.ImageCache.reset_usages"><code class="name flex">
-<span>def <span class="ident">reset_usages</span></span>(<span>self)</span>
+<span>def <span class="ident">reset_usages</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L81-L83" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L99-L101" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def reset_usages(self):
+<pre><code class="python">def reset_usages(self) -&gt; None:
     for img in self.images.values():
         img[&#34;usages&#34;] = 0</code></pre>
 </details>
@@ -112,44 +112,48 @@ class ImageCache:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L5-L49" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L15-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class ImageInfo(dict):
+<pre><code class="python">class ImageInfo(dict[str, object]):
     &#34;&#34;&#34;Information about an image used in the PDF document (base class).
     We subclass this to distinguish between raster and vector images.&#34;&#34;&#34;
 
     @property
-    def width(self):
+    def width(self) -&gt; float:
         &#34;Intrinsic image width&#34;
-        return self[&#34;w&#34;]
+        return cast(float, self[&#34;w&#34;])
 
     @property
-    def height(self):
+    def height(self) -&gt; float:
         &#34;Intrinsic image height&#34;
-        return self[&#34;h&#34;]
+        return cast(float, self[&#34;h&#34;])
 
     @property
-    def rendered_width(self):
+    def rendered_width(self) -&gt; float:
         &#34;Only available if the image has been placed on the document&#34;
-        return self[&#34;rendered_width&#34;]
+        return cast(float, self[&#34;rendered_width&#34;])
 
     @property
-    def rendered_height(self):
+    def rendered_height(self) -&gt; float:
         &#34;Only available if the image has been placed on the document&#34;
-        return self[&#34;rendered_height&#34;]
+        return cast(float, self[&#34;rendered_height&#34;])
 
-    def __str__(self):
+    def __str__(self) -&gt; str:
         d = {
             k: (&#34;...&#34; if k in (&#34;data&#34;, &#34;iccp&#34;, &#34;smask&#34;) else v) for k, v in self.items()
         }
         return f&#34;self.__class__.__name__({d})&#34;
 
-    def scale_inside_box(self, x, y, w, h):
+    def scale_inside_box(
+        self, x: float, y: float, w: float, h: float
+    ) -&gt; tuple[float, float, float, float]:
         &#34;&#34;&#34;
         Make an image fit within a bounding box, maintaining its proportions.
         In the reduced dimension it will be centered within the available space.
         &#34;&#34;&#34;
-        ratio = self.width / self.height
+        img_w: float = self[&#34;w&#34;]  # type: ignore
+        img_h: float = self[&#34;h&#34;]  # type: ignore
+        ratio = img_w / img_h
         if h * ratio &lt; w:
             new_w = h * ratio
             new_h = h
@@ -173,59 +177,59 @@ We subclass this to distinguish between raster and vector images.</p></div>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.image_datastructures.ImageInfo.height"><code class="name">prop <span class="ident">height</span></code></dt>
+<dt id="fpdf.image_datastructures.ImageInfo.height"><code class="name">prop <span class="ident">height</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L14-L17" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L24-L27" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def height(self):
+def height(self) -&gt; float:
     &#34;Intrinsic image height&#34;
-    return self[&#34;h&#34;]</code></pre>
+    return cast(float, self[&#34;h&#34;])</code></pre>
 </details>
 <div class="desc"><p>Intrinsic image height</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.ImageInfo.rendered_height"><code class="name">prop <span class="ident">rendered_height</span></code></dt>
+<dt id="fpdf.image_datastructures.ImageInfo.rendered_height"><code class="name">prop <span class="ident">rendered_height</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L24-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L34-L37" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def rendered_height(self):
+def rendered_height(self) -&gt; float:
     &#34;Only available if the image has been placed on the document&#34;
-    return self[&#34;rendered_height&#34;]</code></pre>
+    return cast(float, self[&#34;rendered_height&#34;])</code></pre>
 </details>
 <div class="desc"><p>Only available if the image has been placed on the document</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.ImageInfo.rendered_width"><code class="name">prop <span class="ident">rendered_width</span></code></dt>
+<dt id="fpdf.image_datastructures.ImageInfo.rendered_width"><code class="name">prop <span class="ident">rendered_width</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L19-L22" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L29-L32" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def rendered_width(self):
+def rendered_width(self) -&gt; float:
     &#34;Only available if the image has been placed on the document&#34;
-    return self[&#34;rendered_width&#34;]</code></pre>
+    return cast(float, self[&#34;rendered_width&#34;])</code></pre>
 </details>
 <div class="desc"><p>Only available if the image has been placed on the document</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.ImageInfo.width"><code class="name">prop <span class="ident">width</span></code></dt>
+<dt id="fpdf.image_datastructures.ImageInfo.width"><code class="name">prop <span class="ident">width</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L9-L12" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L19-L22" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def width(self):
+def width(self) -&gt; float:
     &#34;Intrinsic image width&#34;
-    return self[&#34;w&#34;]</code></pre>
+    return cast(float, self[&#34;w&#34;])</code></pre>
 </details>
 <div class="desc"><p>Intrinsic image width</p></div>
 </dd>
@@ -233,20 +237,24 @@ def width(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.image_datastructures.ImageInfo.scale_inside_box"><code class="name flex">
-<span>def <span class="ident">scale_inside_box</span></span>(<span>self, x, y, w, h)</span>
+<span>def <span class="ident">scale_inside_box</span></span>(<span>self, x: float, y: float, w: float, h: float) ‑> tuple[float, float, float, float]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L35-L49" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L45-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def scale_inside_box(self, x, y, w, h):
+<pre><code class="python">def scale_inside_box(
+    self, x: float, y: float, w: float, h: float
+) -&gt; tuple[float, float, float, float]:
     &#34;&#34;&#34;
     Make an image fit within a bounding box, maintaining its proportions.
     In the reduced dimension it will be centered within the available space.
     &#34;&#34;&#34;
-    ratio = self.width / self.height
+    img_w: float = self[&#34;w&#34;]  # type: ignore
+    img_h: float = self[&#34;h&#34;]  # type: ignore
+    ratio = img_w / img_h
     if h * ratio &lt; w:
         new_w = h * ratio
         new_h = h
@@ -270,19 +278,23 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L52-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L66-L81" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RasterImageInfo(ImageInfo):
     &#34;Information about a raster image used in the PDF document&#34;
 
-    def size_in_document_units(self, w, h, scale=1):
+    def size_in_document_units(
+        self, w: float, h: float, scale: float = 1
+    ) -&gt; tuple[float, float]:
+        img_w: float = self[&#34;w&#34;]  # type: ignore
+        img_h: float = self[&#34;h&#34;]  # type: ignore
         if w == 0 and h == 0:  # Put image at 72 dpi
-            w = self[&#34;w&#34;] / scale
-            h = self[&#34;h&#34;] / scale
+            w = img_w / scale
+            h = img_h / scale
         elif w == 0:
-            w = h * self[&#34;w&#34;] / self[&#34;h&#34;]
+            w = h * img_w / img_h
         elif h == 0:
-            h = w * self[&#34;h&#34;] / self[&#34;w&#34;]
+            h = w * img_h / img_w
         return w, h</code></pre>
 </details>
 <div class="desc"><p>Information about a raster image used in the PDF document</p></div>
@@ -293,7 +305,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.image_datastructures.RasterImageInfo.height"><code class="name">prop <span class="ident">height</span></code></dt>
+<dt id="fpdf.image_datastructures.RasterImageInfo.height"><code class="name">prop <span class="ident">height</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -301,7 +313,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </p>
 <div class="desc inherited"><p>Intrinsic image height</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.RasterImageInfo.rendered_height"><code class="name">prop <span class="ident">rendered_height</span></code></dt>
+<dt id="fpdf.image_datastructures.RasterImageInfo.rendered_height"><code class="name">prop <span class="ident">rendered_height</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -309,7 +321,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </p>
 <div class="desc inherited"><p>Only available if the image has been placed on the document</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.RasterImageInfo.rendered_width"><code class="name">prop <span class="ident">rendered_width</span></code></dt>
+<dt id="fpdf.image_datastructures.RasterImageInfo.rendered_width"><code class="name">prop <span class="ident">rendered_width</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -317,7 +329,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </p>
 <div class="desc inherited"><p>Only available if the image has been placed on the document</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.RasterImageInfo.width"><code class="name">prop <span class="ident">width</span></code></dt>
+<dt id="fpdf.image_datastructures.RasterImageInfo.width"><code class="name">prop <span class="ident">width</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -329,7 +341,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.image_datastructures.RasterImageInfo.scale_inside_box"><code class="name flex">
-<span>def <span class="ident">scale_inside_box</span></span>(<span>self, x, y, w, h)</span>
+<span>def <span class="ident">scale_inside_box</span></span>(<span>self, x: float, y: float, w: float, h: float) ‑> tuple[float, float, float, float]</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -340,22 +352,26 @@ In the reduced dimension it will be centered within the available space.</p></di
 In the reduced dimension it will be centered within the available space.</p></div>
 </dd>
 <dt id="fpdf.image_datastructures.RasterImageInfo.size_in_document_units"><code class="name flex">
-<span>def <span class="ident">size_in_document_units</span></span>(<span>self, w, h, scale=1)</span>
+<span>def <span class="ident">size_in_document_units</span></span>(<span>self, w: float, h: float, scale: float = 1) ‑> tuple[float, float]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L55-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L69-L81" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def size_in_document_units(self, w, h, scale=1):
+<pre><code class="python">def size_in_document_units(
+    self, w: float, h: float, scale: float = 1
+) -&gt; tuple[float, float]:
+    img_w: float = self[&#34;w&#34;]  # type: ignore
+    img_h: float = self[&#34;h&#34;]  # type: ignore
     if w == 0 and h == 0:  # Put image at 72 dpi
-        w = self[&#34;w&#34;] / scale
-        h = self[&#34;h&#34;] / scale
+        w = img_w / scale
+        h = img_h / scale
     elif w == 0:
-        w = h * self[&#34;w&#34;] / self[&#34;h&#34;]
+        w = h * img_w / img_h
     elif h == 0:
-        h = w * self[&#34;h&#34;] / self[&#34;w&#34;]
+        h = w * img_h / img_w
     return w, h</code></pre>
 </details>
 <div class="desc"></div>
@@ -370,7 +386,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_datastructures.py#L66-L69" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_datastructures.py#L84-L87" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class VectorImageInfo(ImageInfo):
     &#34;Information about a vector image used in the PDF document&#34;
@@ -385,7 +401,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.image_datastructures.VectorImageInfo.height"><code class="name">prop <span class="ident">height</span></code></dt>
+<dt id="fpdf.image_datastructures.VectorImageInfo.height"><code class="name">prop <span class="ident">height</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -393,7 +409,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </p>
 <div class="desc inherited"><p>Intrinsic image height</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.VectorImageInfo.rendered_height"><code class="name">prop <span class="ident">rendered_height</span></code></dt>
+<dt id="fpdf.image_datastructures.VectorImageInfo.rendered_height"><code class="name">prop <span class="ident">rendered_height</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -401,7 +417,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </p>
 <div class="desc inherited"><p>Only available if the image has been placed on the document</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.VectorImageInfo.rendered_width"><code class="name">prop <span class="ident">rendered_width</span></code></dt>
+<dt id="fpdf.image_datastructures.VectorImageInfo.rendered_width"><code class="name">prop <span class="ident">rendered_width</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -409,7 +425,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </p>
 <div class="desc inherited"><p>Only available if the image has been placed on the document</p></div>
 </dd>
-<dt id="fpdf.image_datastructures.VectorImageInfo.width"><code class="name">prop <span class="ident">width</span></code></dt>
+<dt id="fpdf.image_datastructures.VectorImageInfo.width"><code class="name">prop <span class="ident">width</span> : float</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -421,7 +437,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.image_datastructures.VectorImageInfo.scale_inside_box"><code class="name flex">
-<span>def <span class="ident">scale_inside_box</span></span>(<span>self, x, y, w, h)</span>
+<span>def <span class="ident">scale_inside_box</span></span>(<span>self, x: float, y: float, w: float, h: float) ‑> tuple[float, float, float, float]</span>
 </code></dt>
 <dd>
 <p class="inheritance">

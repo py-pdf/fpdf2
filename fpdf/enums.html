@@ -54,7 +54,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1518-L1556" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1613-L1652" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AccessPermission(IntFlag):
     &#34;Permission flags will translate as an integer on the encryption dictionary&#34;
@@ -84,15 +84,16 @@ el.replaceWith(d);
     &#34;Print document at the highest resolution&#34;
 
     @classmethod
-    def all(cls):
+    def all(cls) -&gt; int:
         &#34;All flags enabled&#34;
         result = 0
         for permission in list(AccessPermission):
-            result = result | permission
+            access_permission = permission
+            result = result | access_permission.value
         return result
 
     @classmethod
-    def none(cls):
+    def none(cls) -&gt; int:
         &#34;All flags disabled&#34;
         return 0</code></pre>
 </details>
@@ -143,13 +144,13 @@ el.replaceWith(d);
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.AccessPermission.all"><code class="name flex">
-<span>def <span class="ident">all</span></span>(<span>)</span>
+<span>def <span class="ident">all</span></span>(<span>) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"><p>All flags enabled</p></div>
 </dd>
 <dt id="fpdf.enums.AccessPermission.none"><code class="name flex">
-<span>def <span class="ident">none</span></span>(<span>)</span>
+<span>def <span class="ident">none</span></span>(<span>) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"><p>All flags disabled</p></div>
@@ -164,7 +165,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L184-L209" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L202-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Align(CoerciveEnum):
     &#34;Defines how to render text in a cell&#34;
@@ -184,14 +185,17 @@ el.replaceWith(d);
     J = intern(&#34;JUSTIFY&#34;)
     &#34;Justify text&#34;
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union[&#34;Align&#34;, str], case_sensitive: bool = False
+    ) -&gt; &#34;Align&#34;:
         if value == &#34;&#34;:
             return cls.L
         if isinstance(value, str):
             value = value.upper()
-        return super(cls, cls).coerce(value)</code></pre>
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )</code></pre>
 </details>
 <div class="desc"><p>Defines how to render text in a cell</p></div>
 <h3>Ancestors</h3>
@@ -225,7 +229,7 @@ el.replaceWith(d);
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.Align.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.Align" href="#fpdf.enums.Align">Align</a> | str,<br>case_sensitive: bool = False) ‑> <a title="fpdf.enums.Align" href="#fpdf.enums.Align">Align</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -244,7 +248,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1072-L1082" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1167-L1177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Angle(CoerciveIntEnum):
     &#34;Direction values used for mirror transformations specifying the angle of mirror line&#34;
@@ -305,7 +309,7 @@ el.replaceWith(d);
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.Angle.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -324,7 +328,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1256-L1285" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1351-L1380" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationFlag(CoerciveIntEnum):
     INVISIBLE = 1
@@ -416,7 +420,7 @@ The annotation may be displayed or printed but should not respond to mouse click
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.AnnotationFlag.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -435,7 +439,7 @@ The annotation may be displayed or printed but should not respond to mouse click
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1288-L1296" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1383-L1391" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationName(CoerciveEnum):
     &#34;The name of an icon that shall be used in displaying the annotation&#34;
@@ -483,7 +487,7 @@ The annotation may be displayed or printed but should not respond to mouse click
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.AnnotationName.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -502,7 +506,7 @@ The annotation may be displayed or printed but should not respond to mouse click
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1740-L1778" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1839-L1877" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AssociatedFileRelationship(CoerciveEnum):
     &#34;&#34;&#34;Represents the association between an embedded file and the content on the PDF&#34;&#34;&#34;
@@ -593,7 +597,7 @@ or cannot be described using one of the other values</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.AssociatedFileRelationship.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -612,7 +616,7 @@ or cannot be described using one of the other values</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1141-L1213" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1236-L1308" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BlendMode(CoerciveEnum):
     &#34;An enumeration of the named standard named blend functions supported by PDF.&#34;
@@ -780,7 +784,7 @@ similar to shining a diffused spotlight on the backdrop."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.BlendMode.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -799,7 +803,7 @@ similar to shining a diffused spotlight on the backdrop."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L304-L369" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L328-L393" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CellBordersLayout(CoerciveIntFlag):
     &#34;&#34;&#34;Defines how to render cell borders in table
@@ -839,25 +843,25 @@ similar to shining a diffused spotlight on the backdrop."</p></div>
     &#34;Inherits the border layout from the table borders layout&#34;
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value: Union[&#34;CellBordersLayout&#34;, str, int]) -&gt; &#34;CellBordersLayout&#34;:
         if isinstance(value, int) and value &gt; 16:
             raise ValueError(&#34;INHERIT cannot be combined with other values&#34;)
         return super().coerce(value)
 
-    def __and__(self, value):
+    def __and__(self, value: int) -&gt; &#34;CellBordersLayout&#34;:
         value = super().__and__(value)
         if value &gt; 16:
             raise ValueError(&#34;INHERIT cannot be combined with other values&#34;)
         return value
 
-    def __or__(self, value):
+    def __or__(self, value: int) -&gt; &#34;CellBordersLayout&#34;:
         value = super().__or__(value)
         if value &gt; 16:
             raise ValueError(&#34;INHERIT cannot be combined with other values&#34;)
         return value
 
-    def __str__(self):
-        border_str = []
+    def __str__(self) -&gt; str:
+        border_str: list[str] = []
         if self &amp; CellBordersLayout.LEFT:
             border_str.append(&#34;L&#34;)
         if self &amp; CellBordersLayout.RIGHT:
@@ -923,7 +927,7 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.CellBordersLayout.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.CellBordersLayout" href="#fpdf.enums.CellBordersLayout">CellBordersLayout</a> | str | int) ‑> <a title="fpdf.enums.CellBordersLayout" href="#fpdf.enums.CellBordersLayout">CellBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -931,6 +935,44 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <code><a title="fpdf.enums.CoerciveIntFlag" href="#fpdf.enums.CoerciveIntFlag">CoerciveIntFlag</a></code>.<code><a title="fpdf.enums.CoerciveIntFlag.coerce" href="#fpdf.enums.CoerciveIntFlag.coerce">coerce</a></code>
 </p>
 <div class="desc inherited"><p>Attempt to coerce <code>value</code> into a member of this enumeration …</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.enums.CellFillProtocol"><code class="flex name class">
+<span>class <span class="ident">CellFillProtocol</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L989-L992" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class CellFillProtocol(Protocol):
+    &#34;&#34;&#34;Protocol for custom table cell fill mode classes&#34;&#34;&#34;
+
+    def should_fill_cell(self, i: int, j: int) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"><p>Protocol for custom table cell fill mode classes</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.enums.CellFillProtocol.should_fill_cell"><code class="name flex">
+<span>def <span class="ident">should_fill_cell</span></span>(<span>self, i: int, j: int) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L992-L992" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def should_fill_cell(self, i: int, j: int) -&gt; bool: ...</code></pre>
+</details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -942,7 +984,7 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L165-L181" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L183-L199" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CharVPos(CoerciveEnum):
     &#34;Defines the vertical position of text relative to the line.&#34;
@@ -994,7 +1036,7 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.CharVPos.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1013,7 +1055,7 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1392-L1413" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1487-L1508" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ClippingPathIntersectionRule(CoerciveEnum):
     &#34;An enumeration of the PDF drawing directives that define a path as a clipping path.&#34;
@@ -1070,7 +1112,7 @@ path; otherwise, it is inside."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.ClippingPathIntersectionRule.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1089,13 +1131,13 @@ path; otherwise, it is inside."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L23-L62" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L41-L80" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoerciveEnum(Enum):
     &#34;An enumeration that provides a helper to coerce strings into enumeration members.&#34;
 
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls: Type[E], value: E | str, case_sensitive: bool = False) -&gt; E:
         &#34;&#34;&#34;
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -1172,7 +1214,7 @@ path; otherwise, it is inside."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.CoerciveEnum.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Attempt to coerce <code>value</code> into a member of this enumeration.</p>
@@ -1205,7 +1247,7 @@ string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L65-L104" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L83-L122" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoerciveIntEnum(IntEnum):
     &#34;&#34;&#34;
@@ -1214,7 +1256,7 @@ string.</dd>
     &#34;&#34;&#34;
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls: Type[IE], value: IE | str | int) -&gt; IE:
         &#34;&#34;&#34;
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -1269,7 +1311,7 @@ enumeration members.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.CoerciveIntEnum.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Attempt to coerce <code>value</code> into a member of this enumeration.</p>
@@ -1304,7 +1346,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L107-L152" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L125-L170" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoerciveIntFlag(IntFlag):
     &#34;&#34;&#34;
@@ -1313,7 +1355,7 @@ int or a string.</dd>
     &#34;&#34;&#34;
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls: Type[IF], value: IF | str | int) -&gt; IF:
         &#34;&#34;&#34;
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -1372,7 +1414,7 @@ with a helper to coerce strings and integers into enumeration members.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.CoerciveIntFlag.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IF | str | int) ‑> ~IF</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Attempt to coerce <code>value</code> into a member of this enumeration.</p>
@@ -1407,7 +1449,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1216-L1253" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1311-L1348" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CompositingOperation(CoerciveEnum):
     &#34;An enumeration of Porter-Duff compositing operations.&#34;
@@ -1508,7 +1550,7 @@ int or a string.</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.CompositingOperation.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1527,7 +1569,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1481-L1485" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1576-L1580" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Corner(CoerciveEnum):
     TOP_RIGHT = &#34;TOP_RIGHT&#34;
@@ -1563,7 +1605,7 @@ int or a string.</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.Corner.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1582,7 +1624,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1686-L1737" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1785-L1836" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class DocumentCompliance(Enum):
     &#34;&#34;&#34;
@@ -1603,29 +1645,29 @@ int or a string.</dd>
     PDFA_4F = (&#34;PDFA&#34;, 4, &#34;F&#34;)
 
     @property
-    def profile(self):
-        return self.value[0]
+    def profile(self) -&gt; str:
+        return str(self.value[0])
 
     @property
-    def part(self):
-        return self.value[1]
+    def part(self) -&gt; int:
+        return int(self.value[1])
 
     @property
-    def conformance(self):
-        return self.value[2]
+    def conformance(self) -&gt; Optional[str]:
+        return str(self.value[2]) if self.value[2] is not None else None
 
     @property
-    def label(self):
+    def label(self) -&gt; str:
         profile = &#34;PDF/A&#34; if self.profile == &#34;PDFA&#34; else self.profile
         return f&#34;{profile}-{self.part}{self.conformance if self.conformance else &#39;&#39;}&#34;
 
-    def __str__(self):
+    def __str__(self) -&gt; str:
         return (
             f&#34;{self.profile}_{self.part}{self.conformance if self.conformance else &#39;&#39;}&#34;
         )
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value: Union[&#34;DocumentCompliance&#34;, str]) -&gt; &#34;DocumentCompliance&#34;:
         if isinstance(value, cls):
             return value
         if isinstance(value, str):
@@ -1684,7 +1726,7 @@ Limited to PDF/A at the moment, but extendable to other standards like:
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.DocumentCompliance.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.DocumentCompliance" href="#fpdf.enums.DocumentCompliance">DocumentCompliance</a> | str) ‑> <a title="fpdf.enums.DocumentCompliance" href="#fpdf.enums.DocumentCompliance">DocumentCompliance</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1692,56 +1734,56 @@ Limited to PDF/A at the moment, but extendable to other standards like:
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.enums.DocumentCompliance.conformance"><code class="name">prop <span class="ident">conformance</span></code></dt>
+<dt id="fpdf.enums.DocumentCompliance.conformance"><code class="name">prop <span class="ident">conformance</span> : str | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1712-L1714" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1811-L1813" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def conformance(self):
-    return self.value[2]</code></pre>
+def conformance(self) -&gt; Optional[str]:
+    return str(self.value[2]) if self.value[2] is not None else None</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.enums.DocumentCompliance.label"><code class="name">prop <span class="ident">label</span></code></dt>
+<dt id="fpdf.enums.DocumentCompliance.label"><code class="name">prop <span class="ident">label</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1716-L1719" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1815-L1818" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def label(self):
+def label(self) -&gt; str:
     profile = &#34;PDF/A&#34; if self.profile == &#34;PDFA&#34; else self.profile
     return f&#34;{profile}-{self.part}{self.conformance if self.conformance else &#39;&#39;}&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.enums.DocumentCompliance.part"><code class="name">prop <span class="ident">part</span></code></dt>
+<dt id="fpdf.enums.DocumentCompliance.part"><code class="name">prop <span class="ident">part</span> : int</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1708-L1710" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1807-L1809" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def part(self):
-    return self.value[1]</code></pre>
+def part(self) -&gt; int:
+    return int(self.value[1])</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.enums.DocumentCompliance.profile"><code class="name">prop <span class="ident">profile</span></code></dt>
+<dt id="fpdf.enums.DocumentCompliance.profile"><code class="name">prop <span class="ident">profile</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1704-L1706" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1803-L1805" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def profile(self):
-    return self.value[0]</code></pre>
+def profile(self) -&gt; str:
+    return str(self.value[0])</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -1755,7 +1797,7 @@ def profile(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1619-L1629" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1715-L1725" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Duplex(CoerciveEnum):
     &#34;The paper handling option that shall be used when printing the file from the print dialog.&#34;
@@ -1793,7 +1835,7 @@ def profile(self):
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.Duplex.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1812,7 +1854,7 @@ def profile(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1559-L1565" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1655-L1661" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class EncryptionMethod(Enum):
     &#34;Algorithm to be used to encrypt the document&#34;
@@ -1855,7 +1897,7 @@ def profile(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1299-L1304" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1394-L1399" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FileAttachmentAnnotationName(CoerciveEnum):
     &#34;The name of an icon that shall be used in displaying the annotation&#34;
@@ -1888,7 +1930,7 @@ def profile(self):
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.FileAttachmentAnnotationName.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1907,7 +1949,7 @@ def profile(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1488-L1515" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1583-L1610" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FontDescriptorFlags(Flag):
     &#34;&#34;&#34;An enumeration of the flags for the unsigned 32-bit integer entry in the font descriptor specifying various
@@ -1977,7 +2019,7 @@ This flag and the Nonsymbolic flag shall not both be set or both be clear."</p><
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1673-L1683" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1772-L1782" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GradientSpreadMethod(CoerciveEnum):
     &#34;Specifies how to fill the area outside the gradient&#39;s start and end points.&#34;
@@ -2015,7 +2057,7 @@ This flag and the Nonsymbolic flag shall not both be set or both be clear."</p><
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.GradientSpreadMethod.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2034,7 +2076,7 @@ This flag and the Nonsymbolic flag shall not both be set or both be clear."</p><
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1663-L1670" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1762-L1769" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GradientUnits(CoerciveEnum):
     &#34;Specifies the coordinate system for gradients.&#34;
@@ -2065,7 +2107,7 @@ This flag and the Nonsymbolic flag shall not both be set or both be clear."</p><
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.GradientUnits.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2084,7 +2126,7 @@ This flag and the Nonsymbolic flag shall not both be set or both be clear."</p><
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1307-L1335" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1402-L1430" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IntersectionRule(CoerciveEnum):
     &#34;&#34;&#34;
@@ -2151,7 +2193,7 @@ path; otherwise, it is inside."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.IntersectionRule.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2170,7 +2212,7 @@ path; otherwise, it is inside."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L286-L301" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L310-L325" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class MethodReturnValue(CoerciveIntFlag):
     &#34;&#34;&#34;
@@ -2219,7 +2261,7 @@ PAGE_BREAK | LINES</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.MethodReturnValue.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IF | str | int) ‑> ~IF</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2238,7 +2280,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1584-L1594" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1680-L1690" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutputIntentSubType(CoerciveEnum):
     &#34;Definition for Output Intent Subtypes&#34;
@@ -2276,7 +2318,7 @@ PAGE_BREAK | LINES</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.OutputIntentSubType.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2295,7 +2337,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1652-L1660" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1751-L1759" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFResourceType(Enum):
     EXT_G_STATE = intern(&#34;ExtGState&#34;)
@@ -2405,7 +2447,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1466-L1478" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1561-L1573" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFStyleKeys(Enum):
     &#34;An enumeration of the graphics state parameter dictionary keys.&#34;
@@ -2478,7 +2520,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1632-L1637" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1728-L1733" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageBoundaries(CoerciveEnum):
     ART_BOX = Name(&#34;ArtBox&#34;)
@@ -2519,7 +2561,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.PageBoundaries.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2538,7 +2580,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1597-L1616" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1693-L1712" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageLabelStyle(CoerciveEnum):
     &#34;Style of the page label&#34;
@@ -2597,7 +2639,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.PageLabelStyle.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2616,7 +2658,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1085-L1104" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1180-L1199" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageLayout(CoerciveEnum):
     &#34;Specify the page layout shall be used when the document is opened&#34;
@@ -2675,7 +2717,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.PageLayout.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2694,7 +2736,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1107-L1126" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1202-L1221" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageMode(CoerciveEnum):
     &#34;Specifying how to display the document on exiting full-screen mode&#34;
@@ -2753,7 +2795,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.PageMode.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2772,18 +2814,21 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1640-L1649" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1736-L1748" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageOrientation(CoerciveEnum):
     PORTRAIT = intern(&#34;P&#34;)
     LANDSCAPE = intern(&#34;L&#34;)
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union[&#34;PageOrientation&#34;, str], case_sensitive: bool = False
+    ) -&gt; &#34;PageOrientation&#34;:
         if isinstance(value, str):
             value = value.upper()
-        return super(cls, cls).coerce(value)</code></pre>
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )</code></pre>
 </details>
 <div class="desc"><p>An enumeration that provides a helper to coerce strings into enumeration members.</p></div>
 <h3>Ancestors</h3>
@@ -2805,7 +2850,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.PageOrientation.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.PageOrientation" href="#fpdf.enums.PageOrientation">PageOrientation</a> | str,<br>case_sensitive: bool = False) ‑> <a title="fpdf.enums.PageOrientation" href="#fpdf.enums.PageOrientation">PageOrientation</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2824,7 +2869,7 @@ attributes &ndash; see the documentation for details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1338-L1389" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1433-L1484" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PathPaintRule(CoerciveEnum):
     &#34;&#34;&#34;
@@ -2931,7 +2976,7 @@ identical path objects, painting the first with <code>FILL_NONZERO</code> and th
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.PathPaintRule.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -2950,7 +2995,7 @@ identical path objects, painting the first with <code>FILL_NONZERO</code> and th
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L971-L1009" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1063-L1104" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RenderStyle(CoerciveEnum):
     &#34;Defines how to render shapes&#34;
@@ -2972,25 +3017,28 @@ identical path objects, painting the first with <code>FILL_NONZERO</code> and th
     &#34;Draw lines and fill areas&#34;
 
     @property
-    def operator(self):
-        return {self.D: &#34;S&#34;, self.F: &#34;f&#34;, self.DF: &#34;B&#34;}[self]
+    def operator(self) -&gt; str:
+        return {RenderStyle.D: &#34;S&#34;, RenderStyle.F: &#34;f&#34;, RenderStyle.DF: &#34;B&#34;}[self]
 
     @property
-    def is_draw(self):
-        return self in (self.D, self.DF)
+    def is_draw(self) -&gt; bool:
+        return self in (RenderStyle.D, RenderStyle.DF)
 
     @property
-    def is_fill(self):
-        return self in (self.F, self.DF)
+    def is_fill(self) -&gt; bool:
+        return self in (RenderStyle.F, RenderStyle.DF)
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union[&#34;RenderStyle&#34;, str], case_sensitive: bool = False
+    ) -&gt; &#34;RenderStyle&#34;:
         if not value:
             return cls.D
         if value == &#34;FD&#34;:
             value = &#34;DF&#34;
-        return super(cls, cls).coerce(value)</code></pre>
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )</code></pre>
 </details>
 <div class="desc"><p>Defines how to render shapes</p></div>
 <h3>Ancestors</h3>
@@ -3019,7 +3067,7 @@ Filling color can be controlled with <code><a title="fpdf.fpdf.FPDF.set_fill_col
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.RenderStyle.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.RenderStyle" href="#fpdf.enums.RenderStyle">RenderStyle</a> | str,<br>case_sensitive: bool = False) ‑> <a title="fpdf.enums.RenderStyle" href="#fpdf.enums.RenderStyle">RenderStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -3031,42 +3079,42 @@ Filling color can be controlled with <code><a title="fpdf.fpdf.FPDF.set_fill_col
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.enums.RenderStyle.is_draw"><code class="name">prop <span class="ident">is_draw</span></code></dt>
+<dt id="fpdf.enums.RenderStyle.is_draw"><code class="name">prop <span class="ident">is_draw</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L994-L996" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1086-L1088" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def is_draw(self):
-    return self in (self.D, self.DF)</code></pre>
+def is_draw(self) -&gt; bool:
+    return self in (RenderStyle.D, RenderStyle.DF)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.enums.RenderStyle.is_fill"><code class="name">prop <span class="ident">is_fill</span></code></dt>
+<dt id="fpdf.enums.RenderStyle.is_fill"><code class="name">prop <span class="ident">is_fill</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L998-L1000" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1090-L1092" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def is_fill(self):
-    return self in (self.F, self.DF)</code></pre>
+def is_fill(self) -&gt; bool:
+    return self in (RenderStyle.F, RenderStyle.DF)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.enums.RenderStyle.operator"><code class="name">prop <span class="ident">operator</span></code></dt>
+<dt id="fpdf.enums.RenderStyle.operator"><code class="name">prop <span class="ident">operator</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L990-L992" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1082-L1084" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def operator(self):
-    return {self.D: &#34;S&#34;, self.F: &#34;f&#34;, self.DF: &#34;B&#34;}[self]</code></pre>
+def operator(self) -&gt; str:
+    return {RenderStyle.D: &#34;S&#34;, RenderStyle.F: &#34;f&#34;, RenderStyle.DF: &#34;B&#34;}[self]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -3080,7 +3128,7 @@ def operator(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L12-L20" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L25-L33" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SignatureFlag(IntEnum):
     SIGNATURES_EXIST = 1
@@ -3122,7 +3170,7 @@ as opposed to an incremental update.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1416-L1437" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1511-L1532" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StrokeCapStyle(CoerciveIntEnum):
     &#34;&#34;&#34;
@@ -3178,7 +3226,7 @@ the line width and is squared off."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.StrokeCapStyle.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -3197,7 +3245,7 @@ the line width and is squared off."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1440-L1463" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1535-L1558" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StrokeJoinStyle(CoerciveIntEnum):
     &#34;&#34;&#34;
@@ -3258,7 +3306,7 @@ corner."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.StrokeJoinStyle.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -3271,13 +3319,13 @@ corner."</p></div>
 </dd>
 <dt id="fpdf.enums.TableBorderStyle"><code class="flex name class">
 <span>class <span class="ident">TableBorderStyle</span></span>
-<span>(</span><span>thickness: float | None = None,<br>color: int | Tuple[int, int, int] = None,<br>dash: float | None = None,<br>gap: float = 0.0,<br>phase: float = 0.0)</span>
+<span>(</span><span>thickness: float | None = None,<br>color: int | tuple[int, int, int] | DeviceRGB | DeviceGray | DeviceCMYK | None = None,<br>dash: float | None = None,<br>gap: float = 0.0,<br>phase: float = 0.0)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L372-L487" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L396-L520" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class TableBorderStyle:
@@ -3289,13 +3337,15 @@ class TableBorderStyle:
     &#34;&#34;&#34;
 
     thickness: Optional[float] = None
-    color: Union[int, Tuple[int, int, int]] = None
+    color: Union[
+        int, tuple[int, int, int], &#34;DeviceRGB&#34;, &#34;DeviceGray&#34;, &#34;DeviceCMYK&#34;, None
+    ] = None
     dash: Optional[float] = None
     gap: float = 0.0
     phase: float = 0.0
 
     @staticmethod
-    def from_bool(should_draw):
+    def from_bool(should_draw: Union[bool, &#34;TableBorderStyle&#34;]) -&gt; &#34;TableBorderStyle&#34;:
         &#34;&#34;&#34;
         From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object
         &#34;&#34;&#34;
@@ -3305,7 +3355,7 @@ class TableBorderStyle:
             return TableBorderStyle()  # keep default stroke
         return TableBorderStyle(thickness=0.0)  # don&#39;t draw the border
 
-    def _changes_thickness(self, pdf):
+    def _changes_thickness(self, pdf: &#34;FPDF&#34;) -&gt; bool:
         &#34;&#34;&#34;Return True if this style changes the thickness of the draw command, False otherwise&#34;&#34;&#34;
         return (
             self.thickness is not None
@@ -3313,20 +3363,20 @@ class TableBorderStyle:
             and self.thickness != pdf.line_width
         )
 
-    def _changes_color(self, pdf):
+    def _changes_color(self, pdf: &#34;FPDF&#34;) -&gt; bool:
         &#34;&#34;&#34;Return True if this style changes the color of the draw command, False otherwise&#34;&#34;&#34;
         return self.color is not None and self.color != pdf.draw_color
 
     @property
-    def dash_dict(self):
+    def dash_dict(self) -&gt; dict[str, Optional[float]]:
         &#34;&#34;&#34;Return dict object specifying dash in the same format as the pdf object&#34;&#34;&#34;
         return {&#34;dash&#34;: self.dash, &#34;gap&#34;: self.gap, &#34;phase&#34;: self.phase}
 
-    def _changes_dash(self, pdf):
+    def _changes_dash(self, pdf: &#34;FPDF&#34;) -&gt; bool:
         &#34;&#34;&#34;Return True if this style changes the dash of the draw command, False otherwise&#34;&#34;&#34;
         return self.dash is not None and self.dash_dict != pdf.dash_pattern
 
-    def changes_stroke(self, pdf):
+    def changes_stroke(self, pdf: &#34;FPDF&#34;) -&gt; bool:
         &#34;&#34;&#34;Return True if this style changes the any aspect of the draw command, False otherwise&#34;&#34;&#34;
         return self.should_render() and (
             self._changes_color(pdf)
@@ -3334,16 +3384,18 @@ class TableBorderStyle:
             or self._changes_dash(pdf)
         )
 
-    def should_render(self):
+    def should_render(self) -&gt; bool:
         &#34;&#34;&#34;Return True if this style produces a visible stroke, False otherwise&#34;&#34;&#34;
         return self.thickness is None or self.thickness &gt; 0.0
 
-    def _get_change_thickness_command(self, scale, pdf=None):
+    def _get_change_thickness_command(
+        self, scale: float, pdf: Optional[&#34;FPDF&#34;] = None
+    ) -&gt; list[str]:
         &#34;&#34;&#34;Return list with string for the draw command to change thickness (empty if no change)&#34;&#34;&#34;
         thickness = self.thickness if pdf is None else pdf.line_width
         return [] if thickness is None else [f&#34;{thickness * scale:.2f} w&#34;]
 
-    def _get_change_line_color_command(self, pdf=None):
+    def _get_change_line_color_command(self, pdf: Optional[&#34;FPDF&#34;] = None) -&gt; list[str]:
         &#34;&#34;&#34;Return list with string for the draw command to change color (empty if no change)&#34;&#34;&#34;
         if pdf is None:
             color = self.color
@@ -3355,7 +3407,9 @@ class TableBorderStyle:
             else [convert_to_device_color(color).serialize().upper()]
         )
 
-    def _get_change_dash_command(self, scale, pdf=None):
+    def _get_change_dash_command(
+        self, scale: float, pdf: Optional[&#34;FPDF&#34;] = None
+    ) -&gt; list[str]:
         &#34;&#34;&#34;Return list with string for the draw command to change dash (empty if no change)&#34;&#34;&#34;
         dash_dict = self.dash_dict if pdf is None else pdf.dash_pattern
         dash, gap, phase = dash_dict[&#34;dash&#34;], dash_dict[&#34;gap&#34;], dash_dict[&#34;phase&#34;]
@@ -3363,11 +3417,12 @@ class TableBorderStyle:
             return []
         if dash &lt;= 0:
             return [&#34;[] 0 d&#34;]
-        if gap &lt;= 0:
+        assert phase is not None
+        if gap is None or gap &lt;= 0:
             return [f&#34;[{dash * scale:.3f}] {phase * scale:.3f} d&#34;]
         return [f&#34;[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d&#34;]
 
-    def get_change_stroke_commands(self, scale):
+    def get_change_stroke_commands(self, scale: float) -&gt; list[str]:
         &#34;&#34;&#34;Return list of strings for the draw command to change stroke (empty if no change)&#34;&#34;&#34;
         return (
             self._get_change_dash_command(scale)
@@ -3376,11 +3431,13 @@ class TableBorderStyle:
         )
 
     @staticmethod
-    def get_line_command(x1, y1, x2, y2):
+    def get_line_command(x1: float, y1: float, x2: float, y2: float) -&gt; list[str]:
         &#34;&#34;&#34;Return list with string for the command to draw a line at the specified endpoints&#34;&#34;&#34;
         return [f&#34;{x1:.2f} {y1:.2f} m {x2:.2f} {y2:.2f} l S&#34;]
 
-    def get_draw_commands(self, pdf, x1, y1, x2, y2):
+    def get_draw_commands(
+        self, pdf: &#34;FPDF&#34;, x1: float, y1: float, x2: float, y2: float
+    ) -&gt; list[str]:
         &#34;&#34;&#34;
         Get draw commands for this section of a cell border. x and y are presumed to be already
         shifted and scaled.
@@ -3407,16 +3464,16 @@ class TableBorderStyle:
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBorderStyle.from_bool"><code class="name flex">
-<span>def <span class="ident">from_bool</span></span>(<span>should_draw)</span>
+<span>def <span class="ident">from_bool</span></span>(<span>should_draw: bool | <a title="fpdf.enums.TableBorderStyle" href="#fpdf.enums.TableBorderStyle">TableBorderStyle</a>) ‑> <a title="fpdf.enums.TableBorderStyle" href="#fpdf.enums.TableBorderStyle">TableBorderStyle</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L387-L396" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L413-L422" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@staticmethod
-def from_bool(should_draw):
+def from_bool(should_draw: Union[bool, &#34;TableBorderStyle&#34;]) -&gt; &#34;TableBorderStyle&#34;:
     &#34;&#34;&#34;
     From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object
     &#34;&#34;&#34;
@@ -3429,16 +3486,16 @@ def from_bool(should_draw):
 <div class="desc"><p>From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object</p></div>
 </dd>
 <dt id="fpdf.enums.TableBorderStyle.get_line_command"><code class="name flex">
-<span>def <span class="ident">get_line_command</span></span>(<span>x1, y1, x2, y2)</span>
+<span>def <span class="ident">get_line_command</span></span>(<span>x1: float, y1: float, x2: float, y2: float) ‑> list[str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L468-L471" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L499-L502" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@staticmethod
-def get_line_command(x1, y1, x2, y2):
+def get_line_command(x1: float, y1: float, x2: float, y2: float) -&gt; list[str]:
     &#34;&#34;&#34;Return list with string for the command to draw a line at the specified endpoints&#34;&#34;&#34;
     return [f&#34;{x1:.2f} {y1:.2f} m {x2:.2f} {y2:.2f} l S&#34;]</code></pre>
 </details>
@@ -3447,7 +3504,7 @@ def get_line_command(x1, y1, x2, y2):
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBorderStyle.color"><code class="name">var <span class="ident">color</span> : int | Tuple[int, int, int]</code></dt>
+<dt id="fpdf.enums.TableBorderStyle.color"><code class="name">var <span class="ident">color</span> : int | tuple[int, int, int] | DeviceRGB | DeviceGray | DeviceCMYK | None</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -3455,15 +3512,15 @@ def get_line_command(x1, y1, x2, y2):
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBorderStyle.dash_dict"><code class="name">prop <span class="ident">dash_dict</span></code></dt>
+<dt id="fpdf.enums.TableBorderStyle.dash_dict"><code class="name">prop <span class="ident">dash_dict</span> : dict[str, float | None]</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L410-L413" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L436-L439" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def dash_dict(self):
+def dash_dict(self) -&gt; dict[str, Optional[float]]:
     &#34;&#34;&#34;Return dict object specifying dash in the same format as the pdf object&#34;&#34;&#34;
     return {&#34;dash&#34;: self.dash, &#34;gap&#34;: self.gap, &#34;phase&#34;: self.phase}</code></pre>
 </details>
@@ -3485,15 +3542,15 @@ def dash_dict(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBorderStyle.changes_stroke"><code class="name flex">
-<span>def <span class="ident">changes_stroke</span></span>(<span>self, pdf)</span>
+<span>def <span class="ident">changes_stroke</span></span>(<span>self, pdf: FPDF) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L419-L425" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L445-L451" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def changes_stroke(self, pdf):
+<pre><code class="python">def changes_stroke(self, pdf: &#34;FPDF&#34;) -&gt; bool:
     &#34;&#34;&#34;Return True if this style changes the any aspect of the draw command, False otherwise&#34;&#34;&#34;
     return self.should_render() and (
         self._changes_color(pdf)
@@ -3504,15 +3561,15 @@ def dash_dict(self):
 <div class="desc"><p>Return True if this style changes the any aspect of the draw command, False otherwise</p></div>
 </dd>
 <dt id="fpdf.enums.TableBorderStyle.get_change_stroke_commands"><code class="name flex">
-<span>def <span class="ident">get_change_stroke_commands</span></span>(<span>self, scale)</span>
+<span>def <span class="ident">get_change_stroke_commands</span></span>(<span>self, scale: float) ‑> list[str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L460-L466" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L491-L497" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_change_stroke_commands(self, scale):
+<pre><code class="python">def get_change_stroke_commands(self, scale: float) -&gt; list[str]:
     &#34;&#34;&#34;Return list of strings for the draw command to change stroke (empty if no change)&#34;&#34;&#34;
     return (
         self._get_change_dash_command(scale)
@@ -3523,15 +3580,17 @@ def dash_dict(self):
 <div class="desc"><p>Return list of strings for the draw command to change stroke (empty if no change)</p></div>
 </dd>
 <dt id="fpdf.enums.TableBorderStyle.get_draw_commands"><code class="name flex">
-<span>def <span class="ident">get_draw_commands</span></span>(<span>self, pdf, x1, y1, x2, y2)</span>
+<span>def <span class="ident">get_draw_commands</span></span>(<span>self, pdf: FPDF, x1: float, y1: float, x2: float, y2: float) ‑> list[str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L473-L487" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L504-L520" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_draw_commands(self, pdf, x1, y1, x2, y2):
+<pre><code class="python">def get_draw_commands(
+    self, pdf: &#34;FPDF&#34;, x1: float, y1: float, x2: float, y2: float
+) -&gt; list[str]:
     &#34;&#34;&#34;
     Get draw commands for this section of a cell border. x and y are presumed to be already
     shifted and scaled.
@@ -3551,15 +3610,15 @@ def dash_dict(self):
 shifted and scaled.</p></div>
 </dd>
 <dt id="fpdf.enums.TableBorderStyle.should_render"><code class="name flex">
-<span>def <span class="ident">should_render</span></span>(<span>self)</span>
+<span>def <span class="ident">should_render</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L427-L429" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L453-L455" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def should_render(self):
+<pre><code class="python">def should_render(self) -&gt; bool:
     &#34;&#34;&#34;Return True if this style produces a visible stroke, False otherwise&#34;&#34;&#34;
     return self.thickness is None or self.thickness &gt; 0.0</code></pre>
 </details>
@@ -3574,7 +3633,7 @@ shifted and scaled.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L652-L741" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L725-L822" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayout(abc.ABC):
     &#34;&#34;&#34;
@@ -3601,16 +3660,24 @@ shifted and scaled.</p></div>
             the headings
     &#34;&#34;&#34;
 
+    ALL: ClassVar[&#34;TableBordersLayout&#34;]
+    NONE: ClassVar[&#34;TableBordersLayout&#34;]
+    INTERNAL: ClassVar[&#34;TableBordersLayout&#34;]
+    MINIMAL: ClassVar[&#34;TableBordersLayout&#34;]
+    HORIZONTAL_LINES: ClassVar[&#34;TableBordersLayout&#34;]
+    NO_HORIZONTAL_LINES: ClassVar[&#34;TableBordersLayout&#34;]
+    SINGLE_TOP_LINE: ClassVar[&#34;TableBordersLayout&#34;]
+
     @abc.abstractmethod
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
     ) -&gt; TableCellStyle:
         &#34;&#34;&#34;Specify the desired TableCellStyle for the given position in the table
 
@@ -3634,7 +3701,7 @@ shifted and scaled.</p></div>
         raise NotImplementedError
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value: Union[&#34;TableBordersLayout&#34;, str]) -&gt; &#34;TableBordersLayout&#34;:
         &#34;&#34;&#34;
         Attempt to coerce `value` into a member of this class.
 
@@ -3712,31 +3779,31 @@ the headings</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayout.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayout.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayout.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayout.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayout.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayout.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayout.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayout.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -3744,7 +3811,7 @@ the headings</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayout.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Attempt to coerce <code>value</code> into a member of this class.</p>
@@ -3771,24 +3838,24 @@ string.</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayout.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L677-L707" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L758-L788" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@abc.abstractmethod
 def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
 ) -&gt; TableCellStyle:
     &#34;&#34;&#34;Specify the desired TableCellStyle for the given position in the table
 
@@ -3847,21 +3914,21 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L744-L757" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L825-L838" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutAll(TableBordersLayout):
     &#34;&#34;&#34;Class for drawing all cell borders&#34;&#34;&#34;
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(left=True, bottom=True, right=True, top=True)</code></pre>
 </details>
 <div class="desc"><p>Class for drawing all cell borders</p></div>
@@ -3872,7 +3939,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutAll.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3880,7 +3947,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutAll.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3888,7 +3955,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutAll.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3896,7 +3963,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutAll.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3904,7 +3971,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutAll.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3912,7 +3979,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutAll.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3920,7 +3987,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutAll.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutAll.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -3932,7 +3999,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutAll.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -3945,7 +4012,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutAll.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -3955,18 +4022,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L747-L757" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L828-L838" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(left=True, bottom=True, right=True, top=True)</code></pre>
 </details>
 <div class="desc inherited"><p>Specify the desired TableCellStyle for the given position in the table …</p></div>
@@ -3980,21 +4047,21 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L836-L854" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L917-L935" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutHorizontalLines(TableBordersLayout):
     &#34;&#34;&#34;Class to draw only horizontal lines&#34;&#34;&#34;
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(
             left=False,
             bottom=row_idx &lt; num_rows - 1,
@@ -4010,7 +4077,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4018,7 +4085,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4026,7 +4093,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4034,7 +4101,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4042,7 +4109,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4050,7 +4117,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4058,7 +4125,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutHorizontalLines.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4070,7 +4137,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutHorizontalLines.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4083,7 +4150,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutHorizontalLines.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4093,18 +4160,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L839-L854" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L920-L935" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(
         left=False,
         bottom=row_idx &lt; num_rows - 1,
@@ -4123,21 +4190,21 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L784-L802" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L865-L883" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutInternal(TableBordersLayout):
     &#34;&#34;&#34;Class to draw only internal horizontal &amp; vertical borders&#34;&#34;&#34;
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(
             left=col_idx &gt; 0,
             bottom=row_idx &lt; num_rows - 1,
@@ -4153,7 +4220,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutInternal.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4161,7 +4228,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutInternal.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4169,7 +4236,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutInternal.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4177,7 +4244,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutInternal.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4185,7 +4252,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutInternal.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4193,7 +4260,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutInternal.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4201,7 +4268,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutInternal.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutInternal.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4213,7 +4280,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutInternal.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4226,7 +4293,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutInternal.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4236,18 +4303,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L787-L802" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L868-L883" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(
         left=col_idx &gt; 0,
         bottom=row_idx &lt; num_rows - 1,
@@ -4266,7 +4333,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L809-L829" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L890-L910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutMinimal(TableBordersLayout):
     &#34;&#34;&#34;
@@ -4275,14 +4342,14 @@ with colspan = 3, then num_col_pos = 6</dd>
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(
             left=col_idx &gt; 0,
             bottom=row_idx &lt; num_heading_rows,
@@ -4298,7 +4365,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4306,7 +4373,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4314,7 +4381,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4322,7 +4389,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4330,7 +4397,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4338,7 +4405,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4346,7 +4413,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutMinimal.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutMinimal.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4358,7 +4425,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutMinimal.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4371,7 +4438,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutMinimal.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4381,18 +4448,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L814-L829" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L895-L910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(
         left=col_idx &gt; 0,
         bottom=row_idx &lt; num_heading_rows,
@@ -4411,21 +4478,21 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L861-L879" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L942-L960" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutNoHorizontalLines(TableBordersLayout):
     &#34;&#34;&#34;Class to draw all cells border except interior horizontal lines after the headings&#34;&#34;&#34;
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(
             left=True,
             bottom=row_idx == num_rows - 1,
@@ -4441,7 +4508,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4449,7 +4516,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4457,7 +4524,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4465,7 +4532,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4473,7 +4540,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4481,7 +4548,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4489,7 +4556,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4501,7 +4568,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4514,7 +4581,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutNoHorizontalLines.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4524,18 +4591,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L864-L879" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L945-L960" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(
         left=True,
         bottom=row_idx == num_rows - 1,
@@ -4554,21 +4621,21 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L764-L777" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L845-L858" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutNone(TableBordersLayout):
     &#34;&#34;&#34;Class for drawing zero cell borders&#34;&#34;&#34;
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(left=False, bottom=False, right=False, top=False)</code></pre>
 </details>
 <div class="desc"><p>Class for drawing zero cell borders</p></div>
@@ -4579,7 +4646,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutNone.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4587,7 +4654,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNone.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4595,7 +4662,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNone.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4603,7 +4670,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNone.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4611,7 +4678,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNone.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4619,7 +4686,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNone.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4627,7 +4694,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutNone.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutNone.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4639,7 +4706,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutNone.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4652,7 +4719,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutNone.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4662,18 +4729,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L767-L777" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L848-L858" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(left=False, bottom=False, right=False, top=False)</code></pre>
 </details>
 <div class="desc inherited"><p>Specify the desired TableCellStyle for the given position in the table …</p></div>
@@ -4687,21 +4754,21 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L886-L901" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L967-L982" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayoutSingleTopLine(TableBordersLayout):
     &#34;&#34;&#34;Class to draw a single top line&#34;&#34;&#34;
 
     def cell_style_getter(
         self,
-        row_idx,
-        col_idx,
-        col_pos,
-        num_heading_rows,
-        num_rows,
-        num_col_idx,
-        num_col_pos,
-    ):
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -&gt; TableCellStyle:
         return TableCellStyle(
             left=False, bottom=row_idx &lt;= num_heading_rows - 1, right=False, top=False
         )</code></pre>
@@ -4714,7 +4781,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.ALL"><code class="name">var <span class="ident">ALL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.ALL"><code class="name">var <span class="ident">ALL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4722,7 +4789,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.HORIZONTAL_LINES"><code class="name">var <span class="ident">HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4730,7 +4797,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.INTERNAL"><code class="name">var <span class="ident">INTERNAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4738,7 +4805,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.MINIMAL"><code class="name">var <span class="ident">MINIMAL</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4746,7 +4813,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.NONE"><code class="name">var <span class="ident">NONE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.NONE"><code class="name">var <span class="ident">NONE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4754,7 +4821,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.NO_HORIZONTAL_LINES"><code class="name">var <span class="ident">NO_HORIZONTAL_LINES</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4762,7 +4829,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 </p>
 <div class="desc inherited"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span></code></dt>
+<dt id="fpdf.enums.TableBordersLayoutSingleTopLine.SINGLE_TOP_LINE"><code class="name">var <span class="ident">SINGLE_TOP_LINE</span> : ClassVar[<a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a>]</code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
@@ -4774,7 +4841,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutSingleTopLine.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a> | str) ‑> <a title="fpdf.enums.TableBordersLayout" href="#fpdf.enums.TableBordersLayout">TableBordersLayout</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4787,7 +4854,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableBordersLayoutSingleTopLine.cell_style_getter"><code class="name flex">
-<span>def <span class="ident">cell_style_getter</span></span>(<span>self, row_idx, col_idx, col_pos, num_heading_rows, num_rows, num_col_idx, num_col_pos)</span>
+<span>def <span class="ident">cell_style_getter</span></span>(<span>self,<br>row_idx: int,<br>col_idx: int,<br>col_pos: int,<br>num_heading_rows: int,<br>num_rows: int,<br>num_col_idx: int,<br>num_col_pos: int) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -4797,18 +4864,18 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L889-L901" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L970-L982" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell_style_getter(
     self,
-    row_idx,
-    col_idx,
-    col_pos,
-    num_heading_rows,
-    num_rows,
-    num_col_idx,
-    num_col_pos,
-):
+    row_idx: int,
+    col_idx: int,
+    col_pos: int,
+    num_heading_rows: int,
+    num_rows: int,
+    num_col_idx: int,
+    num_col_pos: int,
+) -&gt; TableCellStyle:
     return TableCellStyle(
         left=False, bottom=row_idx &lt;= num_heading_rows - 1, right=False, top=False
     )</code></pre>
@@ -4825,7 +4892,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L908-L950" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L998-L1042" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableCellFillMode(CoerciveEnum):
     &#34;Defines which table cells to fill&#34;
@@ -4848,26 +4915,28 @@ with colspan = 3, then num_col_pos = 6</dd>
     EVEN_COLUMNS = intern(&#34;EVEN_COLUMNS&#34;)
     &#34;Fill only table cells in even columns&#34;
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
-        &#34;Any class that has a .should_fill_cell() method is considered a valid &#39;TableCellFillMode&#39; (duck-typing)&#34;
+    def coerce(  # type: ignore[override]
+        cls,
+        value: Union[TableCellFillModeType, str],
+        case_sensitive: bool = False,
+    ) -&gt; TableCellFillModeType:
         if callable(getattr(value, &#34;should_fill_cell&#34;, None)):
-            return value
-        return super().coerce(value)
+            return cast(CellFillProtocol, value)
+        return super().coerce(value, case_sensitive)  # type: ignore[arg-type] # pyright: ignore[reportArgumentType]
 
-    def should_fill_cell(self, i, j):
-        if self is self.NONE:
+    def should_fill_cell(self, i: int, j: int) -&gt; bool:
+        if self is TableCellFillMode.NONE:
             return False
-        if self is self.ALL:
+        if self is TableCellFillMode.ALL:
             return True
-        if self is self.ROWS:
+        if self is TableCellFillMode.ROWS:
             return i % 2 == 1
-        if self is self.COLUMNS:
+        if self is TableCellFillMode.COLUMNS:
             return j % 2 == 1
-        if self is self.EVEN_ROWS:
+        if self is TableCellFillMode.EVEN_ROWS:
             return i % 2 == 0
-        if self is self.EVEN_COLUMNS:
+        if self is TableCellFillMode.EVEN_COLUMNS:
             return j % 2 == 0
         raise NotImplementedError</code></pre>
 </details>
@@ -4907,35 +4976,39 @@ with colspan = 3, then num_col_pos = 6</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableCellFillMode.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TableCellFillMode" href="#fpdf.enums.TableCellFillMode">TableCellFillMode</a> | <a title="fpdf.enums.CellFillProtocol" href="#fpdf.enums.CellFillProtocol">CellFillProtocol</a> | str,<br>case_sensitive: bool = False) ‑> <a title="fpdf.enums.TableCellFillMode" href="#fpdf.enums.TableCellFillMode">TableCellFillMode</a> | <a title="fpdf.enums.CellFillProtocol" href="#fpdf.enums.CellFillProtocol">CellFillProtocol</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)</p></div>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.enums.CoerciveEnum" href="#fpdf.enums.CoerciveEnum">CoerciveEnum</a></code>.<code><a title="fpdf.enums.CoerciveEnum.coerce" href="#fpdf.enums.CoerciveEnum.coerce">coerce</a></code>
+</p>
+<div class="desc inherited"><p>Attempt to coerce <code>value</code> into a member of this enumeration …</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableCellFillMode.should_fill_cell"><code class="name flex">
-<span>def <span class="ident">should_fill_cell</span></span>(<span>self, i, j)</span>
+<span>def <span class="ident">should_fill_cell</span></span>(<span>self, i: int, j: int) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L937-L950" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1029-L1042" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def should_fill_cell(self, i, j):
-    if self is self.NONE:
+<pre><code class="python">def should_fill_cell(self, i: int, j: int) -&gt; bool:
+    if self is TableCellFillMode.NONE:
         return False
-    if self is self.ALL:
+    if self is TableCellFillMode.ALL:
         return True
-    if self is self.ROWS:
+    if self is TableCellFillMode.ROWS:
         return i % 2 == 1
-    if self is self.COLUMNS:
+    if self is TableCellFillMode.COLUMNS:
         return j % 2 == 1
-    if self is self.EVEN_ROWS:
+    if self is TableCellFillMode.EVEN_ROWS:
         return i % 2 == 0
-    if self is self.EVEN_COLUMNS:
+    if self is TableCellFillMode.EVEN_COLUMNS:
         return j % 2 == 0
     raise NotImplementedError</code></pre>
 </details>
@@ -4951,7 +5024,7 @@ with colspan = 3, then num_col_pos = 6</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L490-L649" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L523-L722" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class TableCellStyle:
@@ -4964,12 +5037,12 @@ class TableCellStyle:
         top: bool or TableBorderStyle specifying the style of the cell&#39;s top border
     &#34;&#34;&#34;
 
-    left: Union[bool, TableBorderStyle] = False
-    bottom: Union[bool, TableBorderStyle] = False
-    right: Union[bool, TableBorderStyle] = False
-    top: Union[bool, TableBorderStyle] = False
+    left: bool | TableBorderStyle = False
+    bottom: bool | TableBorderStyle = False
+    right: bool | TableBorderStyle = False
+    top: bool | TableBorderStyle = False
 
-    def _get_common_border_style(self):
+    def _get_common_border_style(self) -&gt; Optional[bool | TableBorderStyle]:
         &#34;&#34;&#34;Return bool or TableBorderStyle if all borders have the same style, otherwise None&#34;&#34;&#34;
         if all(
             isinstance(border, bool)
@@ -4991,7 +5064,7 @@ class TableCellStyle:
         return None
 
     @staticmethod
-    def get_change_fill_color_command(color):
+    def get_change_fill_color_command(color: Union[&#34;Color&#34;, str]) -&gt; list[str]:
         &#34;&#34;&#34;Return list with string for command to change device color (empty list if no color)&#34;&#34;&#34;
         return (
             []
@@ -4999,7 +5072,15 @@ class TableCellStyle:
             else [convert_to_device_color(color).serialize().lower()]
         )
 
-    def get_draw_commands(self, pdf, x1, y1, x2, y2, fill_color=None):
+    def get_draw_commands(
+        self,
+        pdf: &#34;FPDF&#34;,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        fill_color: Optional[Union[&#34;Color&#34;, str]] = None,
+    ) -&gt; list[str]:
         &#34;&#34;&#34;
         Get list of primitive commands to draw the cell border for this cell, and fill it with the
         given fill color.
@@ -5032,10 +5113,18 @@ class TableCellStyle:
 
         return draw_commands
 
-    def _draw_when_no_common_style(self, x1, y1, x2, y2, pdf, fill_color):
+    def _draw_when_no_common_style(
+        self,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        pdf: &#34;FPDF&#34;,
+        fill_color: Optional[Union[&#34;Color&#34;, str]],
+    ) -&gt; tuple[list[str], bool]:
         &#34;&#34;&#34;Get draw commands for case when some of the borders have different styles&#34;&#34;&#34;
         needs_wrap = False
-        draw_commands = []
+        draw_commands: list[str] = []
         if fill_color is not None:
             # draw fill with no box
             if fill_color != pdf.fill_color:
@@ -5057,10 +5146,18 @@ class TableCellStyle:
         )
         return draw_commands, needs_wrap
 
-    def _draw_with_no_border(self, x1, y1, x2, y2, pdf, fill_color):
+    def _draw_with_no_border(
+        self,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        pdf: &#34;FPDF&#34;,
+        fill_color: Optional[Union[&#34;Color&#34;, str]],
+    ) -&gt; tuple[list[str], bool]:
         &#34;&#34;&#34;Get draw commands for case when all of the borders are off / not drawn&#34;&#34;&#34;
         needs_wrap = False
-        draw_commands = []
+        draw_commands: list[str] = []
         if fill_color is not None:
             # draw fill with no box
             if fill_color != pdf.fill_color:
@@ -5070,11 +5167,19 @@ class TableCellStyle:
         return draw_commands, needs_wrap
 
     def _draw_all_borders_the_same(
-        self, x1, y1, x2, y2, pdf, fill_color, scale, common_border_style
-    ):
+        self,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        pdf: &#34;FPDF&#34;,
+        fill_color: Optional[Union[&#34;Color&#34;, str]],
+        scale: float,
+        common_border_style: Optional[TableBorderStyle | bool],
+    ) -&gt; tuple[list[str], bool]:
         &#34;&#34;&#34;Get draw commands for case when all the borders have the same style&#34;&#34;&#34;
         needs_wrap = False
-        draw_commands = []
+        draw_commands: list[str] = []
         # all borders are the same
         if isinstance(
             common_border_style, TableBorderStyle
@@ -5093,7 +5198,7 @@ class TableCellStyle:
             draw_commands.append(f&#34;{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re S&#34;)
         return draw_commands, needs_wrap
 
-    def override_cell_border(self, cell_border: CellBordersLayout):
+    def override_cell_border(self, cell_border: CellBordersLayout) -&gt; &#34;TableCellStyle&#34;:
         &#34;&#34;&#34;Allow override by CellBordersLayout mechanism&#34;&#34;&#34;
         return (
             self
@@ -5106,11 +5211,19 @@ class TableCellStyle:
             )
         )
 
-    def draw_cell_border(self, pdf, x1, y1, x2, y2, fill_color=None):
+    def draw_cell_border(
+        self,
+        pdf: &#34;FPDF&#34;,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        fill_color: Optional[Union[&#34;Color&#34;, str]] = None,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Draw the cell border for this cell, and fill it with the given fill color.
         &#34;&#34;&#34;
-        pdf._out(  # pylint: disable=protected-access
+        pdf._out(  # pylint: disable=protected-access # pyright: ignore[reportPrivateUsage]
             &#34; &#34;.join(self.get_draw_commands(pdf, x1, y1, x2, y2, fill_color=fill_color))
         )</code></pre>
 </details>
@@ -5129,16 +5242,16 @@ class TableCellStyle:
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableCellStyle.get_change_fill_color_command"><code class="name flex">
-<span>def <span class="ident">get_change_fill_color_command</span></span>(<span>color)</span>
+<span>def <span class="ident">get_change_fill_color_command</span></span>(<span>color: Color | str) ‑> list[str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L527-L534" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L560-L567" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@staticmethod
-def get_change_fill_color_command(color):
+def get_change_fill_color_command(color: Union[&#34;Color&#34;, str]) -&gt; list[str]:
     &#34;&#34;&#34;Return list with string for command to change device color (empty list if no color)&#34;&#34;&#34;
     return (
         []
@@ -5171,34 +5284,50 @@ def get_change_fill_color_command(color):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TableCellStyle.draw_cell_border"><code class="name flex">
-<span>def <span class="ident">draw_cell_border</span></span>(<span>self, pdf, x1, y1, x2, y2, fill_color=None)</span>
+<span>def <span class="ident">draw_cell_border</span></span>(<span>self,<br>pdf: FPDF,<br>x1: float,<br>y1: float,<br>x2: float,<br>y2: float,<br>fill_color: Color | str | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L643-L649" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L708-L722" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def draw_cell_border(self, pdf, x1, y1, x2, y2, fill_color=None):
+<pre><code class="python">def draw_cell_border(
+    self,
+    pdf: &#34;FPDF&#34;,
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    fill_color: Optional[Union[&#34;Color&#34;, str]] = None,
+) -&gt; None:
     &#34;&#34;&#34;
     Draw the cell border for this cell, and fill it with the given fill color.
     &#34;&#34;&#34;
-    pdf._out(  # pylint: disable=protected-access
+    pdf._out(  # pylint: disable=protected-access # pyright: ignore[reportPrivateUsage]
         &#34; &#34;.join(self.get_draw_commands(pdf, x1, y1, x2, y2, fill_color=fill_color))
     )</code></pre>
 </details>
 <div class="desc"><p>Draw the cell border for this cell, and fill it with the given fill color.</p></div>
 </dd>
 <dt id="fpdf.enums.TableCellStyle.get_draw_commands"><code class="name flex">
-<span>def <span class="ident">get_draw_commands</span></span>(<span>self, pdf, x1, y1, x2, y2, fill_color=None)</span>
+<span>def <span class="ident">get_draw_commands</span></span>(<span>self,<br>pdf: FPDF,<br>x1: float,<br>y1: float,<br>x2: float,<br>y2: float,<br>fill_color: Color | str | None = None) ‑> list[str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L536-L567" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L569-L608" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_draw_commands(self, pdf, x1, y1, x2, y2, fill_color=None):
+<pre><code class="python">def get_draw_commands(
+    self,
+    pdf: &#34;FPDF&#34;,
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    fill_color: Optional[Union[&#34;Color&#34;, str]] = None,
+) -&gt; list[str]:
     &#34;&#34;&#34;
     Get list of primitive commands to draw the cell border for this cell, and fill it with the
     given fill color.
@@ -5235,15 +5364,15 @@ def get_change_fill_color_command(color):
 given fill color.</p></div>
 </dd>
 <dt id="fpdf.enums.TableCellStyle.override_cell_border"><code class="name flex">
-<span>def <span class="ident">override_cell_border</span></span>(<span>self,<br>cell_border: <a title="fpdf.enums.CellBordersLayout" href="#fpdf.enums.CellBordersLayout">CellBordersLayout</a>)</span>
+<span>def <span class="ident">override_cell_border</span></span>(<span>self,<br>cell_border: <a title="fpdf.enums.CellBordersLayout" href="#fpdf.enums.CellBordersLayout">CellBordersLayout</a>) ‑> <a title="fpdf.enums.TableCellStyle" href="#fpdf.enums.TableCellStyle">TableCellStyle</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L630-L641" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L695-L706" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def override_cell_border(self, cell_border: CellBordersLayout):
+<pre><code class="python">def override_cell_border(self, cell_border: CellBordersLayout) -&gt; &#34;TableCellStyle&#34;:
     &#34;&#34;&#34;Allow override by CellBordersLayout mechanism&#34;&#34;&#34;
     return (
         self
@@ -5268,7 +5397,7 @@ given fill color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L961-L968" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1053-L1060" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableHeadingsDisplay(CoerciveIntEnum):
     &#34;Defines how the table headings should be displayed&#34;
@@ -5302,7 +5431,7 @@ given fill color.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableHeadingsDisplay.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5321,7 +5450,7 @@ given fill color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L953-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1045-L1050" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableSpan(CoerciveEnum):
     ROW = intern(&#34;ROW&#34;)
@@ -5350,7 +5479,7 @@ given fill color.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableSpan.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5369,7 +5498,7 @@ given fill color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1568-L1581" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1664-L1677" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextDirection(CoerciveEnum):
     &#34;Text rendering direction for text shaping&#34;
@@ -5414,7 +5543,7 @@ given fill color.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TextDirection.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5433,7 +5562,7 @@ given fill color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L233-L283" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L257-L307" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextEmphasis(CoerciveIntFlag):
     &#34;&#34;&#34;
@@ -5459,21 +5588,21 @@ given fill color.</p></div>
     &#34;Strikethrough&#34;
 
     @property
-    def style(self):
+    def style(self) -&gt; str:
         return &#34;&#34;.join(
             name for name, value in self.__class__.__members__.items() if value &amp; self
         )
 
-    def add(self, value: &#34;TextEmphasis&#34;):
+    def add(self, value: &#34;TextEmphasis&#34;) -&gt; &#34;TextEmphasis&#34;:
         return self | value
 
-    def remove(self, value: &#34;TextEmphasis&#34;):
+    def remove(self, value: &#34;TextEmphasis&#34;) -&gt; &#34;TextEmphasis&#34;:
         return TextEmphasis.coerce(
             &#34;&#34;.join(s for s in self.style if s not in value.style)
         )
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value: Union[&#34;TextEmphasis&#34;, str, int]) -&gt; &#34;TextEmphasis&#34;:
         if isinstance(value, str):
             if value == &#34;&#34;:
                 return cls.NONE
@@ -5525,7 +5654,7 @@ style = B | I</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TextEmphasis.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a> | str | int) ‑> <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5537,15 +5666,15 @@ style = B | I</p></div>
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.enums.TextEmphasis.style"><code class="name">prop <span class="ident">style</span></code></dt>
+<dt id="fpdf.enums.TextEmphasis.style"><code class="name">prop <span class="ident">style</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L256-L260" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L280-L284" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def style(self):
+def style(self) -&gt; str:
     return &#34;&#34;.join(
         name for name, value in self.__class__.__members__.items() if value &amp; self
     )</code></pre>
@@ -5556,29 +5685,29 @@ def style(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.enums.TextEmphasis.add"><code class="name flex">
-<span>def <span class="ident">add</span></span>(<span>self,<br>value: <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a>)</span>
+<span>def <span class="ident">add</span></span>(<span>self,<br>value: <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a>) ‑> <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L262-L263" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L286-L287" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def add(self, value: &#34;TextEmphasis&#34;):
+<pre><code class="python">def add(self, value: &#34;TextEmphasis&#34;) -&gt; &#34;TextEmphasis&#34;:
     return self | value</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.enums.TextEmphasis.remove"><code class="name flex">
-<span>def <span class="ident">remove</span></span>(<span>self,<br>value: <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a>)</span>
+<span>def <span class="ident">remove</span></span>(<span>self,<br>value: <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a>) ‑> <a title="fpdf.enums.TextEmphasis" href="#fpdf.enums.TextEmphasis">TextEmphasis</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L265-L268" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L289-L292" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def remove(self, value: &#34;TextEmphasis&#34;):
+<pre><code class="python">def remove(self, value: &#34;TextEmphasis&#34;) -&gt; &#34;TextEmphasis&#34;:
     return TextEmphasis.coerce(
         &#34;&#34;.join(s for s in self.style if s not in value.style)
     )</code></pre>
@@ -5595,7 +5724,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1129-L1138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1224-L1233" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextMarkupType(CoerciveEnum):
     &#34;Subtype of a text markup annotation&#34;
@@ -5636,7 +5765,7 @@ def style(self):
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TextMarkupType.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5655,7 +5784,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1012-L1022" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1107-L1117" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextMode(CoerciveIntEnum):
     &#34;Values described in PDF spec section &#39;Text Rendering Mode&#39;&#34;
@@ -5716,7 +5845,7 @@ def style(self):
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TextMode.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~IE | str | int) ‑> ~IE</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5735,7 +5864,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L212-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L233-L254" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class VAlign(CoerciveEnum):
     &#34;&#34;&#34;Defines how to vertically render text in a cell.
@@ -5750,12 +5879,15 @@ def style(self):
     B = intern(&#34;BOTTOM&#34;)
     &#34;Place text at the bottom of the cell, but obey the cells padding&#34;
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union[&#34;VAlign&#34;, str], case_sensitive: bool = False
+    ) -&gt; &#34;VAlign&#34;:
         if value == &#34;&#34;:
             return cls.M
-        return super(cls, cls).coerce(value)</code></pre>
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )</code></pre>
 </details>
 <div class="desc"><p>Defines how to vertically render text in a cell.
 Default value is MIDDLE</p></div>
@@ -5782,7 +5914,7 @@ Default value is MIDDLE</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.VAlign.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: <a title="fpdf.enums.VAlign" href="#fpdf.enums.VAlign">VAlign</a> | str,<br>case_sensitive: bool = False) ‑> <a title="fpdf.enums.VAlign" href="#fpdf.enums.VAlign">VAlign</a></span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5801,7 +5933,7 @@ Default value is MIDDLE</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L155-L162" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L173-L180" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class WrapMode(CoerciveEnum):
     &#34;Defines how to break and wrap lines in multi-line text.&#34;
@@ -5832,7 +5964,7 @@ Default value is MIDDLE</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.WrapMode.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5851,7 +5983,7 @@ Default value is MIDDLE</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1025-L1050" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1120-L1145" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class XPos(CoerciveEnum):
     &#34;Positional values in horizontal direction for use after printing text.&#34;
@@ -5924,7 +6056,7 @@ Default value is MIDDLE</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.XPos.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -5943,7 +6075,7 @@ Default value is MIDDLE</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/enums.py#L1053-L1069" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/enums.py#L1148-L1164" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class YPos(CoerciveEnum):
     &#34;Positional values in vertical direction for use after printing text&#34;
@@ -5995,7 +6127,7 @@ Default value is MIDDLE</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.YPos.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value: ~E | str, case_sensitive: bool = False) ‑> ~E</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -6136,6 +6268,12 @@ Default value is MIDDLE</p></div>
 <li><code><a title="fpdf.enums.CellBordersLayout.RIGHT" href="#fpdf.enums.CellBordersLayout.RIGHT">RIGHT</a></code></li>
 <li><code><a title="fpdf.enums.CellBordersLayout.TOP" href="#fpdf.enums.CellBordersLayout.TOP">TOP</a></code></li>
 <li><code><a title="fpdf.enums.CellBordersLayout.coerce" href="#fpdf.enums.CellBordersLayout.coerce">coerce</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.enums.CellFillProtocol" href="#fpdf.enums.CellFillProtocol">CellFillProtocol</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.enums.CellFillProtocol.should_fill_cell" href="#fpdf.enums.CellFillProtocol.should_fill_cell">should_fill_cell</a></code></li>
 </ul>
 </li>
 <li>

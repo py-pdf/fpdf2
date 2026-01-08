@@ -93,20 +93,25 @@ in non-backward-compatible ways.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.syntax.build_obj_dict"><code class="name flex">
-<span>def <span class="ident">build_obj_dict</span></span>(<span>key_values)</span>
+<span>def <span class="ident">build_obj_dict</span></span>(<span>key_values: Dict[str, object]) ‑> Dict[str, object]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L235-L263" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L275-L308" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
+<pre><code class="python">def build_obj_dict(
+    key_values: Dict[str, object],
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; Dict[str, object]:
     &#34;&#34;&#34;
     Build the PDF Object associative map to serialize, based on a key-values dict.
     The property names are converted from snake_case to CamelCase,
     and prefixed with a slash character &#34;/&#34;.
     &#34;&#34;&#34;
+
     obj_dict = {}
     for key, value in key_values.items():
         if (
@@ -121,7 +126,7 @@ in non-backward-compatible ways.</p>
             value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
             value = value.ref
-        elif hasattr(value, &#34;serialize&#34;):
+        elif hasattr(value, &#34;serialize&#34;):  # pyright: ignore[reportUnknownArgumentType]
             # e.g. PDFArray, PDFString, Name, Destination, Action...
             value = value.serialize(
                 _security_handler=_security_handler, _obj_id=_obj_id
@@ -136,50 +141,50 @@ The property names are converted from snake_case to CamelCase,
 and prefixed with a slash character "/".</p></div>
 </dd>
 <dt id="fpdf.syntax.camel_case"><code class="name flex">
-<span>def <span class="ident">camel_case</span></span>(<span>snake_case)</span>
+<span>def <span class="ident">camel_case</span></span>(<span>snake_case: str) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L266-L267" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L311-L312" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def camel_case(snake_case):
+<pre><code class="python">def camel_case(snake_case: str) -&gt; str:
     return &#34;&#34;.join(x for x in snake_case.title() if x != &#34;_&#34;)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.clear_empty_fields"><code class="name flex">
-<span>def <span class="ident">clear_empty_fields</span></span>(<span>d)</span>
+<span>def <span class="ident">clear_empty_fields</span></span>(<span>d: Mapping[str, object]) ‑> Mapping[str, object]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L70-L71" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L91-L92" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def clear_empty_fields(d):
+<pre><code class="python">def clear_empty_fields(d: Mapping[str, object]) -&gt; Mapping[str, object]:
     return {k: v for k, v in d.items() if v}</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.create_dictionary_string"><code class="name flex">
-<span>def <span class="ident">create_dictionary_string</span></span>(<span>dict_,<br>open_dict=&#x27;&lt;&lt;&#x27;,<br>close_dict=&#x27;&gt;&gt;&#x27;,<br>field_join='\n',<br>key_value_join=' ',<br>has_empty_fields=False)</span>
+<span>def <span class="ident">create_dictionary_string</span></span>(<span>dict_: Mapping[str, object],<br>open_dict: str = &#x27;&lt;&lt;&#x27;,<br>close_dict: str = &#x27;&gt;&gt;&#x27;,<br>field_join: str = '\n',<br>key_value_join: str = ' ',<br>has_empty_fields: bool = False) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L74-L100" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L95-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def create_dictionary_string(
-    dict_,
-    open_dict=&#34;&lt;&lt;&#34;,
-    close_dict=&#34;&gt;&gt;&#34;,
-    field_join=&#34;\n&#34;,
-    key_value_join=&#34; &#34;,
-    has_empty_fields=False,
-):
+    dict_: Mapping[str, object],
+    open_dict: str = &#34;&lt;&lt;&#34;,
+    close_dict: str = &#34;&gt;&gt;&#34;,
+    field_join: str = &#34;\n&#34;,
+    key_value_join: str = &#34; &#34;,
+    has_empty_fields: bool = False,
+) -&gt; str:
     &#34;&#34;&#34;format dictionary as PDF dictionary
 
     @param dict_: dictionary of values to render
@@ -209,63 +214,161 @@ and prefixed with a slash character "/".</p></div>
 @param has_empty_fields: whether or not to clear_empty_fields first.</p></div>
 </dd>
 <dt id="fpdf.syntax.create_list_string"><code class="name flex">
-<span>def <span class="ident">create_list_string</span></span>(<span>list_)</span>
+<span>def <span class="ident">create_list_string</span></span>(<span>list_: list[str]) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L103-L105" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L124-L126" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def create_list_string(list_):
+<pre><code class="python">def create_list_string(list_: list[str]) -&gt; str:
     &#34;&#34;&#34;format list of strings as PDF array&#34;&#34;&#34;
     return f&#34;[{&#39; &#39;.join(list_)}]&#34;</code></pre>
 </details>
 <div class="desc"><p>format list of strings as PDF array</p></div>
 </dd>
 <dt id="fpdf.syntax.create_stream"><code class="name flex">
-<span>def <span class="ident">create_stream</span></span>(<span>stream, encryption_handler=None, obj_id=None)</span>
+<span>def <span class="ident">create_stream</span></span>(<span>stream: bytearray | bytes | str,<br>encryption_handler: StandardSecurityHandler | None = None,<br>obj_id: int | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L113-L118" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L134-L144" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def create_stream(stream, encryption_handler=None, obj_id=None):
+<pre><code class="python">def create_stream(
+    stream: bytearray | bytes | str,
+    encryption_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    obj_id: Optional[int] = None,
+) -&gt; str:
     if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, &#34;latin-1&#34;)
     if encryption_handler:
+        assert obj_id is not None
         encryption_handler.encrypt(stream, obj_id)
     return &#34;\n&#34;.join([&#34;stream&#34;, stream, &#34;endstream&#34;])</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.iobj_ref"><code class="name flex">
-<span>def <span class="ident">iobj_ref</span></span>(<span>n)</span>
+<span>def <span class="ident">iobj_ref</span></span>(<span>n: int) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L108-L110" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L129-L131" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def iobj_ref(n):
+<pre><code class="python">def iobj_ref(n: int) -&gt; str:
     &#34;&#34;&#34;format an indirect PDF Object reference from its id number&#34;&#34;&#34;
     return f&#34;{n} 0 R&#34;</code></pre>
 </details>
 <div class="desc"><p>format an indirect PDF Object reference from its id number</p></div>
 </dd>
-<dt id="fpdf.syntax.wrap_in_local_context"><code class="name flex">
-<span>def <span class="ident">wrap_in_local_context</span></span>(<span>draw_commands)</span>
+<dt id="fpdf.syntax.render_pdf_primitive"><code class="name flex">
+<span>def <span class="ident">render_pdf_primitive</span></span>(<span>primitive: <a title="fpdf.syntax.Raw" href="#fpdf.syntax.Raw">Raw</a> | <a title="fpdf.syntax.Name" href="#fpdf.syntax.Name">Name</a> | str | bytes | bool | int | float | decimal.Decimal | InheritType | Sequence[ForwardRef('PDFPrimitive')] | Mapping[ForwardRef('<a title="fpdf.syntax.Name" href="#fpdf.syntax.Name">Name</a>'), ForwardRef('PDFPrimitive')] | <a title="fpdf.syntax.PrimitiveSerializable" href="#fpdf.syntax.PrimitiveSerializable">PrimitiveSerializable</a> | None) ‑> <a title="fpdf.syntax.Raw" href="#fpdf.syntax.Raw">Raw</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L121-L126" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L505-L562" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def wrap_in_local_context(draw_commands):
+<pre><code class="python">def render_pdf_primitive(primitive: PDFPrimitive) -&gt; Raw:
+    &#34;&#34;&#34;
+    Render a Python value as a PDF primitive type.
+
+    Container types (tuples/lists and dicts) are rendered recursively. This supports
+    values of the type Name, str, bytes, numbers, booleans, list/tuple, and dict.
+
+    Any custom type can be passed in as long as it provides a `serialize` method that
+    takes no arguments and returns a string. The primitive object is returned directly
+    if it is an instance of the `Raw` class. Otherwise, The existence of the `serialize`
+    method is checked before any other type checking is performed, so, for example, a
+    `dict` subclass with a `serialize` method would be converted using its `pdf_repr`
+    method rather than the built-in `dict` conversion process.
+
+    Args:
+        primitive: the primitive value to convert to its PDF representation.
+
+    Returns:
+        Raw-wrapped str of the PDF representation.
+
+    Raises:
+        ValueError: if a dictionary key is not a Name.
+        TypeError: if `primitive` does not have a known conversion to a PDF
+            representation.
+    &#34;&#34;&#34;
+
+    if isinstance(primitive, Raw):
+        return primitive
+
+    if isinstance(primitive, PrimitiveSerializable):
+        output = primitive.serialize()
+    elif primitive is None:
+        output = &#34;null&#34;
+    elif isinstance(primitive, str):
+        output = f&#34;({escape_parens(primitive)})&#34;
+    elif isinstance(primitive, bytes):
+        output = f&#34;&lt;{primitive.hex()}&gt;&#34;
+    elif isinstance(primitive, bool):  # has to come before number check
+        output = [&#34;false&#34;, &#34;true&#34;][primitive]
+    elif isinstance(primitive, NumberClass):
+        output = number_to_str(primitive)
+    elif isinstance(primitive, (list, tuple)):
+        output = &#34;[&#34; + &#34; &#34;.join(render_pdf_primitive(val) for val in primitive) + &#34;]&#34;
+    elif isinstance(primitive, dict):
+        item_list: list[str] = []
+        for key, val in primitive.items():
+            if not isinstance(key, Name):
+                raise ValueError(&#34;dict keys must be Names&#34;)
+
+            item_list.append(
+                render_pdf_primitive(key) + &#34; &#34; + render_pdf_primitive(val)
+            )
+
+        output = &#34;&lt;&lt; &#34; + &#34;\n&#34;.join(item_list) + &#34; &gt;&gt;&#34;
+    else:
+        raise TypeError(f&#34;cannot produce PDF representation for value {primitive!r}&#34;)
+
+    return Raw(output)</code></pre>
+</details>
+<div class="desc"><p>Render a Python value as a PDF primitive type.</p>
+<p>Container types (tuples/lists and dicts) are rendered recursively. This supports
+values of the type Name, str, bytes, numbers, booleans, list/tuple, and dict.</p>
+<p>Any custom type can be passed in as long as it provides a <code>serialize</code> method that
+takes no arguments and returns a string. The primitive object is returned directly
+if it is an instance of the <code><a title="fpdf.syntax.Raw" href="#fpdf.syntax.Raw">Raw</a></code> class. Otherwise, The existence of the <code>serialize</code>
+method is checked before any other type checking is performed, so, for example, a
+<code>dict</code> subclass with a <code>serialize</code> method would be converted using its <code>pdf_repr</code>
+method rather than the built-in <code>dict</code> conversion process.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>primitive</code></strong></dt>
+<dd>the primitive value to convert to its PDF representation.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Raw-wrapped str of the PDF representation.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if a dictionary key is not a Name.</dd>
+<dt><code>TypeError</code></dt>
+<dd>if <code>primitive</code> does not have a known conversion to a PDF
+representation.</dd>
+</dl></div>
+</dd>
+<dt id="fpdf.syntax.wrap_in_local_context"><code class="name flex">
+<span>def <span class="ident">wrap_in_local_context</span></span>(<span>draw_commands: list[str]) ‑> list[str]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L147-L152" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def wrap_in_local_context(draw_commands: list[str]) -&gt; list[str]:
     &#34;&#34;&#34;
     Wrap a series of draw commands (list of strings) in a local context marker, so that changes to
     draw style only apply to these commands.
@@ -287,10 +390,14 @@ draw style only apply to these commands.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L363-L365" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L423-L429" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Destination(ABC):
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         raise NotImplementedError</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -306,15 +413,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.Destination.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L364-L365" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L424-L429" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     raise NotImplementedError</code></pre>
 </details>
 <div class="desc"></div>
@@ -323,23 +434,31 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.syntax.DestinationXYZ"><code class="flex name class">
 <span>class <span class="ident">DestinationXYZ</span></span>
-<span>(</span><span>page, top, left=0, zoom='null')</span>
+<span>(</span><span>page: int, top: float | None, left: float = 0, zoom: str | float = 'null')</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L368-L405" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L432-L487" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class DestinationXYZ(Destination):
-    def __init__(self, page, top, left=0, zoom=&#34;null&#34;):
+    def __init__(
+        self,
+        page: int,
+        top: Optional[float],
+        left: float = 0,
+        zoom: str | float = &#34;null&#34;,
+    ) -&gt; None:
         self.page_number = page
         self.top = top
         self.left = left
         self.zoom = zoom
-        self.page_ref = None
+        self.page_ref: Optional[str] = None
 
-    def __eq__(self, dest):
+    def __eq__(self, dest: object) -&gt; bool:
+        if not isinstance(dest, DestinationXYZ):
+            return False
         return (
             self.page_number == dest.page_number
             and self.top == dest.top
@@ -347,19 +466,29 @@ inheritance.</p></div>
             and self.zoom == dest.zoom
         )
 
-    def __hash__(self):
+    def __hash__(self) -&gt; int:
         return hash((self.page_number, self.top, self.left, self.zoom))
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return f&#39;DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom=&#34;{self.zoom}&#34;, page_ref={self.page_ref})&#39;
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         left = round(self.left, 2) if isinstance(self.left, float) else self.left
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref
         return f&#34;[{self.page_ref} /XYZ {left} {top} {self.zoom}]&#34;
 
-    def replace(self, page=None, top=None, left=None, zoom=None):
+    def replace(
+        self,
+        page: Optional[int] = None,
+        top: Optional[float] = None,
+        left: Optional[float] = None,
+        zoom: Optional[str | float] = None,
+    ) -&gt; &#34;DestinationXYZ&#34;:
         assert (
             not self.page_ref
         ), &#34;DestinationXYZ should not be copied after serialization&#34;
@@ -380,15 +509,21 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.DestinationXYZ.replace"><code class="name flex">
-<span>def <span class="ident">replace</span></span>(<span>self, page=None, top=None, left=None, zoom=None)</span>
+<span>def <span class="ident">replace</span></span>(<span>self,<br>page: int | None = None,<br>top: float | None = None,<br>left: float | None = None,<br>zoom: str | float | None = None) ‑> <a title="fpdf.syntax.DestinationXYZ" href="#fpdf.syntax.DestinationXYZ">DestinationXYZ</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L396-L405" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L472-L487" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def replace(self, page=None, top=None, left=None, zoom=None):
+<pre><code class="python">def replace(
+    self,
+    page: Optional[int] = None,
+    top: Optional[float] = None,
+    left: Optional[float] = None,
+    zoom: Optional[str | float] = None,
+) -&gt; &#34;DestinationXYZ&#34;:
     assert (
         not self.page_ref
     ), &#34;DestinationXYZ should not be copied after serialization&#34;
@@ -402,15 +537,19 @@ inheritance.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.DestinationXYZ.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L390-L394" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L462-L470" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     left = round(self.left, 2) if isinstance(self.left, float) else self.left
     top = round(self.top, 2) if isinstance(self.top, float) else self.top
     assert self.page_ref
@@ -428,7 +567,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L133-L144" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L159-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Name(str):
     &#34;&#34;&#34;str subclass signifying a PDF name, which are emitted differently than normal strings.&#34;&#34;&#34;
@@ -437,7 +576,11 @@ inheritance.</p></div>
         b&#34;[^&#34; + bytes(v for v in range(33, 127) if v not in b&#34;()&lt;&gt;[]{}/%#\\&#34;) + b&#34;]&#34;
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None) -&gt; str:
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         escaped = self.NAME_ESC.sub(
             lambda m: b&#34;#%02X&#34; % m[0][0], self.encode()
         ).decode()
@@ -464,9 +607,13 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L140-L144" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L166-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None) -&gt; str:
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     escaped = self.NAME_ESC.sub(
         lambda m: b&#34;#%02X&#34; % m[0][0], self.encode()
     ).decode()
@@ -484,16 +631,20 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L335-L359" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L391-L419" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class PDFArray(list):
-    def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">class PDFArray(list[Any]):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = &#34; &#34;.join(self)
         elif all(isinstance(elem, (int, float)) for elem in self):
             serialized_elems = &#34; &#34;.join(str(elem) for elem in self)
         else:
-            serialized_chunks = []
+            serialized_chunks: list[str] = []
             for elem in self:
                 if isinstance(elem, PDFObject):
                     serialized_chunks.append(elem.ref)
@@ -522,21 +673,25 @@ The argument must be an iterable if specified.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.PDFArray.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L336-L359" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L392-L419" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     if all(isinstance(elem, str) for elem in self):
         serialized_elems = &#34; &#34;.join(self)
     elif all(isinstance(elem, (int, float)) for elem in self):
         serialized_elems = &#34; &#34;.join(str(elem) for elem in self)
     else:
-        serialized_chunks = []
+        serialized_chunks: list[str] = []
         for elem in self:
             if isinstance(elem, PDFObject):
                 serialized_chunks.append(elem.ref)
@@ -561,39 +716,43 @@ The argument must be an iterable if specified.</p></div>
 </dd>
 <dt id="fpdf.syntax.PDFContentStream"><code class="flex name class">
 <span>class <span class="ident">PDFContentStream</span></span>
-<span>(</span><span>contents, compress=False)</span>
+<span>(</span><span>contents: bytes | bytearray, compress: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L206-L232" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L242-L272" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFContentStream(PDFObject):
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
     _COMPRESSION_LEVEL = -1
 
-    def __init__(self, contents, compress=False):
+    def __init__(self, contents: bytes | bytearray, compress: bool = False):
         super().__init__()
         self._contents = (
             zlib.compress(contents, level=self._COMPRESSION_LEVEL)
             if compress
-            else contents
+            else bytes(contents)
         )
         self.filter = Name(&#34;FlateDecode&#34;) if compress else None
         self.length = len(self._contents)
 
     # method override
-    def content_stream(self):
+    def content_stream(self) -&gt; bytes:
         return self._contents
 
     # method override
-    def serialize(self, obj_dict=None, _security_handler=None):
+    def serialize(
+        self,
+        obj_dict: Optional[Dict[str, object]] = None,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    ) -&gt; str:
         if _security_handler:
             assert not obj_dict
             if not isinstance(self._contents, (bytearray, bytes)):
                 self._contents = self._contents.encode(&#34;latin-1&#34;)
-            self._contents = _security_handler.encrypt(self._contents, self.id)
+            self._contents = _security_handler.encrypt_stream(self._contents, self.id)
             self.length = len(self._contents)
         return super().serialize(obj_dict, _security_handler)</code></pre>
 </details>
@@ -615,7 +774,7 @@ The argument must be an iterable if specified.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.PDFContentStream.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -625,15 +784,15 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L221-L222" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L257-L258" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def content_stream(self):
+<pre><code class="python">def content_stream(self) -&gt; bytes:
     return self._contents</code></pre>
 </details>
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.syntax.PDFContentStream.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -643,14 +802,18 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L225-L232" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L261-L272" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, obj_dict=None, _security_handler=None):
+<pre><code class="python">def serialize(
+    self,
+    obj_dict: Optional[Dict[str, object]] = None,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+) -&gt; str:
     if _security_handler:
         assert not obj_dict
         if not isinstance(self._contents, (bytearray, bytes)):
             self._contents = self._contents.encode(&#34;latin-1&#34;)
-        self._contents = _security_handler.encrypt(self._contents, self.id)
+        self._contents = _security_handler.encrypt_stream(self._contents, self.id)
         self.length = len(self._contents)
     return super().serialize(obj_dict, _security_handler)</code></pre>
 </details>
@@ -660,16 +823,18 @@ The argument must be an iterable if specified.</p></div>
 </dd>
 <dt id="fpdf.syntax.PDFDate"><code class="flex name class">
 <span>class <span class="ident">PDFDate</span></span>
-<span>(</span><span>date: datetime.datetime, with_tz=False, encrypt=False)</span>
+<span>(</span><span>date: datetime.datetime, with_tz: bool = False, encrypt: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L304-L332" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L354-L388" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFDate:
-    def __init__(self, date: datetime, with_tz=False, encrypt=False):
+    def __init__(
+        self, date: datetime, with_tz: bool = False, encrypt: bool = False
+    ) -&gt; None:
         &#34;&#34;&#34;
         Args:
             date (datetime): self-explanatory
@@ -680,10 +845,14 @@ The argument must be an iterable if specified.</p></div>
         self.with_tz = with_tz
         self.encrypt = encrypt
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return f&#34;PDFDate({self.date}, with_tz={self.with_tz}, encrypt={self.encrypt})&#34;
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         if self.with_tz:
             assert self.date.tzinfo
             if self.date.tzinfo == timezone.utc:
@@ -710,15 +879,19 @@ The argument must be an iterable if specified.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.PDFDate.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L319-L332" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L371-L388" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     if self.with_tz:
         assert self.date.tzinfo
         if self.date.tzinfo == timezone.utc:
@@ -744,7 +917,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L147-L203" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L177-L239" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFObject:
     # Main features of this class:
@@ -752,11 +925,11 @@ The argument must be an iterable if specified.</p></div>
     # * implement serializing
     # Note: several child classes use __slots__ to save up some memory
 
-    def __init__(self):
-        self._id = None
+    def __init__(self) -&gt; None:
+        self._id: Optional[int] = None
 
     @property
-    def id(self):
+    def id(self) -&gt; int:
         if self._id is None:
             raise AttributeError(
                 f&#34;{self.__class__.__name__} has not been assigned an ID yet&#34;
@@ -764,16 +937,20 @@ The argument must be an iterable if specified.</p></div>
         return self._id
 
     @id.setter
-    def id(self, n):
+    def id(self, n: int) -&gt; None:
         self._id = n
 
     @property
-    def ref(self):
+    def ref(self) -&gt; str:
         return iobj_ref(self.id)
 
-    def serialize(self, obj_dict=None, _security_handler=None):
+    def serialize(
+        self,
+        obj_dict: Optional[Dict[str, object]] = None,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    ) -&gt; str:
         &#34;Serialize the PDF object as an obj&lt;&lt;/&gt;&gt;endobj text block&#34;
-        output = []
+        output: list[str] = []
         output.append(f&#34;{self.id} 0 obj&#34;)
         output.append(&#34;&lt;&lt;&#34;)
         if not obj_dict:
@@ -787,11 +964,13 @@ The argument must be an iterable if specified.</p></div>
         return &#34;\n&#34;.join(output)
 
     # pylint: disable=no-self-use
-    def content_stream(self):
+    def content_stream(self) -&gt; bytes:
         &#34;Subclasses can override this method to indicate the presence of a content stream&#34;
         return b&#34;&#34;
 
-    def _build_obj_dict(self, security_handler=None):
+    def _build_obj_dict(
+        self, security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None
+    ) -&gt; Dict[str, object]:
         &#34;&#34;&#34;
         Build the PDF Object associative map to serialize,
         based on this class instance properties.
@@ -836,15 +1015,15 @@ The argument must be an iterable if specified.</p></div>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.syntax.PDFObject.id"><code class="name">prop <span class="ident">id</span></code></dt>
+<dt id="fpdf.syntax.PDFObject.id"><code class="name">prop <span class="ident">id</span> : int</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L156-L162" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L186-L192" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def id(self):
+def id(self) -&gt; int:
     if self._id is None:
         raise AttributeError(
             f&#34;{self.__class__.__name__} has not been assigned an ID yet&#34;
@@ -853,15 +1032,15 @@ def id(self):
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.syntax.PDFObject.ref"><code class="name">prop <span class="ident">ref</span></code></dt>
+<dt id="fpdf.syntax.PDFObject.ref"><code class="name">prop <span class="ident">ref</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L168-L170" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L198-L200" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def ref(self):
+def ref(self) -&gt; str:
     return iobj_ref(self.id)</code></pre>
 </details>
 <div class="desc"></div>
@@ -870,32 +1049,36 @@ def ref(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.PDFObject.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L188-L190" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L222-L224" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def content_stream(self):
+<pre><code class="python">def content_stream(self) -&gt; bytes:
     &#34;Subclasses can override this method to indicate the presence of a content stream&#34;
     return b&#34;&#34;</code></pre>
 </details>
 <div class="desc"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.syntax.PDFObject.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L172-L185" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L202-L219" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, obj_dict=None, _security_handler=None):
+<pre><code class="python">def serialize(
+    self,
+    obj_dict: Optional[Dict[str, object]] = None,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+) -&gt; str:
     &#34;Serialize the PDF object as an obj&lt;&lt;/&gt;&gt;endobj text block&#34;
-    output = []
+    output: list[str] = []
     output.append(f&#34;{self.id} 0 obj&#34;)
     output.append(&#34;&lt;&lt;&#34;)
     if not obj_dict:
@@ -914,22 +1097,23 @@ def ref(self):
 </dd>
 <dt id="fpdf.syntax.PDFString"><code class="flex name class">
 <span>class <span class="ident">PDFString</span></span>
-<span>(</span><span>content, encrypt=False)</span>
+<span>(</span><span>content: str, encrypt: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L270-L301" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L315-L351" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFString(str):
     USE_HEX_ENCODING = True
+    encrypt: bool = False
     &#34;&#34;&#34;
     Setting this to False can reduce the encoded strings size,
     but then there can be a risk of badly encoding some unicode strings - cf. issue #458
     &#34;&#34;&#34;
 
-    def __new__(cls, content, encrypt=False):
+    def __new__(cls, content: str, encrypt: bool = False) -&gt; &#34;PDFString&#34;:
         &#34;&#34;&#34;
         Args:
             content (str): text
@@ -939,9 +1123,13 @@ def ref(self):
         self.encrypt = encrypt
         return self
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         if _security_handler and self.encrypt:
-            assert _obj_id
+            assert _obj_id is not None
             return _security_handler.encrypt_string(self, _obj_id)
         try:
             self.encode(&#34;ascii&#34;)
@@ -972,6 +1160,10 @@ errors defaults to 'strict'.</p></div>
 <dl>
 <dt id="fpdf.syntax.PDFString.USE_HEX_ENCODING"><code class="name">var <span class="ident">USE_HEX_ENCODING</span></code></dt>
 <dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="fpdf.syntax.PDFString.encrypt"><code class="name">var <span class="ident">encrypt</span> : bool</code></dt>
+<dd>
 <div class="desc"><p>Setting this to False can reduce the encoded strings size,
 but then there can be a risk of badly encoding some unicode strings - cf. issue #458</p></div>
 </dd>
@@ -979,17 +1171,21 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.PDFString.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L287-L301" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L333-L351" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     if _security_handler and self.encrypt:
-        assert _obj_id
+        assert _obj_id is not None
         return _security_handler.encrypt_string(self, _obj_id)
     try:
         self.encode(&#34;ascii&#34;)
@@ -1007,6 +1203,68 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 </dd>
 </dl>
 </dd>
+<dt id="fpdf.syntax.PrimitiveSerializable"><code class="flex name class">
+<span>class <span class="ident">PrimitiveSerializable</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L490-L492" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@runtime_checkable
+class PrimitiveSerializable(Protocol):
+    def serialize(self) -&gt; str: ...</code></pre>
+</details>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing).</p>
+<p>For example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto[T](Protocol):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.syntax.PrimitiveSerializable.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L492-L492" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self) -&gt; str: ...</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 <dt id="fpdf.syntax.Raw"><code class="flex name class">
 <span>class <span class="ident">Raw</span></span>
 <span>(</span><span>...)</span>
@@ -1015,7 +1273,7 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/syntax.py#L129-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/syntax.py#L155-L156" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Raw(str):
     &#34;&#34;&#34;str subclass signifying raw data to be directly emitted to PDF without transformation.&#34;&#34;&#34;</code></pre>
@@ -1048,6 +1306,7 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <li><code><a title="fpdf.syntax.create_list_string" href="#fpdf.syntax.create_list_string">create_list_string</a></code></li>
 <li><code><a title="fpdf.syntax.create_stream" href="#fpdf.syntax.create_stream">create_stream</a></code></li>
 <li><code><a title="fpdf.syntax.iobj_ref" href="#fpdf.syntax.iobj_ref">iobj_ref</a></code></li>
+<li><code><a title="fpdf.syntax.render_pdf_primitive" href="#fpdf.syntax.render_pdf_primitive">render_pdf_primitive</a></code></li>
 <li><code><a title="fpdf.syntax.wrap_in_local_context" href="#fpdf.syntax.wrap_in_local_context">wrap_in_local_context</a></code></li>
 </ul>
 </li>
@@ -1105,7 +1364,14 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <h4><code><a title="fpdf.syntax.PDFString" href="#fpdf.syntax.PDFString">PDFString</a></code></h4>
 <ul class="">
 <li><code><a title="fpdf.syntax.PDFString.USE_HEX_ENCODING" href="#fpdf.syntax.PDFString.USE_HEX_ENCODING">USE_HEX_ENCODING</a></code></li>
+<li><code><a title="fpdf.syntax.PDFString.encrypt" href="#fpdf.syntax.PDFString.encrypt">encrypt</a></code></li>
 <li><code><a title="fpdf.syntax.PDFString.serialize" href="#fpdf.syntax.PDFString.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.syntax.PrimitiveSerializable" href="#fpdf.syntax.PrimitiveSerializable">PrimitiveSerializable</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.syntax.PrimitiveSerializable.serialize" href="#fpdf.syntax.PrimitiveSerializable.serialize">serialize</a></code></li>
 </ul>
 </li>
 <li>

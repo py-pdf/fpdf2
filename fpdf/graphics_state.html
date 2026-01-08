@@ -53,13 +53,13 @@ in non-backward-compatible ways.</p>
 <dl>
 <dt id="fpdf.graphics_state.GraphicsStateMixin"><code class="flex name class">
 <span>class <span class="ident">GraphicsStateMixin</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>*args: Any, **kwargs: Any)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L18-L385" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L22-L474" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GraphicsStateMixin:
     &#34;&#34;&#34;Mixin class for managing a stack of graphics state variables.
@@ -77,8 +77,8 @@ in non-backward-compatible ways.</p>
     DEFAULT_FILL_COLOR = DeviceGray(0)
     DEFAULT_TEXT_COLOR = DeviceGray(0)
 
-    def __init__(self, *args, **kwargs):
-        self.__statestack = [
+    def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
+        self.__statestack: list[StateStackType] = [
             dict(
                 draw_color=self.DEFAULT_DRAW_COLOR,
                 fill_color=self.DEFAULT_FILL_COLOR,
@@ -90,7 +90,7 @@ in non-backward-compatible ways.</p>
                 char_spacing=0,
                 font_family=&#34;&#34;,
                 font_size_pt=0,
-                current_font={},
+                current_font=None,
                 current_font_is_set_on_page=False,
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
@@ -109,18 +109,18 @@ in non-backward-compatible ways.</p>
         ]
         super().__init__(*args, **kwargs)
 
-    def _push_local_stack(self, new=None):
+    def _push_local_stack(self, new: Optional[StateStackType] = None) -&gt; StateStackType:
         &#34;Push a graphics state on the stack&#34;
         if not new:
             new = self._get_current_graphics_state()
         self.__statestack.append(new)
         return new
 
-    def _pop_local_stack(self):
+    def _pop_local_stack(self) -&gt; StateStackType:
         &#34;Pop the last graphics state on the stack&#34;
         return self.__statestack.pop()
 
-    def _get_current_graphics_state(self):
+    def _get_current_graphics_state(self) -&gt; StateStackType:
         &#34;Retrieve the current graphics state&#34;
         # &#34;current_font&#34; must be shallow copied
         # &#34;text_shaping&#34; must be deep copied (different fragments may have different languages/direction)
@@ -129,148 +129,213 @@ in non-backward-compatible ways.</p>
         gs[&#34;text_shaping&#34;] = copy(gs[&#34;text_shaping&#34;])
         return gs
 
-    def _is_current_graphics_state_nested(self):
+    def _is_current_graphics_state_nested(self) -&gt; bool:
         &#34;Indicate if the stack contains items (else it is empty)&#34;
         return len(self.__statestack) &gt; 1
 
     @property
-    def draw_color(self):
+    def draw_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
+        if TYPE_CHECKING:
+            assert isinstance(
+                self.__statestack[-1][&#34;draw_color&#34;],
+                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
+            )
         return self.__statestack[-1][&#34;draw_color&#34;]
 
     @draw_color.setter
-    def draw_color(self, v):
+    def draw_color(
+        self,
+        v: Optional[
+            DeviceGray | DeviceRGB | DeviceCMYK | str | Number | Sequence[Number]
+        ],
+    ) -&gt; None:
         self.__statestack[-1][&#34;draw_color&#34;] = v
 
     @property
-    def fill_color(self):
+    def fill_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
+        if TYPE_CHECKING:
+            assert isinstance(
+                self.__statestack[-1][&#34;fill_color&#34;],
+                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
+            )
         return self.__statestack[-1][&#34;fill_color&#34;]
 
     @fill_color.setter
-    def fill_color(self, v):
+    def fill_color(
+        self,
+        v: Optional[
+            DeviceGray | DeviceRGB | DeviceCMYK | str | Number | Sequence[Number]
+        ],
+    ) -&gt; None:
         self.__statestack[-1][&#34;fill_color&#34;] = v
 
     @property
-    def text_color(self):
+    def text_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
+        if TYPE_CHECKING:
+            assert isinstance(
+                self.__statestack[-1][&#34;text_color&#34;],
+                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
+            )
         return self.__statestack[-1][&#34;text_color&#34;]
 
     @text_color.setter
-    def text_color(self, v):
+    def text_color(
+        self,
+        v: Optional[
+            DeviceGray | DeviceRGB | DeviceCMYK | str | Number | Sequence[Number]
+        ],
+    ) -&gt; None:
         self.__statestack[-1][&#34;text_color&#34;] = v
 
     @property
-    def underline(self):
+    def underline(self) -&gt; bool:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;underline&#34;], bool)
         return self.__statestack[-1][&#34;underline&#34;]
 
     @underline.setter
-    def underline(self, v):
+    def underline(self, v: bool) -&gt; None:
         self.__statestack[-1][&#34;underline&#34;] = v
 
     @property
-    def strikethrough(self):
+    def strikethrough(self) -&gt; bool:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;strikethrough&#34;], bool)
         return self.__statestack[-1][&#34;strikethrough&#34;]
 
     @strikethrough.setter
-    def strikethrough(self, v):
+    def strikethrough(self, v: bool) -&gt; None:
         self.__statestack[-1][&#34;strikethrough&#34;] = v
 
     @property
-    def font_style(self):
+    def font_style(self) -&gt; str:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;font_style&#34;], str)
         return self.__statestack[-1][&#34;font_style&#34;]
 
     @font_style.setter
-    def font_style(self, v):
+    def font_style(self, v: str) -&gt; None:
         self.__statestack[-1][&#34;font_style&#34;] = v
 
     @property
-    def font_stretching(self):
+    def font_stretching(self) -&gt; float:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;font_stretching&#34;], float)
         return self.__statestack[-1][&#34;font_stretching&#34;]
 
     @font_stretching.setter
-    def font_stretching(self, v):
+    def font_stretching(self, v: float) -&gt; None:
         self.__statestack[-1][&#34;font_stretching&#34;] = v
 
     @property
-    def char_spacing(self):
+    def char_spacing(self) -&gt; float:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;char_spacing&#34;], float)
         return self.__statestack[-1][&#34;char_spacing&#34;]
 
     @char_spacing.setter
-    def char_spacing(self, v):
+    def char_spacing(self, v: float) -&gt; None:
         self.__statestack[-1][&#34;char_spacing&#34;] = v
 
     @property
-    def font_family(self):
+    def font_family(self) -&gt; str:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;font_family&#34;], str)
         return self.__statestack[-1][&#34;font_family&#34;]
 
     @font_family.setter
-    def font_family(self, v):
+    def font_family(self, v: str) -&gt; None:
         self.__statestack[-1][&#34;font_family&#34;] = v
 
     @property
-    def font_size_pt(self):
+    def font_size_pt(self) -&gt; float:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
         return self.__statestack[-1][&#34;font_size_pt&#34;]
 
     @font_size_pt.setter
-    def font_size_pt(self, v):
+    def font_size_pt(self, v: float) -&gt; None:
         self.__statestack[-1][&#34;font_size_pt&#34;] = v
 
     @property
-    def font_size(self):
-        return self.__statestack[-1][&#34;font_size_pt&#34;] / self.k
+    def font_size(self) -&gt; float:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
+            assert isinstance(self.k, float)  # type: ignore[attr-defined]
+        return self.__statestack[-1][&#34;font_size_pt&#34;] / self.k  # type: ignore[attr-defined]
 
     @font_size.setter
-    def font_size(self, v):
-        self.__statestack[-1][&#34;font_size_pt&#34;] = v * self.k
+    def font_size(self, v: float) -&gt; None:
+        self.__statestack[-1][&#34;font_size_pt&#34;] = v * self.k  # type: ignore[attr-defined]
 
     @property
-    def current_font(self):
+    def current_font(self) -&gt; Optional[CoreFont | TTFFont]:
+        if TYPE_CHECKING:
+            assert isinstance(
+                self.__statestack[-1][&#34;current_font&#34;], (CoreFont, TTFFont, type(None))
+            )
         return self.__statestack[-1][&#34;current_font&#34;]
 
     @current_font.setter
-    def current_font(self, v):
+    def current_font(self, v: CoreFont | TTFFont) -&gt; None:
         self.__statestack[-1][&#34;current_font&#34;] = v
 
     @property
-    def current_font_is_set_on_page(self):
+    def current_font_is_set_on_page(self) -&gt; bool:
+        if TYPE_CHECKING:
+            assert isinstance(
+                self.__statestack[-1][&#34;current_font_is_set_on_page&#34;], bool
+            )
         return self.__statestack[-1][&#34;current_font_is_set_on_page&#34;]
 
     @current_font_is_set_on_page.setter
-    def current_font_is_set_on_page(self, v):
+    def current_font_is_set_on_page(self, v: bool) -&gt; None:
         self.__statestack[-1][&#34;current_font_is_set_on_page&#34;] = v
 
     @property
-    def dash_pattern(self):
-        return self.__statestack[-1][&#34;dash_pattern&#34;]
+    def dash_pattern(self) -&gt; dict[str, float]:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;dash_pattern&#34;], dict)
+        return self.__statestack[-1][
+            &#34;dash_pattern&#34;
+        ]  # pyright: ignore[reportUnknownVariableType]
 
     @dash_pattern.setter
-    def dash_pattern(self, v):
+    def dash_pattern(self, v: dict[str, float]) -&gt; None:
         self.__statestack[-1][&#34;dash_pattern&#34;] = v
 
     @property
-    def line_width(self):
+    def line_width(self) -&gt; float:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;line_width&#34;], float)
         return self.__statestack[-1][&#34;line_width&#34;]
 
     @line_width.setter
-    def line_width(self, v):
+    def line_width(self, v: float) -&gt; None:
         self.__statestack[-1][&#34;line_width&#34;] = v
 
     @property
-    def text_mode(self):
+    def text_mode(self) -&gt; TextMode:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;text_mode&#34;], TextMode)
         return self.__statestack[-1][&#34;text_mode&#34;]
 
     @text_mode.setter
-    def text_mode(self, v):
+    def text_mode(self, v: TextMode | str | int) -&gt; None:
         self.__statestack[-1][&#34;text_mode&#34;] = TextMode.coerce(v)
 
     @property
-    def char_vpos(self):
+    def char_vpos(self) -&gt; CharVPos:
         &#34;&#34;&#34;
         Return vertical character position relative to line.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;char_vpos&#34;], CharVPos)
         return self.__statestack[-1][&#34;char_vpos&#34;]
 
     @char_vpos.setter
-    def char_vpos(self, v):
+    def char_vpos(self, v: CharVPos | str) -&gt; None:
         &#34;&#34;&#34;
         Set vertical character position relative to line.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -278,15 +343,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;char_vpos&#34;] = CharVPos.coerce(v)
 
     @property
-    def sub_scale(self):
+    def sub_scale(self) -&gt; float:
         &#34;&#34;&#34;
         Return scale factor for subscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;sub_scale&#34;], float)
         return self.__statestack[-1][&#34;sub_scale&#34;]
 
     @sub_scale.setter
-    def sub_scale(self, v):
+    def sub_scale(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set scale factor for subscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -294,15 +361,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;sub_scale&#34;] = float(v)
 
     @property
-    def sup_scale(self):
+    def sup_scale(self) -&gt; float:
         &#34;&#34;&#34;
         Return scale factor for superscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;sup_scale&#34;], float)
         return self.__statestack[-1][&#34;sup_scale&#34;]
 
     @sup_scale.setter
-    def sup_scale(self, v):
+    def sup_scale(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set scale factor for superscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -310,15 +379,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;sup_scale&#34;] = float(v)
 
     @property
-    def nom_scale(self):
+    def nom_scale(self) -&gt; float:
         &#34;&#34;&#34;
         Return scale factor for nominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;nom_scale&#34;], float)
         return self.__statestack[-1][&#34;nom_scale&#34;]
 
     @nom_scale.setter
-    def nom_scale(self, v):
+    def nom_scale(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set scale factor for nominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -326,15 +397,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;nom_scale&#34;] = float(v)
 
     @property
-    def denom_scale(self):
+    def denom_scale(self) -&gt; float:
         &#34;&#34;&#34;
         Return scale factor for denominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;denom_scale&#34;], float)
         return self.__statestack[-1][&#34;denom_scale&#34;]
 
     @denom_scale.setter
-    def denom_scale(self, v):
+    def denom_scale(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set scale factor for denominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -342,15 +415,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;denom_scale&#34;] = float(v)
 
     @property
-    def sub_lift(self):
+    def sub_lift(self) -&gt; float:
         &#34;&#34;&#34;
         Return lift factor for subscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;sub_lift&#34;], float)
         return self.__statestack[-1][&#34;sub_lift&#34;]
 
     @sub_lift.setter
-    def sub_lift(self, v):
+    def sub_lift(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set lift factor for subscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -358,15 +433,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;sub_lift&#34;] = float(v)
 
     @property
-    def sup_lift(self):
+    def sup_lift(self) -&gt; float:
         &#34;&#34;&#34;
         Return lift factor for superscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;sup_lift&#34;], float)
         return self.__statestack[-1][&#34;sup_lift&#34;]
 
     @sup_lift.setter
-    def sup_lift(self, v):
+    def sup_lift(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set lift factor for superscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -374,15 +451,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;sup_lift&#34;] = float(v)
 
     @property
-    def nom_lift(self):
+    def nom_lift(self) -&gt; float:
         &#34;&#34;&#34;
         Return lift factor for nominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;nom_lift&#34;], float)
         return self.__statestack[-1][&#34;nom_lift&#34;]
 
     @nom_lift.setter
-    def nom_lift(self, v):
+    def nom_lift(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set lift factor for nominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -390,15 +469,17 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;nom_lift&#34;] = float(v)
 
     @property
-    def denom_lift(self):
+    def denom_lift(self) -&gt; float:
         &#34;&#34;&#34;
         Return lift factor for denominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;denom_lift&#34;], float)
         return self.__statestack[-1][&#34;denom_lift&#34;]
 
     @denom_lift.setter
-    def denom_lift(self, v):
+    def denom_lift(self, v: float) -&gt; None:
         &#34;&#34;&#34;
         Set lift factor for denominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
@@ -406,14 +487,18 @@ in non-backward-compatible ways.</p>
         self.__statestack[-1][&#34;denom_lift&#34;] = float(v)
 
     @property
-    def text_shaping(self):
-        return self.__statestack[-1][&#34;text_shaping&#34;]
+    def text_shaping(self) -&gt; Optional[dict[str, Any]]:
+        if TYPE_CHECKING:
+            assert isinstance(self.__statestack[-1][&#34;text_shaping&#34;], dict)
+        return self.__statestack[-1][
+            &#34;text_shaping&#34;
+        ]  # pyright: ignore[reportUnknownVariableType]
 
     @text_shaping.setter
-    def text_shaping(self, v):
+    def text_shaping(self, v: Optional[dict[str, Any]]) -&gt; None:
         self.__statestack[-1][&#34;text_shaping&#34;] = v
 
-    def font_face(self):
+    def font_face(self) -&gt; FontFace:
         &#34;&#34;&#34;
         Return a `fpdf.fonts.FontFace` instance
         representing a subset of properties of this GraphicsState.
@@ -458,385 +543,455 @@ directly by user code.</p></div>
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.char_spacing"><code class="name">prop <span class="ident">char_spacing</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.char_spacing"><code class="name">prop <span class="ident">char_spacing</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L146-L148" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L188-L192" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def char_spacing(self):
+def char_spacing(self) -&gt; float:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;char_spacing&#34;], float)
     return self.__statestack[-1][&#34;char_spacing&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.char_vpos"><code class="name">prop <span class="ident">char_vpos</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.char_vpos"><code class="name">prop <span class="ident">char_vpos</span> : <a title="fpdf.enums.CharVPos" href="enums.html#fpdf.enums.CharVPos">CharVPos</a></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L218-L224" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L285-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def char_vpos(self):
+def char_vpos(self) -&gt; CharVPos:
     &#34;&#34;&#34;
     Return vertical character position relative to line.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;char_vpos&#34;], CharVPos)
     return self.__statestack[-1][&#34;char_vpos&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return vertical character position relative to line.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.current_font"><code class="name">prop <span class="ident">current_font</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.current_font"><code class="name">prop <span class="ident">current_font</span> : <a title="fpdf.fonts.CoreFont" href="fonts.html#fpdf.fonts.CoreFont">CoreFont</a> | <a title="fpdf.fonts.TTFFont" href="fonts.html#fpdf.fonts.TTFFont">TTFFont</a> | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L178-L180" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L229-L235" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def current_font(self):
+def current_font(self) -&gt; Optional[CoreFont | TTFFont]:
+    if TYPE_CHECKING:
+        assert isinstance(
+            self.__statestack[-1][&#34;current_font&#34;], (CoreFont, TTFFont, type(None))
+        )
     return self.__statestack[-1][&#34;current_font&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.current_font_is_set_on_page"><code class="name">prop <span class="ident">current_font_is_set_on_page</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.current_font_is_set_on_page"><code class="name">prop <span class="ident">current_font_is_set_on_page</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L186-L188" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L241-L247" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def current_font_is_set_on_page(self):
+def current_font_is_set_on_page(self) -&gt; bool:
+    if TYPE_CHECKING:
+        assert isinstance(
+            self.__statestack[-1][&#34;current_font_is_set_on_page&#34;], bool
+        )
     return self.__statestack[-1][&#34;current_font_is_set_on_page&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.dash_pattern"><code class="name">prop <span class="ident">dash_pattern</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.dash_pattern"><code class="name">prop <span class="ident">dash_pattern</span> : dict[str, float]</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L194-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L253-L259" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def dash_pattern(self):
-    return self.__statestack[-1][&#34;dash_pattern&#34;]</code></pre>
+def dash_pattern(self) -&gt; dict[str, float]:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;dash_pattern&#34;], dict)
+    return self.__statestack[-1][
+        &#34;dash_pattern&#34;
+    ]  # pyright: ignore[reportUnknownVariableType]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.denom_lift"><code class="name">prop <span class="ident">denom_lift</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.denom_lift"><code class="name">prop <span class="ident">denom_lift</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L346-L352" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L429-L437" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def denom_lift(self):
+def denom_lift(self) -&gt; float:
     &#34;&#34;&#34;
     Return lift factor for denominator text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;denom_lift&#34;], float)
     return self.__statestack[-1][&#34;denom_lift&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for denominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.denom_scale"><code class="name">prop <span class="ident">denom_scale</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.denom_scale"><code class="name">prop <span class="ident">denom_scale</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L282-L288" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L357-L365" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def denom_scale(self):
+def denom_scale(self) -&gt; float:
     &#34;&#34;&#34;
     Return scale factor for denominator text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;denom_scale&#34;], float)
     return self.__statestack[-1][&#34;denom_scale&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for denominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.draw_color"><code class="name">prop <span class="ident">draw_color</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.draw_color"><code class="name">prop <span class="ident">draw_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L90-L92" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L94-L101" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def draw_color(self):
+def draw_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
+    if TYPE_CHECKING:
+        assert isinstance(
+            self.__statestack[-1][&#34;draw_color&#34;],
+            (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
+        )
     return self.__statestack[-1][&#34;draw_color&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.fill_color"><code class="name">prop <span class="ident">fill_color</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.fill_color"><code class="name">prop <span class="ident">fill_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L98-L100" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L112-L119" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def fill_color(self):
+def fill_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
+    if TYPE_CHECKING:
+        assert isinstance(
+            self.__statestack[-1][&#34;fill_color&#34;],
+            (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
+        )
     return self.__statestack[-1][&#34;fill_color&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.font_family"><code class="name">prop <span class="ident">font_family</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.font_family"><code class="name">prop <span class="ident">font_family</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L154-L156" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L198-L202" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def font_family(self):
+def font_family(self) -&gt; str:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;font_family&#34;], str)
     return self.__statestack[-1][&#34;font_family&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.font_size"><code class="name">prop <span class="ident">font_size</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.font_size"><code class="name">prop <span class="ident">font_size</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L170-L172" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L218-L223" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def font_size(self):
-    return self.__statestack[-1][&#34;font_size_pt&#34;] / self.k</code></pre>
+def font_size(self) -&gt; float:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
+        assert isinstance(self.k, float)  # type: ignore[attr-defined]
+    return self.__statestack[-1][&#34;font_size_pt&#34;] / self.k  # type: ignore[attr-defined]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.font_size_pt"><code class="name">prop <span class="ident">font_size_pt</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.font_size_pt"><code class="name">prop <span class="ident">font_size_pt</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L162-L164" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L208-L212" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def font_size_pt(self):
+def font_size_pt(self) -&gt; float:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
     return self.__statestack[-1][&#34;font_size_pt&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.font_stretching"><code class="name">prop <span class="ident">font_stretching</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.font_stretching"><code class="name">prop <span class="ident">font_stretching</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L138-L140" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L178-L182" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def font_stretching(self):
+def font_stretching(self) -&gt; float:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;font_stretching&#34;], float)
     return self.__statestack[-1][&#34;font_stretching&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.font_style"><code class="name">prop <span class="ident">font_style</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.font_style"><code class="name">prop <span class="ident">font_style</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L130-L132" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L168-L172" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def font_style(self):
+def font_style(self) -&gt; str:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;font_style&#34;], str)
     return self.__statestack[-1][&#34;font_style&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.line_width"><code class="name">prop <span class="ident">line_width</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.line_width"><code class="name">prop <span class="ident">line_width</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L202-L204" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L265-L269" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def line_width(self):
+def line_width(self) -&gt; float:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;line_width&#34;], float)
     return self.__statestack[-1][&#34;line_width&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.nom_lift"><code class="name">prop <span class="ident">nom_lift</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.nom_lift"><code class="name">prop <span class="ident">nom_lift</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L330-L336" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L411-L419" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def nom_lift(self):
+def nom_lift(self) -&gt; float:
     &#34;&#34;&#34;
     Return lift factor for nominator text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;nom_lift&#34;], float)
     return self.__statestack[-1][&#34;nom_lift&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for nominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.nom_scale"><code class="name">prop <span class="ident">nom_scale</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.nom_scale"><code class="name">prop <span class="ident">nom_scale</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L266-L272" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L339-L347" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def nom_scale(self):
+def nom_scale(self) -&gt; float:
     &#34;&#34;&#34;
     Return scale factor for nominator text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;nom_scale&#34;], float)
     return self.__statestack[-1][&#34;nom_scale&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for nominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.strikethrough"><code class="name">prop <span class="ident">strikethrough</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.strikethrough"><code class="name">prop <span class="ident">strikethrough</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L122-L124" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L158-L162" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def strikethrough(self):
+def strikethrough(self) -&gt; bool:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;strikethrough&#34;], bool)
     return self.__statestack[-1][&#34;strikethrough&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.sub_lift"><code class="name">prop <span class="ident">sub_lift</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.sub_lift"><code class="name">prop <span class="ident">sub_lift</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L298-L304" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L375-L383" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def sub_lift(self):
+def sub_lift(self) -&gt; float:
     &#34;&#34;&#34;
     Return lift factor for subscript text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;sub_lift&#34;], float)
     return self.__statestack[-1][&#34;sub_lift&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for subscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.sub_scale"><code class="name">prop <span class="ident">sub_scale</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.sub_scale"><code class="name">prop <span class="ident">sub_scale</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L234-L240" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L303-L311" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def sub_scale(self):
+def sub_scale(self) -&gt; float:
     &#34;&#34;&#34;
     Return scale factor for subscript text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;sub_scale&#34;], float)
     return self.__statestack[-1][&#34;sub_scale&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for subscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.sup_lift"><code class="name">prop <span class="ident">sup_lift</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.sup_lift"><code class="name">prop <span class="ident">sup_lift</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L314-L320" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L393-L401" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def sup_lift(self):
+def sup_lift(self) -&gt; float:
     &#34;&#34;&#34;
     Return lift factor for superscript text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;sup_lift&#34;], float)
     return self.__statestack[-1][&#34;sup_lift&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for superscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.sup_scale"><code class="name">prop <span class="ident">sup_scale</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.sup_scale"><code class="name">prop <span class="ident">sup_scale</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L250-L256" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L321-L329" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def sup_scale(self):
+def sup_scale(self) -&gt; float:
     &#34;&#34;&#34;
     Return scale factor for superscript text.
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;sup_scale&#34;], float)
     return self.__statestack[-1][&#34;sup_scale&#34;]</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for superscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.text_color"><code class="name">prop <span class="ident">text_color</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.text_color"><code class="name">prop <span class="ident">text_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L106-L108" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L130-L137" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def text_color(self):
+def text_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
+    if TYPE_CHECKING:
+        assert isinstance(
+            self.__statestack[-1][&#34;text_color&#34;],
+            (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
+        )
     return self.__statestack[-1][&#34;text_color&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.text_mode"><code class="name">prop <span class="ident">text_mode</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.text_mode"><code class="name">prop <span class="ident">text_mode</span> : <a title="fpdf.enums.TextMode" href="enums.html#fpdf.enums.TextMode">TextMode</a></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L210-L212" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L275-L279" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def text_mode(self):
+def text_mode(self) -&gt; TextMode:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;text_mode&#34;], TextMode)
     return self.__statestack[-1][&#34;text_mode&#34;]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.text_shaping"><code class="name">prop <span class="ident">text_shaping</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.text_shaping"><code class="name">prop <span class="ident">text_shaping</span> : dict[str, typing.Any] | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L362-L364" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L447-L453" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def text_shaping(self):
-    return self.__statestack[-1][&#34;text_shaping&#34;]</code></pre>
+def text_shaping(self) -&gt; Optional[dict[str, Any]]:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;text_shaping&#34;], dict)
+    return self.__statestack[-1][
+        &#34;text_shaping&#34;
+    ]  # pyright: ignore[reportUnknownVariableType]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.graphics_state.GraphicsStateMixin.underline"><code class="name">prop <span class="ident">underline</span></code></dt>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.underline"><code class="name">prop <span class="ident">underline</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L114-L116" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L148-L152" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def underline(self):
+def underline(self) -&gt; bool:
+    if TYPE_CHECKING:
+        assert isinstance(self.__statestack[-1][&#34;underline&#34;], bool)
     return self.__statestack[-1][&#34;underline&#34;]</code></pre>
 </details>
 <div class="desc"></div>
@@ -845,15 +1000,15 @@ def underline(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._get_current_graphics_state"><code class="name flex">
-<span>def <span class="ident">_get_current_graphics_state</span></span>(<span>self)</span>
+<span>def <span class="ident">_get_current_graphics_state</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L77-L84" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L81-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def _get_current_graphics_state(self):
+<pre><code class="python">def _get_current_graphics_state(self) -&gt; StateStackType:
     &#34;Retrieve the current graphics state&#34;
     # &#34;current_font&#34; must be shallow copied
     # &#34;text_shaping&#34; must be deep copied (different fragments may have different languages/direction)
@@ -865,45 +1020,45 @@ def underline(self):
 <div class="desc"><p>Retrieve the current graphics state</p></div>
 </dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._is_current_graphics_state_nested"><code class="name flex">
-<span>def <span class="ident">_is_current_graphics_state_nested</span></span>(<span>self)</span>
+<span>def <span class="ident">_is_current_graphics_state_nested</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L86-L88" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L90-L92" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def _is_current_graphics_state_nested(self):
+<pre><code class="python">def _is_current_graphics_state_nested(self) -&gt; bool:
     &#34;Indicate if the stack contains items (else it is empty)&#34;
     return len(self.__statestack) &gt; 1</code></pre>
 </details>
 <div class="desc"><p>Indicate if the stack contains items (else it is empty)</p></div>
 </dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._pop_local_stack"><code class="name flex">
-<span>def <span class="ident">_pop_local_stack</span></span>(<span>self)</span>
+<span>def <span class="ident">_pop_local_stack</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L73-L75" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L77-L79" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def _pop_local_stack(self):
+<pre><code class="python">def _pop_local_stack(self) -&gt; StateStackType:
     &#34;Pop the last graphics state on the stack&#34;
     return self.__statestack.pop()</code></pre>
 </details>
 <div class="desc"><p>Pop the last graphics state on the stack</p></div>
 </dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._push_local_stack"><code class="name flex">
-<span>def <span class="ident">_push_local_stack</span></span>(<span>self, new=None)</span>
+<span>def <span class="ident">_push_local_stack</span></span>(<span>self, new: dict[str, typing.Any] | None = None) ‑> dict[str, typing.Any]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L66-L71" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L70-L75" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def _push_local_stack(self, new=None):
+<pre><code class="python">def _push_local_stack(self, new: Optional[StateStackType] = None) -&gt; StateStackType:
     &#34;Push a graphics state on the stack&#34;
     if not new:
         new = self._get_current_graphics_state()
@@ -913,15 +1068,15 @@ def underline(self):
 <div class="desc"><p>Push a graphics state on the stack</p></div>
 </dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin.font_face"><code class="name flex">
-<span>def <span class="ident">font_face</span></span>(<span>self)</span>
+<span>def <span class="ident">font_face</span></span>(<span>self) ‑> <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/graphics_state.py#L370-L385" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/graphics_state.py#L459-L474" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def font_face(self):
+<pre><code class="python">def font_face(self) -&gt; FontFace:
     &#34;&#34;&#34;
     Return a `fpdf.fonts.FontFace` instance
     representing a subset of properties of this GraphicsState.

@@ -61,10 +61,10 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L127-L300" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L149-L328" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LinearizedOutputProducer(OutputProducer):
-    def bufferize(self):
+    def bufferize(self) -&gt; bytearray:
         fpdf = self.fpdf
 
         # 1. Setup - Insert all PDF objects
@@ -82,7 +82,7 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
         # Part 4: Document catalogue and other required document-level objects
         catalog_obj = self._add_catalog()
         # Part 5: Primary hint stream (may precede or follow part 6)
-        hint_stream_obj = PDFHintStream(&#34;&#34;)  # TODO
+        hint_stream_obj = PDFHintStream(&#34;&#34;.encode(&#34;latin-1&#34;))  # TODO
         self.pdf_objs.append(hint_stream_obj)
         # Part 6: First-page section (may precede or follow part 5)
         page_objs = self._add_pages(slice(0, 1))
@@ -137,13 +137,13 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
                 and pdf_obj is not hint_stream_obj
             ):
                 self.obj_id += 1
-                pdf_obj.obj_id = self.obj_id
+                pdf_obj.id = self.obj_id
         # The hint streams shall be assigned the last object numbers in the file:
         self.obj_id += 1
         hint_stream_obj.id = self.obj_id
 
         # 2. Plumbing - Inject all PDF object references required:
-        linearization_obj.o = page_objs[0].id
+        linearization_obj.o = page_objs[0].id  # type: ignore[assignment]
         pages_root_obj.kids = PDFArray(page_objs)
         self._finalize_catalog(
             catalog_obj,
@@ -154,10 +154,11 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
             struct_tree_root_obj=struct_tree_root_obj,
             outline_dict_obj=outline_dict_obj,
         )
-        dests = []
+        dests: list[DestinationXYZ] = []
         for page_obj in page_objs:
             page_obj.parent = pages_root_obj
             page_obj.resources = resources_dict_obj
+            assert page_obj.annots is not None
             for annot in page_obj.annots:
                 if annot.dest:
                     dests.append(annot.dest)
@@ -167,10 +168,15 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
                 # Avoid serializing an empty PDFArray:
                 page_obj.annots = None
         for outline_item in outline_items:
-            dests.append(outline_item.dest)
+            if outline_item.dest is not None:
+                dests.append(outline_item.dest)
         # Assigning the .page_ref property of all Destination objects:
         for dest in dests:
-            dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
+            dest.page_ref = pdf_ref(  # pyright: ignore[reportAttributeAccessIssue]
+                page_objs[
+                    dest.page_number - 1  # pyright: ignore[reportAttributeAccessIssue]
+                ].id
+            )
         for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
         main_xref.first_xref = first_xref
@@ -225,15 +231,15 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
             f&#34;{len(self.buffer): 12d}&#34;,
         )
 
-        if fpdf._sign_key:
+        if fpdf._sign_key:  # pyright: ignore[reportPrivateUsage]
             self.buffer = sign_content(
-                signer,
+                signer,  # pyright: ignore[reportArgumentType]
                 self.buffer,
-                fpdf._sign_key,
-                fpdf._sign_cert,
-                fpdf._sign_extra_certs,
-                fpdf._sign_hashalgo,
-                fpdf._sign_time,
+                fpdf._sign_key,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_cert,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_extra_certs,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_hashalgo,  # pyright: ignore[reportPrivateUsage]
+                fpdf._sign_time,  # pyright: ignore[reportPrivateUsage]
             )
 
         return self.buffer</code></pre>
@@ -246,7 +252,7 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.linearization.LinearizedOutputProducer.bufferize"><code class="name flex">
-<span>def <span class="ident">bufferize</span></span>(<span>self)</span>
+<span>def <span class="ident">bufferize</span></span>(<span>self) ‑> bytearray</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -256,9 +262,9 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L128-L300" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L150-L328" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def bufferize(self):
+<pre><code class="python">def bufferize(self) -&gt; bytearray:
     fpdf = self.fpdf
 
     # 1. Setup - Insert all PDF objects
@@ -276,7 +282,7 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
     # Part 4: Document catalogue and other required document-level objects
     catalog_obj = self._add_catalog()
     # Part 5: Primary hint stream (may precede or follow part 6)
-    hint_stream_obj = PDFHintStream(&#34;&#34;)  # TODO
+    hint_stream_obj = PDFHintStream(&#34;&#34;.encode(&#34;latin-1&#34;))  # TODO
     self.pdf_objs.append(hint_stream_obj)
     # Part 6: First-page section (may precede or follow part 5)
     page_objs = self._add_pages(slice(0, 1))
@@ -331,13 +337,13 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
             and pdf_obj is not hint_stream_obj
         ):
             self.obj_id += 1
-            pdf_obj.obj_id = self.obj_id
+            pdf_obj.id = self.obj_id
     # The hint streams shall be assigned the last object numbers in the file:
     self.obj_id += 1
     hint_stream_obj.id = self.obj_id
 
     # 2. Plumbing - Inject all PDF object references required:
-    linearization_obj.o = page_objs[0].id
+    linearization_obj.o = page_objs[0].id  # type: ignore[assignment]
     pages_root_obj.kids = PDFArray(page_objs)
     self._finalize_catalog(
         catalog_obj,
@@ -348,10 +354,11 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
         struct_tree_root_obj=struct_tree_root_obj,
         outline_dict_obj=outline_dict_obj,
     )
-    dests = []
+    dests: list[DestinationXYZ] = []
     for page_obj in page_objs:
         page_obj.parent = pages_root_obj
         page_obj.resources = resources_dict_obj
+        assert page_obj.annots is not None
         for annot in page_obj.annots:
             if annot.dest:
                 dests.append(annot.dest)
@@ -361,10 +368,15 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
             # Avoid serializing an empty PDFArray:
             page_obj.annots = None
     for outline_item in outline_items:
-        dests.append(outline_item.dest)
+        if outline_item.dest is not None:
+            dests.append(outline_item.dest)
     # Assigning the .page_ref property of all Destination objects:
     for dest in dests:
-        dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
+        dest.page_ref = pdf_ref(  # pyright: ignore[reportAttributeAccessIssue]
+            page_objs[
+                dest.page_number - 1  # pyright: ignore[reportAttributeAccessIssue]
+            ].id
+        )
     for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
         struct_elem.pg = page_objs[struct_elem.page_number() - 1]
     main_xref.first_xref = first_xref
@@ -419,15 +431,15 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
         f&#34;{len(self.buffer): 12d}&#34;,
     )
 
-    if fpdf._sign_key:
+    if fpdf._sign_key:  # pyright: ignore[reportPrivateUsage]
         self.buffer = sign_content(
-            signer,
+            signer,  # pyright: ignore[reportArgumentType]
             self.buffer,
-            fpdf._sign_key,
-            fpdf._sign_cert,
-            fpdf._sign_extra_certs,
-            fpdf._sign_hashalgo,
-            fpdf._sign_time,
+            fpdf._sign_key,  # pyright: ignore[reportPrivateUsage]
+            fpdf._sign_cert,  # pyright: ignore[reportPrivateUsage]
+            fpdf._sign_extra_certs,  # pyright: ignore[reportPrivateUsage]
+            fpdf._sign_hashalgo,  # pyright: ignore[reportPrivateUsage]
+            fpdf._sign_time,  # pyright: ignore[reportPrivateUsage]
         )
 
     return self.buffer</code></pre>
@@ -440,16 +452,16 @@ plus a few other properties on PDFPage instances</p></div>
 </dd>
 <dt id="fpdf.linearization.PDFHintStream"><code class="flex name class">
 <span>class <span class="ident">PDFHintStream</span></span>
-<span>(</span><span>contents, compress=False)</span>
+<span>(</span><span>contents: bytes, compress: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L111-L124" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L133-L146" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFHintStream(PDFContentStream):
-    def __init__(self, contents, compress=False):
+    def __init__(self, contents: bytes, compress: bool = False) -&gt; None:
         super().__init__(contents=contents, compress=compress)
         self.s = None  # (Required) Shared object hint table
         self.t = None  # (Present only if thumbnail images exist) Thumbnail hint table
@@ -472,7 +484,7 @@ plus a few other properties on PDFPage instances</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.linearization.PDFHintStream.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -482,7 +494,7 @@ plus a few other properties on PDFPage instances</p></div>
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.linearization.PDFHintStream.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -495,16 +507,16 @@ plus a few other properties on PDFPage instances</p></div>
 </dd>
 <dt id="fpdf.linearization.PDFLinearization"><code class="flex name class">
 <span>class <span class="ident">PDFLinearization</span></span>
-<span>(</span><span>pages_count)</span>
+<span>(</span><span>pages_count: int)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L25-L36" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L36-L47" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFLinearization(PDFObject):
-    def __init__(self, pages_count):
+    def __init__(self, pages_count: int) -&gt; None:
         super().__init__()
         self.linearized = &#34;1&#34;  # Version
         self.n = pages_count
@@ -524,7 +536,7 @@ plus a few other properties on PDFPage instances</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.linearization.PDFLinearization.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -534,7 +546,7 @@ plus a few other properties on PDFPage instances</p></div>
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.linearization.PDFLinearization.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -547,40 +559,44 @@ plus a few other properties on PDFPage instances</p></div>
 </dd>
 <dt id="fpdf.linearization.PDFXrefAndTrailer"><code class="flex name class">
 <span>class <span class="ident">PDFXrefAndTrailer</span></span>
-<span>(</span><span>output_builder)</span>
+<span>(</span><span>output_builder: <a title="fpdf.output.OutputProducer" href="output.html#fpdf.output.OutputProducer">OutputProducer</a>)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L39-L108" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L50-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXrefAndTrailer(ContentWithoutID):
     PREV_MAIN_XREF_START_PLACEHOLDER = &#34;0%1*2+3-2/1^&#34;
 
-    def __init__(self, output_builder):
+    def __init__(self, output_builder: OutputProducer) -&gt; None:
         self.output_builder = output_builder
         self.count = output_builder.obj_id + 1
         self.start_obj_id = 1
         # Must be set before the call to serialize():
-        self.catalog_obj = None
-        self.info_obj = None
-        self.first_xref = None
-        self.main_xref = None
+        self.catalog_obj: Optional[PDFCatalog] = None
+        self.info_obj: Optional[PDFInfo] = None
+        self.first_xref: Optional[&#34;PDFXrefAndTrailer&#34;] = None
+        self.main_xref: Optional[&#34;PDFXrefAndTrailer&#34;] = None
         # Computed at serialize() time based on output_builder.buffer size:
-        self.startxref = None
+        self.startxref: Optional[str] = None
 
     @property
-    def is_first_xref(self):
+    def is_first_xref(self) -&gt; bool:
         return bool(self.main_xref)
 
     @property
-    def is_main_xref(self):
+    def is_main_xref(self) -&gt; bool:
         return bool(self.first_xref)
 
-    def serialize(self, _security_handler=None):
+    def serialize(
+        self, _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None
+    ) -&gt; str:
         builder = self.output_builder
-        out = []
+        assert builder is not None
+        assert builder.buffer is not None
+        out: list[str] = []
         self.startxref = str(len(builder.buffer))
         if self.is_main_xref:
             builder.buffer = buffer_subst(
@@ -600,36 +616,45 @@ plus a few other properties on PDFPage instances</p></div>
         out.append(&#34;trailer&#34;)
         out.append(&#34;&lt;&lt;&#34;)
         if self.is_main_xref:
+            assert self.first_xref is not None
             out.append(f&#34;/Size {self.count - self.first_xref.count}&#34;)
         else:
             if self.is_first_xref:
+                assert self.main_xref is not None
                 out.append(f&#34;/Size {self.main_xref.count}&#34;)
                 out.append(f&#34;/Prev {self.PREV_MAIN_XREF_START_PLACEHOLDER}&#34;)
             else:
                 out.append(f&#34;/Size {self.count}&#34;)
+            assert self.catalog_obj is not None
+            assert self.info_obj is not None
             out.append(f&#34;/Root {pdf_ref(self.catalog_obj.id)}&#34;)
             out.append(f&#34;/Info {pdf_ref(self.info_obj.id)}&#34;)
             fpdf = builder.fpdf
             file_id = fpdf.file_id()
             if file_id == -1:
-                file_id = fpdf._default_file_id(builder.buffer)
+                file_id = fpdf._default_file_id(  # pyright: ignore[reportPrivateUsage]
+                    builder.buffer
+                )
             if file_id:
                 out.append(f&#34;/ID [{file_id}]&#34;)
         out.append(&#34;&gt;&gt;&#34;)
         out.append(&#34;startxref&#34;)
         startxref = self.startxref
         if self.is_main_xref:
-            startxref = self.first_xref.startxref
+            assert self.first_xref is not None
+            startxref = str(self.first_xref.startxref or &#34;0&#34;)
         if self.is_first_xref:
             startxref = &#34;0&#34;
         out.append(startxref)
         out.append(&#34;%%EOF&#34;)
         return &#34;\n&#34;.join(out)</code></pre>
 </details>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.output.ContentWithoutID" href="output.html#fpdf.output.ContentWithoutID">ContentWithoutID</a></li>
+<li>abc.ABC</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -640,28 +665,28 @@ plus a few other properties on PDFPage instances</p></div>
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.linearization.PDFXrefAndTrailer.is_first_xref"><code class="name">prop <span class="ident">is_first_xref</span></code></dt>
+<dt id="fpdf.linearization.PDFXrefAndTrailer.is_first_xref"><code class="name">prop <span class="ident">is_first_xref</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L54-L56" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L65-L67" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def is_first_xref(self):
+def is_first_xref(self) -&gt; bool:
     return bool(self.main_xref)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.linearization.PDFXrefAndTrailer.is_main_xref"><code class="name">prop <span class="ident">is_main_xref</span></code></dt>
+<dt id="fpdf.linearization.PDFXrefAndTrailer.is_main_xref"><code class="name">prop <span class="ident">is_main_xref</span> : bool</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L58-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L69-L71" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def is_main_xref(self):
+def is_main_xref(self) -&gt; bool:
     return bool(self.first_xref)</code></pre>
 </details>
 <div class="desc"></div>
@@ -670,17 +695,21 @@ def is_main_xref(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.linearization.PDFXrefAndTrailer.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/linearization.py#L62-L108" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/linearization.py#L73-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None):
+<pre><code class="python">def serialize(
+    self, _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None
+) -&gt; str:
     builder = self.output_builder
-    out = []
+    assert builder is not None
+    assert builder.buffer is not None
+    out: list[str] = []
     self.startxref = str(len(builder.buffer))
     if self.is_main_xref:
         builder.buffer = buffer_subst(
@@ -700,26 +729,33 @@ def is_main_xref(self):
     out.append(&#34;trailer&#34;)
     out.append(&#34;&lt;&lt;&#34;)
     if self.is_main_xref:
+        assert self.first_xref is not None
         out.append(f&#34;/Size {self.count - self.first_xref.count}&#34;)
     else:
         if self.is_first_xref:
+            assert self.main_xref is not None
             out.append(f&#34;/Size {self.main_xref.count}&#34;)
             out.append(f&#34;/Prev {self.PREV_MAIN_XREF_START_PLACEHOLDER}&#34;)
         else:
             out.append(f&#34;/Size {self.count}&#34;)
+        assert self.catalog_obj is not None
+        assert self.info_obj is not None
         out.append(f&#34;/Root {pdf_ref(self.catalog_obj.id)}&#34;)
         out.append(f&#34;/Info {pdf_ref(self.info_obj.id)}&#34;)
         fpdf = builder.fpdf
         file_id = fpdf.file_id()
         if file_id == -1:
-            file_id = fpdf._default_file_id(builder.buffer)
+            file_id = fpdf._default_file_id(  # pyright: ignore[reportPrivateUsage]
+                builder.buffer
+            )
         if file_id:
             out.append(f&#34;/ID [{file_id}]&#34;)
     out.append(&#34;&gt;&gt;&#34;)
     out.append(&#34;startxref&#34;)
     startxref = self.startxref
     if self.is_main_xref:
-        startxref = self.first_xref.startxref
+        assert self.first_xref is not None
+        startxref = str(self.first_xref.startxref or &#34;0&#34;)
     if self.is_first_xref:
         startxref = &#34;0&#34;
     out.append(startxref)

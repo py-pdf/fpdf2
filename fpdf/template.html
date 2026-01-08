@@ -50,13 +50,13 @@ el.replaceWith(d);
 <dl>
 <dt id="fpdf.template.FlexTemplate"><code class="flex name class">
 <span>class <span class="ident">FlexTemplate</span></span>
-<span>(</span><span>pdf, elements=None)</span>
+<span>(</span><span>pdf: <a title="fpdf.fpdf.FPDF" href="fpdf.html#fpdf.fpdf.FPDF">FPDF</a>,<br>elements: Sequence[dict[str, Any]] | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L29-L647" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L35-L723" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -68,7 +68,9 @@ el.replaceWith(d);
     Usage documentation at: &lt;https://py-pdf.github.io/fpdf2/Templates.html&gt;
     &#34;&#34;&#34;
 
-    def __init__(self, pdf, elements=None):
+    def __init__(
+        self, pdf: FPDF, elements: Optional[Sequence[dict[str, Any]]] = None
+    ) -&gt; None:
         &#34;&#34;&#34;
         Args:
             pdf (fpdf.fpdf.FPDF): All content will be added to this `FPDF` instance.
@@ -79,7 +81,7 @@ el.replaceWith(d);
         if not isinstance(pdf, FPDF):
             raise TypeError(&#34;&#39;pdf&#39; must be an instance of fpdf.FPDF()&#34;)
         self.pdf = pdf
-        self.splitting_pdf = None  # for split_multicell()
+        self.splitting_pdf: Optional[FPDF] = None  # for split_multicell()
         if elements:
             self.load_elements(elements)
         self.handlers = {
@@ -92,9 +94,9 @@ el.replaceWith(d);
             &#34;C39&#34;: self._code39,
             &#34;W&#34;: self._write,
         }
-        self.texts = {}
+        self.texts: dict[str, Any] = {}
 
-    def load_elements(self, elements):
+    def load_elements(self, elements: Sequence[dict[str, Any]]) -&gt; None:
         &#34;&#34;&#34;
         Load a template definition.
 
@@ -125,8 +127,8 @@ el.replaceWith(d);
             &#34;dash_pattern&#34;: (dict, type(None)),
         }
 
-        self.elements = elements
-        self.keys = []
+        self.elements: Sequence[dict[str, Any]] = elements
+        self.keys: list[str] = []
         for e in elements:
             # priority is optional, but we need a default for sorting.
             if not &#34;priority&#34; in e:
@@ -168,11 +170,11 @@ el.replaceWith(d);
                     e[&#34;dash_pattern&#34;][&#34;phase&#34;] = 0
 
             for k, t in key_config.items():
-                if k in e and not isinstance(e[k], t):
+                if k in e and not isinstance(e[k], t):  # type: ignore[arg-type]
                     ttype = (
                         t.__name__
                         if isinstance(t, type)
-                        else &#34; or &#34;.join([f&#34;&#39;{x.__name__}&#39;&#34; for x in t])
+                        else &#34; or &#34;.join([f&#34;&#39;{x.__name__}&#39;&#34; for x in t])  # type: ignore[attr-defined]
                     )
                     raise TypeError(
                         f&#34;Value of element item &#39;{k}&#39; must be {ttype}, not &#39;{type(e[k]).__name__}&#39;.&#34;
@@ -180,7 +182,7 @@ el.replaceWith(d);
             self.keys.append(e[&#34;name&#34;].lower())
 
     @staticmethod
-    def _parse_colorcode(s):
+    def _parse_colorcode(s: str) -&gt; int:
         &#34;&#34;&#34;Allow hex and oct values for colors&#34;&#34;&#34;
         if s[:2] in [&#34;0x&#34;, &#34;0X&#34;]:
             return int(s, 16)
@@ -189,7 +191,7 @@ el.replaceWith(d);
         return int(s)
 
     @staticmethod
-    def _parse_multiline(s):
+    def _parse_multiline(s: str) -&gt; Optional[bool]:
         i = int(s)
         if i &gt; 0:
             return True
@@ -197,7 +199,7 @@ el.replaceWith(d);
             return False
         return None
 
-    def parse_json(self, infile: os.PathLike, encoding: str = &#34;utf-8&#34;):
+    def parse_json(self, infile: os.PathLike[str], encoding: str = &#34;utf-8&#34;) -&gt; None:
         &#34;&#34;&#34;
         Load the template definition from a JSON file.
         The data must be structured as an array of objects, with names and values exactly
@@ -230,11 +232,11 @@ el.replaceWith(d);
 
     def parse_csv(
         self,
-        infile: os.PathLike,
+        infile: os.PathLike[str],
         delimiter: str = &#34;,&#34;,
         decimal_sep: str = &#34;.&#34;,
-        encoding: str = None,
-    ):
+        encoding: Optional[str] = None,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Load the template definition from a CSV file.
 
@@ -248,7 +250,7 @@ el.replaceWith(d);
                 Default is the system default encoding.
         &#34;&#34;&#34;
 
-        def _varsep_float(s, default=&#34;0&#34;):
+        def _varsep_float(s: str, default: str = &#34;0&#34;) -&gt; float:
             &#34;&#34;&#34;Convert to float with given decimal separator&#34;&#34;&#34;
             # glad to have nonlocal scoping...
             return float((s.strip() or default).replace(decimal_sep, &#34;.&#34;))
@@ -282,7 +284,7 @@ el.replaceWith(d);
             for row in csv.reader(f, delimiter=delimiter):
                 # fill in blanks for any missing items
                 row.extend([&#34;&#34;] * (len(key_config) - len(row)))
-                kargs = {}
+                kargs: dict[str, Any] = {}
                 for val, cfg in zip(row, key_config):
                     vs = val.strip()
                     if not vs:
@@ -299,11 +301,11 @@ el.replaceWith(d);
                             kargs[&#34;priority&#34;] = 0
                         # otherwise, let the type handlers use their own defaults
                     else:
-                        kargs[cfg[0]] = cfg[1](vs)
+                        kargs[cfg[0]] = cfg[1](vs)  # type: ignore[operator]
                 self.elements.append(kargs)
         self.keys = [val[&#34;name&#34;].lower() for val in self.elements]
 
-    def __setitem__(self, name, value):
+    def __setitem__(self, name: str, value: Any) -&gt; None:
         assert isinstance(
             name, str
         ), f&#34;name must be of type &#39;str&#39;, not &#39;{type(name).__name__}&#39;.&#34;
@@ -315,13 +317,13 @@ el.replaceWith(d);
     # setitem shortcut (may be further extended)
     set = __setitem__
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -&gt; bool:
         assert isinstance(
             name, str
         ), f&#34;name must be of type &#39;str&#39;, not &#39;{type(name).__name__}&#39;.&#34;
         return name.lower() in self.keys
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -&gt; Any:
         assert isinstance(
             name, str
         ), f&#34;name must be of type &#39;str&#39;, not &#39;{type(name).__name__}&#39;.&#34;
@@ -336,7 +338,7 @@ el.replaceWith(d);
             (x[&#34;text&#34;] for x in self.elements if x[&#34;name&#34;].lower() == key), None
         )
 
-    def split_multicell(self, text, element_name):
+    def split_multicell(self, text: str, element_name: str) -&gt; list[str]:
         &#34;&#34;&#34;
         Split a string between words, for the parts to fit into a given element
         width. Additional splits will be made replacing any &#39;\\n&#39; characters.
@@ -357,6 +359,7 @@ el.replaceWith(d);
         if not self.splitting_pdf:
             self.splitting_pdf = FPDF()
             self.splitting_pdf.add_page()
+        assert self.splitting_pdf is not None
         style = &#34;&#34;
         if element.get(&#34;bold&#34;):
             style += &#34;B&#34;
@@ -365,7 +368,7 @@ el.replaceWith(d);
         if element.get(&#34;underline&#34;):
             style += &#34;U&#34;
         self.splitting_pdf.set_font(element[&#34;font&#34;], style, element[&#34;size&#34;])
-        return self.splitting_pdf.multi_cell(
+        return self.splitting_pdf.multi_cell(  # type: ignore[return-value]
             w=element[&#34;x2&#34;] - element[&#34;x1&#34;],
             h=element[&#34;y2&#34;] - element[&#34;y1&#34;],
             text=str(text),
@@ -377,35 +380,35 @@ el.replaceWith(d);
 
     def _text(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text=&#34;&#34;,
-        font=&#34;helvetica&#34;,
-        size=10,
-        scale=1.0,
-        bold=False,
-        italic=False,
-        underline=False,
-        align=&#34;&#34;,
-        foreground=0,
-        background=None,
-        multiline=None,
-        wrapmode=&#34;WORD&#34;,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = &#34;&#34;,
+        font: str = &#34;helvetica&#34;,
+        size: float = 10,
+        scale: float = 1.0,
+        bold: bool = False,
+        italic: bool = False,
+        underline: bool = False,
+        align: str = &#34;&#34;,
+        foreground: int = 0,
+        background: Optional[int] = None,
+        multiline: Optional[bool] = None,
+        wrapmode: str = &#34;WORD&#34;,
+        **__: Any,
+    ) -&gt; None:
         if not text:
             return
         pdf = self.pdf
-        if pdf.text_color != _rgb_as_str(foreground):
+        if pdf.text_color != _rgb_as_str(foreground):  # type: ignore[comparison-overlap]
             pdf.set_text_color(*_rgb(foreground))
         if background is None:
             fill = False
         else:
             fill = True
-            if pdf.fill_color != _rgb_as_str(background):
+            if pdf.fill_color != _rgb_as_str(background):  # type: ignore[comparison-overlap]
                 pdf.set_fill_color(*_rgb(background))
 
         font = font.strip().lower()
@@ -433,15 +436,15 @@ el.replaceWith(d);
                 border=0,
                 align=align,
                 fill=fill,
-                wrapmode=wrapmode,
+                wrapmode=WrapMode.coerce(wrapmode),
             )
         else:  # trim to fit exactly the space defined
-            text = pdf.multi_cell(
+            text = pdf.multi_cell(  # type: ignore[index,assignment]
                 w=width,
                 h=height,
                 text=text,
                 align=align,
-                wrapmode=wrapmode,
+                wrapmode=WrapMode.coerce(wrapmode),
                 dry_run=True,
                 output=&#34;LINES&#34;,
             )[0]
@@ -449,112 +452,172 @@ el.replaceWith(d);
 
     def _line(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        dash_pattern=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        size: float = 0,
+        scale: float = 1.0,
+        foreground: int = 0,
+        dash_pattern: Optional[tuple[float, float, float]] = None,
+        **__: Any,
+    ) -&gt; None:
+        assert self.pdf.draw_color is not None
         if self.pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
         self.pdf.set_line_width(size * scale)
         if dash_pattern is not None:
             # Save dash_pattern to restore after this line
             restore_dash_pattern = self.pdf.dash_pattern
-            self.pdf.set_dash_pattern(**dash_pattern)
+            if isinstance(dash_pattern, dict):
+                self.pdf.set_dash_pattern(
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;dash&#34;, 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;gap&#34;, 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;phase&#34;, 0
+                    ),
+                )
+            else:
+                self.pdf.set_dash_pattern(
+                    dash_pattern[0], dash_pattern[1], dash_pattern[2]
+                )
         self.pdf.line(x1, y1, x2, y2)
         if dash_pattern is not None:
-            self.pdf.set_dash_pattern(**restore_dash_pattern)
+            self.pdf.set_dash_pattern(
+                **restore_dash_pattern  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
 
     def _rect(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        background=None,
-        dash_pattern=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        size: float = 0,
+        scale: float = 1.0,
+        foreground: int = 0,
+        background: Optional[int] = None,
+        dash_pattern: Optional[tuple[float, float, float]] = None,
+        **__: Any,
+    ) -&gt; None:
         pdf = self.pdf
+        assert pdf.draw_color is not None
         if pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = &#34;D&#34;
         else:
             style = &#34;FD&#34;
-            if pdf.fill_color != _rgb_as_str(background):
+            if pdf.fill_color != _rgb_as_str(background):  # type: ignore[comparison-overlap]
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
         if dash_pattern is not None:
             # Save dash_pattern to restore after this rect
             restore_dash_pattern = self.pdf.dash_pattern
-            pdf.set_dash_pattern(**dash_pattern)
+            if isinstance(dash_pattern, dict):
+                pdf.set_dash_pattern(
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;dash&#34;, 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;gap&#34;, 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;phase&#34;, 0
+                    ),
+                )
+            else:
+                pdf.set_dash_pattern(dash_pattern[0], dash_pattern[1], dash_pattern[2])
         pdf.rect(x1, y1, x2 - x1, y2 - y1, style=style)
         if dash_pattern is not None:
-            self.pdf.set_dash_pattern(**restore_dash_pattern)
+            self.pdf.set_dash_pattern(
+                **restore_dash_pattern  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
 
     def _ellipse(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        background=None,
-        dash_pattern=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        size: float = 0,
+        scale: float = 1.0,
+        foreground: int = 0,
+        background: Optional[int] = None,
+        dash_pattern: Optional[tuple[float, float, float]] = None,
+        **__: Any,
+    ) -&gt; None:
         pdf = self.pdf
+        assert pdf.draw_color is not None
         if pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = &#34;D&#34;
         else:
             style = &#34;FD&#34;
-            if pdf.fill_color != _rgb_as_str(background):
+            if pdf.fill_color != _rgb_as_str(background):  # type: ignore[comparison-overlap]
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
         if dash_pattern is not None:
             # Save dash_pattern to restore after this ellipse
             restore_dash_pattern = self.pdf.dash_pattern
-            pdf.set_dash_pattern(**dash_pattern)
+            if isinstance(dash_pattern, dict):
+                pdf.set_dash_pattern(
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;dash&#34;, 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;gap&#34;, 0
+                    ),
+                    dash_pattern.get(  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        &#34;phase&#34;, 0
+                    ),
+                )
+            else:
+                pdf.set_dash_pattern(dash_pattern[0], dash_pattern[1], dash_pattern[2])
         pdf.ellipse(x1, y1, x2 - x1, y2 - y1, style=style)
         if dash_pattern is not None:
-            self.pdf.set_dash_pattern(**restore_dash_pattern)
+            self.pdf.set_dash_pattern(
+                **restore_dash_pattern  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
 
-    def _image(self, *_, x1=0, y1=0, x2=0, y2=0, text=&#34;&#34;, **__):
+    def _image(
+        self,
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = &#34;&#34;,
+        **__: Any,
+    ) -&gt; None:
         if text:
             self.pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link=&#34;&#34;)
 
     def _barcode(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text=&#34;&#34;,
-        font=&#34;interleaved 2of5 nt&#34;,
-        size=1,
-        scale=1.0,
-        foreground=0,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = &#34;&#34;,
+        font: str = &#34;interleaved 2of5 nt&#34;,
+        size: float = 1,
+        scale: float = 1.0,
+        foreground: int = 0,
+        **__: Any,
+    ) -&gt; None:
         # pylint: disable=unused-argument
         pdf = self.pdf
+        assert pdf.fill_color is not None
         if pdf.fill_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         font = font.lower().strip()
@@ -563,20 +626,20 @@ el.replaceWith(d);
 
     def _code39(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        y2=0,
-        text=&#34;&#34;,
-        size=1.5,
-        scale=1.0,
-        foreground=0,
-        x=None,
-        y=None,
-        w=None,
-        h=None,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        y2: float = 0,
+        text: str = &#34;&#34;,
+        size: float = 1.5,
+        scale: float = 1.0,
+        foreground: int = 0,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+        w: Optional[float] = None,
+        h: Optional[float] = None,
+        **__: Any,
+    ) -&gt; None:
         if x is not None or y is not None or w is not None or h is not None:
             warnings.warn(
                 (
@@ -587,6 +650,7 @@ el.replaceWith(d);
                 stacklevel=get_stack_level(),
             )
         pdf = self.pdf
+        assert pdf.fill_color is not None
         if pdf.fill_color.serialize().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         h = y2 - y1
@@ -598,27 +662,27 @@ el.replaceWith(d);
     # templates (using write method) 2014-02-22
     def _write(
         self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text=&#34;&#34;,
-        font=&#34;helvetica&#34;,
-        size=10,
-        scale=1.0,
-        bold=False,
-        italic=False,
-        underline=False,
-        link=&#34;&#34;,
-        foreground=0,
-        **__,
-    ):
+        *_: Any,
+        x1: float = 0,
+        y1: float = 0,
+        x2: float = 0,
+        y2: float = 0,
+        text: str = &#34;&#34;,
+        font: str = &#34;helvetica&#34;,
+        size: float = 10,
+        scale: float = 1.0,
+        bold: bool = False,
+        italic: bool = False,
+        underline: bool = False,
+        link: Optional[int | str] = &#34;&#34;,
+        foreground: int = 0,
+        **__: Any,
+    ) -&gt; None:
         # pylint: disable=unused-argument
         if not text:
             return
         pdf = self.pdf
-        if pdf.text_color != _rgb_as_str(foreground):
+        if pdf.text_color != _rgb_as_str(foreground):  # type: ignore[comparison-overlap]
             pdf.set_text_color(*_rgb(foreground))
         font = font.strip().lower()
         style = &#34;&#34;
@@ -636,7 +700,13 @@ el.replaceWith(d);
         pdf.set_xy(x1, y1)
         pdf.write(5, text, link)
 
-    def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
+    def render(
+        self,
+        offsetx: float = 0.0,
+        offsety: float = 0.0,
+        rotate: float = 0.0,
+        scale: float = 1.0,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Add the contents of the template to the PDF document.
 
@@ -667,15 +737,15 @@ el.replaceWith(d);
                     with self.pdf.rotation(rotate, offsetx, offsety):
                         if &#34;rotate&#34; in ele and ele[&#34;rotate&#34;]:
                             with self.pdf.rotation(ele[&#34;rotate&#34;], ele[&#34;x1&#34;], ele[&#34;y1&#34;]):
-                                self.handlers[handler_name](**ele)
+                                self.handlers[handler_name](**ele)  # type: ignore[operator]
                         else:
-                            self.handlers[handler_name](**ele)
+                            self.handlers[handler_name](**ele)  # type: ignore[operator]
                 else:
                     if &#34;rotate&#34; in ele and ele[&#34;rotate&#34;]:
                         with self.pdf.rotation(ele[&#34;rotate&#34;], ele[&#34;x1&#34;], ele[&#34;y1&#34;]):
-                            self.handlers[handler_name](**ele)
+                            self.handlers[handler_name](**ele)  # type: ignore[operator]
                     else:
-                        self.handlers[handler_name](**ele)
+                        self.handlers[handler_name](**ele)  # type: ignore[operator]
         self.texts = {}  # reset modified entries for the next page</code></pre>
 </details>
 <div class="desc"><p>A flexible templating class.</p>
@@ -698,15 +768,15 @@ or parse_csv() before doing anything else.</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.template.FlexTemplate.load_elements"><code class="name flex">
-<span>def <span class="ident">load_elements</span></span>(<span>self, elements)</span>
+<span>def <span class="ident">load_elements</span></span>(<span>self, elements: Sequence[dict[str, Any]]) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L65-L148" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L73-L156" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def load_elements(self, elements):
+<pre><code class="python">def load_elements(self, elements: Sequence[dict[str, Any]]) -&gt; None:
     &#34;&#34;&#34;
     Load a template definition.
 
@@ -737,8 +807,8 @@ or parse_csv() before doing anything else.</dd>
         &#34;dash_pattern&#34;: (dict, type(None)),
     }
 
-    self.elements = elements
-    self.keys = []
+    self.elements: Sequence[dict[str, Any]] = elements
+    self.keys: list[str] = []
     for e in elements:
         # priority is optional, but we need a default for sorting.
         if not &#34;priority&#34; in e:
@@ -780,11 +850,11 @@ or parse_csv() before doing anything else.</dd>
                 e[&#34;dash_pattern&#34;][&#34;phase&#34;] = 0
 
         for k, t in key_config.items():
-            if k in e and not isinstance(e[k], t):
+            if k in e and not isinstance(e[k], t):  # type: ignore[arg-type]
                 ttype = (
                     t.__name__
                     if isinstance(t, type)
-                    else &#34; or &#34;.join([f&#34;&#39;{x.__name__}&#39;&#34; for x in t])
+                    else &#34; or &#34;.join([f&#34;&#39;{x.__name__}&#39;&#34; for x in t])  # type: ignore[attr-defined]
                 )
                 raise TypeError(
                     f&#34;Value of element item &#39;{k}&#39; must be {ttype}, not &#39;{type(e[k]).__name__}&#39;.&#34;
@@ -799,21 +869,21 @@ or parse_csv() before doing anything else.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.template.FlexTemplate.parse_csv"><code class="name flex">
-<span>def <span class="ident">parse_csv</span></span>(<span>self,<br>infile: os.PathLike,<br>delimiter: str = ',',<br>decimal_sep: str = '.',<br>encoding: str = None)</span>
+<span>def <span class="ident">parse_csv</span></span>(<span>self,<br>infile: os.PathLike[str],<br>delimiter: str = ',',<br>decimal_sep: str = '.',<br>encoding: str | None = None) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L199-L272" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L207-L280" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_csv(
     self,
-    infile: os.PathLike,
+    infile: os.PathLike[str],
     delimiter: str = &#34;,&#34;,
     decimal_sep: str = &#34;.&#34;,
-    encoding: str = None,
-):
+    encoding: Optional[str] = None,
+) -&gt; None:
     &#34;&#34;&#34;
     Load the template definition from a CSV file.
 
@@ -827,7 +897,7 @@ or parse_csv() before doing anything else.</dd>
             Default is the system default encoding.
     &#34;&#34;&#34;
 
-    def _varsep_float(s, default=&#34;0&#34;):
+    def _varsep_float(s: str, default: str = &#34;0&#34;) -&gt; float:
         &#34;&#34;&#34;Convert to float with given decimal separator&#34;&#34;&#34;
         # glad to have nonlocal scoping...
         return float((s.strip() or default).replace(decimal_sep, &#34;.&#34;))
@@ -861,7 +931,7 @@ or parse_csv() before doing anything else.</dd>
         for row in csv.reader(f, delimiter=delimiter):
             # fill in blanks for any missing items
             row.extend([&#34;&#34;] * (len(key_config) - len(row)))
-            kargs = {}
+            kargs: dict[str, Any] = {}
             for val, cfg in zip(row, key_config):
                 vs = val.strip()
                 if not vs:
@@ -878,7 +948,7 @@ or parse_csv() before doing anything else.</dd>
                         kargs[&#34;priority&#34;] = 0
                     # otherwise, let the type handlers use their own defaults
                 else:
-                    kargs[cfg[0]] = cfg[1](vs)
+                    kargs[cfg[0]] = cfg[1](vs)  # type: ignore[operator]
             self.elements.append(kargs)
     self.keys = [val[&#34;name&#34;].lower() for val in self.elements]</code></pre>
 </details>
@@ -899,15 +969,15 @@ Default is the system default encoding.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.template.FlexTemplate.parse_json"><code class="name flex">
-<span>def <span class="ident">parse_json</span></span>(<span>self, infile: os.PathLike, encoding: str = 'utf-8')</span>
+<span>def <span class="ident">parse_json</span></span>(<span>self, infile: os.PathLike[str], encoding: str = 'utf-8') ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L168-L197" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L176-L205" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def parse_json(self, infile: os.PathLike, encoding: str = &#34;utf-8&#34;):
+<pre><code class="python">def parse_json(self, infile: os.PathLike[str], encoding: str = &#34;utf-8&#34;) -&gt; None:
     &#34;&#34;&#34;
     Load the template definition from a JSON file.
     The data must be structured as an array of objects, with names and values exactly
@@ -950,15 +1020,21 @@ equivalent to what would get supplied to load_elements(),</p>
 </dl></div>
 </dd>
 <dt id="fpdf.template.FlexTemplate.render"><code class="name flex">
-<span>def <span class="ident">render</span></span>(<span>self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0)</span>
+<span>def <span class="ident">render</span></span>(<span>self,<br>offsetx: float = 0.0,<br>offsety: float = 0.0,<br>rotate: float = 0.0,<br>scale: float = 1.0) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L607-L647" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L677-L723" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
+<pre><code class="python">def render(
+    self,
+    offsetx: float = 0.0,
+    offsety: float = 0.0,
+    rotate: float = 0.0,
+    scale: float = 1.0,
+) -&gt; None:
     &#34;&#34;&#34;
     Add the contents of the template to the PDF document.
 
@@ -989,15 +1065,15 @@ equivalent to what would get supplied to load_elements(),</p>
                 with self.pdf.rotation(rotate, offsetx, offsety):
                     if &#34;rotate&#34; in ele and ele[&#34;rotate&#34;]:
                         with self.pdf.rotation(ele[&#34;rotate&#34;], ele[&#34;x1&#34;], ele[&#34;y1&#34;]):
-                            self.handlers[handler_name](**ele)
+                            self.handlers[handler_name](**ele)  # type: ignore[operator]
                     else:
-                        self.handlers[handler_name](**ele)
+                        self.handlers[handler_name](**ele)  # type: ignore[operator]
             else:
                 if &#34;rotate&#34; in ele and ele[&#34;rotate&#34;]:
                     with self.pdf.rotation(ele[&#34;rotate&#34;], ele[&#34;x1&#34;], ele[&#34;y1&#34;]):
-                        self.handlers[handler_name](**ele)
+                        self.handlers[handler_name](**ele)  # type: ignore[operator]
                 else:
-                    self.handlers[handler_name](**ele)
+                    self.handlers[handler_name](**ele)  # type: ignore[operator]
     self.texts = {}  # reset modified entries for the next page</code></pre>
 </details>
 <div class="desc"><p>Add the contents of the template to the PDF document.</p>
@@ -1011,15 +1087,15 @@ equivalent to what would get supplied to load_elements(),</p>
 </dl></div>
 </dd>
 <dt id="fpdf.template.FlexTemplate.set"><code class="name flex">
-<span>def <span class="ident">set</span></span>(<span>self, name, value)</span>
+<span>def <span class="ident">set</span></span>(<span>self, name: str, value: Any) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L274-L281" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L282-L289" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def __setitem__(self, name, value):
+<pre><code class="python">def __setitem__(self, name: str, value: Any) -&gt; None:
     assert isinstance(
         name, str
     ), f&#34;name must be of type &#39;str&#39;, not &#39;{type(name).__name__}&#39;.&#34;
@@ -1031,15 +1107,15 @@ equivalent to what would get supplied to load_elements(),</p>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.template.FlexTemplate.split_multicell"><code class="name flex">
-<span>def <span class="ident">split_multicell</span></span>(<span>self, text, element_name)</span>
+<span>def <span class="ident">split_multicell</span></span>(<span>self, text: str, element_name: str) ‑> list[str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L307-L344" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L315-L353" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def split_multicell(self, text, element_name):
+<pre><code class="python">def split_multicell(self, text: str, element_name: str) -&gt; list[str]:
     &#34;&#34;&#34;
     Split a string between words, for the parts to fit into a given element
     width. Additional splits will be made replacing any &#39;\\n&#39; characters.
@@ -1060,6 +1136,7 @@ equivalent to what would get supplied to load_elements(),</p>
     if not self.splitting_pdf:
         self.splitting_pdf = FPDF()
         self.splitting_pdf.add_page()
+    assert self.splitting_pdf is not None
     style = &#34;&#34;
     if element.get(&#34;bold&#34;):
         style += &#34;B&#34;
@@ -1068,7 +1145,7 @@ equivalent to what would get supplied to load_elements(),</p>
     if element.get(&#34;underline&#34;):
         style += &#34;U&#34;
     self.splitting_pdf.set_font(element[&#34;font&#34;], style, element[&#34;size&#34;])
-    return self.splitting_pdf.multi_cell(
+    return self.splitting_pdf.multi_cell(  # type: ignore[return-value]
         w=element[&#34;x2&#34;] - element[&#34;x1&#34;],
         h=element[&#34;y2&#34;] - element[&#34;y1&#34;],
         text=str(text),
@@ -1095,13 +1172,13 @@ when rendered in the element font style and size.</p></div>
 </dd>
 <dt id="fpdf.template.Template"><code class="flex name class">
 <span>class <span class="ident">Template</span></span>
-<span>(</span><span>infile=None,<br>elements=None,<br>format='A4',<br>orientation='portrait',<br>unit='mm',<br>title='',<br>author='',<br>subject='',<br>creator='',<br>keywords='')</span>
+<span>(</span><span>infile: os.PathLike[str] | None = None,<br>elements: Sequence[dict[str, Any]] | None = None,<br>format: str = 'A4',<br>orientation: str = 'portrait',<br>unit: str = 'mm',<br>title: str = '',<br>author: str = '',<br>subject: str = '',<br>creator: str = '',<br>keywords: str = '')</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L650-L743" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L726-L819" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
@@ -1116,17 +1193,17 @@ when rendered in the element font style and size.</p></div>
     # pylint: disable=redefined-builtin
     def __init__(
         self,
-        infile=None,
-        elements=None,
-        format=&#34;A4&#34;,
-        orientation=&#34;portrait&#34;,
-        unit=&#34;mm&#34;,
-        title=&#34;&#34;,
-        author=&#34;&#34;,
-        subject=&#34;&#34;,
-        creator=&#34;&#34;,
-        keywords=&#34;&#34;,
-    ):
+        infile: Optional[os.PathLike[str]] = None,
+        elements: Optional[Sequence[dict[str, Any]]] = None,
+        format: str = &#34;A4&#34;,
+        orientation: str = &#34;portrait&#34;,
+        unit: str = &#34;mm&#34;,
+        title: str = &#34;&#34;,
+        author: str = &#34;&#34;,
+        subject: str = &#34;&#34;,
+        creator: str = &#34;&#34;,
+        keywords: str = &#34;&#34;,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Args:
             infile (str): [**DEPRECATED since 2.2.0**] unused, will be removed in a later version
@@ -1170,14 +1247,14 @@ when rendered in the element font style and size.</p></div>
         pdf.set_keywords(keywords)
         super().__init__(pdf=pdf, elements=elements)
 
-    def add_page(self):
+    def add_page(self) -&gt; None:
         &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
         if self.pdf.page:
             self.render()
         self.pdf.add_page()
 
     # pylint: disable=arguments-differ
-    def render(self, outfile=None, dest=None):
+    def render(self, outfile: Optional[str] = None, dest: Optional[str] = None) -&gt; None:  # type: ignore[override]
         &#34;&#34;&#34;
         Finish the document and process all pending data.
 
@@ -1233,15 +1310,15 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.template.Template.add_page"><code class="name flex">
-<span>def <span class="ident">add_page</span></span>(<span>self)</span>
+<span>def <span class="ident">add_page</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L717-L721" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L793-L797" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def add_page(self):
+<pre><code class="python">def add_page(self) -&gt; None:
     &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
     if self.pdf.page:
         self.render()
@@ -1250,7 +1327,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <div class="desc"><p>Finish the current page, and proceed to the next one.</p></div>
 </dd>
 <dt id="fpdf.template.Template.load_elements"><code class="name flex">
-<span>def <span class="ident">load_elements</span></span>(<span>self, elements)</span>
+<span>def <span class="ident">load_elements</span></span>(<span>self, elements: Sequence[dict[str, Any]]) ‑> None</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1260,7 +1337,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <div class="desc inherited"><p>Load a template definition …</p></div>
 </dd>
 <dt id="fpdf.template.Template.parse_csv"><code class="name flex">
-<span>def <span class="ident">parse_csv</span></span>(<span>self,<br>infile: os.PathLike,<br>delimiter: str = ',',<br>decimal_sep: str = '.',<br>encoding: str = None)</span>
+<span>def <span class="ident">parse_csv</span></span>(<span>self,<br>infile: os.PathLike[str],<br>delimiter: str = ',',<br>decimal_sep: str = '.',<br>encoding: str | None = None) ‑> None</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1270,7 +1347,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <div class="desc inherited"><p>Load the template definition from a CSV file …</p></div>
 </dd>
 <dt id="fpdf.template.Template.parse_json"><code class="name flex">
-<span>def <span class="ident">parse_json</span></span>(<span>self, infile: os.PathLike, encoding: str = 'utf-8')</span>
+<span>def <span class="ident">parse_json</span></span>(<span>self, infile: os.PathLike[str], encoding: str = 'utf-8') ‑> None</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1282,15 +1359,15 @@ The data must be structured as an array of objects, with names and values exactl
 equivalent to what …</p></div>
 </dd>
 <dt id="fpdf.template.Template.render"><code class="name flex">
-<span>def <span class="ident">render</span></span>(<span>self, outfile=None, dest=None)</span>
+<span>def <span class="ident">render</span></span>(<span>self, outfile: str | None = None, dest: str | None = None) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/template.py#L724-L743" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/template.py#L800-L819" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def render(self, outfile=None, dest=None):
+<pre><code class="python">def render(self, outfile: Optional[str] = None, dest: Optional[str] = None) -&gt; None:  # type: ignore[override]
     &#34;&#34;&#34;
     Finish the document and process all pending data.
 
@@ -1322,7 +1399,7 @@ Alternatively, the <code>.pdf.output()</code> method can be manually called.</dd
 </dl></div>
 </dd>
 <dt id="fpdf.template.Template.split_multicell"><code class="name flex">
-<span>def <span class="ident">split_multicell</span></span>(<span>self, text, element_name)</span>
+<span>def <span class="ident">split_multicell</span></span>(<span>self, text: str, element_name: str) ‑> list[str]</span>
 </code></dt>
 <dd>
 <p class="inheritance">

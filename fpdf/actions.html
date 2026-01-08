@@ -48,26 +48,35 @@ el.replaceWith(d);
 <dl>
 <dt id="fpdf.actions.Action"><code class="flex name class">
 <span>class <span class="ident">Action</span></span>
-<span>(</span><span>next_action=None)</span>
+<span>(</span><span>next_action: <a title="fpdf.actions.Action" href="#fpdf.actions.Action">Action</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L7-L24" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L12-L38" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Action(ABC):
-    def __init__(self, next_action=None):
+    def __init__(self, next_action: Optional[&#34;Action&#34;] = None) -&gt; None:
         &#34;&#34;&#34;
         Args:
             next (PDFObject | str): optional reference to another Action to trigger after this one
         &#34;&#34;&#34;
         self.next = next_action
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         raise NotImplementedError
 
-    def _serialize(self, key_values=None, _security_handler=None, _obj_id=None):
+    def _serialize(
+        self,
+        key_values: Optional[dict[str, object]] = None,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         if key_values is None:
             key_values = {}
         if self.next:
@@ -97,15 +106,19 @@ inheritance.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.actions.Action.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L15-L16" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L20-L25" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     raise NotImplementedError</code></pre>
 </details>
 <div class="desc"></div>
@@ -114,22 +127,28 @@ inheritance.</p>
 </dd>
 <dt id="fpdf.actions.GoToAction"><code class="flex name class">
 <span>class <span class="ident">GoToAction</span></span>
-<span>(</span><span>dest, next_action=None)</span>
+<span>(</span><span>dest: str | Destination,<br>next_action: <a title="fpdf.actions.Action" href="#fpdf.actions.Action">Action</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L55-L67" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L77-L95" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GoToAction(Action):
-    def __init__(self, dest, next_action=None):
+    def __init__(
+        self, dest: Union[str, &#34;Destination&#34;], next_action: Optional[Action] = None
+    ) -&gt; None:
         super().__init__(next_action)
         if isinstance(dest, str) and dest.startswith(&#34;#&#34;):
             dest = PDFString(dest[1:], encrypt=True)
         self.dest = dest
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return super()._serialize(
             {&#34;s&#34;: &#34;/GoTo&#34;, &#34;d&#34;: self.dest},
             _security_handler=_security_handler,
@@ -151,15 +170,19 @@ inheritance.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.actions.GoToAction.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L62-L67" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L86-L95" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return super()._serialize(
         {&#34;s&#34;: &#34;/GoTo&#34;, &#34;d&#34;: self.dest},
         _security_handler=_security_handler,
@@ -172,21 +195,27 @@ inheritance.</p>
 </dd>
 <dt id="fpdf.actions.GoToRemoteAction"><code class="flex name class">
 <span>class <span class="ident">GoToRemoteAction</span></span>
-<span>(</span><span>file, dest, next_action=None)</span>
+<span>(</span><span>file: str,<br>dest: Destination,<br>next_action: <a title="fpdf.actions.Action" href="#fpdf.actions.Action">Action</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L70-L81" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L98-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GoToRemoteAction(Action):
-    def __init__(self, file, dest, next_action=None):
+    def __init__(
+        self, file: str, dest: &#34;Destination&#34;, next_action: Optional[Action] = None
+    ) -&gt; None:
         super().__init__(next_action)
         self.file = file
         self.dest = dest
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return super()._serialize(
             {&#34;s&#34;: &#34;/GoToR&#34;, &#34;f&#34;: PDFString(self.file, encrypt=True), &#34;d&#34;: self.dest},
             _security_handler=_security_handler,
@@ -208,15 +237,19 @@ inheritance.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.actions.GoToRemoteAction.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L76-L81" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L106-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return super()._serialize(
         {&#34;s&#34;: &#34;/GoToR&#34;, &#34;f&#34;: PDFString(self.file, encrypt=True), &#34;d&#34;: self.dest},
         _security_handler=_security_handler,
@@ -229,22 +262,26 @@ inheritance.</p>
 </dd>
 <dt id="fpdf.actions.LaunchAction"><code class="flex name class">
 <span>class <span class="ident">LaunchAction</span></span>
-<span>(</span><span>file, next_action=None)</span>
+<span>(</span><span>file: str,<br>next_action: <a title="fpdf.actions.Action" href="#fpdf.actions.Action">Action</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L84-L96" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L118-L134" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LaunchAction(Action):
     &#34;As of 2022, this does not seem honored by neither Adobe Acrobat nor Sumatra readers.&#34;
 
-    def __init__(self, file, next_action=None):
+    def __init__(self, file: str, next_action: Optional[Action] = None) -&gt; None:
         super().__init__(next_action)
         self.file = file
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return super()._serialize(
             {&#34;s&#34;: &#34;/Launch&#34;, &#34;f&#34;: PDFString(self.file, encrypt=True)},
             _security_handler=_security_handler,
@@ -265,15 +302,19 @@ inheritance.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.actions.LaunchAction.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L91-L96" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L125-L134" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return super()._serialize(
         {&#34;s&#34;: &#34;/Launch&#34;, &#34;f&#34;: PDFString(self.file, encrypt=True)},
         _security_handler=_security_handler,
@@ -286,22 +327,26 @@ inheritance.</p>
 </dd>
 <dt id="fpdf.actions.NamedAction"><code class="flex name class">
 <span>class <span class="ident">NamedAction</span></span>
-<span>(</span><span>action_name, next_action=None)</span>
+<span>(</span><span>action_name: str,<br>next_action: <a title="fpdf.actions.Action" href="#fpdf.actions.Action">Action</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L40-L52" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L58-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class NamedAction(Action):
-    def __init__(self, action_name, next_action=None):
-        super().__init__(next)
+    def __init__(self, action_name: str, next_action: Optional[Action] = None) -&gt; None:
+        super().__init__(next_action)
         if action_name not in (&#34;NextPage&#34;, &#34;PrevPage&#34;, &#34;FirstPage&#34;, &#34;LastPage&#34;):
             warnings.warn(&#34;Non-standard named action added&#34;)
         self.action_name = action_name
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return super()._serialize(
             {&#34;s&#34;: &#34;/Named&#34;, &#34;n&#34;: f&#34;/{self.action_name}&#34;},
             _security_handler=_security_handler,
@@ -323,15 +368,19 @@ inheritance.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.actions.NamedAction.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L47-L52" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L65-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return super()._serialize(
         {&#34;s&#34;: &#34;/Named&#34;, &#34;n&#34;: f&#34;/{self.action_name}&#34;},
         _security_handler=_security_handler,
@@ -344,20 +393,24 @@ inheritance.</p>
 </dd>
 <dt id="fpdf.actions.URIAction"><code class="flex name class">
 <span>class <span class="ident">URIAction</span></span>
-<span>(</span><span>uri, next_action=None)</span>
+<span>(</span><span>uri: str,<br>next_action: <a title="fpdf.actions.Action" href="#fpdf.actions.Action">Action</a> | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L27-L37" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L41-L55" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class URIAction(Action):
-    def __init__(self, uri, next_action=None):
-        super().__init__(next)
+    def __init__(self, uri: str, next_action: Optional[Action] = None) -&gt; None:
+        super().__init__(next_action)
         self.uri = uri
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return super()._serialize(
             {&#34;s&#34;: &#34;/URI&#34;, &#34;u_r_i&#34;: PDFString(self.uri, encrypt=True)},
             _security_handler=_security_handler,
@@ -379,15 +432,19 @@ inheritance.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.actions.URIAction.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/actions.py#L32-L37" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/actions.py#L46-L55" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return super()._serialize(
         {&#34;s&#34;: &#34;/URI&#34;, &#34;u_r_i&#34;: PDFString(self.uri, encrypt=True)},
         _security_handler=_security_handler,

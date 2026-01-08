@@ -47,29 +47,481 @@ in non-backward-compatible ways.</p>
 <section>
 </section>
 <section>
-</section>
-<section>
-<h2 class="section-title" id="header-classes">Classes</h2>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="fpdf.svg.SVGImage"><code class="flex name class">
-<span>class <span class="ident">SVGImage</span></span>
-<span>(</span><span>href: str,<br>x: numbers.Number,<br>y: numbers.Number,<br>width: numbers.Number,<br>height: numbers.Number,<br>svg_obj: <a title="fpdf.svg.SVGObject" href="#fpdf.svg.SVGObject">SVGObject</a>)</span>
+<dt id="fpdf.svg.apply_styles"><code class="name flex">
+<span>def <span class="ident">apply_styles</span></span>(<span>stylable: <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a> | <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a>,<br>svg_element: Element,<br>computed_style: dict[str, typing.Any] | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L362-L399" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def apply_styles(
+    stylable: PaintedPath | GraphicsContext,
+    svg_element: &#34;Element&#34;,
+    computed_style: Optional[dict[str, Any]] = None,
+) -&gt; None:
+    &#34;&#34;&#34;Apply the known styles from `svg_element` to the pdf path/group `stylable`.&#34;&#34;&#34;
+    if computed_style is not None:
+        style = computed_style
+    else:
+        style = {}
+        for key, value in html.parse_css_style(
+            svg_element.attrib.get(&#34;style&#34;, &#34;&#34;)
+        ).items():
+            norm_value = _normalize_css_value(value)
+            if norm_value is not None:
+                style[key] = norm_value
+    stylable.style.auto_close = False
+
+    for attr_name, converter in svg_attr_map.items():
+        attr_value = _normalize_css_value(style.get(attr_name))
+        if attr_value is None:
+            attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+        if attr_value is not None:
+            setattr(stylable.style, *converter(attr_value))
+
+    # handle this separately for now
+    opacity_str = _normalize_css_value(style.get(&#34;opacity&#34;))
+    if opacity_str is None:
+        opacity_str = _normalize_css_value(svg_element.attrib.get(&#34;opacity&#34;))
+    if opacity_str is not None:
+        opacity = float(opacity_str)
+        stylable.style.fill_opacity = opacity
+        stylable.style.stroke_opacity = opacity
+
+    tfstr = svg_element.attrib.get(&#34;transform&#34;)
+    if tfstr:
+        stylable.transform = convert_transforms(tfstr)</code></pre>
+</details>
+<div class="desc"><p>Apply the known styles from <code>svg_element</code> to the pdf path/group <code>stylable</code>.</p></div>
+</dd>
+<dt id="fpdf.svg.clamp_float"><code class="name flex">
+<span>def <span class="ident">clamp_float</span></span>(<span>min_val: float, max_val: float) ‑> Callable[[str], float]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L262-L272" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def clamp_float(min_val: float, max_val: float) -&gt; Callable[[str], float]:
+    def converter(value: str) -&gt; float:
+        val = float(value)
+        if val &lt; min_val:
+            return min_val
+        if val &gt; max_val:
+            return max_val
+        return val
+
+    return converter</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.convert_miterlimit"><code class="name flex">
+<span>def <span class="ident">convert_miterlimit</span></span>(<span>incoming: str) ‑> float</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L254-L259" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def convert_miterlimit(incoming: str) -&gt; float:
+    val = float(incoming)
+    if val &lt; 1.0:
+        raise ValueError(f&#34;miter limit {incoming} cannot be less than 1&#34;)
+    return val</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.convert_stroke_width"><code class="name flex">
+<span>def <span class="ident">convert_stroke_width</span></span>(<span>incoming: str) ‑> float | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L244-L251" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def convert_stroke_width(incoming: str) -&gt; Optional[float]:
+    val = resolve_length(incoming)
+    if val &lt; 0:
+        raise ValueError(f&#34;stroke width {incoming} cannot be negative&#34;)
+    if val == 0:
+        return None
+    return val</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.convert_transforms"><code class="name flex">
+<span>def <span class="ident">convert_transforms</span></span>(<span>tfstr: str) ‑> <a title="fpdf.drawing_primitives.Transform" href="drawing_primitives.html#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L723-L820" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def convert_transforms(tfstr: str) -&gt; Transform:
+    &#34;&#34;&#34;Convert SVG/CSS transform functions into PDF transforms.&#34;&#34;&#34;
+
+    # SVG 2 uses CSS transforms. SVG 1.1 transforms are slightly different. I&#39;m really
+    # not sure if it is worth it to try to support SVG 2 because it is significantly
+    # more entangled with The HTML Disaster than SVG 1.1, which makes it astronomically
+    # harder to support.
+    # https://drafts.csswg.org/css-transforms/#two-d-transform-functions
+    parsed = TRANSFORM_GETTER.findall(tfstr)
+    # pylint: disable=redefined-loop-name
+    transform = Transform.identity()
+    for tf_type, args in parsed:
+        args = args.strip()
+        if tf_type == &#34;matrix&#34;:
+            a, b, c, d, e, f = tuple(float(n) for n in NUMBER_SPLIT.split(args))
+            transform = Transform(a, b, c, d, e, f) @ transform
+
+        elif tf_type == &#34;rotate&#34;:
+            theta, *about = NUMBER_SPLIT.split(args)
+            theta = resolve_angle(theta)
+            rotation = Transform.rotation(theta=theta)
+            if about:
+                # this is an SVG 1.1 feature. SVG 2 uses the transform-origin property.
+                # see: https://www.w3.org/TR/SVG11/coords.html#TransformAttribute
+                if len(about) == 2:
+                    rotation = rotation.about(float(about[0]), float(about[1]))
+                else:
+                    raise ValueError(
+                        f&#34;rotation transform {tf_type}({args}) is malformed&#34;
+                    )
+
+            transform = rotation @ transform
+
+        elif tf_type == &#34;scale&#34;:
+            # if sy is not provided, it takes a value equal to sx
+            args = NUMBER_SPLIT.split(args)
+            if len(args) == 2:
+                sx = float(args[0])
+                sy = float(args[1])
+            elif len(args) == 1:
+                sx = sy = float(args[0])
+            else:
+                raise ValueError(f&#34;bad scale transform {tfstr}&#34;)
+
+            transform = Transform.scaling(x=sx, y=sy) @ transform
+
+        elif tf_type == &#34;scaleX&#34;:  # SVG 2
+            transform = Transform.scaling(x=float(args), y=1) @ transform
+
+        elif tf_type == &#34;scaleY&#34;:  # SVG 2
+            transform = Transform.scaling(x=1, y=float(args)) @ transform
+
+        elif tf_type == &#34;skew&#34;:  # SVG 2, not the same as skewX@skewY
+            # if sy is not provided, it takes a value equal to 0
+            args = NUMBER_SPLIT.split(args)
+            if len(args) == 2:
+                sx = resolve_angle(args[0])
+                sy = resolve_angle(args[1])
+            elif len(args) == 1:
+                sx = resolve_angle(args[0])
+                sy = 0
+            else:
+                raise ValueError(f&#34;bad skew transform {tfstr}&#34;)
+
+            transform = Transform.shearing(x=math.tan(sx), y=math.tan(sy)) @ transform
+
+        elif tf_type == &#34;skewX&#34;:
+            transform = (
+                Transform.shearing(x=math.tan(resolve_angle(args)), y=0) @ transform
+            )
+
+        elif tf_type == &#34;skewY&#34;:
+            transform = (
+                Transform.shearing(x=0, y=math.tan(resolve_angle(args))) @ transform
+            )
+
+        elif tf_type == &#34;translate&#34;:
+            # if y is not provided, it takes a value equal to 0
+            args = NUMBER_SPLIT.split(args)
+            if len(args) == 2:
+                x = resolve_length(args[0])
+                y = resolve_length(args[1])
+            elif len(args) == 1:
+                x = resolve_length(args[0])
+                y = 0
+            else:
+                raise ValueError(f&#34;bad translation transform {tfstr}&#34;)
+
+            transform = Transform.translation(x=x, y=y) @ transform
+
+        elif tf_type == &#34;translateX&#34;:  # SVG 2
+            transform = Transform.translation(x=resolve_length(args), y=0) @ transform
+
+        elif tf_type == &#34;translateY&#34;:  # SVG 2
+            transform = Transform.translation(x=0, y=resolve_length(args)) @ transform
+
+    return transform</code></pre>
+</details>
+<div class="desc"><p>Convert SVG/CSS transform functions into PDF transforms.</p></div>
+</dd>
+<dt id="fpdf.svg.inheritable"><code class="name flex">
+<span>def <span class="ident">inheritable</span></span>(<span>value: str, converter: Callable[[str], Any] = &lt;function &lt;lambda&gt;&gt;) ‑> Any</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L275-L281" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def inheritable(
+    value: str, converter: Callable[[str], Any] = lambda value: value
+) -&gt; Any:
+    if value in (&#34;inherit&#34;, &#34;currentColor&#34;):
+        return GraphicsStyle.INHERIT
+    return converter(value)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.optional"><code class="name flex">
+<span>def <span class="ident">optional</span></span>(<span>value: str | None,<br>converter: Callable[[str], Any] = &lt;function &lt;lambda&gt;&gt;) ‑> Any</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L284-L295" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def optional(
+    value: Optional[str], converter: Callable[[str], Any] = lambda noop: noop
+) -&gt; Any:
+    # Treat missing/empty/whitespace exactly like &#34;not set&#34;
+    if value is None:
+        return None
+    if isinstance(value, str) and not value.strip():
+        return None
+    if value == &#34;none&#34;:
+        return None
+    return inheritable(value, converter)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.resolve_angle"><code class="name flex">
+<span>def <span class="ident">resolve_angle</span></span>(<span>angle_str: str, default_unit: str = 'deg') ‑> float</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L173-L188" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def resolve_angle(angle_str: str, default_unit: str = &#34;deg&#34;) -&gt; float:
+    &#34;&#34;&#34;Convert an angle value to our canonical angle unit, radians&#34;&#34;&#34;
+    m = unit_splitter.match(angle_str)
+    value: str | float
+    if m is not None:
+        value, unit = m.groups()
+    else:
+        value = angle_str
+    if not unit:  # pyright: ignore[reportPossiblyUnboundVariable]
+        unit = default_unit
+
+    try:
+        return float(value) * angle_units[unit]
+    except KeyError:
+        raise ValueError(f&#34;angle {angle_str} has unknown unit {unit}&#34;) from None</code></pre>
+</details>
+<div class="desc"><p>Convert an angle value to our canonical angle unit, radians</p></div>
+</dd>
+<dt id="fpdf.svg.resolve_length"><code class="name flex">
+<span>def <span class="ident">resolve_length</span></span>(<span>length_str: str, default_unit: str = 'pt') ‑> float</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L152-L170" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def resolve_length(length_str: str, default_unit: str = &#34;pt&#34;) -&gt; float:
+    &#34;&#34;&#34;Convert a length unit to our canonical length unit, pt.&#34;&#34;&#34;
+    match = unit_splitter.match(length_str)
+    if match is None:
+        raise ValueError(f&#34;Unable to parse &#39;{length_str}&#39; as a length&#34;) from None
+    value, unit = match.groups()
+    if not unit:
+        unit = default_unit
+
+    try:
+        return float(value) * absolute_length_units[unit]
+    except KeyError:
+        if unit in relative_length_units:
+            raise ValueError(
+                f&#34;{length_str} uses unsupported relative length {unit}&#34;
+            ) from None
+
+        raise ValueError(f&#34;{length_str} contains unrecognized unit {unit}&#34;) from None</code></pre>
+</details>
+<div class="desc"><p>Convert a length unit to our canonical length unit, pt.</p></div>
+</dd>
+<dt id="fpdf.svg.svg_path_converter"><code class="name flex">
+<span>def <span class="ident">svg_path_converter</span></span>(<span>pdf_path: <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a>,<br>svg_path: str) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L823-L828" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -&gt; None:
+    pen = PathPen(pdf_path)
+    parse_path(svg_path, pen)
+    if not pen.first_is_move:
+        raise ValueError(&#34;Path does not start with move item&#34;)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.svgcolor"><code class="name flex">
+<span>def <span class="ident">svgcolor</span></span>(<span>colorstr: str) ‑> <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L228-L241" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def svgcolor(colorstr: str) -&gt; DeviceRGB | DeviceGray:
+    try:
+        colorstr = html.COLOR_DICT[colorstr]
+    except KeyError:
+        pass
+
+    if colorstr.startswith(&#34;#&#34;):
+        return color_from_hex_string(colorstr)
+
+    if colorstr.startswith(&#34;rgb&#34;):
+        return color_from_rgb_string(colorstr)
+
+    raise ValueError(f&#34;unsupported color specification {colorstr}&#34;)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.without_ns"><code class="name flex">
+<span>def <span class="ident">without_ns</span></span>(<span>qualified_tag: str) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L214-L220" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def without_ns(qualified_tag: str) -&gt; str:
+    &#34;&#34;&#34;Remove the xmlns namespace from a qualified XML tag name&#34;&#34;&#34;
+    i = qualified_tag.index(&#34;}&#34;)
+    if i &gt;= 0:
+        return qualified_tag[i + 1 :]
+    return qualified_tag</code></pre>
+</details>
+<div class="desc"><p>Remove the xmlns namespace from a qualified XML tag name</p></div>
+</dd>
+<dt id="fpdf.svg.xmlns"><code class="name flex">
+<span>def <span class="ident">xmlns</span></span>(<span>space: str, name: str) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L191-L199" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def xmlns(space: str, name: str) -&gt; str:
+    &#34;&#34;&#34;Create an XML namespace string representation for the given tag name.&#34;&#34;&#34;
+    try:
+        space = f&#34;{{{_HANDY_NAMESPACES[space]}}}&#34;
+    except KeyError:
+        space = &#34;&#34;
+
+    return f&#34;{space}{name}&#34;</code></pre>
+</details>
+<div class="desc"><p>Create an XML namespace string representation for the given tag name.</p></div>
+</dd>
+<dt id="fpdf.svg.xmlns_lookup"><code class="name flex">
+<span>def <span class="ident">xmlns_lookup</span></span>(<span>space: str, *names: str) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L202-L211" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def xmlns_lookup(space: str, *names: str) -&gt; dict[str, str]:
+    &#34;&#34;&#34;Create a lookup for the given name in the given XML namespace.&#34;&#34;&#34;
+
+    result = {}
+    for name in names:
+        result[xmlns(space, name)] = name
+        result[name] = name
+
+    return result  # pyright: ignore[reportUnknownVariableType]</code></pre>
+</details>
+<div class="desc"><p>Create a lookup for the given name in the given XML namespace.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="fpdf.svg.Percent"><code class="flex name class">
+<span>class <span class="ident">Percent</span></span>
+<span>(</span><span>x=0, /)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L99-L101" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+class Percent(float):
+    &#34;&#34;&#34;class to represent percentage values&#34;&#34;&#34;</code></pre>
+</details>
+<div class="desc"><p>class to represent percentage values</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.float</li>
+</ul>
+</dd>
+<dt id="fpdf.svg.SVGImage"><code class="flex name class">
+<span>class <span class="ident">SVGImage</span></span>
+<span>(</span><span>href: str,<br>x: float,<br>y: float,<br>width: float,<br>height: float,<br>svg_obj: <a title="fpdf.svg.SVGObject" href="#fpdf.svg.SVGObject">SVGObject</a>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -80,8 +532,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -109,15 +568,26 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>SVGImage(href, x, y, width, height, svg_obj)</p></div>
 <h3>Ancestors</h3>
@@ -126,22 +596,35 @@ in non-backward-compatible ways.</p>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.svg.SVGImage.height"><code class="name">var <span class="ident">height</span> : numbers.Number</code></dt>
+<dt id="fpdf.svg.SVGImage.end_point"><code class="name">prop <span class="ident">end_point</span> : <a title="fpdf.drawing_primitives.Point" href="drawing_primitives.html#fpdf.drawing_primitives.Point">Point</a></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1891-L1893" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def end_point(self) -&gt; Point:
+    return Point(self.x, self.y)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.SVGImage.height"><code class="name">var <span class="ident">height</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -152,8 +635,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -181,15 +671,26 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Alias for field number 4</p></div>
 </dd>
@@ -198,17 +699,17 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -219,8 +720,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -248,15 +756,26 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Alias for field number 0</p></div>
 </dd>
@@ -265,17 +784,17 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -286,8 +805,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -315,34 +841,45 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Alias for field number 5</p></div>
 </dd>
-<dt id="fpdf.svg.SVGImage.width"><code class="name">var <span class="ident">width</span> : numbers.Number</code></dt>
+<dt id="fpdf.svg.SVGImage.width"><code class="name">var <span class="ident">width</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -353,8 +890,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -382,34 +926,45 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Alias for field number 3</p></div>
 </dd>
-<dt id="fpdf.svg.SVGImage.x"><code class="name">var <span class="ident">x</span> : numbers.Number</code></dt>
+<dt id="fpdf.svg.SVGImage.x"><code class="name">var <span class="ident">x</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -420,8 +975,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -449,34 +1011,45 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Alias for field number 1</p></div>
 </dd>
-<dt id="fpdf.svg.SVGImage.y"><code class="name">var <span class="ident">y</span> : numbers.Number</code></dt>
+<dt id="fpdf.svg.SVGImage.y"><code class="name">var <span class="ident">y</span> : float</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1750-L1806" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
-    x: Number
-    y: Number
-    width: Number
-    height: Number
+    x: float
+    y: float
+    width: float
+    height: float
     svg_obj: SVGObject
 
-    def __deepcopy__(self, _memo):
+    def __deepcopy__(self: &#34;SVGImage&#34;, _memo: dict[int, Any]) -&gt; &#34;SVGImage&#34;:
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
         return SVGImage(
             href=self.href,
@@ -487,8 +1060,15 @@ in non-backward-compatible ways.</p>
             svg_obj=self.svg_obj,
         )
 
+    # pylint: disable=unused-argument
     @force_nodocument
-    def render(self, _resource_registry, _style, last_item, initial_point):
+    def render(
+        self,
+        resource_registry: &#34;ResourceCatalog&#34;,
+        style: GraphicsStyle,
+        last_item: &#34;Renderable&#34;,
+        initial_point: Point,
+    ) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -516,29 +1096,116 @@ in non-backward-compatible ways.</p>
         )
         return stream_content, last_item, initial_point
 
-    @force_nodocument
-    def render_debug(
-        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
-    ):
-        stream_content, last_item, initial_point = self.render(
-            resource_registry, style, last_item, initial_point
+    @property
+    def end_point(self) -&gt; Point:
+        return Point(self.x, self.y)
+
+    # pylint: disable=unused-argument
+    def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+        x0 = self.x
+        y0 = self.y
+        x1 = self.x + self.width
+        y1 = self.y + self.height
+
+        bbox = BoundingBox.from_points(
+            [
+                Point(x0, y0),
+                Point(x1, y0),
+                Point(x0, y1),
+                Point(x1, y1),
+            ]
         )
-        debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
-        return stream_content, last_item, initial_point</code></pre>
+        return bbox, Point(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Alias for field number 2</p></div>
 </dd>
 </dl>
-</dd>
-<dt id="fpdf.svg.SVGObject"><code class="flex name class">
-<span>class <span class="ident">SVGObject</span></span>
-<span>(</span><span>svg_text,<br>image_cache: <a title="fpdf.image_datastructures.ImageCache" href="image_datastructures.html#fpdf.image_datastructures.ImageCache">ImageCache</a> = None)</span>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.svg.SVGImage.bounding_box"><code class="name flex">
+<span>def <span class="ident">bounding_box</span></span>(<span>self,<br>start: <a title="fpdf.drawing_primitives.Point" href="drawing_primitives.html#fpdf.drawing_primitives.Point">Point</a>) ‑> tuple[<a title="fpdf.drawing.BoundingBox" href="drawing.html#fpdf.drawing.BoundingBox">BoundingBox</a>, <a title="fpdf.drawing_primitives.Point" href="drawing_primitives.html#fpdf.drawing_primitives.Point">Point</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L801-L1747" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1896-L1910" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
+    x0 = self.x
+    y0 = self.y
+    x1 = self.x + self.width
+    y1 = self.y + self.height
+
+    bbox = BoundingBox.from_points(
+        [
+            Point(x0, y0),
+            Point(x1, y0),
+            Point(x0, y1),
+            Point(x1, y1),
+        ]
+    )
+    return bbox, Point(self.x, self.y)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.SVGImage.render"><code class="name flex">
+<span>def <span class="ident">render</span></span>(<span>self,<br>resource_registry: ResourceCatalog,<br>style: <a title="fpdf.drawing.GraphicsStyle" href="drawing.html#fpdf.drawing.GraphicsStyle">GraphicsStyle</a>,<br>last_item: Renderable,<br>initial_point: <a title="fpdf.drawing_primitives.Point" href="drawing_primitives.html#fpdf.drawing_primitives.Point">Point</a>) ‑> tuple[str, 'Renderable', <a title="fpdf.drawing_primitives.Point" href="drawing_primitives.html#fpdf.drawing_primitives.Point">Point</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1856-L1889" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def render(
+    self,
+    resource_registry: &#34;ResourceCatalog&#34;,
+    style: GraphicsStyle,
+    last_item: &#34;Renderable&#34;,
+    initial_point: Point,
+) -&gt; tuple[str, &#34;Renderable&#34;, Point]:
+    image_cache = self.svg_obj and self.svg_obj.image_cache
+    if not image_cache:
+        raise AssertionError(
+            &#34;fpdf2 bug - Cannot render a raster image without a SVGObject.image_cache&#34;
+        )
+
+    # We lazy-import this function to circumvent a circular import problem:
+    # pylint: disable=cyclic-import,import-outside-toplevel
+    from .image_parsing import preload_image
+
+    _, _, info = preload_image(image_cache, self.href)
+    if isinstance(info, VectorImageInfo):
+        LOGGER.warning(
+            &#34;Inserting .svg vector graphics in &lt;image&gt; tags is currently not supported (contributions are welcome to add support for it)&#34;
+        )
+        return &#34;&#34;, last_item, initial_point
+    w, h = info.size_in_document_units(self.width, self.height)
+    stream_content = stream_content_for_raster_image(
+        info=info,
+        x=self.x,
+        y=self.y,
+        w=w,
+        h=h,
+        keep_aspect_ratio=True,
+    )
+    return stream_content, last_item, initial_point</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.svg.SVGObject"><code class="flex name class">
+<span>class <span class="ident">SVGObject</span></span>
+<span>(</span><span>svg_text: str | bytes,<br>image_cache: <a title="fpdf.image_datastructures.ImageCache" href="image_datastructures.html#fpdf.image_datastructures.ImageCache">ImageCache</a> | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L831-L1833" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGObject:
     &#34;&#34;&#34;
@@ -546,7 +1213,13 @@ in non-backward-compatible ways.</p>
     &#34;&#34;&#34;
 
     @classmethod
-    def from_file(cls, filename, *args, encoding=&#34;utf-8&#34;, **kwargs):
+    def from_file(
+        cls,
+        filename: str | PathLike[str],
+        *args: Any,
+        encoding: str = &#34;utf-8&#34;,
+        **kwargs: Any,
+    ) -&gt; &#34;SVGObject&#34;:
         &#34;&#34;&#34;
         Create an `SVGObject` from the contents of the file at `filename`.
 
@@ -562,14 +1235,19 @@ in non-backward-compatible ways.</p>
         with open(filename, &#34;r&#34;, encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
-    def __init__(self, svg_text, image_cache: ImageCache = None):
+    def __init__(
+        self, svg_text: str | bytes, image_cache: Optional[ImageCache] = None
+    ) -&gt; None:
         self.image_cache = image_cache  # Needed to render images
-        self.cross_references = {}
-        self.css_class_styles = {}
-        self.gradient_definitions = {}  # Store parsed gradients by ID
-
+        self.cross_references: dict[str, Any] = {}
+        self.css_class_styles: dict[str, dict[str, Any]] = {}
+        self.gradient_definitions: dict[str, GradientPaint] = (
+            {}
+        )  # Store parsed gradients by ID
+        self.width: Optional[Percent | float] = None
+        self.height: Optional[Percent | float] = None
         # disabling bandit rule as we use defusedxml:
-        svg_tree = parse_xml_str(svg_text)  # nosec B314
+        svg_tree: &#34;Element&#34; = parse_xml_str(svg_text)  # nosec B314
 
         if svg_tree.tag not in xmlns_lookup(&#34;svg&#34;, &#34;svg&#34;):
             raise ValueError(f&#34;root tag must be svg, not {svg_tree.tag}&#34;)
@@ -579,12 +1257,12 @@ in non-backward-compatible ways.</p>
         self.convert_graphics(svg_tree)
 
     @force_nodocument
-    def update_xref(self, key, referenced):
+    def update_xref(self, key: Optional[str], referenced: Any) -&gt; None:
         if key:
             key = &#34;#&#34; + key if not key.startswith(&#34;#&#34;) else key
             self.cross_references[key] = referenced
 
-    def _collect_css_styles(self, root_tag):
+    def _collect_css_styles(self, root_tag: &#34;Element&#34;) -&gt; None:
         for node in root_tag.iter():
             if node.tag in xmlns_lookup(&#34;svg&#34;, &#34;style&#34;):
                 css_text = &#34;&#34;.join(node.itertext() or [])
@@ -592,8 +1270,8 @@ in non-backward-compatible ways.</p>
                     existing = self.css_class_styles.setdefault(class_name, {})
                     existing.update(declarations)
 
-    def _style_map_for(self, tag):
-        style_map = {}
+    def _style_map_for(self, tag: &#34;Element&#34;) -&gt; dict[str, Any]:
+        style_map: dict[str, Any] = {}
         if self.css_class_styles:
             class_attr = tag.attrib.get(&#34;class&#34;)
             if class_attr:
@@ -625,7 +1303,7 @@ in non-backward-compatible ways.</p>
 
     @force_nodocument
     @staticmethod
-    def _convert_gradient_coordinate(value, default=&#34;0&#34;):
+    def _convert_gradient_coordinate(value: str, default: str = &#34;0&#34;) -&gt; float:
         &#34;&#34;&#34;Convert SVG gradient coordinate (percentage or number) to float.&#34;&#34;&#34;
         if value is None or value == &#34;&#34;:
             value = default
@@ -648,9 +1326,11 @@ in non-backward-compatible ways.</p>
 
     @force_nodocument
     @staticmethod
-    def _parse_gradient_stops(gradient_element):
+    def _parse_gradient_stops(
+        gradient_element: &#34;Element&#34;,
+    ) -&gt; list[tuple[float, DeviceRGB | DeviceGray]]:
         &#34;&#34;&#34;Parse &lt;stop&gt; children of a gradient element.&#34;&#34;&#34;
-        stops = []
+        stops: list[tuple[float, DeviceRGB | DeviceGray]] = []
 
         for stop_element in gradient_element:
             tag_name = without_ns(stop_element.tag)
@@ -691,7 +1371,7 @@ in non-backward-compatible ways.</p>
 
             if &#34;stop-opacity&#34; in stop_element.attrib:
                 try:
-                    stop_opacity = float(stop_element.attrib.get(&#34;stop-opacity&#34;))
+                    stop_opacity = float(stop_element.attrib.get(&#34;stop-opacity&#34;) or &#34;1&#34;)
                 except ValueError:
                     pass
 
@@ -699,13 +1379,12 @@ in non-backward-compatible ways.</p>
                 color_obj = svgcolor(stop_color)
 
                 if stop_opacity &lt; 1.0:
-                    if hasattr(color_obj, &#34;b&#34;):
-                        color_obj = type(color_obj)(
+                    if isinstance(color_obj, DeviceRGB):
+                        color_obj = DeviceRGB(
                             color_obj.r, color_obj.g, color_obj.b, stop_opacity
                         )
-                    elif hasattr(color_obj, &#34;g&#34;):
-                        color_obj = type(color_obj)(color_obj.g, stop_opacity)
-
+                    if isinstance(color_obj, DeviceGray):
+                        color_obj = DeviceGray(color_obj.g, stop_opacity)
                 stops.append((offset, color_obj))
 
             except (ValueError, KeyError) as e:
@@ -716,21 +1395,19 @@ in non-backward-compatible ways.</p>
 
     @force_nodocument
     @staticmethod
-    def _extract_gradient_id(url_value):
+    def _extract_gradient_id(url_value: Optional[str]) -&gt; Optional[str]:
         &#34;&#34;&#34;Extract gradient ID from url(#id) format.&#34;&#34;&#34;
         if not url_value or not isinstance(url_value, str):
             return None
-
         match = re.search(r&#39;url\(\s*[&#34;\&#39;]?\s*#([^)&#34;\&#39;\s]+)&#39;, url_value)
         if match:
             return &#34;#&#34; + match.group(1)
-
         return None
 
     @force_nodocument
-    def _parse_linear_gradient(self, grad_element):
+    def _parse_linear_gradient(self, grad_element: &#34;Element&#34;) -&gt; None:
         &#34;&#34;&#34;Parse a &lt;linearGradient&gt; element and store it in gradient_definitions.&#34;&#34;&#34;
-        grad_id = grad_element.attrib.get(&#34;id&#34;)
+        grad_id: Optional[str] = grad_element.attrib.get(&#34;id&#34;)
         if not grad_id:
             LOGGER.warning(&#34;Found &lt;linearGradient&gt; without id attribute, skipping&#34;)
             return
@@ -796,7 +1473,7 @@ in non-backward-compatible ways.</p>
         LOGGER.debug(&#34;Parsed linear gradient &#39;%s&#39; with %d stops&#34;, grad_id, len(stops))
 
     @force_nodocument
-    def _parse_radial_gradient(self, grad_element):
+    def _parse_radial_gradient(self, grad_element: &#34;Element&#34;) -&gt; None:
         &#34;&#34;&#34;Parse a &lt;radialGradient&gt; element and store it in gradient_definitions.&#34;&#34;&#34;
         grad_id = grad_element.attrib.get(&#34;id&#34;)
         if not grad_id:
@@ -874,7 +1551,12 @@ in non-backward-compatible ways.</p>
         LOGGER.debug(&#34;Parsed radial gradient &#39;%s&#39; with %d stops&#34;, grad_id, len(stops))
 
     @force_nodocument
-    def _apply_gradient_paint(self, stylable, svg_element, style_map=None):
+    def _apply_gradient_paint(
+        self,
+        stylable: PaintedPath,
+        svg_element: &#34;Element&#34;,
+        style_map: Optional[dict[str, Any]] = None,
+    ) -&gt; None:
         &#34;&#34;&#34;Apply gradient paint to fill or stroke if a url(#gradientId) reference is found.&#34;&#34;&#34;
         fill_value = _get_attr_or_style(svg_element, &#34;fill&#34;, style_map)
         if fill_value:
@@ -891,11 +1573,11 @@ in non-backward-compatible ways.</p>
                 LOGGER.debug(&#34;Applied gradient %s to stroke&#34;, grad_id)
 
     @force_nodocument
-    def extract_shape_info(self, root_tag):
+    def extract_shape_info(self, root_tag: &#34;Element&#34;) -&gt; None:
         &#34;&#34;&#34;Collect shape info from the given SVG.&#34;&#34;&#34;
 
-        width = root_tag.get(&#34;width&#34;)
-        height = root_tag.get(&#34;height&#34;)
+        width_str = root_tag.get(&#34;width&#34;)
+        height_str = root_tag.get(&#34;height&#34;)
         viewbox = root_tag.get(&#34;viewBox&#34;)
         # we don&#39;t fully support this, just check for its existence
         preserve_ar = root_tag.get(&#34;preserveAspectRatio&#34;, True)
@@ -905,20 +1587,20 @@ in non-backward-compatible ways.</p>
             self.preserve_ar = True
 
         self.width = None
-        if width is not None:
-            width.strip()
-            if width.endswith(&#34;%&#34;):
-                self.width = Percent(width[:-1])
+        if width_str is not None:
+            width_str.strip()
+            if width_str.endswith(&#34;%&#34;):
+                self.width = Percent(width_str[:-1])
             else:
-                self.width = resolve_length(width)
+                self.width = resolve_length(width_str)
 
         self.height = None
-        if height is not None:
-            height.strip()
-            if height.endswith(&#34;%&#34;):
-                self.height = Percent(height[:-1])
+        if height_str is not None:
+            height_str.strip()
+            if height_str.endswith(&#34;%&#34;):
+                self.height = Percent(height_str[:-1])
             else:
-                self.height = resolve_length(height)
+                self.height = resolve_length(height_str)
 
         if viewbox is None:
             self.viewbox = None
@@ -931,18 +1613,20 @@ in non-backward-compatible ways.</p>
             self.viewbox = [vx, vy, vw, vh]
 
     @force_nodocument
-    def convert_graphics(self, root_tag):
+    def convert_graphics(self, root_tag: &#34;Element&#34;) -&gt; None:
         &#34;&#34;&#34;Convert the graphics contained in the SVG into the PDF representation.&#34;&#34;&#34;
         base_group = GraphicsContext()
         base_group.style.stroke_width = None
         base_group.style.auto_close = False
-        base_group.style.stroke_cap_style = &#34;butt&#34;
+        base_group.style.stroke_cap_style = StrokeCapStyle.BUTT
 
         self.build_group(root_tag, base_group)
 
         self.base_group = base_group
 
-    def transform_to_page_viewport(self, pdf, align_viewbox=True):
+    def transform_to_page_viewport(
+        self, pdf: &#34;FPDF&#34;, align_viewbox: bool = True
+    ) -&gt; tuple[float, float, GraphicsContext]:
         &#34;&#34;&#34;
         Size the converted SVG paths to the page viewport.
 
@@ -965,8 +1649,13 @@ in non-backward-compatible ways.</p>
         return self.transform_to_rect_viewport(pdf.k, pdf.epw, pdf.eph, align_viewbox)
 
     def transform_to_rect_viewport(
-        self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
-    ):
+        self,
+        scale: float,
+        width: float | Percent,
+        height: float | Percent,
+        align_viewbox: bool = True,
+        ignore_svg_top_attrs: bool = False,
+    ) -&gt; tuple[float, float, GraphicsContext]:
         &#34;&#34;&#34;
         Size the converted SVG paths to an arbitrarily sized viewport.
 
@@ -992,9 +1681,15 @@ in non-backward-compatible ways.</p>
             `fpdf.drawing.GraphicsContext` contains all of the paths that were
             converted from the SVG, scaled to the given viewport size.
         &#34;&#34;&#34;
+        vp_width: float
+        vp_height: float
 
         if ignore_svg_top_attrs:
-            vp_width = width
+            # width/height may be Percent when passed from FPDF.image; resolve to float
+            if isinstance(width, Percent):
+                vp_width = float(width)
+            else:
+                vp_width = float(width)
         elif isinstance(self.width, Percent):
             if not width:
                 raise ValueError(
@@ -1005,7 +1700,10 @@ in non-backward-compatible ways.</p>
             vp_width = self.width or width
 
         if ignore_svg_top_attrs:
-            vp_height = height
+            if isinstance(height, Percent):
+                vp_height = float(height)
+            else:
+                vp_height = float(height)
         elif isinstance(self.height, Percent):
             if not height:
                 raise ValueError(
@@ -1048,7 +1746,13 @@ in non-backward-compatible ways.</p>
 
         return vp_width / scale, vp_height / scale, self.base_group
 
-    def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
+    def draw_to_page(
+        self,
+        pdf: &#34;FPDF&#34;,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+        debug_stream: Optional[bool] = None,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Directly draw the converted SVG to the given PDF&#39;s current page.
 
@@ -1058,7 +1762,7 @@ in non-backward-compatible ways.</p>
             pdf (fpdf.fpdf.FPDF): the document to which the converted SVG is rendered.
             x (Number): abscissa of the converted SVG&#39;s top-left corner.
             y (Number): ordinate of the converted SVG&#39;s top-left corner.
-            debug_stream (io.TextIO): the stream to which rendering debug info will be
+            debug_stream (io.TextIO): *DEPRECATED* the stream to which rendering debug info will be
                 written.
         &#34;&#34;&#34;
         self.image_cache = pdf.image_cache  # Needed to render images
@@ -1068,6 +1772,7 @@ in non-backward-compatible ways.</p>
         try:
             if x is not None and y is not None:
                 pdf.set_xy(0, 0)
+                assert path.transform is not None
                 path.transform = path.transform @ Transform.translation(x, y)
 
             pdf.draw_path(path, debug_stream)
@@ -1078,7 +1783,7 @@ in non-backward-compatible ways.</p>
     # defs paths are not drawn immediately but are added to xrefs and can be referenced
     # later to be drawn.
     @force_nodocument
-    def handle_defs(self, defs):
+    def handle_defs(self, defs: &#34;Element&#34;) -&gt; None:
         &#34;&#34;&#34;Produce lookups for groups and paths inside the &lt;defs&gt; tag&#34;&#34;&#34;
         for child in defs:
             if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;g&#34;):
@@ -1119,7 +1824,7 @@ in non-backward-compatible ways.</p>
     # this assumes xrefs only reference already-defined ids.
     # I don&#39;t know if this is required by the SVG spec.
     @force_nodocument
-    def build_xref(self, xref):
+    def build_xref(self, xref: &#34;Element&#34;) -&gt; GraphicsContext:
         &#34;&#34;&#34;Resolve a cross-reference to an already-seen SVG element by ID.&#34;&#34;&#34;
         style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
@@ -1151,7 +1856,12 @@ in non-backward-compatible ways.</p>
         return pdf_group
 
     @force_nodocument
-    def build_group(self, group, pdf_group=None, inherited_style=None):
+    def build_group(
+        self,
+        group: &#34;Element&#34;,
+        pdf_group: Optional[GraphicsContext] = None,
+        inherited_style: Optional[dict[str, Any]] = None,
+    ) -&gt; GraphicsContext:
         &#34;&#34;&#34;Handle nested items within a group &lt;g&gt; tag.&#34;&#34;&#34;
         local_style = self._style_map_for(group)
         merged_style = dict(inherited_style or {})
@@ -1190,7 +1900,9 @@ in non-backward-compatible ways.</p>
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;image&#34;):
                 pdf_group.add_item(self.build_image(child), False)
             elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;text&#34;):
-                pdf_group.add_item(self.build_text(child, merged_style), False)
+                text_path = self.build_text(child, merged_style)
+                if text_path:
+                    pdf_group.add_item(text_path, False)
             else:
                 LOGGER.warning(
                     &#34;Ignoring unsupported SVG tag: &lt;%s&gt; (contributions are welcome to add support for it)&#34;,
@@ -1202,7 +1914,7 @@ in non-backward-compatible ways.</p>
         return pdf_group
 
     @force_nodocument
-    def build_path(self, path):
+    def build_path(self, path: &#34;Element&#34;) -&gt; PaintedPath:
         &#34;&#34;&#34;Convert an SVG &lt;path&gt; tag into a PDF path object.&#34;&#34;&#34;
         style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
@@ -1216,11 +1928,12 @@ in non-backward-compatible ways.</p>
         return pdf_path
 
     @force_nodocument
-    def build_shape(self, shape):
+    def build_shape(self, shape: &#34;Element&#34;) -&gt; PaintedPath:
         &#34;&#34;&#34;Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn&#39;t have access to this object.)&#34;&#34;&#34;
         style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
+        assert isinstance(shape_path, PaintedPath)
         apply_styles(shape_path, shape, style_map)
         self._apply_gradient_paint(shape_path, shape, style_map)
         self.apply_clipping_path(shape_path, shape, style_map)
@@ -1228,7 +1941,7 @@ in non-backward-compatible ways.</p>
         return shape_path
 
     @force_nodocument
-    def build_clipping_path(self, shape, clip_id):
+    def build_clipping_path(self, shape: &#34;Element&#34;, clip_id: Optional[str]) -&gt; None:
         if shape.tag in shape_tags:
             style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
@@ -1251,7 +1964,12 @@ in non-backward-compatible ways.</p>
         self.update_xref(clip_id, clipping_path_shape)
 
     @force_nodocument
-    def apply_clipping_path(self, stylable, svg_element, style_map=None):
+    def apply_clipping_path(
+        self,
+        stylable: PaintedPath,
+        svg_element: &#34;Element&#34;,
+        style_map: Optional[dict[str, Any]] = None,
+    ) -&gt; None:
         clip_value = None
         if style_map and &#34;clip-path&#34; in style_map:
             clip_value = style_map[&#34;clip-path&#34;]
@@ -1259,10 +1977,11 @@ in non-backward-compatible ways.</p>
             clip_value = svg_element.attrib.get(&#34;clip-path&#34;)
         if clip_value:
             clipping_path_id = re.search(r&#34;url\((\#\w+)\)&#34;, clip_value)
+            assert clipping_path_id is not None
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
-    def build_image(self, image):
+    def build_image(self, image: &#34;Element&#34;) -&gt; &#34;SVGImage&#34;:
         href = None
         for key in xmlns_lookup(&#34;xlink&#34;, &#34;href&#34;):
             if key in image.attrib:
@@ -1297,7 +2016,9 @@ in non-backward-compatible ways.</p>
         return svg_image
 
     @force_nodocument
-    def build_text(self, text_tag, inherited_style=None):
+    def build_text(
+        self, text_tag: &#34;Element&#34;, inherited_style: Optional[dict[str, Any]] = None
+    ) -&gt; Optional[PaintedPath]:
         &#34;&#34;&#34;
         Convert &lt;text&gt; (and simple &lt;tspan&gt;) into a PaintedPath with Text runs.
         - Uses Text baseline at (x,y)
@@ -1331,7 +2052,9 @@ in non-backward-compatible ways.</p>
         pending_dx = 0.0
         pending_dy = 0.0
 
-        def _style_for_run(tag, style_map_for_tag):
+        def _style_for_run(
+            tag: Optional[&#34;Element&#34;], style_map_for_tag: Optional[dict[str, Any]]
+        ) -&gt; Optional[GraphicsStyle]:
             if tag is None or style_map_for_tag is None:
                 return None
             context = GraphicsContext()
@@ -1355,9 +2078,9 @@ in non-backward-compatible ways.</p>
             dy_extra: float = 0.0,
             abs_x: Optional[float] = None,
             abs_y: Optional[float] = None,
-            style_tag=None,
-            style_map_for_tag=None,
-        ):
+            style_tag: Optional[&#34;Element&#34;] = None,
+            style_map_for_tag: Optional[dict[str, Any]] = None,
+        ) -&gt; None:
             nonlocal pending_dx, pending_dy
             raw = raw_text or &#34;&#34;
             collapsed = _collapse_ws(raw, preserve=preserve)
@@ -1482,7 +2205,7 @@ in non-backward-compatible ways.</p>
                     text_runs=tuple(text_runs),
                     text_anchor=base_anchor,
                 ),
-                _copy=False,
+                clone=False,
             )
 
         self.update_xref(text_tag.attrib.get(&#34;id&#34;), path)
@@ -1492,7 +2215,7 @@ in non-backward-compatible ways.</p>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.svg.SVGObject.from_file"><code class="name flex">
-<span>def <span class="ident">from_file</span></span>(<span>filename, *args, encoding='utf-8', **kwargs)</span>
+<span>def <span class="ident">from_file</span></span>(<span>filename: str | os.PathLike[str],<br>*args: Any,<br>encoding: str = 'utf-8',<br>**kwargs: Any) ‑> <a title="fpdf.svg.SVGObject" href="#fpdf.svg.SVGObject">SVGObject</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create an <code><a title="fpdf.svg.SVGObject" href="#fpdf.svg.SVGObject">SVGObject</a></code> from the contents of the file at <code>filename</code>.</p>
@@ -1513,16 +2236,524 @@ in non-backward-compatible ways.</p>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="fpdf.svg.SVGObject.draw_to_page"><code class="name flex">
-<span>def <span class="ident">draw_to_page</span></span>(<span>self, pdf, x=None, y=None, debug_stream=None)</span>
+<dt id="fpdf.svg.SVGObject.apply_clipping_path"><code class="name flex">
+<span>def <span class="ident">apply_clipping_path</span></span>(<span>self,<br>stylable: <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a>,<br>svg_element: Element,<br>style_map: dict[str, typing.Any] | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1309-L1334" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1587-L1602" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
+<pre><code class="python">@force_nodocument
+def apply_clipping_path(
+    self,
+    stylable: PaintedPath,
+    svg_element: &#34;Element&#34;,
+    style_map: Optional[dict[str, Any]] = None,
+) -&gt; None:
+    clip_value = None
+    if style_map and &#34;clip-path&#34; in style_map:
+        clip_value = style_map[&#34;clip-path&#34;]
+    if clip_value is None:
+        clip_value = svg_element.attrib.get(&#34;clip-path&#34;)
+    if clip_value:
+        clipping_path_id = re.search(r&#34;url\((\#\w+)\)&#34;, clip_value)
+        assert clipping_path_id is not None
+        stylable.clipping_path = self.cross_references[clipping_path_id[1]]</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_clipping_path"><code class="name flex">
+<span>def <span class="ident">build_clipping_path</span></span>(<span>self, shape: Element, clip_id: str | None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1564-L1585" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_clipping_path(self, shape: &#34;Element&#34;, clip_id: Optional[str]) -&gt; None:
+    if shape.tag in shape_tags:
+        style_map = self._style_map_for(shape)
+        shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
+        clipping_path_shape = shape_builder(shape, True)
+        apply_styles(clipping_path_shape, shape, style_map)
+    elif shape.tag in xmlns_lookup(&#34;svg&#34;, &#34;path&#34;):
+        style_map = self._style_map_for(shape)
+        clipping_path_shape = PaintedPath()
+        apply_styles(clipping_path_shape, shape, style_map)
+        clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
+        svg_path = shape.attrib.get(&#34;d&#34;)
+        if svg_path is not None:
+            svg_path_converter(clipping_path_shape, svg_path)
+    else:
+        LOGGER.warning(
+            &#34;Ignoring unsupported &lt;clipPath&gt; child tag: &lt;%s&gt; (contributions are welcome to add support for it)&#34;,
+            without_ns(shape.tag),
+        )
+        return
+    self.update_xref(clip_id, clipping_path_shape)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_group"><code class="name flex">
+<span>def <span class="ident">build_group</span></span>(<span>self,<br>group: Element,<br>pdf_group: <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a> | None = None,<br>inherited_style: dict[str, typing.Any] | None = None) ‑> <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1479-L1535" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_group(
+    self,
+    group: &#34;Element&#34;,
+    pdf_group: Optional[GraphicsContext] = None,
+    inherited_style: Optional[dict[str, Any]] = None,
+) -&gt; GraphicsContext:
+    &#34;&#34;&#34;Handle nested items within a group &lt;g&gt; tag.&#34;&#34;&#34;
+    local_style = self._style_map_for(group)
+    merged_style = dict(inherited_style or {})
+    merged_style.update(local_style)
+    if pdf_group is None:
+        pdf_group = GraphicsContext()
+    apply_styles(pdf_group, group, merged_style)
+
+    # handle defs before anything else
+    for child in [
+        child for child in group if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;defs&#34;)
+    ]:
+        self.handle_defs(child)
+
+    for child in group:
+        if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;defs&#34;):
+            self.handle_defs(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;style&#34;):
+            # Stylesheets already parsed globally.
+            continue
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;g&#34;):
+            pdf_group.add_item(self.build_group(child, None, merged_style), False)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;a&#34;):
+            # &lt;a&gt; tags aren&#39;t supported but we need to recurse into them to
+            # render nested elements.
+            LOGGER.warning(
+                &#34;Ignoring unsupported SVG tag: &lt;a&gt; (contributions are welcome to add support for it)&#34;,
+            )
+            pdf_group.add_item(self.build_group(child, None, merged_style), False)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;path&#34;):
+            pdf_group.add_item(self.build_path(child), False)
+        elif child.tag in shape_tags:
+            pdf_group.add_item(self.build_shape(child), False)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;use&#34;):
+            pdf_group.add_item(self.build_xref(child), False)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;image&#34;):
+            pdf_group.add_item(self.build_image(child), False)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;text&#34;):
+            text_path = self.build_text(child, merged_style)
+            if text_path:
+                pdf_group.add_item(text_path, False)
+        else:
+            LOGGER.warning(
+                &#34;Ignoring unsupported SVG tag: &lt;%s&gt; (contributions are welcome to add support for it)&#34;,
+                without_ns(child.tag),
+            )
+
+    self.update_xref(group.attrib.get(&#34;id&#34;), pdf_group)
+
+    return pdf_group</code></pre>
+</details>
+<div class="desc"><p>Handle nested items within a group <g> tag.</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_image"><code class="name flex">
+<span>def <span class="ident">build_image</span></span>(<span>self, image: Element) ‑> <a title="fpdf.svg.SVGImage" href="#fpdf.svg.SVGImage">SVGImage</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1604-L1637" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_image(self, image: &#34;Element&#34;) -&gt; &#34;SVGImage&#34;:
+    href = None
+    for key in xmlns_lookup(&#34;xlink&#34;, &#34;href&#34;):
+        if key in image.attrib:
+            href = image.attrib[key]
+            break
+    if not href:
+        raise ValueError(&#34;&lt;image&gt; is missing a href attribute&#34;)
+    width = float(image.attrib.get(&#34;width&#34;, 0))
+    height = float(image.attrib.get(&#34;height&#34;, 0))
+    if &#34;preserveAspectRatio&#34; in image.attrib:
+        LOGGER.warning(
+            &#39;&#34;preserveAspectRatio&#34; defined on &lt;image&gt; is currently not supported (contributions are welcome to add support for it)&#39;
+        )
+    if &#34;style&#34; in image.attrib:
+        LOGGER.warning(
+            &#39;&#34;style&#34; defined on &lt;image&gt; is currently not supported (contributions are welcome to add support for it)&#39;
+        )
+    if &#34;transform&#34; in image.attrib:
+        LOGGER.warning(
+            &#39;&#34;transform&#34; defined on &lt;image&gt; is currently not supported (contributions are welcome to add support for it)&#39;
+        )
+    # Note: at this moment, self.image_cache is not set yet:
+    svg_image = SVGImage(
+        href=href,
+        x=float(image.attrib.get(&#34;x&#34;, &#34;0&#34;)),
+        y=float(image.attrib.get(&#34;y&#34;, &#34;0&#34;)),
+        width=width,
+        height=height,
+        svg_obj=self,
+    )
+    self.update_xref(image.attrib.get(&#34;id&#34;), svg_image)
+    return svg_image</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_path"><code class="name flex">
+<span>def <span class="ident">build_path</span></span>(<span>self, path: Element) ‑> <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1537-L1549" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_path(self, path: &#34;Element&#34;) -&gt; PaintedPath:
+    &#34;&#34;&#34;Convert an SVG &lt;path&gt; tag into a PDF path object.&#34;&#34;&#34;
+    style_map = self._style_map_for(path)
+    pdf_path = PaintedPath()
+    apply_styles(pdf_path, path, style_map)
+    self._apply_gradient_paint(pdf_path, path, style_map)
+    self.apply_clipping_path(pdf_path, path, style_map)
+    svg_path = path.attrib.get(&#34;d&#34;)
+    if svg_path is not None:
+        svg_path_converter(pdf_path, svg_path)
+    self.update_xref(path.attrib.get(&#34;id&#34;), pdf_path)
+    return pdf_path</code></pre>
+</details>
+<div class="desc"><p>Convert an SVG <path> tag into a PDF path object.</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_shape"><code class="name flex">
+<span>def <span class="ident">build_shape</span></span>(<span>self, shape: Element) ‑> <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1551-L1562" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_shape(self, shape: &#34;Element&#34;) -&gt; PaintedPath:
+    &#34;&#34;&#34;Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn&#39;t have access to this object.)&#34;&#34;&#34;
+    style_map = self._style_map_for(shape)
+    shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
+    shape_path = shape_builder(shape)
+    assert isinstance(shape_path, PaintedPath)
+    apply_styles(shape_path, shape, style_map)
+    self._apply_gradient_paint(shape_path, shape, style_map)
+    self.apply_clipping_path(shape_path, shape, style_map)
+    self.update_xref(shape.attrib.get(&#34;id&#34;), shape_path)
+    return shape_path</code></pre>
+</details>
+<div class="desc"><p>Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_text"><code class="name flex">
+<span>def <span class="ident">build_text</span></span>(<span>self, text_tag: Element, inherited_style: dict[str, typing.Any] | None = None) ‑> <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a> | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1639-L1833" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_text(
+    self, text_tag: &#34;Element&#34;, inherited_style: Optional[dict[str, Any]] = None
+) -&gt; Optional[PaintedPath]:
+    &#34;&#34;&#34;
+    Convert &lt;text&gt; (and simple &lt;tspan&gt;) into a PaintedPath with Text runs.
+    - Uses Text baseline at (x,y)
+    - Honors x/y and dx/dy on &lt;text&gt; and direct child &lt;tspan&gt;
+    - Flattens nested tspans; advanced per-character positioning is not implemented
+    &#34;&#34;&#34;
+    local_style = self._style_map_for(text_tag)
+    effective_style = dict(inherited_style or {})
+    effective_style.update(local_style)
+    path = PaintedPath()
+    apply_styles(path, text_tag, local_style)
+    self.apply_clipping_path(path, text_tag, effective_style)
+
+    preserve_parent = _preserve_ws(effective_style, text_tag)
+
+    base_family, base_emph, base_size, base_anchor = _parse_font_attrs(
+        text_tag, effective_style
+    )
+    if base_family is None:
+        base_family = &#34;sans-serif&#34;
+    default_font_size = (
+        base_size if base_size is not None else resolve_length(&#34;16px&#34;)
+    )
+    base_x, base_y, base_dx, base_dy = _parse_xy_delta(
+        text_tag, effective_style, font_size=default_font_size
+    )
+    anchor_x = base_x + base_dx
+    anchor_y = base_y + base_dy
+
+    text_runs: list[TextRun] = []
+    pending_dx = 0.0
+    pending_dy = 0.0
+
+    def _style_for_run(
+        tag: Optional[&#34;Element&#34;], style_map_for_tag: Optional[dict[str, Any]]
+    ) -&gt; Optional[GraphicsStyle]:
+        if tag is None or style_map_for_tag is None:
+            return None
+        context = GraphicsContext()
+        apply_styles(context, tag, style_map_for_tag)
+        context.style.auto_close = GraphicsStyle.INHERIT
+        overrides = any(
+            getattr(context.style, prop) is not GraphicsStyle.INHERIT
+            for prop in GraphicsStyle.MERGE_PROPERTIES
+        )
+        if not overrides:
+            return None
+        return deepcopy(context.style)
+
+    def _add_run(
+        raw_text: str,
+        family: Optional[str],
+        emphasis: Optional[str],
+        size: Optional[float],
+        preserve: bool,
+        dx_extra: float = 0.0,
+        dy_extra: float = 0.0,
+        abs_x: Optional[float] = None,
+        abs_y: Optional[float] = None,
+        style_tag: Optional[&#34;Element&#34;] = None,
+        style_map_for_tag: Optional[dict[str, Any]] = None,
+    ) -&gt; None:
+        nonlocal pending_dx, pending_dy
+        raw = raw_text or &#34;&#34;
+        collapsed = _collapse_ws(raw, preserve=preserve)
+        if preserve:
+            content = collapsed
+        else:
+            trimmed = collapsed.strip()
+            if trimmed:
+                content = trimmed
+                if raw[:1].isspace():
+                    content = &#34; &#34; + content
+                if raw[-1:].isspace():
+                    content = content + &#34; &#34;
+            else:
+                if (raw[:1].isspace() or raw[-1:].isspace()) and text_runs:
+                    content = &#34; &#34;
+                else:
+                    content = &#34;&#34;
+        if not content:
+            pending_dx += dx_extra
+            pending_dy += dy_extra
+            return
+
+        run_size = size if size is not None else default_font_size
+        run_family = family or base_family or &#34;sans-serif&#34;
+        run_emphasis = (emphasis if emphasis is not None else base_emph) or &#34;&#34;
+        run_dx = pending_dx + dx_extra
+        run_dy = pending_dy + dy_extra
+        pending_dx = 0.0
+        pending_dy = 0.0
+        run_style = _style_for_run(style_tag, style_map_for_tag)
+
+        text_runs.append(
+            TextRun(
+                text=content,
+                family=run_family,
+                emphasis=run_emphasis,
+                size=run_size,
+                dx=run_dx,
+                dy=run_dy,
+                abs_x=abs_x,
+                abs_y=abs_y,
+                run_style=run_style,
+            )
+        )
+
+    # Leading text (before child &lt;tspan&gt;)
+    _add_run(
+        text_tag.text or &#34;&#34;,
+        base_family,
+        base_emph,
+        base_size,
+        preserve=preserve_parent,
+        style_tag=None,
+        style_map_for_tag=None,
+    )
+
+    for child in text_tag:
+        if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;tspan&#34;):
+            child_local_style = self._style_map_for(child)
+            child_effective_style = dict(effective_style)
+            child_effective_style.update(child_local_style)
+            fam, emph, size, _anchor = _parse_font_attrs(
+                child, child_effective_style
+            )
+            run_font_size = size if size is not None else default_font_size
+            x, y, dx, dy = _parse_xy_delta(
+                child, child_effective_style, font_size=run_font_size
+            )
+
+            child_preserve = _preserve_ws(child_effective_style, child)
+            raw_itertext = &#34;&#34;.join(child.itertext())
+            tail_text = child.tail or &#34;&#34;
+            if tail_text and raw_itertext.endswith(tail_text):
+                run_text = raw_itertext[: -len(tail_text)]
+            else:
+                run_text = raw_itertext
+            abs_x = None
+            abs_y = None
+            if &#34;x&#34; in child.attrib or (
+                child_local_style is not None and &#34;x&#34; in child_local_style
+            ):
+                abs_x = x
+            if &#34;y&#34; in child.attrib or (
+                child_local_style is not None and &#34;y&#34; in child_local_style
+            ):
+                abs_y = y
+
+            _add_run(
+                run_text,
+                fam,
+                emph,
+                size,
+                preserve=child_preserve,
+                dx_extra=dx,
+                dy_extra=dy,
+                abs_x=abs_x,
+                abs_y=abs_y,
+                style_tag=child,
+                style_map_for_tag=child_local_style,
+            )
+
+            # Text between tspans inherits parent style
+            _add_run(
+                child.tail or &#34;&#34;,
+                base_family,
+                base_emph,
+                base_size,
+                preserve=preserve_parent,
+                style_tag=None,
+                style_map_for_tag=None,
+            )
+        else:
+            # other child tags are ignored (already logged elsewhere)
+            pass
+
+    if text_runs:
+        path.add_path_element(
+            Text(
+                x=anchor_x,
+                y=anchor_y,
+                text_runs=tuple(text_runs),
+                text_anchor=base_anchor,
+            ),
+            clone=False,
+        )
+
+    self.update_xref(text_tag.attrib.get(&#34;id&#34;), path)
+    return path</code></pre>
+</details>
+<div class="desc"><p>Convert <text> (and simple <tspan>) into a PaintedPath with Text runs.
+- Uses Text baseline at (x,y)
+- Honors x/y and dx/dy on <text> and direct child <tspan>
+- Flattens nested tspans; advanced per-character positioning is not implemented</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.build_xref"><code class="name flex">
+<span>def <span class="ident">build_xref</span></span>(<span>self, xref: Element) ‑> <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1447-L1477" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def build_xref(self, xref: &#34;Element&#34;) -&gt; GraphicsContext:
+    &#34;&#34;&#34;Resolve a cross-reference to an already-seen SVG element by ID.&#34;&#34;&#34;
+    style_map = self._style_map_for(xref)
+    pdf_group = GraphicsContext()
+    apply_styles(pdf_group, xref, style_map)
+
+    for candidate in xmlns_lookup(&#34;xlink&#34;, &#34;href&#34;, &#34;id&#34;):
+        try:
+            ref = xref.attrib[candidate]
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError(f&#34;use {xref} doesn&#39;t contain known xref attribute&#34;)
+
+    try:
+        pdf_group.add_item(self.cross_references[ref])
+    except KeyError:
+        raise ValueError(
+            f&#34;use {xref} references nonexistent ref id {ref}&#34;
+        ) from None
+
+    if &#34;x&#34; in xref.attrib or &#34;y&#34; in xref.attrib:
+        # Quoting the SVG spec - 5.6.2. Layout of re-used graphics:
+        # &gt; The x and y properties define an additional transformation translate(x,y)
+        x, y = float(xref.attrib.get(&#34;x&#34;, 0)), float(xref.attrib.get(&#34;y&#34;, 0))
+        pdf_group.transform = Transform.translation(x=x, y=y)
+    # Note that we currently do not support &#34;width&#34; &amp; &#34;height&#34; in &lt;use&gt;
+
+    return pdf_group</code></pre>
+</details>
+<div class="desc"><p>Resolve a cross-reference to an already-seen SVG element by ID.</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.convert_graphics"><code class="name flex">
+<span>def <span class="ident">convert_graphics</span></span>(<span>self, root_tag: Element)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1236-L1246" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def convert_graphics(self, root_tag: &#34;Element&#34;) -&gt; None:
+    &#34;&#34;&#34;Convert the graphics contained in the SVG into the PDF representation.&#34;&#34;&#34;
+    base_group = GraphicsContext()
+    base_group.style.stroke_width = None
+    base_group.style.auto_close = False
+    base_group.style.stroke_cap_style = StrokeCapStyle.BUTT
+
+    self.build_group(root_tag, base_group)
+
+    self.base_group = base_group</code></pre>
+</details>
+<div class="desc"><p>Convert the graphics contained in the SVG into the PDF representation.</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.draw_to_page"><code class="name flex">
+<span>def <span class="ident">draw_to_page</span></span>(<span>self,<br>pdf: FPDF,<br>x: float | None = None,<br>y: float | None = None,<br>debug_stream: bool | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1370-L1402" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def draw_to_page(
+    self,
+    pdf: &#34;FPDF&#34;,
+    x: Optional[float] = None,
+    y: Optional[float] = None,
+    debug_stream: Optional[bool] = None,
+) -&gt; None:
     &#34;&#34;&#34;
     Directly draw the converted SVG to the given PDF&#39;s current page.
 
@@ -1532,7 +2763,7 @@ in non-backward-compatible ways.</p>
         pdf (fpdf.fpdf.FPDF): the document to which the converted SVG is rendered.
         x (Number): abscissa of the converted SVG&#39;s top-left corner.
         y (Number): ordinate of the converted SVG&#39;s top-left corner.
-        debug_stream (io.TextIO): the stream to which rendering debug info will be
+        debug_stream (io.TextIO): *DEPRECATED* the stream to which rendering debug info will be
             written.
     &#34;&#34;&#34;
     self.image_cache = pdf.image_cache  # Needed to render images
@@ -1542,6 +2773,7 @@ in non-backward-compatible ways.</p>
     try:
         if x is not None and y is not None:
             pdf.set_xy(0, 0)
+            assert path.transform is not None
             path.transform = path.transform @ Transform.translation(x, y)
 
         pdf.draw_path(path, debug_stream)
@@ -1560,20 +2792,123 @@ in non-backward-compatible ways.</p>
 <dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
 <dd>ordinate of the converted SVG's top-left corner.</dd>
 <dt><strong><code>debug_stream</code></strong> :&ensp;<code>io.TextIO</code></dt>
-<dd>the stream to which rendering debug info will be
+<dd><em>DEPRECATED</em> the stream to which rendering debug info will be
 written.</dd>
 </dl></div>
 </dd>
-<dt id="fpdf.svg.SVGObject.transform_to_page_viewport"><code class="name flex">
-<span>def <span class="ident">transform_to_page_viewport</span></span>(<span>self, pdf, align_viewbox=True)</span>
+<dt id="fpdf.svg.SVGObject.extract_shape_info"><code class="name flex">
+<span>def <span class="ident">extract_shape_info</span></span>(<span>self, root_tag: Element)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1203-L1223" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1196-L1234" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def transform_to_page_viewport(self, pdf, align_viewbox=True):
+<pre><code class="python">@force_nodocument
+def extract_shape_info(self, root_tag: &#34;Element&#34;) -&gt; None:
+    &#34;&#34;&#34;Collect shape info from the given SVG.&#34;&#34;&#34;
+
+    width_str = root_tag.get(&#34;width&#34;)
+    height_str = root_tag.get(&#34;height&#34;)
+    viewbox = root_tag.get(&#34;viewBox&#34;)
+    # we don&#39;t fully support this, just check for its existence
+    preserve_ar = root_tag.get(&#34;preserveAspectRatio&#34;, True)
+    if preserve_ar == &#34;none&#34;:
+        self.preserve_ar = None
+    else:
+        self.preserve_ar = True
+
+    self.width = None
+    if width_str is not None:
+        width_str.strip()
+        if width_str.endswith(&#34;%&#34;):
+            self.width = Percent(width_str[:-1])
+        else:
+            self.width = resolve_length(width_str)
+
+    self.height = None
+    if height_str is not None:
+        height_str.strip()
+        if height_str.endswith(&#34;%&#34;):
+            self.height = Percent(height_str[:-1])
+        else:
+            self.height = resolve_length(height_str)
+
+    if viewbox is None:
+        self.viewbox = None
+    else:
+        viewbox = viewbox.strip()
+        vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
+        if (vw &lt; 0) or (vh &lt; 0):
+            raise ValueError(f&#34;invalid negative width/height in viewbox {viewbox}&#34;)
+
+        self.viewbox = [vx, vy, vw, vh]</code></pre>
+</details>
+<div class="desc"><p>Collect shape info from the given SVG.</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.handle_defs"><code class="name flex">
+<span>def <span class="ident">handle_defs</span></span>(<span>self, defs: Element)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1406-L1443" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def handle_defs(self, defs: &#34;Element&#34;) -&gt; None:
+    &#34;&#34;&#34;Produce lookups for groups and paths inside the &lt;defs&gt; tag&#34;&#34;&#34;
+    for child in defs:
+        if child.tag in xmlns_lookup(&#34;svg&#34;, &#34;g&#34;):
+            self.build_group(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;a&#34;):
+            # &lt;a&gt; tags aren&#39;t supported but we need to recurse into them to
+            # render nested elements.
+            LOGGER.warning(
+                &#34;Ignoring unsupported SVG tag: &lt;a&gt; (contributions are welcome to add support for it)&#34;,
+            )
+            self.build_group(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;path&#34;):
+            self.build_path(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;image&#34;):
+            self.build_image(child)
+        elif child.tag in shape_tags:
+            self.build_shape(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;linearGradient&#34;):
+            self._parse_linear_gradient(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;radialGradient&#34;):
+            self._parse_radial_gradient(child)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;clipPath&#34;):
+            try:
+                clip_id = child.attrib[&#34;id&#34;]
+            except KeyError:
+                clip_id = None
+            for child_ in child:
+                self.build_clipping_path(child_, clip_id)
+        elif child.tag in xmlns_lookup(&#34;svg&#34;, &#34;style&#34;):
+            # Styles handled globally during parsing
+            continue
+        else:
+            LOGGER.warning(
+                &#34;Ignoring unsupported SVG tag: &lt;%s&gt; (contributions are welcome to add support for it)&#34;,
+                without_ns(child.tag),
+            )</code></pre>
+</details>
+<div class="desc"><p>Produce lookups for groups and paths inside the <defs> tag</p></div>
+</dd>
+<dt id="fpdf.svg.SVGObject.transform_to_page_viewport"><code class="name flex">
+<span>def <span class="ident">transform_to_page_viewport</span></span>(<span>self, pdf: FPDF, align_viewbox: bool = True) ‑> tuple[float, float, <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a>]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1248-L1270" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def transform_to_page_viewport(
+    self, pdf: &#34;FPDF&#34;, align_viewbox: bool = True
+) -&gt; tuple[float, float, GraphicsContext]:
     &#34;&#34;&#34;
     Size the converted SVG paths to the page viewport.
 
@@ -1613,17 +2948,22 @@ viewbox aspect ratio does not match that of the viewport.</dd>
 <p>The same thing as <code><a title="fpdf.svg.SVGObject.transform_to_rect_viewport" href="#fpdf.svg.SVGObject.transform_to_rect_viewport">SVGObject.transform_to_rect_viewport()</a></code>.</p></div>
 </dd>
 <dt id="fpdf.svg.SVGObject.transform_to_rect_viewport"><code class="name flex">
-<span>def <span class="ident">transform_to_rect_viewport</span></span>(<span>self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False)</span>
+<span>def <span class="ident">transform_to_rect_viewport</span></span>(<span>self,<br>scale: float,<br>width: float | <a title="fpdf.svg.Percent" href="#fpdf.svg.Percent">Percent</a>,<br>height: float | <a title="fpdf.svg.Percent" href="#fpdf.svg.Percent">Percent</a>,<br>align_viewbox: bool = True,<br>ignore_svg_top_attrs: bool = False) ‑> tuple[float, float, <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/svg.py#L1225-L1307" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L1272-L1368" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_rect_viewport(
-    self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
-):
+    self,
+    scale: float,
+    width: float | Percent,
+    height: float | Percent,
+    align_viewbox: bool = True,
+    ignore_svg_top_attrs: bool = False,
+) -&gt; tuple[float, float, GraphicsContext]:
     &#34;&#34;&#34;
     Size the converted SVG paths to an arbitrarily sized viewport.
 
@@ -1649,9 +2989,15 @@ viewbox aspect ratio does not match that of the viewport.</dd>
         `fpdf.drawing.GraphicsContext` contains all of the paths that were
         converted from the SVG, scaled to the given viewport size.
     &#34;&#34;&#34;
+    vp_width: float
+    vp_height: float
 
     if ignore_svg_top_attrs:
-        vp_width = width
+        # width/height may be Percent when passed from FPDF.image; resolve to float
+        if isinstance(width, Percent):
+            vp_width = float(width)
+        else:
+            vp_width = float(width)
     elif isinstance(self.width, Percent):
         if not width:
             raise ValueError(
@@ -1662,7 +3008,10 @@ viewbox aspect ratio does not match that of the viewport.</dd>
         vp_width = self.width or width
 
     if ignore_svg_top_attrs:
-        vp_height = height
+        if isinstance(height, Percent):
+            vp_height = float(height)
+        else:
+            vp_height = float(height)
     elif isinstance(self.height, Percent):
         if not height:
             raise ValueError(
@@ -1733,6 +3082,223 @@ height are the resolved width and height (they may be 0. If 0, the returned
 <code><a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a></code> contains all of the paths that were
 converted from the SVG, scaled to the given viewport size.</p></div>
 </dd>
+<dt id="fpdf.svg.SVGObject.update_xref"><code class="name flex">
+<span>def <span class="ident">update_xref</span></span>(<span>self, key: str | None, referenced: Any) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L880-L884" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def update_xref(self, key: Optional[str], referenced: Any) -&gt; None:
+    if key:
+        key = &#34;#&#34; + key if not key.startswith(&#34;#&#34;) else key
+        self.cross_references[key] = referenced</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder"><code class="flex name class">
+<span>class <span class="ident">ShapeBuilder</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L592-L720" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+class ShapeBuilder:
+    &#34;&#34;&#34;A namespace within which methods for converting basic shapes can be looked up.&#34;&#34;&#34;
+
+    @staticmethod
+    def new_path(tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
+        &#34;&#34;&#34;Create a new path with the appropriate styles.&#34;&#34;&#34;
+        path = PaintedPath()
+        if clipping_path:
+            path = ClippingPath()
+        apply_styles(path, tag)
+        return path
+
+    @classmethod
+    def rect(cls, tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
+        &#34;&#34;&#34;Convert an SVG &lt;rect&gt; into a PDF path.&#34;&#34;&#34;
+        # svg rect is wound clockwise
+        x = resolve_length(tag.attrib.get(&#34;x&#34;, &#34;0&#34;))
+        y = resolve_length(tag.attrib.get(&#34;y&#34;, &#34;0&#34;))
+        width_str = tag.attrib.get(&#34;width&#34;) or &#34;0&#34;
+        if width_str.endswith(&#34;%&#34;):
+            width: Percent | float = Percent(width_str[:-1])
+        else:
+            width = resolve_length(width_str)
+        height_str = tag.attrib.get(&#34;height&#34;) or &#34;0&#34;
+        if height_str.endswith(&#34;%&#34;):
+            height: Percent | float = Percent(height_str[:-1])
+        else:
+            height = resolve_length(height_str)
+        rx_str = tag.attrib.get(&#34;rx&#34;) or &#34;auto&#34;
+        ry_str = tag.attrib.get(&#34;ry&#34;) or &#34;auto&#34;
+
+        if rx_str == &#34;none&#34;:
+            rx_str = &#34;0&#34;
+        if ry_str == &#34;none&#34;:
+            ry_str = &#34;0&#34;
+
+        rx: float
+        ry: float
+
+        if rx_str == ry_str == &#34;auto&#34;:
+            rx = ry = 0
+        elif rx_str == &#34;auto&#34;:
+            rx = ry = float(ry_str)
+        elif ry_str == &#34;auto&#34;:
+            ry = rx = float(rx_str)
+        else:
+            rx = float(rx_str)
+            ry = float(ry_str)
+
+        if (width &lt; 0) or (height &lt; 0) or (rx &lt; 0) or (ry &lt; 0):
+            raise ValueError(f&#34;bad rect {tag}&#34;)
+
+        if (width == 0) or (height == 0):
+            return PaintedPath()
+
+        if rx &gt; (width / 2):
+            rx = width / 2
+        if ry &gt; (height / 2):
+            ry = height / 2
+
+        path = cls.new_path(tag, clipping_path)
+        path.rectangle(x, y, width, height, rx, ry)
+        return path
+
+    @classmethod
+    def circle(cls, tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
+        &#34;&#34;&#34;Convert an SVG &lt;circle&gt; into a PDF path.&#34;&#34;&#34;
+        cx = float(tag.attrib.get(&#34;cx&#34;, 0))
+        cy = float(tag.attrib.get(&#34;cy&#34;, 0))
+        r = float(tag.attrib[&#34;r&#34;])
+
+        path = cls.new_path(tag, clipping_path)
+        path.circle(cx, cy, r)
+        return path
+
+    @classmethod
+    def ellipse(cls, tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
+        &#34;&#34;&#34;Convert an SVG &lt;ellipse&gt; into a PDF path.&#34;&#34;&#34;
+        cx = float(tag.attrib.get(&#34;cx&#34;, 0))
+        cy = float(tag.attrib.get(&#34;cy&#34;, 0))
+
+        rx_str = tag.attrib.get(&#34;rx&#34;) or &#34;auto&#34;
+        ry_str = tag.attrib.get(&#34;ry&#34;) or &#34;auto&#34;
+
+        path = cls.new_path(tag, clipping_path)
+
+        if (rx_str == ry_str == &#34;auto&#34;) or (rx_str == &#34;0&#34;) or (ry_str == &#34;0&#34;):
+            return path
+
+        if rx_str == &#34;auto&#34;:
+            rx = ry = float(ry_str)
+        elif ry_str == &#34;auto&#34;:
+            rx = ry = float(rx_str)
+        else:
+            rx = float(rx_str)
+            ry = float(ry_str)
+
+        path.ellipse(cx, cy, rx, ry)
+        return path
+
+    @classmethod
+    def line(cls, tag: &#34;Element&#34;) -&gt; PaintedPath:
+        &#34;&#34;&#34;Convert an SVG &lt;line&gt; into a PDF path.&#34;&#34;&#34;
+        x1 = float(tag.attrib[&#34;x1&#34;])
+        y1 = float(tag.attrib[&#34;y1&#34;])
+        x2 = float(tag.attrib[&#34;x2&#34;])
+        y2 = float(tag.attrib[&#34;y2&#34;])
+
+        path = cls.new_path(tag)
+        path.move_to(x1, y1)
+        path.line_to(x2, y2)
+        return path
+
+    @classmethod
+    def polyline(cls, tag: &#34;Element&#34;) -&gt; PaintedPath:
+        &#34;&#34;&#34;Convert an SVG &lt;polyline&gt; into a PDF path.&#34;&#34;&#34;
+        path = cls.new_path(tag)
+        points = &#34;M&#34; + tag.attrib[&#34;points&#34;]
+        svg_path_converter(path, points)
+        return path
+
+    @classmethod
+    def polygon(cls, tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
+        &#34;&#34;&#34;Convert an SVG &lt;polygon&gt; into a PDF path.&#34;&#34;&#34;
+        path = cls.new_path(tag, clipping_path)
+        points = &#34;M&#34; + tag.attrib[&#34;points&#34;] + &#34;Z&#34;
+        svg_path_converter(path, points)
+        return path</code></pre>
+</details>
+<div class="desc"><p>A namespace within which methods for converting basic shapes can be looked up.</p></div>
+<h3>Static methods</h3>
+<dl>
+<dt id="fpdf.svg.ShapeBuilder.circle"><code class="name flex">
+<span>def <span class="ident">circle</span></span>(<span>tag: Element, clipping_path: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an SVG <circle> into a PDF path.</p></div>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder.ellipse"><code class="name flex">
+<span>def <span class="ident">ellipse</span></span>(<span>tag: Element, clipping_path: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an SVG <ellipse> into a PDF path.</p></div>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder.line"><code class="name flex">
+<span>def <span class="ident">line</span></span>(<span>tag: Element)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an SVG <line> into a PDF path.</p></div>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder.new_path"><code class="name flex">
+<span>def <span class="ident">new_path</span></span>(<span>tag: Element, clipping_path: bool = False) ‑> <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/svg.py#L596-L603" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@staticmethod
+def new_path(tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
+    &#34;&#34;&#34;Create a new path with the appropriate styles.&#34;&#34;&#34;
+    path = PaintedPath()
+    if clipping_path:
+        path = ClippingPath()
+    apply_styles(path, tag)
+    return path</code></pre>
+</details>
+<div class="desc"><p>Create a new path with the appropriate styles.</p></div>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder.polygon"><code class="name flex">
+<span>def <span class="ident">polygon</span></span>(<span>tag: Element, clipping_path: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an SVG <polygon> into a PDF path.</p></div>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder.polyline"><code class="name flex">
+<span>def <span class="ident">polyline</span></span>(<span>tag: Element)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an SVG <polyline> into a PDF path.</p></div>
+</dd>
+<dt id="fpdf.svg.ShapeBuilder.rect"><code class="name flex">
+<span>def <span class="ident">rect</span></span>(<span>tag: Element, clipping_path: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert an SVG <rect> into a PDF path.</p></div>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1748,13 +3314,37 @@ converted from the SVG, scaled to the given viewport size.</p></div>
 <li><code><a title="fpdf" href="index.html">fpdf</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="fpdf.svg.apply_styles" href="#fpdf.svg.apply_styles">apply_styles</a></code></li>
+<li><code><a title="fpdf.svg.clamp_float" href="#fpdf.svg.clamp_float">clamp_float</a></code></li>
+<li><code><a title="fpdf.svg.convert_miterlimit" href="#fpdf.svg.convert_miterlimit">convert_miterlimit</a></code></li>
+<li><code><a title="fpdf.svg.convert_stroke_width" href="#fpdf.svg.convert_stroke_width">convert_stroke_width</a></code></li>
+<li><code><a title="fpdf.svg.convert_transforms" href="#fpdf.svg.convert_transforms">convert_transforms</a></code></li>
+<li><code><a title="fpdf.svg.inheritable" href="#fpdf.svg.inheritable">inheritable</a></code></li>
+<li><code><a title="fpdf.svg.optional" href="#fpdf.svg.optional">optional</a></code></li>
+<li><code><a title="fpdf.svg.resolve_angle" href="#fpdf.svg.resolve_angle">resolve_angle</a></code></li>
+<li><code><a title="fpdf.svg.resolve_length" href="#fpdf.svg.resolve_length">resolve_length</a></code></li>
+<li><code><a title="fpdf.svg.svg_path_converter" href="#fpdf.svg.svg_path_converter">svg_path_converter</a></code></li>
+<li><code><a title="fpdf.svg.svgcolor" href="#fpdf.svg.svgcolor">svgcolor</a></code></li>
+<li><code><a title="fpdf.svg.without_ns" href="#fpdf.svg.without_ns">without_ns</a></code></li>
+<li><code><a title="fpdf.svg.xmlns" href="#fpdf.svg.xmlns">xmlns</a></code></li>
+<li><code><a title="fpdf.svg.xmlns_lookup" href="#fpdf.svg.xmlns_lookup">xmlns_lookup</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="fpdf.svg.Percent" href="#fpdf.svg.Percent">Percent</a></code></h4>
+</li>
+<li>
 <h4><code><a title="fpdf.svg.SVGImage" href="#fpdf.svg.SVGImage">SVGImage</a></code></h4>
 <ul class="two-column">
+<li><code><a title="fpdf.svg.SVGImage.bounding_box" href="#fpdf.svg.SVGImage.bounding_box">bounding_box</a></code></li>
+<li><code><a title="fpdf.svg.SVGImage.end_point" href="#fpdf.svg.SVGImage.end_point">end_point</a></code></li>
 <li><code><a title="fpdf.svg.SVGImage.height" href="#fpdf.svg.SVGImage.height">height</a></code></li>
 <li><code><a title="fpdf.svg.SVGImage.href" href="#fpdf.svg.SVGImage.href">href</a></code></li>
+<li><code><a title="fpdf.svg.SVGImage.render" href="#fpdf.svg.SVGImage.render">render</a></code></li>
 <li><code><a title="fpdf.svg.SVGImage.svg_obj" href="#fpdf.svg.SVGImage.svg_obj">svg_obj</a></code></li>
 <li><code><a title="fpdf.svg.SVGImage.width" href="#fpdf.svg.SVGImage.width">width</a></code></li>
 <li><code><a title="fpdf.svg.SVGImage.x" href="#fpdf.svg.SVGImage.x">x</a></code></li>
@@ -1764,10 +3354,34 @@ converted from the SVG, scaled to the given viewport size.</p></div>
 <li>
 <h4><code><a title="fpdf.svg.SVGObject" href="#fpdf.svg.SVGObject">SVGObject</a></code></h4>
 <ul class="">
+<li><code><a title="fpdf.svg.SVGObject.apply_clipping_path" href="#fpdf.svg.SVGObject.apply_clipping_path">apply_clipping_path</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_clipping_path" href="#fpdf.svg.SVGObject.build_clipping_path">build_clipping_path</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_group" href="#fpdf.svg.SVGObject.build_group">build_group</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_image" href="#fpdf.svg.SVGObject.build_image">build_image</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_path" href="#fpdf.svg.SVGObject.build_path">build_path</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_shape" href="#fpdf.svg.SVGObject.build_shape">build_shape</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_text" href="#fpdf.svg.SVGObject.build_text">build_text</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.build_xref" href="#fpdf.svg.SVGObject.build_xref">build_xref</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.convert_graphics" href="#fpdf.svg.SVGObject.convert_graphics">convert_graphics</a></code></li>
 <li><code><a title="fpdf.svg.SVGObject.draw_to_page" href="#fpdf.svg.SVGObject.draw_to_page">draw_to_page</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.extract_shape_info" href="#fpdf.svg.SVGObject.extract_shape_info">extract_shape_info</a></code></li>
 <li><code><a title="fpdf.svg.SVGObject.from_file" href="#fpdf.svg.SVGObject.from_file">from_file</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.handle_defs" href="#fpdf.svg.SVGObject.handle_defs">handle_defs</a></code></li>
 <li><code><a title="fpdf.svg.SVGObject.transform_to_page_viewport" href="#fpdf.svg.SVGObject.transform_to_page_viewport">transform_to_page_viewport</a></code></li>
 <li><code><a title="fpdf.svg.SVGObject.transform_to_rect_viewport" href="#fpdf.svg.SVGObject.transform_to_rect_viewport">transform_to_rect_viewport</a></code></li>
+<li><code><a title="fpdf.svg.SVGObject.update_xref" href="#fpdf.svg.SVGObject.update_xref">update_xref</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.svg.ShapeBuilder" href="#fpdf.svg.ShapeBuilder">ShapeBuilder</a></code></h4>
+<ul class="two-column">
+<li><code><a title="fpdf.svg.ShapeBuilder.circle" href="#fpdf.svg.ShapeBuilder.circle">circle</a></code></li>
+<li><code><a title="fpdf.svg.ShapeBuilder.ellipse" href="#fpdf.svg.ShapeBuilder.ellipse">ellipse</a></code></li>
+<li><code><a title="fpdf.svg.ShapeBuilder.line" href="#fpdf.svg.ShapeBuilder.line">line</a></code></li>
+<li><code><a title="fpdf.svg.ShapeBuilder.new_path" href="#fpdf.svg.ShapeBuilder.new_path">new_path</a></code></li>
+<li><code><a title="fpdf.svg.ShapeBuilder.polygon" href="#fpdf.svg.ShapeBuilder.polygon">polygon</a></code></li>
+<li><code><a title="fpdf.svg.ShapeBuilder.polyline" href="#fpdf.svg.ShapeBuilder.polyline">polyline</a></code></li>
+<li><code><a title="fpdf.svg.ShapeBuilder.rect" href="#fpdf.svg.ShapeBuilder.rect">rect</a></code></li>
 </ul>
 </li>
 </ul>

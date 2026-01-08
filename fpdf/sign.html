@@ -50,15 +50,23 @@ in non-backward-compatible ways.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.sign.sign_content"><code class="name flex">
-<span>def <span class="ident">sign_content</span></span>(<span>signer, buffer, key, cert, extra_certs, hashalgo, sign_time)</span>
+<span>def <span class="ident">sign_content</span></span>(<span>signer: signer,<br>buffer: bytearray,<br>key: PrivateKeyTypes | None,<br>cert: Certificate,<br>extra_certs: list['Certificate'],<br>hashalgo: str,<br>sign_time: datetime) ‑> bytearray</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/sign.py#L45-L90" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/sign.py#L66-L119" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
+<pre><code class="python">def sign_content(
+    signer: &#34;signer&#34;,  # pyright: ignore[reportGeneralTypeIssues]
+    buffer: bytearray,
+    key: Optional[&#34;PrivateKeyTypes&#34;],
+    cert: &#34;Certificate&#34;,
+    extra_certs: list[&#34;Certificate&#34;],
+    hashalgo: str,
+    sign_time: &#34;datetime&#34;,
+) -&gt; bytearray:
     &#34;&#34;&#34;
     Perform PDF signing based on the content of the buffer, performing substitutions on it.
     The signing operation does not alter the buffer size
@@ -86,7 +94,7 @@ in non-backward-compatible ways.</p>
     # to get control over signed_time, initialized by endesive.signer.sign() to be datetime.now():
     class mock_datetime:
         @staticmethod
-        def now(tz):  # pylint: disable=unused-argument
+        def now(tz: Any) -&gt; &#34;datetime&#34;:  # pylint: disable=unused-argument
             return sign_time.astimezone(timezone.utc)
 
     sign = patch(&#34;endesive.signer.datetime&#34;, mock_datetime)(signer.sign)
@@ -115,16 +123,22 @@ The signing operation does not alter the buffer size</p></div>
 <dl>
 <dt id="fpdf.sign.Signature"><code class="flex name class">
 <span>class <span class="ident">Signature</span></span>
-<span>(</span><span>contact_info=None, location=None, m=None, reason=None)</span>
+<span>(</span><span>contact_info: str | None = None,<br>location: str | None = None,<br>m: <a title="fpdf.syntax.PDFDate" href="syntax.html#fpdf.syntax.PDFDate">PDFDate</a> | None = None,<br>reason: str | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/sign.py#L20-L42" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/sign.py#L31-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Signature:
-    def __init__(self, contact_info=None, location=None, m=None, reason=None):
+    def __init__(
+        self,
+        contact_info: Optional[str] = None,
+        location: Optional[str] = None,
+        m: Optional[PDFDate] = None,
+        reason: Optional[str] = None,
+    ) -&gt; None:
         self.type = Name(&#34;Sig&#34;)
         self.filter = Name(&#34;Adobe.PPKLite&#34;)
         self.sub_filter = Name(&#34;adbe.pkcs7.detached&#34;)
@@ -139,7 +153,11 @@ The signing operation does not alter the buffer size</p></div>
         self.byte_range = _SIGNATURE_BYTERANGE_PLACEHOLDER
         self.contents = &#34;&lt;&#34; + _SIGNATURE_CONTENTS_PLACEHOLDER + &#34;&gt;&#34;
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -170,15 +188,19 @@ The signing operation does not alter the buffer size</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.sign.Signature.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/sign.py#L36-L42" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/sign.py#L53-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     obj_dict = build_obj_dict(
         {key: getattr(self, key) for key in dir(self)},
         _security_handler=_security_handler,

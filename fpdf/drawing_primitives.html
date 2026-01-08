@@ -58,15 +58,15 @@ top of these primitives.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.drawing_primitives.check_range"><code class="name flex">
-<span>def <span class="ident">check_range</span></span>(<span>value, minimum=0.0, maximum=1.0)</span>
+<span>def <span class="ident">check_range</span></span>(<span>value: int | float | decimal.Decimal,<br>minimum: float = 0.0,<br>maximum: float = 1.0) ‑> int | float | decimal.Decimal</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L46-L50" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L58-L62" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def check_range(value, minimum=0.0, maximum=1.0):
+<pre><code class="python">def check_range(value: Number, minimum: float = 0.0, maximum: float = 1.0) -&gt; Number:
     if not minimum &lt;= value &lt;= maximum:
         raise ValueError(f&#34;{value} not in range [{minimum}, {maximum}]&#34;)
 
@@ -75,15 +75,17 @@ top of these primitives.</p>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.drawing_primitives.cmyk8"><code class="name flex">
-<span>def <span class="ident">cmyk8</span></span>(<span>c, m, y, k, a=None)</span>
+<span>def <span class="ident">cmyk8</span></span>(<span>c: int | float | decimal.Decimal,<br>m: int | float | decimal.Decimal,<br>y: int | float | decimal.Decimal,<br>k: int | float | decimal.Decimal,<br>a: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L310-L331" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L326-L351" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def cmyk8(c, m, y, k, a=None):
+<pre><code class="python">def cmyk8(
+    c: Number, m: Number, y: Number, k: Number, a: Optional[Number] = None
+) -&gt; DeviceCMYK:
     &#34;&#34;&#34;
     Produce a DeviceCMYK color from the given 8-bit CMYK values.
 
@@ -102,9 +104,11 @@ top of these primitives.</p>
         ValueError: if any components are not in their valid interval.
     &#34;&#34;&#34;
     if a is not None:
-        a /= 255.0
+        a = float(a) / 255.0
 
-    return DeviceCMYK(c / 255.0, m / 255.0, y / 255.0, k / 255.0, a)</code></pre>
+    return DeviceCMYK(
+        float(c) / 255.0, float(m) / 255.0, float(y) / 255.0, float(k) / 255.0, a
+    )</code></pre>
 </details>
 <div class="desc"><p>Produce a DeviceCMYK color from the given 8-bit CMYK values.</p>
 <h2 id="args">Args</h2>
@@ -130,15 +134,15 @@ top of these primitives.</p>
 </dl></div>
 </dd>
 <dt id="fpdf.drawing_primitives.color_from_hex_string"><code class="name flex">
-<span>def <span class="ident">color_from_hex_string</span></span>(<span>hexstr)</span>
+<span>def <span class="ident">color_from_hex_string</span></span>(<span>hexstr: str) ‑> <a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L334-L371" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L354-L404" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def color_from_hex_string(hexstr):
+<pre><code class="python">def color_from_hex_string(hexstr: str) -&gt; DeviceRGB | DeviceGray:
     &#34;&#34;&#34;
     Parse an RGB color from a css-style 8-bit hexadecimal color string.
 
@@ -161,21 +165,34 @@ top of these primitives.</p>
 
     hlen = len(hexstr)
 
-    if hlen == 4:
-        return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]], a=None)
+    if hlen == 4:  # #RGB
+        r = int(hexstr[1] * 2, 16)
+        g = int(hexstr[2] * 2, 16)
+        b = int(hexstr[3] * 2, 16)
+        a = None
 
-    if hlen == 5:
-        return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]])
+    elif hlen == 5:  # #RGBA
+        r = int(hexstr[1] * 2, 16)
+        g = int(hexstr[2] * 2, 16)
+        b = int(hexstr[3] * 2, 16)
+        a = int(hexstr[4] * 2, 16)
 
-    if hlen == 7:
-        return rgb8(
-            *[int(hexstr[idx : idx + 2], base=16) for idx in range(1, hlen, 2)], a=None
-        )
+    elif hlen == 7:  # #RRGGBB
+        r = int(hexstr[1:3], 16)
+        g = int(hexstr[3:5], 16)
+        b = int(hexstr[5:7], 16)
+        a = None
 
-    if hlen == 9:
-        return rgb8(*[int(hexstr[idx : idx + 2], base=16) for idx in range(1, hlen, 2)])
+    elif hlen == 9:  # #RRGGBBAA
+        r = int(hexstr[1:3], 16)
+        g = int(hexstr[3:5], 16)
+        b = int(hexstr[5:7], 16)
+        a = int(hexstr[7:9], 16)
 
-    raise ValueError(f&#34;{hexstr} could not be interpreted as a RGB(A) hex string&#34;)</code></pre>
+    else:
+        raise ValueError(f&#34;{hexstr} could not be interpreted as a RGB(A) hex string&#34;)
+
+    return rgb8(r, g, b, a)</code></pre>
 </details>
 <div class="desc"><p>Parse an RGB color from a css-style 8-bit hexadecimal color string.</p>
 <h2 id="args">Args</h2>
@@ -193,15 +210,15 @@ explicitly set.</p>
 <p>DeviceRGB representation of the color.</p></div>
 </dd>
 <dt id="fpdf.drawing_primitives.color_from_rgb_string"><code class="name flex">
-<span>def <span class="ident">color_from_rgb_string</span></span>(<span>rgbstr)</span>
+<span>def <span class="ident">color_from_rgb_string</span></span>(<span>rgbstr: str) ‑> <a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L374-L401" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L407-L435" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def color_from_rgb_string(rgbstr):
+<pre><code class="python">def color_from_rgb_string(rgbstr: str) -&gt; DeviceRGB | DeviceGray:
     &#34;&#34;&#34;
     Parse an RGB color from a css-style rgb(R, G, B, A) color string.
 
@@ -223,7 +240,8 @@ explicitly set.</p>
     colors = rgbstr.split(&#34;,&#34;)
 
     if len(colors) == 3:
-        return rgb8(*[int(c) for c in colors], a=None)
+        r, g, b = (int(c) for c in colors)
+        return rgb8(r, g, b, a=None)
 
     if len(colors) == 4:
         return rgb8(*[int(c) for c in colors])
@@ -240,21 +258,27 @@ explicitly set.</p>
 <p>DeviceRGB representation of the color.</p></div>
 </dd>
 <dt id="fpdf.drawing_primitives.convert_to_device_color"><code class="name flex">
-<span>def <span class="ident">convert_to_device_color</span></span>(<span>r, g=-1, b=-1)</span>
+<span>def <span class="ident">convert_to_device_color</span></span>(<span>r: int | float | decimal.Decimal | <a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | str | Sequence[int | float | decimal.Decimal] | <a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a>,<br>g: int | float | decimal.Decimal = -1,<br>b: int | float | decimal.Decimal = -1) ‑> <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L297-L307" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L307-L323" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def convert_to_device_color(r, g=-1, b=-1):
+<pre><code class="python">def convert_to_device_color(
+    r: Number | Color | str | Sequence[Number] | DeviceCMYK | DeviceGray | DeviceRGB,
+    g: Number = -1,
+    b: Number = -1,
+) -&gt; DeviceGray | DeviceRGB | DeviceCMYK:
     if isinstance(r, (DeviceCMYK, DeviceGray, DeviceRGB)):
-        # Note: in this case, r is also a Sequence
         return r
-    if isinstance(r, str) and r.startswith(&#34;#&#34;):
-        return color_from_hex_string(r)
+    if isinstance(r, str):
+        if r.startswith(&#34;#&#34;):
+            return color_from_hex_string(r)
+        raise ValueError(f&#34;Cannot convert string {r} to a color&#34;)
     if isinstance(r, Sequence):
+        assert not isinstance(r, str)
         r, g, b = r
     if (r, g, b) == (0, 0, 0) or g == -1:
         return DeviceGray(r / 255)
@@ -263,15 +287,15 @@ explicitly set.</p>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.drawing_primitives.gray8"><code class="name flex">
-<span>def <span class="ident">gray8</span></span>(<span>g, a=None)</span>
+<span>def <span class="ident">gray8</span></span>(<span>g: int | float | decimal.Decimal,<br>a: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L275-L294" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L285-L304" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def gray8(g, a=None):
+<pre><code class="python">def gray8(g: Number, a: Optional[Number] = None) -&gt; DeviceGray:
     &#34;&#34;&#34;
     Produce a DeviceGray color from the given 8-bit gray value.
 
@@ -288,9 +312,9 @@ explicitly set.</p>
         ValueError: if any components are not in their valid interval.
     &#34;&#34;&#34;
     if a is not None:
-        a /= 255.0
+        a = float(a) / 255.0
 
-    return DeviceGray(g / 255.0, a)</code></pre>
+    return DeviceGray(float(g) / 255.0, a)</code></pre>
 </details>
 <div class="desc"><p>Produce a DeviceGray color from the given 8-bit gray value.</p>
 <h2 id="args">Args</h2>
@@ -310,48 +334,18 @@ explicitly set.</p>
 <dd>if any components are not in their valid interval.</dd>
 </dl></div>
 </dd>
-<dt id="fpdf.drawing_primitives.number_to_str"><code class="name flex">
-<span>def <span class="ident">number_to_str</span></span>(<span>number)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L53-L65" class="git-link" target="_blank">Browse git</a>
-</summary>
-<pre><code class="python">def number_to_str(number):
-    &#34;&#34;&#34;
-    Convert a decimal number to a minimal string representation (no trailing 0 or .).
-
-    Args:
-        number (Number): the number to be converted to a string.
-
-    Returns:
-        The number&#39;s string representation.
-    &#34;&#34;&#34;
-    # this approach tries to produce minimal representations of floating point numbers
-    # but can also produce &#34;-0&#34;.
-    return f&#34;{number:.4f}&#34;.rstrip(&#34;0&#34;).rstrip(&#34;.&#34;)</code></pre>
-</details>
-<div class="desc"><p>Convert a decimal number to a minimal string representation (no trailing 0 or .).</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>number</code></strong> :&ensp;<code>Number</code></dt>
-<dd>the number to be converted to a string.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>The number's string representation.</p></div>
-</dd>
 <dt id="fpdf.drawing_primitives.rgb8"><code class="name flex">
-<span>def <span class="ident">rgb8</span></span>(<span>r, g, b, a=None)</span>
+<span>def <span class="ident">rgb8</span></span>(<span>r: int | float | decimal.Decimal,<br>g: int | float | decimal.Decimal,<br>b: int | float | decimal.Decimal,<br>a: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L249-L272" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L257-L282" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def rgb8(r, g, b, a=None):
+<pre><code class="python">def rgb8(
+    r: Number, g: Number, b: Number, a: Optional[Number] = None
+) -&gt; DeviceGray | DeviceRGB:
     &#34;&#34;&#34;
     Produce a DeviceRGB color from the given 8-bit RGB values.
 
@@ -370,11 +364,11 @@ explicitly set.</p>
     &#34;&#34;&#34;
     if a is None:
         if r == g == b:
-            return DeviceGray(r / 255.0)
+            return DeviceGray(float(r) / 255.0)
     else:
-        a /= 255.0
+        a = float(a) / 255.0
 
-    return DeviceRGB(r / 255.0, g / 255.0, b / 255.0, a)</code></pre>
+    return DeviceRGB(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, a)</code></pre>
 </details>
 <div class="desc"><p>Produce a DeviceRGB color from the given 8-bit RGB values.</p>
 <h2 id="args">Args</h2>
@@ -404,67 +398,320 @@ explicitly set.</p>
 <dl>
 <dt id="fpdf.drawing_primitives.DeviceCMYK"><code class="flex name class">
 <span>class <span class="ident">DeviceCMYK</span></span>
-<span>(</span><span>c, m, y, k, a=None)</span>
+<span>(</span><span>c: int | float | decimal.Decimal,<br>m: int | float | decimal.Decimal,<br>y: int | float | decimal.Decimal,<br>k: int | float | decimal.Decimal,<br>a: int | float | decimal.Decimal | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L197-L228" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L200-L236" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class DeviceCMYK(
-    NamedTuple(
-        &#34;DeviceCMYK&#34;,
-        [
-            (&#34;c&#34;, Number),
-            (&#34;m&#34;, Number),
-            (&#34;y&#34;, Number),
-            (&#34;k&#34;, Number),
-            (&#34;a&#34;, Optional[Number]),
-        ],
-    )
-):
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
     &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
 
-    OPERATOR = &#34;k&#34;
-    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
 
-    def __new__(cls, c, m, y, k, a=None):
-        if a is not None:
-            check_range(a)
-
-        return super().__new__(
-            cls, check_range(c), check_range(m), check_range(y), check_range(k), a
-        )
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;c&#34;, float(check_range(c)))
+        object.__setattr__(self, &#34;m&#34;, float(check_range(m)))
+        object.__setattr__(self, &#34;y&#34;, float(check_range(y)))
+        object.__setattr__(self, &#34;k&#34;, float(check_range(k)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
 
     @property
-    def colors(self):
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;k&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float, float]:
         &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
-        return self[:-1]
+        return self.c, self.m, self.y, self.k
 
     def serialize(self) -&gt; str:
-        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;</code></pre>
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
 </details>
 <div class="desc"><p>A class representing a PDF DeviceCMYK color.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.drawing_primitives.DeviceCMYK.colors"><code class="name">prop <span class="ident">colors</span></code></dt>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.a"><code class="name">var <span class="ident">a</span> : float | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L222-L225" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L200-L236" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
+    &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
+
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;c&#34;, float(check_range(c)))
+        object.__setattr__(self, &#34;m&#34;, float(check_range(m)))
+        object.__setattr__(self, &#34;y&#34;, float(check_range(y)))
+        object.__setattr__(self, &#34;k&#34;, float(check_range(k)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;k&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float, float]:
+        &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+        return self.c, self.m, self.y, self.k
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The alpha color component (i.e. opacity). Must be <code>None</code> or in the interval [0, 1].</p>
+<p>An alpha value of 0 makes the color fully transparent, and a value of 1 makes it fully
+opaque. If <code>None</code>, the color will be interpreted as not specifying a particular
+transparency rather than specifying fully transparent or fully opaque.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.c"><code class="name">var <span class="ident">c</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L200-L236" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
+    &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
+
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;c&#34;, float(check_range(c)))
+        object.__setattr__(self, &#34;m&#34;, float(check_range(m)))
+        object.__setattr__(self, &#34;y&#34;, float(check_range(y)))
+        object.__setattr__(self, &#34;k&#34;, float(check_range(k)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;k&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float, float]:
+        &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+        return self.c, self.m, self.y, self.k
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The cyan color component. Must be in the interval [0, 1].</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.colors"><code class="name">prop <span class="ident">colors</span> : tuple[float, float, float, float]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L230-L233" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def colors(self):
+def colors(self) -&gt; tuple[float, float, float, float]:
     &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
-    return self[:-1]</code></pre>
+    return self.c, self.m, self.y, self.k</code></pre>
 </details>
 <div class="desc"><p>The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.k"><code class="name">var <span class="ident">k</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L200-L236" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
+    &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
+
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;c&#34;, float(check_range(c)))
+        object.__setattr__(self, &#34;m&#34;, float(check_range(m)))
+        object.__setattr__(self, &#34;y&#34;, float(check_range(y)))
+        object.__setattr__(self, &#34;k&#34;, float(check_range(k)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;k&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float, float]:
+        &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+        return self.c, self.m, self.y, self.k
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The black color component. Must be in the interval [0, 1].</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.m"><code class="name">var <span class="ident">m</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L200-L236" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
+    &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
+
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;c&#34;, float(check_range(c)))
+        object.__setattr__(self, &#34;m&#34;, float(check_range(m)))
+        object.__setattr__(self, &#34;y&#34;, float(check_range(y)))
+        object.__setattr__(self, &#34;k&#34;, float(check_range(k)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;k&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float, float]:
+        &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+        return self.c, self.m, self.y, self.k
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The magenta color component. Must be in the interval [0, 1].</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.operator"><code class="name">prop <span class="ident">operator</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L225-L228" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def operator(self) -&gt; str:
+    &#34;The PDF drawing operator used to specify this type of color.&#34;
+    return &#34;k&#34;</code></pre>
+</details>
+<div class="desc"><p>The PDF drawing operator used to specify this type of color.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.y"><code class="name">var <span class="ident">y</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L200-L236" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceCMYK:
+    &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
+
+    c: float
+    m: float
+    y: float
+    k: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        c: Number,
+        m: Number,
+        y: Number,
+        k: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;c&#34;, float(check_range(c)))
+        object.__setattr__(self, &#34;m&#34;, float(check_range(m)))
+        object.__setattr__(self, &#34;y&#34;, float(check_range(y)))
+        object.__setattr__(self, &#34;k&#34;, float(check_range(k)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;k&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float, float]:
+        &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+        return self.c, self.m, self.y, self.k
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The yellow color component. Must be in the interval [0, 1].</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -476,10 +723,10 @@ def colors(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L227-L228" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L235-L236" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
-    return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;</code></pre>
+    return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -487,78 +734,182 @@ def colors(self):
 </dd>
 <dt id="fpdf.drawing_primitives.DeviceGray"><code class="flex name class">
 <span>class <span class="ident">DeviceGray</span></span>
-<span>(</span><span>g, a=None)</span>
+<span>(</span><span>g: int | float | decimal.Decimal,<br>a: int | float | decimal.Decimal | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L145-L173" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L147-L179" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class DeviceGray(
-    NamedTuple(
-        &#34;DeviceGray&#34;,
-        [(&#34;g&#34;, Number), (&#34;a&#34;, Optional[Number])],
-    )
-):
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceGray:
     &#34;&#34;&#34;A class representing a PDF DeviceGray color.&#34;&#34;&#34;
 
-    OPERATOR = &#34;g&#34;
-    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+    g: float
+    a: Optional[float]
 
-    def __new__(cls, g, a=None):
-        if a is not None:
-            check_range(a)
-
-        return super().__new__(cls, check_range(g), a)
+    def __init__(
+        self,
+        g: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
 
     @property
-    def colors(self):
+    def operator(self) -&gt; str:
+        &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+        return &#34;g&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
         &#34;The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.&#34;
         return self.g, self.g, self.g
 
     @property
-    def colors255(self):
+    def colors255(self) -&gt; tuple[float, float, float]:
         &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
-        return tuple(255 * v for v in self.colors)
+        return 255 * self.g, 255 * self.g, 255 * self.g
 
     def serialize(self) -&gt; str:
-        return f&#34;{number_to_str(self.g)} {self.OPERATOR}&#34;</code></pre>
+        return f&#34;{number_to_str(self.g)} {self.operator}&#34;</code></pre>
 </details>
 <div class="desc"><p>A class representing a PDF DeviceGray color.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.drawing_primitives.DeviceGray.colors"><code class="name">prop <span class="ident">colors</span></code></dt>
+<dt id="fpdf.drawing_primitives.DeviceGray.a"><code class="name">var <span class="ident">a</span> : float | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L162-L165" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L147-L179" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceGray:
+    &#34;&#34;&#34;A class representing a PDF DeviceGray color.&#34;&#34;&#34;
+
+    g: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        g: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+        return &#34;g&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.&#34;
+        return self.g, self.g, self.g
+
+    @property
+    def colors255(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return 255 * self.g, 255 * self.g, 255 * self.g
+
+    def serialize(self) -&gt; str:
+        return f&#34;{number_to_str(self.g)} {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The alpha color component (i.e. opacity). Must be <code>None</code> or in the interval [0, 1].</p>
+<p>An alpha value of 0 makes the color fully transparent, and a value of 1 makes it fully
+opaque. If <code>None</code>, the color will be interpreted as not specifying a particular
+transparency rather than specifying fully transparent or fully opaque.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceGray.colors"><code class="name">prop <span class="ident">colors</span> : tuple[float, float, float]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L168-L171" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def colors(self):
+def colors(self) -&gt; tuple[float, float, float]:
     &#34;The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.&#34;
     return self.g, self.g, self.g</code></pre>
 </details>
 <div class="desc"><p>The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.</p></div>
 </dd>
-<dt id="fpdf.drawing_primitives.DeviceGray.colors255"><code class="name">prop <span class="ident">colors255</span></code></dt>
+<dt id="fpdf.drawing_primitives.DeviceGray.colors255"><code class="name">prop <span class="ident">colors255</span> : tuple[float, float, float]</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L167-L170" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L173-L176" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def colors255(self):
+def colors255(self) -&gt; tuple[float, float, float]:
     &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
-    return tuple(255 * v for v in self.colors)</code></pre>
+    return 255 * self.g, 255 * self.g, 255 * self.g</code></pre>
 </details>
 <div class="desc"><p>The color components as a tuple in order <code>(r, g, b)</code> with alpha omitted, in range 0-255.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceGray.g"><code class="name">var <span class="ident">g</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L147-L179" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceGray:
+    &#34;&#34;&#34;A class representing a PDF DeviceGray color.&#34;&#34;&#34;
+
+    g: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        g: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+        return &#34;g&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.&#34;
+        return self.g, self.g, self.g
+
+    @property
+    def colors255(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return 255 * self.g, 255 * self.g, 255 * self.g
+
+    def serialize(self) -&gt; str:
+        return f&#34;{number_to_str(self.g)} {self.operator}&#34;</code></pre>
+</details>
+<div class="desc"><p>The gray color component. Must be in the interval [0, 1].</p>
+<p>A value of 0 represents black and a value of 1 represents white.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceGray.operator"><code class="name">prop <span class="ident">operator</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L163-L166" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def operator(self) -&gt; str:
+    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+    return &#34;g&#34;</code></pre>
+</details>
+<div class="desc"><p>The PDF drawing operator used to specify this type of color.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -570,10 +921,10 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L172-L173" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L178-L179" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
-    return f&#34;{number_to_str(self.g)} {self.OPERATOR}&#34;</code></pre>
+    return f&#34;{number_to_str(self.g)} {self.operator}&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -581,20 +932,16 @@ def colors255(self):
 </dd>
 <dt id="fpdf.drawing_primitives.DeviceRGB"><code class="flex name class">
 <span>class <span class="ident">DeviceRGB</span></span>
-<span>(</span><span>r, g, b, a=None)</span>
+<span>(</span><span>r: int | float | decimal.Decimal,<br>g: int | float | decimal.Decimal,<br>b: int | float | decimal.Decimal,<br>a: int | float | decimal.Decimal | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L75-L125" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class DeviceRGB(
-    NamedTuple(
-        &#34;DeviceRGB&#34;,
-        [(&#34;r&#34;, Number), (&#34;g&#34;, Number), (&#34;b&#34;, Number), (&#34;a&#34;, Optional[Number])],
-    )
-):
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceRGB:
     &#34;&#34;&#34;A class representing a PDF DeviceRGB color.&#34;&#34;&#34;
 
     # This follows a common PDF drawing operator convention where the operand is upcased
@@ -611,30 +958,44 @@ def colors255(self):
     # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
     # in the current graphics state dictionary and does not exist as a standalone
     # directive.
-    OPERATOR = &#34;rg&#34;
-    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
 
-    def __new__(cls, r, g, b, a=None):
-        if a is not None:
-            check_range(a)
+    r: float
+    g: float
+    b: float
+    a: Optional[float]
 
-        return super().__new__(cls, check_range(r), check_range(g), check_range(b), a)
+    def __init__(
+        self,
+        r: Number,
+        g: Number,
+        b: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;r&#34;, float(check_range(r)))
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;b&#34;, float(check_range(b)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
 
     @property
-    def colors(self):
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;rg&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
         &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
-        return self[:-1]
+        return (self.r, self.g, self.b)
 
     @property
-    def colors255(self):
+    def colors255(self) -&gt; tuple[float, float, float]:
         &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
-        return tuple(255 * v for v in self.colors)
+        return (255 * self.r, 255 * self.g, 255 * self.b)
 
     def serialize(self) -&gt; str:
-        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;
 
     def is_achromatic(self) -&gt; bool:
-        # Treat tiny diffs as equal to avoid float noise
         return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9
 
     def to_gray(self) -&gt; &#34;DeviceGray&#34;:
@@ -642,39 +1003,336 @@ def colors255(self):
         return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
 </details>
 <div class="desc"><p>A class representing a PDF DeviceRGB color.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.drawing_primitives.DeviceRGB.colors"><code class="name">prop <span class="ident">colors</span></code></dt>
+<dt id="fpdf.drawing_primitives.DeviceRGB.a"><code class="name">var <span class="ident">a</span> : float | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L106-L109" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceRGB:
+    &#34;&#34;&#34;A class representing a PDF DeviceRGB color.&#34;&#34;&#34;
+
+    # This follows a common PDF drawing operator convention where the operand is upcased
+    # to apply to stroke and downcased to apply to fill.
+
+    # This could be more manually specified by  `CS`/`cs` to set the color space(e.g. to
+    # `/DeviceRGB`) and `SC`/`sc` to set the color parameters. The documentation isn&#39;t
+    # perfectly clear on this front, but it appears that these cannot be set in the
+    # current graphics state dictionary and instead is set in the current page resource
+    # dictionary. fpdf appears to only generate a single resource dictionary for the
+    # entire document, and even if it created one per page, it would still be a lot
+    # clunkier to try to use that.
+
+    # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
+    # in the current graphics state dictionary and does not exist as a standalone
+    # directive.
+
+    r: float
+    g: float
+    b: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        r: Number,
+        g: Number,
+        b: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;r&#34;, float(check_range(r)))
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;b&#34;, float(check_range(b)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;rg&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
+        return (self.r, self.g, self.b)
+
+    @property
+    def colors255(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return (255 * self.r, 255 * self.g, 255 * self.b)
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;
+
+    def is_achromatic(self) -&gt; bool:
+        return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9
+
+    def to_gray(self) -&gt; &#34;DeviceGray&#34;:
+        # sRGB luminance
+        return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
+</details>
+<div class="desc"><p>The alpha color component (i.e. opacity). Must be <code>None</code> or in the interval [0, 1].</p>
+<p>An alpha value of 0 makes the color fully transparent, and a value of 1 makes it fully
+opaque. If <code>None</code>, the color will be interpreted as not specifying a particular
+transparency rather than specifying fully transparent or fully opaque.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.b"><code class="name">var <span class="ident">b</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceRGB:
+    &#34;&#34;&#34;A class representing a PDF DeviceRGB color.&#34;&#34;&#34;
+
+    # This follows a common PDF drawing operator convention where the operand is upcased
+    # to apply to stroke and downcased to apply to fill.
+
+    # This could be more manually specified by  `CS`/`cs` to set the color space(e.g. to
+    # `/DeviceRGB`) and `SC`/`sc` to set the color parameters. The documentation isn&#39;t
+    # perfectly clear on this front, but it appears that these cannot be set in the
+    # current graphics state dictionary and instead is set in the current page resource
+    # dictionary. fpdf appears to only generate a single resource dictionary for the
+    # entire document, and even if it created one per page, it would still be a lot
+    # clunkier to try to use that.
+
+    # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
+    # in the current graphics state dictionary and does not exist as a standalone
+    # directive.
+
+    r: float
+    g: float
+    b: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        r: Number,
+        g: Number,
+        b: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;r&#34;, float(check_range(r)))
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;b&#34;, float(check_range(b)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;rg&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
+        return (self.r, self.g, self.b)
+
+    @property
+    def colors255(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return (255 * self.r, 255 * self.g, 255 * self.b)
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;
+
+    def is_achromatic(self) -&gt; bool:
+        return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9
+
+    def to_gray(self) -&gt; &#34;DeviceGray&#34;:
+        # sRGB luminance
+        return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
+</details>
+<div class="desc"><p>The blue color component. Must be in the interval [0, 1].</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.colors"><code class="name">prop <span class="ident">colors</span> : tuple[float, float, float]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L112-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def colors(self):
+def colors(self) -&gt; tuple[float, float, float]:
     &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
-    return self[:-1]</code></pre>
+    return (self.r, self.g, self.b)</code></pre>
 </details>
 <div class="desc"><p>The color components as a tuple in order <code>(r, g, b)</code> with alpha omitted, in range 0-1.</p></div>
 </dd>
-<dt id="fpdf.drawing_primitives.DeviceRGB.colors255"><code class="name">prop <span class="ident">colors255</span></code></dt>
+<dt id="fpdf.drawing_primitives.DeviceRGB.colors255"><code class="name">prop <span class="ident">colors255</span> : tuple[float, float, float]</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L111-L114" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L117-L120" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def colors255(self):
+def colors255(self) -&gt; tuple[float, float, float]:
     &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
-    return tuple(255 * v for v in self.colors)</code></pre>
+    return (255 * self.r, 255 * self.g, 255 * self.b)</code></pre>
 </details>
 <div class="desc"><p>The color components as a tuple in order <code>(r, g, b)</code> with alpha omitted, in range 0-255.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.g"><code class="name">var <span class="ident">g</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceRGB:
+    &#34;&#34;&#34;A class representing a PDF DeviceRGB color.&#34;&#34;&#34;
+
+    # This follows a common PDF drawing operator convention where the operand is upcased
+    # to apply to stroke and downcased to apply to fill.
+
+    # This could be more manually specified by  `CS`/`cs` to set the color space(e.g. to
+    # `/DeviceRGB`) and `SC`/`sc` to set the color parameters. The documentation isn&#39;t
+    # perfectly clear on this front, but it appears that these cannot be set in the
+    # current graphics state dictionary and instead is set in the current page resource
+    # dictionary. fpdf appears to only generate a single resource dictionary for the
+    # entire document, and even if it created one per page, it would still be a lot
+    # clunkier to try to use that.
+
+    # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
+    # in the current graphics state dictionary and does not exist as a standalone
+    # directive.
+
+    r: float
+    g: float
+    b: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        r: Number,
+        g: Number,
+        b: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;r&#34;, float(check_range(r)))
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;b&#34;, float(check_range(b)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;rg&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
+        return (self.r, self.g, self.b)
+
+    @property
+    def colors255(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return (255 * self.r, 255 * self.g, 255 * self.b)
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;
+
+    def is_achromatic(self) -&gt; bool:
+        return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9
+
+    def to_gray(self) -&gt; &#34;DeviceGray&#34;:
+        # sRGB luminance
+        return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
+</details>
+<div class="desc"><p>The green color component. Must be in the interval [0, 1].</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.operator"><code class="name">prop <span class="ident">operator</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L107-L110" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def operator(self) -&gt; str:
+    &#34;The PDF drawing operator used to specify this type of color.&#34;
+    return &#34;rg&#34;</code></pre>
+</details>
+<div class="desc"><p>The PDF drawing operator used to specify this type of color.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.r"><code class="name">var <span class="ident">r</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
+class DeviceRGB:
+    &#34;&#34;&#34;A class representing a PDF DeviceRGB color.&#34;&#34;&#34;
+
+    # This follows a common PDF drawing operator convention where the operand is upcased
+    # to apply to stroke and downcased to apply to fill.
+
+    # This could be more manually specified by  `CS`/`cs` to set the color space(e.g. to
+    # `/DeviceRGB`) and `SC`/`sc` to set the color parameters. The documentation isn&#39;t
+    # perfectly clear on this front, but it appears that these cannot be set in the
+    # current graphics state dictionary and instead is set in the current page resource
+    # dictionary. fpdf appears to only generate a single resource dictionary for the
+    # entire document, and even if it created one per page, it would still be a lot
+    # clunkier to try to use that.
+
+    # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
+    # in the current graphics state dictionary and does not exist as a standalone
+    # directive.
+
+    r: float
+    g: float
+    b: float
+    a: Optional[float]
+
+    def __init__(
+        self,
+        r: Number,
+        g: Number,
+        b: Number,
+        a: Optional[Number] = None,
+    ) -&gt; None:
+        # normalize everything to float for internal storage
+        object.__setattr__(self, &#34;r&#34;, float(check_range(r)))
+        object.__setattr__(self, &#34;g&#34;, float(check_range(g)))
+        object.__setattr__(self, &#34;b&#34;, float(check_range(b)))
+        object.__setattr__(self, &#34;a&#34;, float(check_range(a)) if a is not None else None)
+
+    @property
+    def operator(self) -&gt; str:
+        &#34;The PDF drawing operator used to specify this type of color.&#34;
+        return &#34;rg&#34;
+
+    @property
+    def colors(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
+        return (self.r, self.g, self.b)
+
+    @property
+    def colors255(self) -&gt; tuple[float, float, float]:
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return (255 * self.r, 255 * self.g, 255 * self.b)
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;
+
+    def is_achromatic(self) -&gt; bool:
+        return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9
+
+    def to_gray(self) -&gt; &#34;DeviceGray&#34;:
+        # sRGB luminance
+        return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
+</details>
+<div class="desc"><p>The red color component. Must be in the interval [0, 1].</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -686,10 +1344,9 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L119-L121" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L125-L126" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def is_achromatic(self) -&gt; bool:
-    # Treat tiny diffs as equal to avoid float noise
     return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9</code></pre>
 </details>
 <div class="desc"></div>
@@ -701,10 +1358,10 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L116-L117" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L122-L123" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
-    return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;</code></pre>
+    return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -715,7 +1372,7 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L123-L125" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L128-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def to_gray(self) -&gt; &#34;DeviceGray&#34;:
     # sRGB luminance
@@ -733,9 +1390,10 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L404-L618" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L438-L668" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class Point(NamedTuple):
+<pre><code class="python">@dataclass(frozen=True, slots=True)
+class Point:
     &#34;&#34;&#34;
     An x-y coordinate pair within the two-dimensional coordinate frame.
     &#34;&#34;&#34;
@@ -808,8 +1466,7 @@ def colors255(self):
         Returns:
             The scalar result of the distance computation.
         &#34;&#34;&#34;
-
-        return (self.x**2 + self.y**2) ** 0.5
+        return math.hypot(self.x, self.y)
 
     @force_document
     def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -859,7 +1516,7 @@ def colors255(self):
         return Point(x=-self.x, y=-self.y)
 
     @force_document
-    def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+    def __mul__(self, other: Number) -&gt; &#34;Point&#34;:
         &#34;&#34;&#34;
         Multiply a point by a scalar value.
 
@@ -871,11 +1528,14 @@ def colors255(self):
             A Point whose coordinates are the result of the multiplication.
         &#34;&#34;&#34;
         if isinstance(other, NumberClass):
-            return Point(self.x * other, self.y * other)
+            float_other = float(other)
+            return Point(self.x * float_other, self.y * float_other)
 
         return NotImplemented
 
-    __rmul__ = __mul__
+    @force_document
+    def __rmul__(self, other: Number) -&gt; &#34;Point&#34;:
+        return self.__mul__(other)
 
     @force_document
     def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -918,6 +1578,19 @@ def colors255(self):
             return Point(self.x // float(other), self.y // float(other))
 
         return NotImplemented
+
+    def __iter__(self) -&gt; Iterator[float]:
+        &#34;&#34;&#34;Iterate over point coordinates in (x, y) order.&#34;&#34;&#34;
+        yield self.x
+        yield self.y
+
+    def __len__(self) -&gt; int:
+        &#34;&#34;&#34;Length to mimic tuple-like behaviour for compatibility.&#34;&#34;&#34;
+        return 2
+
+    def __getitem__(self, idx: int) -&gt; float:
+        &#34;&#34;&#34;Indexable access to coordinates in (x, y) order.&#34;&#34;&#34;
+        return (self.x, self.y)[idx]
 
     # no __r(true|floor)div__ because division is not commutative!
 
@@ -952,10 +1625,6 @@ def colors255(self):
         return f&#34;(x={number_to_str(self.x)}, y={number_to_str(self.y)})&#34;</code></pre>
 </details>
 <div class="desc"><p>An x-y coordinate pair within the two-dimensional coordinate frame.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.drawing_primitives.Point.x"><code class="name">var <span class="ident">x</span> : float</code></dt>
@@ -963,9 +1632,10 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L404-L618" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L438-L668" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class Point(NamedTuple):
+<pre><code class="python">@dataclass(frozen=True, slots=True)
+class Point:
     &#34;&#34;&#34;
     An x-y coordinate pair within the two-dimensional coordinate frame.
     &#34;&#34;&#34;
@@ -1038,8 +1708,7 @@ def colors255(self):
         Returns:
             The scalar result of the distance computation.
         &#34;&#34;&#34;
-
-        return (self.x**2 + self.y**2) ** 0.5
+        return math.hypot(self.x, self.y)
 
     @force_document
     def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -1089,7 +1758,7 @@ def colors255(self):
         return Point(x=-self.x, y=-self.y)
 
     @force_document
-    def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+    def __mul__(self, other: Number) -&gt; &#34;Point&#34;:
         &#34;&#34;&#34;
         Multiply a point by a scalar value.
 
@@ -1101,11 +1770,14 @@ def colors255(self):
             A Point whose coordinates are the result of the multiplication.
         &#34;&#34;&#34;
         if isinstance(other, NumberClass):
-            return Point(self.x * other, self.y * other)
+            float_other = float(other)
+            return Point(self.x * float_other, self.y * float_other)
 
         return NotImplemented
 
-    __rmul__ = __mul__
+    @force_document
+    def __rmul__(self, other: Number) -&gt; &#34;Point&#34;:
+        return self.__mul__(other)
 
     @force_document
     def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -1148,6 +1820,19 @@ def colors255(self):
             return Point(self.x // float(other), self.y // float(other))
 
         return NotImplemented
+
+    def __iter__(self) -&gt; Iterator[float]:
+        &#34;&#34;&#34;Iterate over point coordinates in (x, y) order.&#34;&#34;&#34;
+        yield self.x
+        yield self.y
+
+    def __len__(self) -&gt; int:
+        &#34;&#34;&#34;Length to mimic tuple-like behaviour for compatibility.&#34;&#34;&#34;
+        return 2
+
+    def __getitem__(self, idx: int) -&gt; float:
+        &#34;&#34;&#34;Indexable access to coordinates in (x, y) order.&#34;&#34;&#34;
+        return (self.x, self.y)[idx]
 
     # no __r(true|floor)div__ because division is not commutative!
 
@@ -1188,9 +1873,10 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L404-L618" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L438-L668" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class Point(NamedTuple):
+<pre><code class="python">@dataclass(frozen=True, slots=True)
+class Point:
     &#34;&#34;&#34;
     An x-y coordinate pair within the two-dimensional coordinate frame.
     &#34;&#34;&#34;
@@ -1263,8 +1949,7 @@ def colors255(self):
         Returns:
             The scalar result of the distance computation.
         &#34;&#34;&#34;
-
-        return (self.x**2 + self.y**2) ** 0.5
+        return math.hypot(self.x, self.y)
 
     @force_document
     def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -1314,7 +1999,7 @@ def colors255(self):
         return Point(x=-self.x, y=-self.y)
 
     @force_document
-    def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+    def __mul__(self, other: Number) -&gt; &#34;Point&#34;:
         &#34;&#34;&#34;
         Multiply a point by a scalar value.
 
@@ -1326,11 +2011,14 @@ def colors255(self):
             A Point whose coordinates are the result of the multiplication.
         &#34;&#34;&#34;
         if isinstance(other, NumberClass):
-            return Point(self.x * other, self.y * other)
+            float_other = float(other)
+            return Point(self.x * float_other, self.y * float_other)
 
         return NotImplemented
 
-    __rmul__ = __mul__
+    @force_document
+    def __rmul__(self, other: Number) -&gt; &#34;Point&#34;:
+        return self.__mul__(other)
 
     @force_document
     def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -1373,6 +2061,19 @@ def colors255(self):
             return Point(self.x // float(other), self.y // float(other))
 
         return NotImplemented
+
+    def __iter__(self) -&gt; Iterator[float]:
+        &#34;&#34;&#34;Iterate over point coordinates in (x, y) order.&#34;&#34;&#34;
+        yield self.x
+        yield self.y
+
+    def __len__(self) -&gt; int:
+        &#34;&#34;&#34;Length to mimic tuple-like behaviour for compatibility.&#34;&#34;&#34;
+        return 2
+
+    def __getitem__(self, idx: int) -&gt; float:
+        &#34;&#34;&#34;Indexable access to coordinates in (x, y) order.&#34;&#34;&#34;
+        return (self.x, self.y)[idx]
 
     # no __r(true|floor)div__ because division is not commutative!
 
@@ -1418,7 +2119,7 @@ def colors255(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L480-L497" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L514-L531" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -1457,7 +2158,7 @@ the other point's x and y coordinates as distances.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L567-L586" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L604-L623" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -1501,7 +2202,7 @@ def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L590-L615" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L640-L665" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Point&#34;:
@@ -1549,16 +2250,16 @@ commutative)</p>
 <p>A Point whose coordinates are the result of applying the transform.</p></div>
 </dd>
 <dt id="fpdf.drawing_primitives.Point.__mul__"><code class="name flex">
-<span>def <span class="ident">__mul__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+<span>def <span class="ident">__mul__</span></span>(<span>self, other: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L527-L542" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L561-L577" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
-def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+def __mul__(self, other: Number) -&gt; &#34;Point&#34;:
     &#34;&#34;&#34;
     Multiply a point by a scalar value.
 
@@ -1570,7 +2271,8 @@ def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
         A Point whose coordinates are the result of the multiplication.
     &#34;&#34;&#34;
     if isinstance(other, NumberClass):
-        return Point(self.x * other, self.y * other)
+        float_other = float(other)
+        return Point(self.x * float_other, self.y * float_other)
 
     return NotImplemented</code></pre>
 </details>
@@ -1591,7 +2293,7 @@ coordinates.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L517-L525" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L551-L559" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __neg__(self) -&gt; &#34;Point&#34;:
@@ -1607,6 +2309,21 @@ def __neg__(self) -&gt; &#34;Point&#34;:
 <h2 id="returns">Returns</h2>
 <p>A Point whose coordinates are this points coordinates negated.</p></div>
 </dd>
+<dt id="fpdf.drawing_primitives.Point.__rmul__"><code class="name flex">
+<span>def <span class="ident">__rmul__</span></span>(<span>self, other: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L579-L581" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __rmul__(self, other: Number) -&gt; &#34;Point&#34;:
+    return self.__mul__(other)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.drawing_primitives.Point.__sub__"><code class="name flex">
 <span>def <span class="ident">__sub__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
 </code></dt>
@@ -1614,7 +2331,7 @@ def __neg__(self) -&gt; &#34;Point&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L499-L515" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L533-L549" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -1651,7 +2368,7 @@ def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L546-L565" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L583-L602" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -1695,7 +2412,7 @@ def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L438-L465" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L473-L500" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def angle(self, other: &#34;Point&#34;) -&gt; float:
     &#34;&#34;&#34;
@@ -1752,7 +2469,7 @@ between <code>(0, -1)</code> and <code>(1, 0)</code> is <code>+pi/2</code>).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L420-L436" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L455-L471" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def dot(self, other: &#34;Point&#34;) -&gt; float:
     &#34;&#34;&#34;
@@ -1793,7 +2510,7 @@ between <code>(0, -1)</code> and <code>(1, 0)</code> is <code>+pi/2</code>).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L467-L478" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L502-L512" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def mag(self) -&gt; float:
     &#34;&#34;&#34;
@@ -1805,8 +2522,7 @@ between <code>(0, -1)</code> and <code>(1, 0)</code> is <code>+pi/2</code>).</p>
     Returns:
         The scalar result of the distance computation.
     &#34;&#34;&#34;
-
-    return (self.x**2 + self.y**2) ** 0.5</code></pre>
+    return math.hypot(self.x, self.y)</code></pre>
 </details>
 <div class="desc"><p>Compute the Cartesian distance from this point to the origin</p>
 <p>This is the same as computing the magnitude of the vector represented by this
@@ -1821,7 +2537,7 @@ point.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L415-L418" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L450-L453" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self) -&gt; str:
     &#34;&#34;&#34;Render the point to the string `&#34;x y&#34;` for emitting to a PDF.&#34;&#34;&#34;
@@ -1840,9 +2556,10 @@ point.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L621-L1055" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L671-L1125" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class Transform(NamedTuple):
+<pre><code class="python">@dataclass(frozen=True, slots=True)
+class Transform:
     &#34;&#34;&#34;
     A representation of an affine transformation matrix for 2D shapes.
 
@@ -1913,6 +2630,23 @@ point.</p>
     # [x&#39; y&#39; 1] = [x y 1] [ C D 0 ]
     #                     [ E F 1 ]
     # The identity transform is 1 0 0 1 0 0
+
+    def __iter__(self) -&gt; Iterator[float]:
+        &#34;&#34;&#34;Iterate over matrix components in (a, b, c, d, e, f) order.&#34;&#34;&#34;
+        yield self.a
+        yield self.b
+        yield self.c
+        yield self.d
+        yield self.e
+        yield self.f
+
+    def __len__(self) -&gt; int:
+        &#34;&#34;&#34;Length to mimic tuple-like behaviour for compatibility.&#34;&#34;&#34;
+        return 6
+
+    def __getitem__(self, idx: int) -&gt; float:
+        &#34;&#34;&#34;Indexable access to matrix components in (a, b, c, d, e, f) order.&#34;&#34;&#34;
+        return (self.a, self.b, self.c, self.d, self.e, self.f)[idx]
 
     @classmethod
     def identity(cls) -&gt; &#34;Transform&#34;:
@@ -2218,8 +2952,10 @@ point.</p>
 
         return NotImplemented
 
-    # scalar multiplication is commutative
-    __rmul__ = __mul__
+    @force_document
+    def __rmul__(self, other: Number) -&gt; &#34;Transform&#34;:
+        # scalar multiplication is commutative
+        return self.__mul__(other)
 
     @force_document
     def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Transform&#34;:
@@ -2316,10 +3052,6 @@ specific point is pretty common,</p>
 <p>By convention, this class provides class method constructors following noun-ish
 naming (<code>translation</code>, <code>scaling</code>, <code>rotation</code>, <code>shearing</code>) and instance method
 manipulations following verb-ish naming (<code>translate</code>, <code>scale</code>, <code>rotate</code>, <code>shear</code>).</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.drawing_primitives.Transform.identity"><code class="name flex">
@@ -2454,7 +3186,7 @@ If omitted, defaults to the value of <code>ax</code>.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L1000-L1021" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L1070-L1091" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Transform&#34;:
@@ -2495,7 +3227,7 @@ def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Transform&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L973-L995" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L1041-L1063" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __mul__(self, other: Number) -&gt; &#34;Transform&#34;:
@@ -2530,6 +3262,22 @@ def __mul__(self, other: Number) -&gt; &#34;Transform&#34;:
 <h2 id="returns">Returns</h2>
 <p>A Transform with the modified parameters.</p></div>
 </dd>
+<dt id="fpdf.drawing_primitives.Transform.__rmul__"><code class="name flex">
+<span>def <span class="ident">__rmul__</span></span>(<span>self, other: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L1065-L1068" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __rmul__(self, other: Number) -&gt; &#34;Transform&#34;:
+    # scalar multiplication is commutative
+    return self.__mul__(other)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.drawing_primitives.Transform.about"><code class="name flex">
 <span>def <span class="ident">about</span></span>(<span>self, x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
 </code></dt>
@@ -2537,7 +3285,7 @@ def __mul__(self, other: Number) -&gt; &#34;Transform&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L929-L948" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L997-L1016" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def about(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2586,7 +3334,7 @@ mutating self.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L950-L971" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L1018-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def inverse(self) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2627,7 +3375,7 @@ mutating self.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L1023-L1038" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L1093-L1108" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, last_item: &#34;Renderable&#34;) -&gt; tuple[str, &#34;Renderable&#34;]:
     &#34;&#34;&#34;
@@ -2662,7 +3410,7 @@ mutating self.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L868-L883" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L936-L951" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rotate(self, theta: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2703,7 +3451,7 @@ values represent clockwise rotations.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L885-L901" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L953-L969" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rotate_d(self, theta_d: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2746,7 +3494,7 @@ values represent clockwise rotations.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L1048-L1055" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L1118-L1125" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def row_norms(self) -&gt; tuple[float, float]:
     &#34;&#34;&#34;
@@ -2769,7 +3517,7 @@ bounding boxes to account for stroke width under the CTM.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L848-L866" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L916-L934" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def scale(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2817,7 +3565,7 @@ defaults to the value provided to the <code>x</code> argument.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L903-L919" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L971-L987" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def shear(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2861,7 +3609,7 @@ this defaults to the value provided to the <code>x</code> argument.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L921-L923" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L989-L991" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def skew(self, ax: Number = 0, ay: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;Compose with a skew (radians).&#34;&#34;&#34;
@@ -2876,7 +3624,7 @@ this defaults to the value provided to the <code>x</code> argument.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L925-L927" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L993-L995" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def skew_d(self, ax_d: Number = 0, ay_d: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;Compose with a skew (degrees).&#34;&#34;&#34;
@@ -2891,7 +3639,7 @@ this defaults to the value provided to the <code>x</code> argument.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/drawing_primitives.py#L831-L846" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/drawing_primitives.py#L899-L914" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def translate(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -2949,7 +3697,6 @@ mutating self.</p>
 <li><code><a title="fpdf.drawing_primitives.color_from_rgb_string" href="#fpdf.drawing_primitives.color_from_rgb_string">color_from_rgb_string</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.convert_to_device_color" href="#fpdf.drawing_primitives.convert_to_device_color">convert_to_device_color</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.gray8" href="#fpdf.drawing_primitives.gray8">gray8</a></code></li>
-<li><code><a title="fpdf.drawing_primitives.number_to_str" href="#fpdf.drawing_primitives.number_to_str">number_to_str</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.rgb8" href="#fpdf.drawing_primitives.rgb8">rgb8</a></code></li>
 </ul>
 </li>
@@ -2957,25 +3704,39 @@ mutating self.</p>
 <ul>
 <li>
 <h4><code><a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.a" href="#fpdf.drawing_primitives.DeviceCMYK.a">a</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.c" href="#fpdf.drawing_primitives.DeviceCMYK.c">c</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceCMYK.colors" href="#fpdf.drawing_primitives.DeviceCMYK.colors">colors</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.k" href="#fpdf.drawing_primitives.DeviceCMYK.k">k</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.m" href="#fpdf.drawing_primitives.DeviceCMYK.m">m</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.operator" href="#fpdf.drawing_primitives.DeviceCMYK.operator">operator</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceCMYK.serialize" href="#fpdf.drawing_primitives.DeviceCMYK.serialize">serialize</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.y" href="#fpdf.drawing_primitives.DeviceCMYK.y">y</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="fpdf.drawing_primitives.DeviceGray.a" href="#fpdf.drawing_primitives.DeviceGray.a">a</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceGray.colors" href="#fpdf.drawing_primitives.DeviceGray.colors">colors</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceGray.colors255" href="#fpdf.drawing_primitives.DeviceGray.colors255">colors255</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceGray.g" href="#fpdf.drawing_primitives.DeviceGray.g">g</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceGray.operator" href="#fpdf.drawing_primitives.DeviceGray.operator">operator</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceGray.serialize" href="#fpdf.drawing_primitives.DeviceGray.serialize">serialize</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.a" href="#fpdf.drawing_primitives.DeviceRGB.a">a</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.b" href="#fpdf.drawing_primitives.DeviceRGB.b">b</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceRGB.colors" href="#fpdf.drawing_primitives.DeviceRGB.colors">colors</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceRGB.colors255" href="#fpdf.drawing_primitives.DeviceRGB.colors255">colors255</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.g" href="#fpdf.drawing_primitives.DeviceRGB.g">g</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceRGB.is_achromatic" href="#fpdf.drawing_primitives.DeviceRGB.is_achromatic">is_achromatic</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.operator" href="#fpdf.drawing_primitives.DeviceRGB.operator">operator</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.r" href="#fpdf.drawing_primitives.DeviceRGB.r">r</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceRGB.serialize" href="#fpdf.drawing_primitives.DeviceRGB.serialize">serialize</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.DeviceRGB.to_gray" href="#fpdf.drawing_primitives.DeviceRGB.to_gray">to_gray</a></code></li>
 </ul>
@@ -2988,6 +3749,7 @@ mutating self.</p>
 <li><code><a title="fpdf.drawing_primitives.Point.__matmul__" href="#fpdf.drawing_primitives.Point.__matmul__">__matmul__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Point.__mul__" href="#fpdf.drawing_primitives.Point.__mul__">__mul__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Point.__neg__" href="#fpdf.drawing_primitives.Point.__neg__">__neg__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__rmul__" href="#fpdf.drawing_primitives.Point.__rmul__">__rmul__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Point.__sub__" href="#fpdf.drawing_primitives.Point.__sub__">__sub__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Point.__truediv__" href="#fpdf.drawing_primitives.Point.__truediv__">__truediv__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Point.angle" href="#fpdf.drawing_primitives.Point.angle">angle</a></code></li>
@@ -3003,6 +3765,7 @@ mutating self.</p>
 <ul class="two-column">
 <li><code><a title="fpdf.drawing_primitives.Transform.__matmul__" href="#fpdf.drawing_primitives.Transform.__matmul__">__matmul__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Transform.__mul__" href="#fpdf.drawing_primitives.Transform.__mul__">__mul__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.__rmul__" href="#fpdf.drawing_primitives.Transform.__rmul__">__rmul__</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Transform.about" href="#fpdf.drawing_primitives.Transform.about">about</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Transform.identity" href="#fpdf.drawing_primitives.Transform.identity">identity</a></code></li>
 <li><code><a title="fpdf.drawing_primitives.Transform.inverse" href="#fpdf.drawing_primitives.Transform.inverse">inverse</a></code></li>

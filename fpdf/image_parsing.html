@@ -45,49 +45,55 @@ el.replaceWith(d);
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.image_parsing.ccitt_payload_location_from_pil"><code class="name flex">
-<span>def <span class="ident">ccitt_payload_location_from_pil</span></span>(<span>img)</span>
+<span>def <span class="ident">ccitt_payload_location_from_pil</span></span>(<span>img: PILImage) ‑> tuple[int, int]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L469-L490" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L538-L565" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def ccitt_payload_location_from_pil(img):
+<pre><code class="python">def ccitt_payload_location_from_pil(img: &#34;PILImage&#34;) -&gt; tuple[int, int]:
     &#34;&#34;&#34;
     returns the byte offset and length of the CCITT payload in the original TIFF data
     &#34;&#34;&#34;
     # assert(img.info[&#34;compression&#34;] == &#34;group4&#34;)
 
     # Read the TIFF tags to find the offset(s) of the compressed data strips.
-    strip_offsets = img.tag_v2[TiffImagePlugin.STRIPOFFSETS]
-    strip_bytes = img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]
+    strip_offsets = img.tag_v2[TiffImagePlugin.STRIPOFFSETS]  # type: ignore[attr-defined]
+    strip_bytes = img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]  # type: ignore[attr-defined]
 
     # PIL always seems to create a single strip even for very large TIFFs when
     # it saves images, so assume we only have to read a single strip.
     # A test ~10 GPixel image was still encoded as a single strip. Just to be
     # safe check throw an error if there is more than one offset.
-    if len(strip_offsets) != 1 or len(strip_bytes) != 1:
+    if (
+        len(strip_offsets) != 1  # pyright: ignore[reportUnknownArgumentType]
+        or len(strip_bytes) != 1  # pyright: ignore[reportUnknownArgumentType]
+    ):  # pyright: ignore[reportUnknownArgumentType]
         raise NotImplementedError(
             &#34;Transcoding multiple strips not supported by the PDF format&#34;
         )
 
-    (offset,), (length,) = strip_offsets, strip_bytes
+    (offset,), (length,) = (  # pyright: ignore[reportUnknownVariableType]
+        strip_offsets,
+        strip_bytes,
+    )  # pyright: ignore[reportUnknownVariableType]
 
-    return offset, length</code></pre>
+    return offset, length  # pyright: ignore[reportUnknownVariableType]</code></pre>
 </details>
 <div class="desc"><p>returns the byte offset and length of the CCITT payload in the original TIFF data</p></div>
 </dd>
 <dt id="fpdf.image_parsing.clear_table"><code class="name flex">
-<span>def <span class="ident">clear_table</span></span>(<span>)</span>
+<span>def <span class="ident">clear_table</span></span>(<span>) ‑> tuple[dict[bytes, int], int, int, int]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L649-L659" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L728-L738" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def clear_table():
+<pre><code class="python">def clear_table() -&gt; tuple[dict[bytes, int], int, int, int]:
     &#34;&#34;&#34;
     Reset the encoding table and coding state to initial conditions.
 
@@ -102,15 +108,20 @@ el.replaceWith(d);
 <div class="desc"><p>Reset the encoding table and coding state to initial conditions.</p></div>
 </dd>
 <dt id="fpdf.image_parsing.get_img_info"><code class="name flex">
-<span>def <span class="ident">get_img_info</span></span>(<span>filename, img=None, image_filter='AUTO', dims=None)</span>
+<span>def <span class="ident">get_img_info</span></span>(<span>filename: str | <class 'BinaryIO'> | pathlib.Path,<br>img: str | bytes | <class 'BinaryIO'> | PILImage | pathlib.Path | None = None,<br>image_filter: Literal['AUTO', 'FlateDecode', 'DCTDecode', 'JPXDecode', 'LZWDecode', 'CCITTFaxDecode'] = 'AUTO',<br>dims: tuple[float, float] | None = None) ‑> <a title="fpdf.image_datastructures.RasterImageInfo" href="image_datastructures.html#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L221-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L279-L510" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_img_info(filename, img=None, image_filter=&#34;AUTO&#34;, dims=None):
+<pre><code class="python">def get_img_info(
+    filename: Union[str, BinaryIO, Path],
+    img: Union[&#34;PILImage&#34;, bytes, BinaryIO, Path, str, None] = None,
+    image_filter: ImageFilter = &#34;AUTO&#34;,
+    dims: Optional[tuple[float, float]] = None,
+) -&gt; RasterImageInfo:
     &#34;&#34;&#34;
     Args:
         filename: in a format that can be passed to load_image
@@ -125,20 +136,25 @@ el.replaceWith(d);
     # Flag to check whether a cmyk image is jpeg or not, if set to True the decode array
     # is inverted in output.py
     jpeg_inverted = False
-    img_raw_data = None
+    img_raw_data: Optional[BinaryIO] = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
         img = Image.open(img_raw_data)
         is_pil_img = False
-    elif not isinstance(img, Image.Image):
+    elif not _is_pil_image(img):
         keep_bytes_io_open = isinstance(img, BytesIO)
-        img_raw_data = BytesIO(img) if isinstance(img, bytes) else img
+        if isinstance(img, bytes):
+            img_raw_data = BytesIO(img)
+        else:
+            img_raw_data = img  # type: ignore[assignment]
+        assert img_raw_data is not None
         img = Image.open(img_raw_data)
         is_pil_img = False
+    assert _is_pil_image(img)
 
     img_altered = False
     if dims:
-        img = img.resize(dims, resample=RESAMPLE)
+        img = img.resize(dims, resample=RESAMPLE)  # type: ignore[arg-type]
         img_altered = True
 
     if image_filter == &#34;AUTO&#34;:
@@ -206,10 +222,10 @@ el.replaceWith(d);
             img.format == &#34;TIFF&#34;
             and image_filter == &#34;CCITTFaxDecode&#34;
             and img.info[&#34;compression&#34;] == &#34;group4&#34;
-            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
-            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1
+            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1  # type: ignore[attr-defined]
+            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1  # type: ignore[attr-defined]
         ):
-            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
+            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]  # type: ignore[attr-defined]
             inverted = False
             if photo == 0:
                 inverted = True
@@ -219,8 +235,8 @@ el.replaceWith(d);
                 )
             offset, length = ccitt_payload_location_from_pil(img)
             img_raw_data.seek(offset)
-            ccittrawdata = img_raw_data.read(length)
-            fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)
+            ccittrawdata: bytes | bytearray = img_raw_data.read(length)
+            fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)  # type: ignore[attr-defined]
             if fillorder is None or fillorder == 1:
                 # no FillOrder or msb-to-lsb: nothing to do
                 pass
@@ -270,7 +286,7 @@ el.replaceWith(d);
     elif img.mode == &#34;P&#34;:
         dpn, bpc, colspace = 1, 8, &#34;Indexed&#34;
         info[&#34;data&#34;] = _to_data(img, image_filter)
-        info[&#34;pal&#34;] = img.palette.palette
+        info[&#34;pal&#34;] = img.palette.palette if img.palette is not None else None
 
         # check if the P image has transparency
         if img.info.get(&#34;transparency&#34;, None) is not None and image_filter not in (
@@ -283,7 +299,7 @@ el.replaceWith(d);
             )
     elif img.mode == &#34;PA&#34;:
         dpn, bpc, colspace = 1, 8, &#34;Indexed&#34;
-        info[&#34;pal&#34;] = img.palette.palette
+        info[&#34;pal&#34;] = img.palette.palette if img.palette is not None else None
         alpha_channel = slice(1, None, 2)
         info[&#34;data&#34;] = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img) and image_filter not in (
@@ -314,7 +330,7 @@ el.replaceWith(d);
 
     if not is_pil_img:
         if keep_bytes_io_open:
-            img.fp = None  # cf. issue #881
+            img.fp = None
         else:
             img.close()
 
@@ -344,16 +360,20 @@ el.replaceWith(d);
 </dl></div>
 </dd>
 <dt id="fpdf.image_parsing.get_svg_info"><code class="name flex">
-<span>def <span class="ident">get_svg_info</span></span>(<span>filename, img, image_cache)</span>
+<span>def <span class="ident">get_svg_info</span></span>(<span>filename: str,<br>img: <class 'BinaryIO'>,<br>image_cache: <a title="fpdf.image_datastructures.ImageCache" href="image_datastructures.html#fpdf.image_datastructures.ImageCache">ImageCache</a>) ‑> tuple[str, <a title="fpdf.svg.SVGObject" href="svg.html#fpdf.svg.SVGObject">SVGObject</a>, <a title="fpdf.image_datastructures.VectorImageInfo" href="image_datastructures.html#fpdf.image_datastructures.VectorImageInfo">VectorImageInfo</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L207-L218" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L261-L276" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_svg_info(filename, img, image_cache):
-    svg = SVGObject(img.getvalue(), image_cache=image_cache)
+<pre><code class="python">def get_svg_info(
+    filename: str, img: BinaryIO, image_cache: ImageCache
+) -&gt; tuple[str, SVGObject, VectorImageInfo]:
+    img.seek(0)
+    svg_data = img.read()
+    svg = SVGObject(svg_data, image_cache=image_cache)
     if svg.viewbox:
         _, _, w, h = svg.viewbox
     else:
@@ -368,22 +388,23 @@ el.replaceWith(d);
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.image_parsing.is_iccp_valid"><code class="name flex">
-<span>def <span class="ident">is_iccp_valid</span></span>(<span>iccp, filename)</span>
+<span>def <span class="ident">is_iccp_valid</span></span>(<span>iccp: bytes, filename: str | pathlib.Path) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L189-L204" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L242-L258" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def is_iccp_valid(iccp, filename):
+<pre><code class="python">@no_type_check
+def is_iccp_valid(iccp: bytes, filename: str | Path) -&gt; bool:
     &#34;Checks the validity of an ICC profile&#34;
     try:
-        profile = ImageCms.getOpenProfile(BytesIO(iccp))
+        profile: &#34;ImageCmsProfile&#34; = ImageCms.getOpenProfile(BytesIO(iccp))
     except ImageCms.PyCMSError:
         LOGGER.info(&#34;Invalid ICC Profile in file %s&#34;, filename)
         return False
-    color_space = profile.profile.xcolor_space.strip()
+    color_space = str(profile.profile.xcolor_space).strip()
     if color_space not in (&#34;GRAY&#34;, &#34;RGB&#34;):
         LOGGER.info(
             &#34;Unsupported color space %s in ICC Profile of file %s - cf. issue #711&#34;,
@@ -396,23 +417,26 @@ el.replaceWith(d);
 <div class="desc"><p>Checks the validity of an ICC profile</p></div>
 </dd>
 <dt id="fpdf.image_parsing.load_image"><code class="name flex">
-<span>def <span class="ident">load_image</span></span>(<span>filename)</span>
+<span>def <span class="ident">load_image</span></span>(<span>filename: str | <class 'BinaryIO'> | pathlib.Path) ‑> <class 'BinaryIO'></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L156-L176" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L206-L229" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def load_image(filename):
+<pre><code class="python">def load_image(filename: str | Path | BinaryIO) -&gt; BinaryIO:
     &#34;&#34;&#34;
     This method is used to load external resources, such as images.
     It is automatically called when resource added to document by `fpdf.fpdf.FPDF.image()`.
     It always return a BytesIO buffer.
     &#34;&#34;&#34;
-    # if a bytesio instance is passed in, use it as is.
-    if isinstance(filename, BytesIO):
+    # if a file-like object is passed in, use it directly or copy it into a BytesIO buffer
+    if isinstance(filename, (BytesIO, io.BufferedIOBase, BinaryIO)):
         return filename
+    if hasattr(filename, &#34;read&#34;) and not isinstance(filename, (str, Path)):
+        # Copy other file-like objects into a BytesIO so downstream code can seek/read freely
+        return BytesIO(filename.read())
     if isinstance(filename, Path):
         filename = str(filename)
     # by default loading from network is allowed for all images
@@ -431,15 +455,15 @@ It is automatically called when resource added to document by <code><a title="fp
 It always return a BytesIO buffer.</p></div>
 </dd>
 <dt id="fpdf.image_parsing.pack_codes_into_bytes"><code class="name flex">
-<span>def <span class="ident">pack_codes_into_bytes</span></span>(<span>codes)</span>
+<span>def <span class="ident">pack_codes_into_bytes</span></span>(<span>codes: Iterable[int]) ‑> bytes</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L606-L646" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L685-L725" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def pack_codes_into_bytes(codes):
+<pre><code class="python">def pack_codes_into_bytes(codes: Iterable[int]) -&gt; bytes:
     &#34;&#34;&#34;
     Convert the list of result codes into a continuous byte stream, with codes packed as per the code bit-width.
     The bit-width starts at 9 bits and expands as needed.
@@ -485,15 +509,23 @@ It always return a BytesIO buffer.</p></div>
 The bit-width starts at 9 bits and expands as needed.</p></div>
 </dd>
 <dt id="fpdf.image_parsing.preload_image"><code class="name flex">
-<span>def <span class="ident">preload_image</span></span>(<span>image_cache: <a title="fpdf.image_datastructures.ImageCache" href="image_datastructures.html#fpdf.image_datastructures.ImageCache">ImageCache</a>,<br>name,<br>dims=None)</span>
+<span>def <span class="ident">preload_image</span></span>(<span>image_cache: <a title="fpdf.image_datastructures.ImageCache" href="image_datastructures.html#fpdf.image_datastructures.ImageCache">ImageCache</a>,<br>name: str | bytes | <class 'BinaryIO'> | PILImage | pathlib.Path | None,<br>dims: tuple[float, float] | None = None) ‑> tuple[str, <a title="fpdf.svg.SVGObject" href="svg.html#fpdf.svg.SVGObject">SVGObject</a> | Any | bytes | <class 'BinaryIO'> | pathlib.Path | None, <a title="fpdf.image_datastructures.RasterImageInfo" href="image_datastructures.html#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a> | <a title="fpdf.image_datastructures.VectorImageInfo" href="image_datastructures.html#fpdf.image_datastructures.VectorImageInfo">VectorImageInfo</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L81-L149" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L110-L195" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def preload_image(image_cache: ImageCache, name, dims=None):
+<pre><code class="python">def preload_image(
+    image_cache: ImageCache,
+    name: ImageType,
+    dims: Optional[tuple[float, float]] = None,
+) -&gt; tuple[
+    str,
+    Union[SVGObject, &#34;PILImage&#34;, bytes, BinaryIO, Path, None],
+    RasterImageInfo | VectorImageInfo,
+]:
     &#34;&#34;&#34;
     Read an image and load it into memory.
 
@@ -506,62 +538,71 @@ The bit-width starts at 9 bits and expands as needed.</p></div>
         image_cache: an `ImageCache` instance, usually the `.image_cache` attribute of a `FPDF` instance.
         name: either a string representing a file path to an image, an URL to an image,
             an io.BytesIO, or a instance of `PIL.Image.Image`.
-        dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+        dims (tuple[int, int]): optional dimensions as a tuple (width, height) to resize the image
             (raster only) before storing it in the PDF.
 
     Returns: A tuple, consisting of 3 values: the name, the image data,
         and an instance of a subclass of `ImageInfo`.
     &#34;&#34;&#34;
     # Identify and load SVG data:
-    if str(name).endswith(&#34;.svg&#34;):
+    if isinstance(name, (str, Path)) and str(name).endswith(&#34;.svg&#34;):
         try:
-            return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
+            return get_svg_info(
+                str(name), load_image(str(name)), image_cache=image_cache
+            )
         except Exception as error:
             raise ValueError(f&#34;Could not parse file: {name}&#34;) from error
     if isinstance(name, bytes) and _is_svg(name.strip()):
-        return get_svg_info(name, io.BytesIO(name), image_cache=image_cache)
+        return get_svg_info(&#34;vector_image&#34;, io.BytesIO(name), image_cache=image_cache)
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
         return get_svg_info(&#34;vector_image&#34;, name, image_cache=image_cache)
 
     # Load raster data.
+    img: Union[&#34;PILImage&#34;, bytes, BinaryIO, Path, None]
+    raster_name: str
     if isinstance(name, str):
-        img = None
-    elif isinstance(name, Image.Image):
+        raster_name, img = name, None
+    elif _is_pil_image(name):
         bytes_ = name.tobytes()
         img_hash = hashlib.new(&#34;md5&#34;, usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
-        name, img = img_hash.hexdigest(), name
+        raster_name, img = img_hash.hexdigest(), name
     elif isinstance(name, (bytes, io.BytesIO)):
         bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
         bytes_ = bytes_.strip()
         img_hash = hashlib.new(&#34;md5&#34;, usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
-        name, img = img_hash.hexdigest(), name
+        raster_name, img = img_hash.hexdigest(), name
     else:
-        name, img = str(name), name
-    info = image_cache.images.get(name)
-    if info:
-        info[&#34;usages&#34;] += 1
+        raster_name, img = str(name), None
+    info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
+    if info is not None:
+        info[&#34;usages&#34;] = info[&#34;usages&#34;] + 1  # type: ignore[operator]
     else:
-        info = get_img_info(name, img, image_cache.image_filter, dims)
+        info = get_img_info(
+            raster_name,
+            img,
+            image_cache.image_filter,
+            dims,
+        )
         info[&#34;i&#34;] = len(image_cache.images) + 1
         info[&#34;usages&#34;] = 1
         info[&#34;iccp_i&#34;] = None
         iccp = info.get(&#34;iccp&#34;)
-        if iccp:
+        if iccp is not None:
             LOGGER.debug(
                 &#34;ICC profile found for image %s - It will be inserted in the PDF document&#34;,
-                name,
+                raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info[&#34;iccp_i&#34;] = image_cache.icc_profiles[iccp]
+                info[&#34;iccp_i&#34;] = image_cache.icc_profiles[iccp]  # type: ignore[index]
             else:
                 iccp_i = len(image_cache.icc_profiles)
-                image_cache.icc_profiles[iccp] = iccp_i
+                image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
                 info[&#34;iccp_i&#34;] = iccp_i
             info[&#34;iccp&#34;] = None
-        image_cache.images[name] = info
-    return name, img, info</code></pre>
+        image_cache.images[raster_name] = info
+    return raster_name, img, info</code></pre>
 </details>
 <div class="desc"><p>Read an image and load it into memory.</p>
 <p>For raster images: following this call, the image is inserted in <code>image_cache.images</code>,
@@ -574,7 +615,7 @@ and following calls to <code><a title="fpdf.fpdf.FPDF.image" href="fpdf.html#fpd
 <dt><strong><code>name</code></strong></dt>
 <dd>either a string representing a file path to an image, an URL to an image,
 an io.BytesIO, or a instance of <code>PIL.Image.Image</code>.</dd>
-<dt><strong><code>dims</code></strong> :&ensp;<code>Tuple[float]</code></dt>
+<dt><strong><code>dims</code></strong> :&ensp;<code>tuple[int, int]</code></dt>
 <dd>optional dimensions as a tuple (width, height) to resize the image
 (raster only) before storing it in the PDF.</dd>
 </dl>
@@ -582,15 +623,15 @@ an io.BytesIO, or a instance of <code>PIL.Image.Image</code>.</dd>
 and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 </dd>
 <dt id="fpdf.image_parsing.transcode_monochrome"><code class="name flex">
-<span>def <span class="ident">transcode_monochrome</span></span>(<span>img)</span>
+<span>def <span class="ident">transcode_monochrome</span></span>(<span>img: PILImage) ‑> bytes</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L493-L543" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L568-L618" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def transcode_monochrome(img):
+<pre><code class="python">def transcode_monochrome(img: &#34;PILImage&#34;) -&gt; bytes:
     &#34;&#34;&#34;
     Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
 
@@ -620,7 +661,7 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
         # well
         pillow__getitem__ = TiffImagePlugin.ImageFileDirectory_v2.__getitem__
 
-        def __getitem__(self, tag):
+        def __getitem__(self: Any, tag: int) -&gt; object:
             overrides = {
                 TiffImagePlugin.ROWSPERSTRIP: img.size[1],
                 TiffImagePlugin.STRIPBYTECOUNTS: [tmp_strip_size],
@@ -657,7 +698,7 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L34-L37" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L62-L65" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class ImageSettings:
@@ -675,32 +716,33 @@ class ImageSettings:
 </dd>
 <dt id="fpdf.image_parsing.temp_attr"><code class="flex name class">
 <span>class <span class="ident">temp_attr</span></span>
-<span>(</span><span>obj, field, value)</span>
+<span>(</span><span>obj: Any, field: str, value: Any)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/image_parsing.py#L445-L466" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/image_parsing.py#L513-L535" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class temp_attr:
     &#34;&#34;&#34;
     temporary change the attribute of an object using a context manager
     &#34;&#34;&#34;
 
-    def __init__(self, obj, field, value):
+    def __init__(self, obj: Any, field: str, value: Any):
         self.obj = obj
         self.field = field
         self.value = value
-
-    def __enter__(self):
         self.exists = False
+        self.old_value: Any = None
+
+    def __enter__(self) -&gt; None:
         if hasattr(self.obj, self.field):
             self.exists = True
             self.old_value = getattr(self.obj, self.field)
         setattr(self.obj, self.field, self.value)
 
-    def __exit__(self, exctype, excinst, exctb):
+    def __exit__(self, exctype: Any, excinst: Any, exctb: Any) -&gt; None:
         if self.exists:
             setattr(self.obj, self.field, self.old_value)
         else:

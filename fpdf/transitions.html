@@ -49,23 +49,27 @@ el.replaceWith(d);
 <dl>
 <dt id="fpdf.transitions.BlindsTransition"><code class="flex name class">
 <span>class <span class="ident">BlindsTransition</span></span>
-<span>(</span><span>dimension)</span>
+<span>(</span><span>dimension: str)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L30-L39" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L42-L55" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BlindsTransition(Transition):
-    def __init__(self, dimension):
+    def __init__(self, dimension: str) -&gt; None:
         if dimension not in (&#34;H&#34;, &#34;V&#34;):
             raise ValueError(
                 f&#34;Unsupported dimension &#39;{dimension}&#39;, must be H(horizontal) or V(ertical)&#34;
             )
         self.dimension = dimension
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Blinds /DM /{self.dimension}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -78,15 +82,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.BlindsTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L38-L39" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L50-L55" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Blinds /DM /{self.dimension}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -95,23 +103,27 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.BoxTransition"><code class="flex name class">
 <span>class <span class="ident">BoxTransition</span></span>
-<span>(</span><span>direction)</span>
+<span>(</span><span>direction: str)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L42-L51" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L58-L71" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BoxTransition(Transition):
-    def __init__(self, direction):
+    def __init__(self, direction: str) -&gt; None:
         if direction not in (&#34;I&#34;, &#34;O&#34;):
             raise ValueError(
                 f&#34;Unsupported direction &#39;{direction}&#39;, must be I(nward) or O(utward)&#34;
             )
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Blinds /M /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -124,15 +136,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.BoxTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L50-L51" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L66-L71" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Blinds /M /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -141,21 +157,25 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.CoverTransition"><code class="flex name class">
 <span>class <span class="ident">CoverTransition</span></span>
-<span>(</span><span>direction)</span>
+<span>(</span><span>direction: int)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L110-L117" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L150-L161" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoverTransition(Transition):
-    def __init__(self, direction):
+    def __init__(self, direction: int) -&gt; None:
         if direction not in (0, 270):
             raise ValueError(f&#34;Unsupported direction &#39;{direction}&#39;, must 0 or 270&#34;)
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Cover /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -168,15 +188,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.CoverTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L116-L117" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L156-L161" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Cover /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -190,10 +214,14 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L66-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L90-L96" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class DissolveTransition(Transition):
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return &#34;&lt;&lt;/Type /Trans /S /Dissolve&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -206,15 +234,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.DissolveTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L67-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L91-L96" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return &#34;&lt;&lt;/Type /Trans /S /Dissolve&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -228,10 +260,14 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L130-L132" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L178-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FadeTransition(Transition):
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return &#34;&lt;&lt;/Type /Fade /S /Dissolve&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -244,15 +280,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.FadeTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L131-L132" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L179-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return &#34;&lt;&lt;/Type /Fade /S /Dissolve&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -261,16 +301,16 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.FlyTransition"><code class="flex name class">
 <span>class <span class="ident">FlyTransition</span></span>
-<span>(</span><span>dimension, direction=None)</span>
+<span>(</span><span>dimension: str, direction: int | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L81-L97" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L113-L133" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlyTransition(Transition):
-    def __init__(self, dimension, direction=None):
+    def __init__(self, dimension: str, direction: Optional[int] = None) -&gt; None:
         if dimension not in (&#34;H&#34;, &#34;V&#34;):
             raise ValueError(
                 f&#34;Unsupported dimension &#39;{dimension}&#39;, must be H(horizontal) or V(ertical)&#34;
@@ -282,7 +322,11 @@ inheritance.</p></div>
             )
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return (
             f&#34;&lt;&lt;/Type /Trans /S /Glitter /M /{self.dimension} /Di /{self.direction}&gt;&gt;&#34;
         )</code></pre>
@@ -297,15 +341,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.FlyTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L94-L97" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L126-L133" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return (
         f&#34;&lt;&lt;/Type /Trans /S /Glitter /M /{self.dimension} /Di /{self.direction}&gt;&gt;&#34;
     )</code></pre>
@@ -316,21 +364,25 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.GlitterTransition"><code class="flex name class">
 <span>class <span class="ident">GlitterTransition</span></span>
-<span>(</span><span>direction)</span>
+<span>(</span><span>direction: int)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L71-L78" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L99-L110" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GlitterTransition(Transition):
-    def __init__(self, direction):
+    def __init__(self, direction: int) -&gt; None:
         if direction not in (0, 270, 315):
             raise ValueError(f&#34;Unsupported direction &#39;{direction}&#39;, must 0, 270 or 315&#34;)
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Glitter /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -343,15 +395,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.GlitterTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L77-L78" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L105-L110" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Glitter /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -360,21 +416,25 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.PushTransition"><code class="flex name class">
 <span>class <span class="ident">PushTransition</span></span>
-<span>(</span><span>direction)</span>
+<span>(</span><span>direction: int)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L100-L107" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L136-L147" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PushTransition(Transition):
-    def __init__(self, direction):
+    def __init__(self, direction: int) -&gt; None:
         if direction not in (0, 270):
             raise ValueError(f&#34;Unsupported direction &#39;{direction}&#39;, must 0 or 270&#34;)
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Push /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -387,15 +447,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.PushTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L106-L107" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L142-L147" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Push /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -404,16 +468,16 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.SplitTransition"><code class="flex name class">
 <span>class <span class="ident">SplitTransition</span></span>
-<span>(</span><span>dimension, direction)</span>
+<span>(</span><span>dimension: str, direction: str)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L13-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L21-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SplitTransition(Transition):
-    def __init__(self, dimension, direction):
+    def __init__(self, dimension: str, direction: str) -&gt; None:
         if dimension not in (&#34;H&#34;, &#34;V&#34;):
             raise ValueError(
                 f&#34;Unsupported dimension &#39;{dimension}&#39;, must be H(horizontal) or V(ertical)&#34;
@@ -425,7 +489,11 @@ inheritance.</p></div>
             )
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Split /DM /{self.dimension} /M /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -438,15 +506,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.SplitTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L26-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L34-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Split /DM /{self.dimension} /M /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -460,10 +532,14 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L8-L10" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L12-L18" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Transition(ABC):
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         raise NotImplementedError</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -489,15 +565,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.Transition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L9-L10" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L13-L18" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     raise NotImplementedError</code></pre>
 </details>
 <div class="desc"></div>
@@ -506,21 +586,25 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.UncoverTransition"><code class="flex name class">
 <span>class <span class="ident">UncoverTransition</span></span>
-<span>(</span><span>direction)</span>
+<span>(</span><span>direction: int)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L120-L127" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L164-L175" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class UncoverTransition(Transition):
-    def __init__(self, direction):
+    def __init__(self, direction: int) -&gt; None:
         if direction not in (0, 270):
             raise ValueError(f&#34;Unsupported direction &#39;{direction}&#39;, must 0 or 270&#34;)
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Uncover /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -533,15 +617,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.UncoverTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L126-L127" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L170-L175" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Uncover /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>
@@ -550,23 +638,27 @@ inheritance.</p></div>
 </dd>
 <dt id="fpdf.transitions.WipeTransition"><code class="flex name class">
 <span>class <span class="ident">WipeTransition</span></span>
-<span>(</span><span>direction)</span>
+<span>(</span><span>direction: int)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L54-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L74-L87" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class WipeTransition(Transition):
-    def __init__(self, direction):
+    def __init__(self, direction: int) -&gt; None:
         if direction not in (0, 90, 180, 270):
             raise ValueError(
                 f&#34;Unsupported direction &#39;{direction}&#39;, must 0, 90, 180 or 270&#34;
             )
         self.direction = direction
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         return f&#34;&lt;&lt;/Type /Trans /S /Wipe /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -579,15 +671,19 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.transitions.WipeTransition.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/transitions.py#L62-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/transitions.py#L82-L87" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     return f&#34;&lt;&lt;/Type /Trans /S /Wipe /Di /{self.direction}&gt;&gt;&#34;</code></pre>
 </details>
 <div class="desc"></div>

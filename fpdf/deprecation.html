@@ -49,27 +49,25 @@ in non-backward-compatible ways.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.deprecation.deprecated_parameter"><code class="name flex">
-<span>def <span class="ident">deprecated_parameter</span></span>(<span>parameters)</span>
+<span>def <span class="ident">deprecated_parameter</span></span>(<span>parameters: Iterable[tuple[str, str]]) ‑> Callable[[Callable[~P, ~R]], Callable[~P, ~R]]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/deprecation.py#L37-L61" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/deprecation.py#L41-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def deprecated_parameter(parameters):
-    &#34;&#34;&#34;Decorator removing deprecated keyword arguments from a function call.
-
-    Args:
-        parameters (Iterable[tuple[str, str]]): sequence of `(parameter, version)` pairs.
-    &#34;&#34;&#34;
+<pre><code class="python">def deprecated_parameter(
+    parameters: Iterable[tuple[str, str]],
+) -&gt; Callable[[Callable[P, R]], Callable[P, R]]:
+    &#34;&#34;&#34;Decorator removing deprecated keyword arguments from a function call.&#34;&#34;&#34;
 
     deprecated_info = tuple(parameters)
     _sentinel = object()
 
-    def decorator(fn):
+    def decorator(fn: Callable[P, R]) -&gt; Callable[P, R]:
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -&gt; R:
             for name, version in deprecated_info:
                 if kwargs.pop(name, _sentinel) is not _sentinel:
                     warnings.warn(
@@ -83,12 +81,7 @@ in non-backward-compatible ways.</p>
 
     return decorator</code></pre>
 </details>
-<div class="desc"><p>Decorator removing deprecated keyword arguments from a function call.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>parameters</code></strong> :&ensp;<code>Iterable[tuple[str, str]]</code></dt>
-<dd>sequence of <code>(parameter, version)</code> pairs.</dd>
-</dl></div>
+<div class="desc"><p>Decorator removing deprecated keyword arguments from a function call.</p></div>
 </dd>
 <dt id="fpdf.deprecation.get_stack_level"><code class="name flex">
 <span>def <span class="ident">get_stack_level</span></span>(<span>) ‑> int</span>
@@ -97,7 +90,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/deprecation.py#L101-L119" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/deprecation.py#L103-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_stack_level() -&gt; int:
     &#34;&#34;&#34;Get the first place in the call stack that is not inside fpdf2&#34;&#34;&#34;
@@ -122,19 +115,19 @@ in non-backward-compatible ways.</p>
 <div class="desc"><p>Get the first place in the call stack that is not inside fpdf2</p></div>
 </dd>
 <dt id="fpdf.deprecation.support_deprecated_txt_arg"><code class="name flex">
-<span>def <span class="ident">support_deprecated_txt_arg</span></span>(<span>fn)</span>
+<span>def <span class="ident">support_deprecated_txt_arg</span></span>(<span>fn: Callable[~P, ~R]) ‑> Callable[~P, ~R]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/deprecation.py#L17-L34" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/deprecation.py#L21-L38" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def support_deprecated_txt_arg(fn):
+<pre><code class="python">def support_deprecated_txt_arg(fn: Callable[P, R]) -&gt; Callable[P, R]:
     &#34;&#34;&#34;Decorator converting `txt=` arguments into `text=` arguments&#34;&#34;&#34;
 
     @wraps(fn)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -&gt; R:
         txt_value = kwargs.pop(&#34;txt&#34;, None)
         if txt_value is not None:
             if &#34;text&#34; in kwargs:
@@ -145,7 +138,7 @@ in non-backward-compatible ways.</p>
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-        return fn(self, *args, **kwargs)
+        return fn(*args, **kwargs)
 
     return wrapper</code></pre>
 </details>
@@ -164,17 +157,17 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/deprecation.py#L64-L98" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/deprecation.py#L66-L100" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class WarnOnDeprecatedModuleAttributes(ModuleType):
-    def __call__(self):
+    def __call__(self) -&gt; None:
         raise TypeError(
             &#34;You tried to instantied the fpdf module.&#34;
             &#34; You probably want to import the FPDF class instead:&#34;
             &#34; from fpdf import FPDF&#34;
         )
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -&gt; Any:
         if name in (&#34;FPDF_CACHE_DIR&#34;, &#34;FPDF_CACHE_MODE&#34;):
             warnings.warn(
                 (
@@ -188,7 +181,7 @@ in non-backward-compatible ways.</p>
             return None
         return super().__getattribute__(name)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -&gt; None:
         if name in (&#34;FPDF_CACHE_DIR&#34;, &#34;FPDF_CACHE_MODE&#34;):
             warnings.warn(
                 (

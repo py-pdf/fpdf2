@@ -52,20 +52,20 @@ in non-backward-compatible ways.</p>
 <dl>
 <dt id="fpdf.recorder.CallRecorder"><code class="flex name class">
 <span>class <span class="ident">CallRecorder</span></span>
-<span>(</span><span>func, calls)</span>
+<span>(</span><span>func: Callable[..., Any],<br>calls: list[tuple[typing.Callable[..., typing.Any], tuple[typing.Any, ...], dict[str, typing.Any]]])</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/recorder.py#L71-L78" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/recorder.py#L81-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CallRecorder:
-    def __init__(self, func, calls):
-        self._func = func
-        self._calls = calls
+    def __init__(self, func: Callable[..., Any], calls: list[CallRecord]) -&gt; None:
+        self._func: Callable[..., Any] = func
+        self._calls: list[CallRecord] = calls
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -&gt; Any:
         self._calls.append((self._func, args, kwargs))
         return self._func(*args, **kwargs)</code></pre>
 </details>
@@ -73,13 +73,13 @@ in non-backward-compatible ways.</p>
 </dd>
 <dt id="fpdf.recorder.FPDFRecorder"><code class="flex name class">
 <span>class <span class="ident">FPDFRecorder</span></span>
-<span>(</span><span>pdf, accept_page_break=True)</span>
+<span>(</span><span>pdf: FPDF, accept_page_break: bool = True)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/recorder.py#L16-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/recorder.py#L24-L78" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFRecorder:
     &#34;&#34;&#34;
@@ -101,24 +101,26 @@ in non-backward-compatible ways.</p>
     when generating large PDFs, doubling memory usage may be troublesome.
     &#34;&#34;&#34;
 
-    def __init__(self, pdf, accept_page_break=True):
+    page_break_triggered: bool
+
+    def __init__(self, pdf: &#34;FPDF&#34;, accept_page_break: bool = True) -&gt; None:
         self.pdf = pdf
-        self._initial = deepcopy(self.pdf.__dict__)
-        self._calls = []
+        self._initial: dict[str, Any] = deepcopy(self.pdf.__dict__)
+        self._calls: list[CallRecord] = []
         if not accept_page_break:
             self.accept_page_break = False
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -&gt; Any:
         attr = getattr(self.pdf, name)
         if callable(attr):
             return CallRecorder(attr, self._calls)
         return attr
 
-    def rewind(self):
+    def rewind(self) -&gt; None:
         self.pdf.__dict__ = self._initial
         self._initial = deepcopy(self.pdf.__dict__)
 
-    def replay(self):
+    def replay(self) -&gt; None:
         for call in self._calls:
             func, args, kwargs = call
             try:
@@ -148,18 +150,25 @@ on the recorder instance between its creation and the last call to rewind()</p>
 so that they are not recorded &amp; replayed later, on a call to .replay().</p>
 <p>Note that using this class means to duplicate the FPDF <code>bytearray</code> buffer:
 when generating large PDFs, doubling memory usage may be troublesome.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="fpdf.recorder.FPDFRecorder.page_break_triggered"><code class="name">var <span class="ident">page_break_triggered</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.recorder.FPDFRecorder.replay"><code class="name flex">
-<span>def <span class="ident">replay</span></span>(<span>self)</span>
+<span>def <span class="ident">replay</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/recorder.py#L53-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/recorder.py#L63-L78" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def replay(self):
+<pre><code class="python">def replay(self) -&gt; None:
     for call in self._calls:
         func, args, kwargs = call
         try:
@@ -179,15 +188,15 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.recorder.FPDFRecorder.rewind"><code class="name flex">
-<span>def <span class="ident">rewind</span></span>(<span>self)</span>
+<span>def <span class="ident">rewind</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/recorder.py#L49-L51" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/recorder.py#L59-L61" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def rewind(self):
+<pre><code class="python">def rewind(self) -&gt; None:
     self.pdf.__dict__ = self._initial
     self._initial = deepcopy(self.pdf.__dict__)</code></pre>
 </details>
@@ -216,6 +225,7 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <li>
 <h4><code><a title="fpdf.recorder.FPDFRecorder" href="#fpdf.recorder.FPDFRecorder">FPDFRecorder</a></code></h4>
 <ul class="">
+<li><code><a title="fpdf.recorder.FPDFRecorder.page_break_triggered" href="#fpdf.recorder.FPDFRecorder.page_break_triggered">page_break_triggered</a></code></li>
 <li><code><a title="fpdf.recorder.FPDFRecorder.replay" href="#fpdf.recorder.FPDFRecorder.replay">replay</a></code></li>
 <li><code><a title="fpdf.recorder.FPDFRecorder.rewind" href="#fpdf.recorder.FPDFRecorder.rewind">rewind</a></code></li>
 </ul>

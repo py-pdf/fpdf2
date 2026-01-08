@@ -54,7 +54,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/errors.py#L55-L56" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/errors.py#L55-L56" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ComplianceError(FPDFException):
     &#34;&#34;&#34;Base class for standards-compliance violations (PDF/A, PDF/X, etc.).&#34;&#34;&#34;</code></pre>
@@ -79,7 +79,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/errors.py#L1-L2" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/errors.py#L1-L2" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFException(Exception):
     pass</code></pre>
@@ -99,18 +99,18 @@ el.replaceWith(d);
 </dd>
 <dt id="fpdf.errors.FPDFPageFormatException"><code class="flex name class">
 <span>class <span class="ident">FPDFPageFormatException</span></span>
-<span>(</span><span>argument, unknown=False, one=False)</span>
+<span>(</span><span>argument: str, unknown: bool = False, one: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/errors.py#L5-L32" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/errors.py#L5-L32" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFPageFormatException(FPDFException):
     &#34;&#34;&#34;Error is thrown when a bad page format is given&#34;&#34;&#34;
 
-    def __init__(self, argument, unknown=False, one=False):
+    def __init__(self, argument: str, unknown: bool = False, one: bool = False) -&gt; None:
         super().__init__()
         if unknown and one:
             raise TypeError(
@@ -121,13 +121,13 @@ el.replaceWith(d);
         self.unknown = unknown
         self.one = one
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;{self.__class__.__name__}&#34;
             f&#34;({self.argument!r}, {self.unknown!r}, {self.one!r})&#34;
         )
 
-    def __str__(self):
+    def __str__(self) -&gt; str:
         if self.unknown:
             res = f&#34;Unknown page format: {self.argument}&#34;
         elif self.one:
@@ -146,27 +146,27 @@ el.replaceWith(d);
 </dd>
 <dt id="fpdf.errors.FPDFUnicodeEncodingException"><code class="flex name class">
 <span>class <span class="ident">FPDFUnicodeEncodingException</span></span>
-<span>(</span><span>text_index, character, font_name)</span>
+<span>(</span><span>text_index: int, character: str, font_name: str)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/errors.py#L35-L52" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/errors.py#L35-L52" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFUnicodeEncodingException(FPDFException):
     &#34;&#34;&#34;Error is thrown when a character that cannot be encoded by the chosen encoder is provided&#34;&#34;&#34;
 
-    def __init__(self, text_index, character, font_name):
+    def __init__(self, text_index: int, character: str, font_name: str) -&gt; None:
         super().__init__()
         self.text_index = text_index
         self.character = character
         self.font_name = font_name
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return f&#34;{self.__class__.__name__}({repr(self.text_index), repr(self.character), repr(self.font_name)})&#34;
 
-    def __str__(self):
+    def __str__(self) -&gt; str:
         return (
             f&#39;Character &#34;{self.character}&#34; at index {self.text_index} in text is outside the range of characters&#39;
             f&#39; supported by the font used: &#34;{self.font_name}&#34;.&#39;
@@ -189,7 +189,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/errors.py#L59-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/errors.py#L59-L60" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFAComplianceError(ComplianceError):
     &#34;&#34;&#34;Raised when an operation would produce a PDF that violates the selected PDF/A profile.&#34;&#34;&#34;</code></pre>

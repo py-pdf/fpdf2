@@ -51,7 +51,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L421-L446" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L421-L446" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def auto_detect_base_direction(
     string: str, stop_at_pdi: bool = False, debug: bool = False
@@ -86,29 +86,50 @@ P1 must be applied before calling this function (breaking into paragraphs)
 stop_at_pdi can be set to True to get the direction of a single isolate sequence</p></div>
 </dd>
 <dt id="fpdf.bidi.calculate_isolate_runs"><code class="name flex">
-<span>def <span class="ident">calculate_isolate_runs</span></span>(<span>paragraph: List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]) ‑> List[<a title="fpdf.bidi.IsolatingRun" href="#fpdf.bidi.IsolatingRun">IsolatingRun</a>]</span>
+<span>def <span class="ident">calculate_isolate_runs</span></span>(<span>paragraph: list[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]) ‑> list[<a title="fpdf.bidi.IsolatingRun" href="#fpdf.bidi.IsolatingRun">IsolatingRun</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L449-L513" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L449-L534" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def calculate_isolate_runs(paragraph: List[BidiCharacter]) -&gt; List[IsolatingRun]:
+<pre><code class="python">def calculate_isolate_runs(paragraph: list[BidiCharacter]) -&gt; list[IsolatingRun]:
     # BD13 and X10
-    level_run = []
-    lr = []
-    lr_embedding_level = paragraph[0].embedding_level
+    class LevelRun(TypedDict):
+        level: int
+        text: list[BidiCharacter]
+        complete: bool
+        sos: str
+        eos: str
+
+    level_run: list[LevelRun] = []
+    lr: list[BidiCharacter] = []
+    lr_embedding_level: int = paragraph[0].embedding_level
 
     for bidi_char in paragraph:
         if bidi_char.embedding_level != lr_embedding_level:
             level_run.append(
-                {&#34;level&#34;: lr_embedding_level, &#34;text&#34;: lr, &#34;complete&#34;: False}
+                {
+                    &#34;level&#34;: lr_embedding_level,
+                    &#34;text&#34;: lr,
+                    &#34;complete&#34;: False,
+                    &#34;sos&#34;: &#34;&#34;,
+                    &#34;eos&#34;: &#34;&#34;,
+                }
             )
             lr = []
             lr_embedding_level = bidi_char.embedding_level
         lr.append(bidi_char)
-    level_run.append({&#34;level&#34;: lr_embedding_level, &#34;text&#34;: lr, &#34;complete&#34;: False})
+    level_run.append(
+        {
+            &#34;level&#34;: lr_embedding_level,
+            &#34;text&#34;: lr,
+            &#34;complete&#34;: False,
+            &#34;sos&#34;: &#34;&#34;,
+            &#34;eos&#34;: &#34;&#34;,
+        }
+    )
 
     def level_to_direction(level: int) -&gt; str:
         if level % 2 == 0:
@@ -116,42 +137,42 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         return &#34;R&#34;
 
     # compute sos, eos for each level run
-    for index, lr in enumerate(level_run):
-        if lr[&#34;complete&#34;]:
+    for index, lr1 in enumerate(level_run):
+        if lr1[&#34;complete&#34;]:
             continue
         if index == 0:
-            sos = level_to_direction(lr[&#34;level&#34;])
+            sos = level_to_direction(lr1[&#34;level&#34;])
         else:
-            sos = level_to_direction(max(lr[&#34;level&#34;], level_run[index - 1][&#34;level&#34;]))
+            sos = level_to_direction(max(lr1[&#34;level&#34;], level_run[index - 1][&#34;level&#34;]))
         if index == len(level_run) - 1:
-            eos = level_to_direction(lr[&#34;level&#34;])
+            eos = level_to_direction(lr1[&#34;level&#34;])
         else:
-            if lr[&#34;text&#34;][-1].original_bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+            if lr1[&#34;text&#34;][-1].original_bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
                 # X10 - last char is an isolator without matching PDI - set EOS to embedding level
-                eos = level_to_direction(lr[&#34;level&#34;])
+                eos = level_to_direction(lr1[&#34;level&#34;])
             else:
                 eos = level_to_direction(
-                    max(lr[&#34;level&#34;], level_run[index + 1][&#34;level&#34;])
+                    max(lr1[&#34;level&#34;], level_run[index + 1][&#34;level&#34;])
                 )
-        lr[&#34;sos&#34;] = sos
-        lr[&#34;eos&#34;] = eos
+        lr1[&#34;sos&#34;] = sos
+        lr1[&#34;eos&#34;] = eos
 
     # combine levels runs to create isolate runs
-    isolate_runs = []
-    for index, lr in enumerate(level_run):
-        if lr[&#34;complete&#34;]:
+    isolate_runs: list[IsolatingRun] = []
+    for index, lr2 in enumerate(level_run):
+        if lr2[&#34;complete&#34;]:
             continue
-        sos = lr[&#34;sos&#34;]
-        eos = lr[&#34;eos&#34;]
-        ir_chars = lr[&#34;text&#34;]
-        lr[&#34;complete&#34;] = True
-        if lr[&#34;text&#34;][-1].original_bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+        sos = lr2[&#34;sos&#34;]
+        eos = lr2[&#34;eos&#34;]
+        ir_chars = lr2[&#34;text&#34;]
+        lr2[&#34;complete&#34;] = True
+        if lr2[&#34;text&#34;][-1].original_bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
             for nlr in level_run[index + 1 :]:
                 if (
-                    nlr[&#34;level&#34;] == lr[&#34;level&#34;]
+                    nlr[&#34;level&#34;] == lr2[&#34;level&#34;]
                     and nlr[&#34;text&#34;][0].original_bidi_class == &#34;PDI&#34;
                 ):
-                    lr[&#34;text&#34;] += nlr[&#34;text&#34;]
+                    lr2[&#34;text&#34;] += nlr[&#34;text&#34;]
                     nlr[&#34;complete&#34;] = True
                     eos = nlr[&#34;eos&#34;]
                     if nlr[&#34;text&#34;][-1].original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
@@ -169,13 +190,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <dl>
 <dt id="fpdf.bidi.BidiCharacter"><code class="flex name class">
 <span>class <span class="ident">BidiCharacter</span></span>
-<span>(</span><span>character_index: int, character: str, embedding_level: str, debug: bool)</span>
+<span>(</span><span>character_index: int, character: str, embedding_level: int, debug: bool)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -188,8 +209,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -200,13 +221,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -221,7 +242,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -234,8 +255,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -246,13 +267,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -266,7 +287,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -279,8 +300,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -291,13 +312,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -311,7 +332,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -324,8 +345,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -336,13 +357,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -356,7 +377,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -369,8 +390,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -381,13 +402,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -401,7 +422,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -414,8 +435,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -426,13 +447,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -446,7 +467,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -459,8 +480,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     ]
 
     def __init__(
-        self, character_index: int, character: str, embedding_level: str, debug: bool
-    ):
+        self, character_index: int, character: str, embedding_level: int, debug: bool
+    ) -&gt; None:
         self.character_index = character_index
         self.character = character
         if debug and character.isupper():
@@ -471,13 +492,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.embedding_level = embedding_level
         self.direction = None
 
-    def get_direction_from_level(self):
+    def get_direction_from_level(self) -&gt; str:
         return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
 
-    def set_class(self, cls):
+    def set_class(self, cls: str) -&gt; None:
         self.bidi_class = cls
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         return (
             f&#34;character_index: {self.character_index} character: {self.character}&#34;
             + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
@@ -490,29 +511,29 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.bidi.BidiCharacter.get_direction_from_level"><code class="name flex">
-<span>def <span class="ident">get_direction_from_level</span></span>(<span>self)</span>
+<span>def <span class="ident">get_direction_from_level</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L173-L174" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L173-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_direction_from_level(self):
+<pre><code class="python">def get_direction_from_level(self) -&gt; str:
     return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.set_class"><code class="name flex">
-<span>def <span class="ident">set_class</span></span>(<span>self, cls)</span>
+<span>def <span class="ident">set_class</span></span>(<span>self, cls: str) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L176-L177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L176-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def set_class(self, cls):
+<pre><code class="python">def set_class(self, cls: str) -&gt; None:
     self.bidi_class = cls</code></pre>
 </details>
 <div class="desc"></div>
@@ -521,13 +542,13 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 </dd>
 <dt id="fpdf.bidi.BidiParagraph"><code class="flex name class">
 <span>class <span class="ident">BidiParagraph</span></span>
-<span>(</span><span>text: str,<br>base_direction: <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a> = None,<br>debug: bool = False)</span>
+<span>(</span><span>text: str,<br>base_direction: <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a> | None = None,<br>debug: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L537-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -539,8 +560,11 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -&gt; None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -551,35 +575,35 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -&gt; List[BidiCharacter]:
+    def get_characters(self) -&gt; list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -&gt; str:
         &#34;Used for conformance validation&#34;
         return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    def get_bidi_characters(self) -&gt; None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status=&#34;N&#34;,
@@ -589,7 +613,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -713,8 +737,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = &#34;&#34;
@@ -748,7 +772,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -785,8 +809,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level &gt;= level:
                     rev.append(bidi_char)
@@ -810,7 +834,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L537-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -822,8 +846,11 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -&gt; None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -834,35 +861,35 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -&gt; List[BidiCharacter]:
+    def get_characters(self) -&gt; list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -&gt; str:
         &#34;Used for conformance validation&#34;
         return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    def get_bidi_characters(self) -&gt; None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status=&#34;N&#34;,
@@ -872,7 +899,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -996,8 +1023,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = &#34;&#34;
@@ -1031,7 +1058,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -1068,8 +1095,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level &gt;= level:
                     rev.append(bidi_char)
@@ -1092,7 +1119,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L537-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -1104,8 +1131,11 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -&gt; None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -1116,35 +1146,35 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -&gt; List[BidiCharacter]:
+    def get_characters(self) -&gt; list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -&gt; str:
         &#34;Used for conformance validation&#34;
         return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    def get_bidi_characters(self) -&gt; None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status=&#34;N&#34;,
@@ -1154,7 +1184,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -1278,8 +1308,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = &#34;&#34;
@@ -1313,7 +1343,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -1350,8 +1380,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level &gt;= level:
                     rev.append(bidi_char)
@@ -1374,7 +1404,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L537-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -1386,8 +1416,11 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -&gt; None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -1398,35 +1431,35 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -&gt; List[BidiCharacter]:
+    def get_characters(self) -&gt; list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -&gt; str:
         &#34;Used for conformance validation&#34;
         return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    def get_bidi_characters(self) -&gt; None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status=&#34;N&#34;,
@@ -1436,7 +1469,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -1560,8 +1593,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = &#34;&#34;
@@ -1595,7 +1628,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -1632,8 +1665,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level &gt;= level:
                     rev.append(bidi_char)
@@ -1656,7 +1689,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L537-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -1668,8 +1701,11 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -&gt; None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -1680,35 +1716,35 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -&gt; List[BidiCharacter]:
+    def get_characters(self) -&gt; list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -&gt; str:
         &#34;Used for conformance validation&#34;
         return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    def get_bidi_characters(self) -&gt; None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status=&#34;N&#34;,
@@ -1718,7 +1754,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -1842,8 +1878,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = &#34;&#34;
@@ -1877,7 +1913,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -1914,8 +1950,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level &gt;= level:
                     rev.append(bidi_char)
@@ -1938,7 +1974,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L537-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -1950,8 +1986,11 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     )
 
     def __init__(
-        self, text: str, base_direction: TextDirection = None, debug: bool = False
-    ):
+        self,
+        text: str,
+        base_direction: Optional[TextDirection] = None,
+        debug: bool = False,
+    ) -&gt; None:
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -1962,35 +2001,35 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
-        self.characters: List[BidiCharacter] = []
+        self.characters: list[BidiCharacter] = []
         self.get_bidi_characters()
 
-    def get_characters(self) -&gt; List[BidiCharacter]:
+    def get_characters(self) -&gt; list[BidiCharacter]:
         return self.characters
 
-    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
         # Calculate embedding level for each character after breaking isolating runs.
         # Only used on conformance testing
         self.reorder_resolved_levels()
         return self.characters
 
-    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
         return self.reorder_resolved_levels()
 
-    def get_all(self):
+    def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
         return self.characters, self.reorder_resolved_levels()
 
-    def get_reordered_string(self):
+    def get_reordered_string(self) -&gt; str:
         &#34;Used for conformance validation&#34;
         return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
 
-    def get_bidi_fragments(self):
+    def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
 
-    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    def get_bidi_characters(self) -&gt; None:
         # Explicit levels and directions. Rule X1
 
-        stack: List[DirectionalStatus] = deque()
+        stack: deque[DirectionalStatus] = deque()
         current_status = DirectionalStatus(
             embedding_level=self.base_embedding_level,
             directional_override_status=&#34;N&#34;,
@@ -2000,7 +2039,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         overflow_isolate_count = 0
         overflow_embedding_count = 0
         valid_isolate_count = 0
-        results = []
+        results: list[BidiCharacter] = []
 
         # Explicit embeddings. Process each character individually applying rules X2 through X8
         for index, char in enumerate(self.text):
@@ -2124,8 +2163,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         self.characters = results
         calculate_isolate_runs(results)
 
-    def split_bidi_fragments(self):
-        bidi_fragments = []
+    def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+        bidi_fragments: list[tuple[str, TextDirection]] = []
         if len(self.characters) == 0:
             return ()
         current_fragment = &#34;&#34;
@@ -2159,7 +2198,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             )
         return tuple(bidi_fragments)
 
-    def reorder_resolved_levels(self):
+    def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
         before_separator = True
         end_of_line = True
         max_level = 0
@@ -2196,8 +2235,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
         # reverse any contiguous sequence of characters that are at that level or higher.
         reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
-            temp_results = []
-            rev = []
+            temp_results: list[BidiCharacter] = []
+            rev: list[BidiCharacter] = []
             for bidi_char in reordered_paragraph:
                 if bidi_char.embedding_level &gt;= level:
                     rev.append(bidi_char)
@@ -2219,32 +2258,32 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.bidi.BidiParagraph.get_all"><code class="name flex">
-<span>def <span class="ident">get_all</span></span>(<span>self)</span>
+<span>def <span class="ident">get_all</span></span>(<span>self) ‑> tuple[list[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>], tuple[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>, ...]]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L553-L554" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L577-L578" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_all(self):
+<pre><code class="python">def get_all(self) -&gt; tuple[list[BidiCharacter], tuple[BidiCharacter, ...]]:
     return self.characters, self.reorder_resolved_levels()</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_bidi_characters"><code class="name flex">
-<span>def <span class="ident">get_bidi_characters</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
+<span>def <span class="ident">get_bidi_characters</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L563-L698" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L587-L722" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+<pre><code class="python">def get_bidi_characters(self) -&gt; None:
     # Explicit levels and directions. Rule X1
 
-    stack: List[DirectionalStatus] = deque()
+    stack: deque[DirectionalStatus] = deque()
     current_status = DirectionalStatus(
         embedding_level=self.base_embedding_level,
         directional_override_status=&#34;N&#34;,
@@ -2254,7 +2293,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     overflow_isolate_count = 0
     overflow_embedding_count = 0
     valid_isolate_count = 0
-    results = []
+    results: list[BidiCharacter] = []
 
     # Explicit embeddings. Process each character individually applying rules X2 through X8
     for index, char in enumerate(self.text):
@@ -2381,43 +2420,43 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_bidi_fragments"><code class="name flex">
-<span>def <span class="ident">get_bidi_fragments</span></span>(<span>self)</span>
+<span>def <span class="ident">get_bidi_fragments</span></span>(<span>self) ‑> tuple[tuple[str, <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a>], ...]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L560-L561" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L584-L585" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_bidi_fragments(self):
+<pre><code class="python">def get_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
     return self.split_bidi_fragments()</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_characters"><code class="name flex">
-<span>def <span class="ident">get_characters</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
+<span>def <span class="ident">get_characters</span></span>(<span>self) ‑> list[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L541-L542" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L565-L566" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_characters(self) -&gt; List[BidiCharacter]:
+<pre><code class="python">def get_characters(self) -&gt; list[BidiCharacter]:
     return self.characters</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_characters_with_embedding_level"><code class="name flex">
-<span>def <span class="ident">get_characters_with_embedding_level</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
+<span>def <span class="ident">get_characters_with_embedding_level</span></span>(<span>self) ‑> list[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L544-L548" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L568-L572" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+<pre><code class="python">def get_characters_with_embedding_level(self) -&gt; list[BidiCharacter]:
     # Calculate embedding level for each character after breaking isolating runs.
     # Only used on conformance testing
     self.reorder_resolved_levels()
@@ -2426,44 +2465,44 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_reordered_characters"><code class="name flex">
-<span>def <span class="ident">get_reordered_characters</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
+<span>def <span class="ident">get_reordered_characters</span></span>(<span>self) ‑> tuple[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>, ...]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L550-L551" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L574-L575" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+<pre><code class="python">def get_reordered_characters(self) -&gt; tuple[BidiCharacter, ...]:
     return self.reorder_resolved_levels()</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_reordered_string"><code class="name flex">
-<span>def <span class="ident">get_reordered_string</span></span>(<span>self)</span>
+<span>def <span class="ident">get_reordered_string</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L556-L558" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L580-L582" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_reordered_string(self):
+<pre><code class="python">def get_reordered_string(self) -&gt; str:
     &#34;Used for conformance validation&#34;
     return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())</code></pre>
 </details>
 <div class="desc"><p>Used for conformance validation</p></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.reorder_resolved_levels"><code class="name flex">
-<span>def <span class="ident">reorder_resolved_levels</span></span>(<span>self)</span>
+<span>def <span class="ident">reorder_resolved_levels</span></span>(<span>self) ‑> tuple[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>, ...]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L735-L787" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L759-L811" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def reorder_resolved_levels(self):
+<pre><code class="python">def reorder_resolved_levels(self) -&gt; tuple[BidiCharacter, ...]:
     before_separator = True
     end_of_line = True
     max_level = 0
@@ -2500,8 +2539,8 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
     # reverse any contiguous sequence of characters that are at that level or higher.
     reordered_paragraph = self.characters.copy()
     for level in range(max_level, min_odd_level - 1, -1):
-        temp_results = []
-        rev = []
+        temp_results: list[BidiCharacter] = []
+        rev: list[BidiCharacter] = []
         for bidi_char in reordered_paragraph:
             if bidi_char.embedding_level &gt;= level:
                 rev.append(bidi_char)
@@ -2520,16 +2559,16 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.split_bidi_fragments"><code class="name flex">
-<span>def <span class="ident">split_bidi_fragments</span></span>(<span>self)</span>
+<span>def <span class="ident">split_bidi_fragments</span></span>(<span>self) ‑> tuple[tuple[str, <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a>], ...]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L700-L733" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L724-L757" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def split_bidi_fragments(self):
-    bidi_fragments = []
+<pre><code class="python">def split_bidi_fragments(self) -&gt; tuple[tuple[str, TextDirection], ...]:
+    bidi_fragments: list[tuple[str, TextDirection]] = []
     if len(self.characters) == 0:
         return ()
     current_fragment = &#34;&#34;
@@ -2575,7 +2614,7 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class DirectionalStatus:
@@ -2596,7 +2635,7 @@ class DirectionalStatus:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class DirectionalStatus:
@@ -2616,7 +2655,7 @@ class DirectionalStatus:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class DirectionalStatus:
@@ -2636,7 +2675,7 @@ class DirectionalStatus:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class DirectionalStatus:
@@ -2655,18 +2694,18 @@ class DirectionalStatus:
 </dd>
 <dt id="fpdf.bidi.IsolatingRun"><code class="flex name class">
 <span>class <span class="ident">IsolatingRun</span></span>
-<span>(</span><span>characters: List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>],<br>sos: str,<br>eos: str)</span>
+<span>(</span><span>characters: list[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>],<br>sos: str,<br>eos: str)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IsolatingRun:
     __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
 
-    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+    def __init__(self, characters: list[BidiCharacter], sos: str, eos: str) -&gt; None:
         self.characters = characters
         self.previous_direction = sos
         self.next_direction = eos
@@ -2755,16 +2794,16 @@ class DirectionalStatus:
             if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
                 bidi_char.set_class(&#34;L&#34;)
 
-    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+    def pair_brackets(self) -&gt; list[tuple[int, int]]:
         &#34;&#34;&#34;
         Calculate all the bracket pairs on an isolate run, to be used on rule N0
         How to calculate bracket pairs:
         - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
         - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
         &#34;&#34;&#34;
-        open_brackets = []
+        open_brackets: list[tuple[str, int]] = []
         open_bracket_count = 0
-        bracket_pairs = []
+        bracket_pairs: list[tuple[int, int]] = []
         for index, char in enumerate(self.characters):
             if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
                 if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
@@ -2788,7 +2827,7 @@ class DirectionalStatus:
         return sorted(bracket_pairs, key=itemgetter(0))
 
     def resolve_neutral_types(self) -&gt; None:
-        def previous_strong(index: int):
+        def previous_strong(index: int) -&gt; str:
             if index == 0:
                 return self.previous_direction
             if self.characters[index - 1].bidi_class == &#34;L&#34;:
@@ -2797,7 +2836,7 @@ class DirectionalStatus:
                 return &#34;R&#34;
             return previous_strong(index - 1)
 
-        def next_strong(index: int):
+        def next_strong(index: int) -&gt; str:
             if index &gt;= len(self.characters) - 1:
                 return self.next_direction
             if self.characters[index + 1].bidi_class == &#34;L&#34;:
@@ -2892,12 +2931,12 @@ class DirectionalStatus:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IsolatingRun:
     __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
 
-    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+    def __init__(self, characters: list[BidiCharacter], sos: str, eos: str) -&gt; None:
         self.characters = characters
         self.previous_direction = sos
         self.next_direction = eos
@@ -2986,16 +3025,16 @@ class DirectionalStatus:
             if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
                 bidi_char.set_class(&#34;L&#34;)
 
-    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+    def pair_brackets(self) -&gt; list[tuple[int, int]]:
         &#34;&#34;&#34;
         Calculate all the bracket pairs on an isolate run, to be used on rule N0
         How to calculate bracket pairs:
         - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
         - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
         &#34;&#34;&#34;
-        open_brackets = []
+        open_brackets: list[tuple[str, int]] = []
         open_bracket_count = 0
-        bracket_pairs = []
+        bracket_pairs: list[tuple[int, int]] = []
         for index, char in enumerate(self.characters):
             if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
                 if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
@@ -3019,7 +3058,7 @@ class DirectionalStatus:
         return sorted(bracket_pairs, key=itemgetter(0))
 
     def resolve_neutral_types(self) -&gt; None:
-        def previous_strong(index: int):
+        def previous_strong(index: int) -&gt; str:
             if index == 0:
                 return self.previous_direction
             if self.characters[index - 1].bidi_class == &#34;L&#34;:
@@ -3028,7 +3067,7 @@ class DirectionalStatus:
                 return &#34;R&#34;
             return previous_strong(index - 1)
 
-        def next_strong(index: int):
+        def next_strong(index: int) -&gt; str:
             if index &gt;= len(self.characters) - 1:
                 return self.next_direction
             if self.characters[index + 1].bidi_class == &#34;L&#34;:
@@ -3122,12 +3161,12 @@ class DirectionalStatus:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IsolatingRun:
     __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
 
-    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+    def __init__(self, characters: list[BidiCharacter], sos: str, eos: str) -&gt; None:
         self.characters = characters
         self.previous_direction = sos
         self.next_direction = eos
@@ -3216,16 +3255,16 @@ class DirectionalStatus:
             if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
                 bidi_char.set_class(&#34;L&#34;)
 
-    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+    def pair_brackets(self) -&gt; list[tuple[int, int]]:
         &#34;&#34;&#34;
         Calculate all the bracket pairs on an isolate run, to be used on rule N0
         How to calculate bracket pairs:
         - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
         - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
         &#34;&#34;&#34;
-        open_brackets = []
+        open_brackets: list[tuple[str, int]] = []
         open_bracket_count = 0
-        bracket_pairs = []
+        bracket_pairs: list[tuple[int, int]] = []
         for index, char in enumerate(self.characters):
             if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
                 if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
@@ -3249,7 +3288,7 @@ class DirectionalStatus:
         return sorted(bracket_pairs, key=itemgetter(0))
 
     def resolve_neutral_types(self) -&gt; None:
-        def previous_strong(index: int):
+        def previous_strong(index: int) -&gt; str:
             if index == 0:
                 return self.previous_direction
             if self.characters[index - 1].bidi_class == &#34;L&#34;:
@@ -3258,7 +3297,7 @@ class DirectionalStatus:
                 return &#34;R&#34;
             return previous_strong(index - 1)
 
-        def next_strong(index: int):
+        def next_strong(index: int) -&gt; str:
             if index &gt;= len(self.characters) - 1:
                 return self.next_direction
             if self.characters[index + 1].bidi_class == &#34;L&#34;:
@@ -3352,12 +3391,12 @@ class DirectionalStatus:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IsolatingRun:
     __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
 
-    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+    def __init__(self, characters: list[BidiCharacter], sos: str, eos: str) -&gt; None:
         self.characters = characters
         self.previous_direction = sos
         self.next_direction = eos
@@ -3446,16 +3485,16 @@ class DirectionalStatus:
             if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
                 bidi_char.set_class(&#34;L&#34;)
 
-    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+    def pair_brackets(self) -&gt; list[tuple[int, int]]:
         &#34;&#34;&#34;
         Calculate all the bracket pairs on an isolate run, to be used on rule N0
         How to calculate bracket pairs:
         - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
         - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
         &#34;&#34;&#34;
-        open_brackets = []
+        open_brackets: list[tuple[str, int]] = []
         open_bracket_count = 0
-        bracket_pairs = []
+        bracket_pairs: list[tuple[int, int]] = []
         for index, char in enumerate(self.characters):
             if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
                 if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
@@ -3479,7 +3518,7 @@ class DirectionalStatus:
         return sorted(bracket_pairs, key=itemgetter(0))
 
     def resolve_neutral_types(self) -&gt; None:
-        def previous_strong(index: int):
+        def previous_strong(index: int) -&gt; str:
             if index == 0:
                 return self.previous_direction
             if self.characters[index - 1].bidi_class == &#34;L&#34;:
@@ -3488,7 +3527,7 @@ class DirectionalStatus:
                 return &#34;R&#34;
             return previous_strong(index - 1)
 
-        def next_strong(index: int):
+        def next_strong(index: int) -&gt; str:
             if index &gt;= len(self.characters) - 1:
                 return self.next_direction
             if self.characters[index + 1].bidi_class == &#34;L&#34;:
@@ -3581,24 +3620,24 @@ class DirectionalStatus:
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.bidi.IsolatingRun.pair_brackets"><code class="name flex">
-<span>def <span class="ident">pair_brackets</span></span>(<span>self) ‑> List[Tuple[int, int]]</span>
+<span>def <span class="ident">pair_brackets</span></span>(<span>self) ‑> list[tuple[int, int]]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L291-L321" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L291-L321" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+<pre><code class="python">def pair_brackets(self) -&gt; list[tuple[int, int]]:
     &#34;&#34;&#34;
     Calculate all the bracket pairs on an isolate run, to be used on rule N0
     How to calculate bracket pairs:
     - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
     - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
     &#34;&#34;&#34;
-    open_brackets = []
+    open_brackets: list[tuple[str, int]] = []
     open_bracket_count = 0
-    bracket_pairs = []
+    bracket_pairs: list[tuple[int, int]] = []
     for index, char in enumerate(self.characters):
         if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
             if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
@@ -3633,7 +3672,7 @@ How to calculate bracket pairs:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L405-L418" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L405-L418" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def resolve_implicit_levels(self) -&gt; None:
     for bidi_char in self.characters:
@@ -3659,10 +3698,10 @@ How to calculate bracket pairs:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L323-L403" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L323-L403" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def resolve_neutral_types(self) -&gt; None:
-    def previous_strong(index: int):
+    def previous_strong(index: int) -&gt; str:
         if index == 0:
             return self.previous_direction
         if self.characters[index - 1].bidi_class == &#34;L&#34;:
@@ -3671,7 +3710,7 @@ How to calculate bracket pairs:
             return &#34;R&#34;
         return previous_strong(index - 1)
 
-    def next_strong(index: int):
+    def next_strong(index: int) -&gt; str:
         if index &gt;= len(self.characters) - 1:
             return self.next_direction
         if self.characters[index + 1].bidi_class == &#34;L&#34;:
@@ -3752,7 +3791,7 @@ How to calculate bracket pairs:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/bidi.py#L210-L289" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/bidi.py#L210-L289" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def resolve_weak_types(self) -&gt; None:
     # W1. Examine each nonspacing mark (NSM) in the isolating run sequence, and change the type of the NSM to Other Neutral

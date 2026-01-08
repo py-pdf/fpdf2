@@ -50,15 +50,17 @@ in non-backward-compatible ways.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.html.color_as_decimal"><code class="name flex">
-<span>def <span class="ident">color_as_decimal</span></span>(<span>color='#000000')</span>
+<span>def <span class="ident">color_as_decimal</span></span>(<span>color: str | None = '#000000') ‑> <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L288-L297" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L301-L312" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def color_as_decimal(color=&#34;#000000&#34;):
+<pre><code class="python">def color_as_decimal(
+    color: Optional[str] = &#34;#000000&#34;,
+) -&gt; Optional[DeviceRGB | DeviceGray]:
     &#34;&#34;&#34;
     Convert a web color name to a (R, G, B) color tuple.
     cf. https://en.wikipedia.org/wiki/Web_colors#HTML_color_names
@@ -73,15 +75,15 @@ in non-backward-compatible ways.</p>
 cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://en.wikipedia.org/wiki/Web_colors#HTML_color_names</a></p></div>
 </dd>
 <dt id="fpdf.html.ol_prefix"><code class="name flex">
-<span>def <span class="ident">ol_prefix</span></span>(<span>ol_type, index)</span>
+<span>def <span class="ident">ol_prefix</span></span>(<span>ol_type: str, index: int) ‑> str | int</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1254-L1265" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1404-L1415" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def ol_prefix(ol_type, index):
+<pre><code class="python">def ol_prefix(ol_type: str, index: int) -&gt; int | str:
     if ol_type == &#34;1&#34;:
         return index
     if ol_type == &#34;a&#34;:
@@ -97,17 +99,17 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.html.parse_css_style"><code class="name flex">
-<span>def <span class="ident">parse_css_style</span></span>(<span>style_attr)</span>
+<span>def <span class="ident">parse_css_style</span></span>(<span>style_attr: str) ‑> dict[str, str]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L300-L310" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L315-L325" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def parse_css_style(style_attr):
+<pre><code class="python">def parse_css_style(style_attr: str) -&gt; dict[str, str]:
     &#34;&#34;&#34;Parse `style=&#34;...&#34;` HTML attributes, and return a dict of key-value&#34;&#34;&#34;
-    style = {}
+    style: dict[str, str] = {}
     for element in style_attr.split(&#34;;&#34;):
         if not element:
             continue
@@ -120,15 +122,15 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <div class="desc"><p>Parse <code>style="..."</code> HTML attributes, and return a dict of key-value</p></div>
 </dd>
 <dt id="fpdf.html.ul_prefix"><code class="name flex">
-<span>def <span class="ident">ul_prefix</span></span>(<span>ul_type, is_ttf_font)</span>
+<span>def <span class="ident">ul_prefix</span></span>(<span>ul_type: str, is_ttf_font: bool) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1244-L1251" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1394-L1401" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def ul_prefix(ul_type, is_ttf_font):
+<pre><code class="python">def ul_prefix(ul_type: str, is_ttf_font: bool) -&gt; str:
     if ul_type == &#34;disc&#34;:
         return BULLET_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
     if ul_type == &#34;circle&#34;:
@@ -146,13 +148,13 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <dl>
 <dt id="fpdf.html.HTML2FPDF"><code class="flex name class">
 <span>class <span class="ident">HTML2FPDF</span></span>
-<span>(</span><span>pdf,<br>image_map=None,<br>li_tag_indent=None,<br>dd_tag_indent=None,<br>table_line_separators=False,<br>ul_bullet_char='disc',<br>li_prefix_color=(190, 0, 0),<br>heading_sizes=None,<br>pre_code_font=None,<br>warn_on_tags_not_matching=True,<br>tag_indents=None,<br>tag_styles=None,<br>font_family='times',<br>render_title_tag=False)</span>
+<span>(</span><span>pdf: FPDF,<br>image_map: Callable[[str], str] = &lt;function HTML2FPDF.&lt;lambda&gt;&gt;,<br>li_tag_indent: float | None = None,<br>dd_tag_indent: float | None = None,<br>table_line_separators: bool = False,<br>ul_bullet_char: str = 'disc',<br>li_prefix_color: int | float | decimal.Decimal | DeviceRGB | DeviceGray | DeviceCMYK | str | Sequence[int | float | decimal.Decimal] = (190, 0, 0),<br>heading_sizes: dict[str, float] | None = None,<br>pre_code_font: str | None = None,<br>warn_on_tags_not_matching: bool = True,<br>tag_indents: dict[str, float] | None = None,<br>tag_styles: dict[str, <a title="fpdf.fonts.TextStyle" href="fonts.html#fpdf.fonts.TextStyle">TextStyle</a>] | None = None,<br>font_family: str = 'times',<br>render_title_tag: bool = False)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L313-L1222" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L328-L1370" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTML2FPDF(HTMLParser):
     &#34;Render basic HTML to FPDF&#34;
@@ -162,21 +164,21 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 
     def __init__(
         self,
-        pdf,
-        image_map=None,
-        li_tag_indent=None,
-        dd_tag_indent=None,
-        table_line_separators=False,
-        ul_bullet_char=&#34;disc&#34;,
-        li_prefix_color=(190, 0, 0),
-        heading_sizes=None,
-        pre_code_font=None,
-        warn_on_tags_not_matching=True,
-        tag_indents=None,
-        tag_styles=None,
-        font_family=&#34;times&#34;,
-        render_title_tag=False,
-    ):
+        pdf: &#34;FPDF&#34;,
+        image_map: Callable[[str], str] = lambda src: src,
+        li_tag_indent: Optional[float] = None,
+        dd_tag_indent: Optional[float] = None,
+        table_line_separators: bool = False,
+        ul_bullet_char: str = &#34;disc&#34;,
+        li_prefix_color: ColorInput = (190, 0, 0),
+        heading_sizes: Optional[dict[str, float]] = None,
+        pre_code_font: Optional[str] = None,
+        warn_on_tags_not_matching: bool = True,
+        tag_indents: Optional[dict[str, float]] = None,
+        tag_styles: Optional[dict[str, TextStyle]] = None,
+        font_family: str = &#34;times&#34;,
+        render_title_tag: bool = False,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Args:
             pdf (fpdf.fpdf.FPDF): an instance of `FPDF`
@@ -204,8 +206,8 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         &#34;&#34;&#34;
         super().__init__()
         self.pdf = pdf
-        self.image_map = image_map or (lambda src: src)
         self.ul_bullet_char = ul_bullet_char
+        self.image_map = image_map
         self.li_prefix_color = (
             color_as_decimal(li_prefix_color)
             if isinstance(li_prefix_color, str)
@@ -217,8 +219,8 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         # but not reflected onto self.pdf yet,
         # and only &#34;effectively&#34; applied when self._write_paragraph() is called.
         # This way, we often avoid useless operators in the PDF content stream.
-        self.font_family = pdf.font_family or font_family
-        self.font_size_pt = pdf.font_size_pt
+        self.font_family: str = pdf.font_family or font_family
+        self.font_size_pt: float = pdf.font_size_pt
         self.font_emphasis = TextEmphasis.NONE
         self.font_color = pdf.text_color
         # For historical / backward-compatibility reasons,
@@ -228,35 +230,45 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             size=self.font_size_pt,
             style=self.font_emphasis.style,
         )
-        self.style_stack = []  # list of FontFace
+        self.style_stack: list[FontFace] = []  # list of FontFace
         self._page_break_after_paragraph = False
         self.follows_trailing_space = False  # The last write has ended with a space.
         self.follows_heading = False  # We don&#39;t want extra space below a heading.
         self.align: Optional[Union[float, Align]] = None
-        self.heading_level = None
-        self._tags_stack = []
+        self.heading_level: Optional[int] = None
+        self._tags_stack: list[str] = []
         self._column = self.pdf.text_columns(skip_leading_spaces=True)
-        self._paragraph = self._column.paragraph()
+        self._paragraph: Optional[&#34;Paragraph&#34;] = self._column.paragraph()
         # &lt;pre&gt;-related properties:
         self._pre_formatted = False  # preserve whitespace while True.
         # nothing written yet to &lt;pre&gt;, remove one initial nl:
         self._pre_started = False
         # &lt;a&gt;-related properties:
-        self.href = &#34;&#34;
+        self.href: int | str = &#34;&#34;
         # &lt;ul&gt;/&lt;ol&gt;-related properties:
         self.indent = 0
-        self.line_height_stack = []
-        self.ol_type = {}  # when inside a &lt;ol&gt; tag, can be &#34;a&#34;, &#34;A&#34;, &#34;i&#34;, &#34;I&#34; or &#34;1&#34;
-        self.bullet = []
+        self.line_height_stack: list[float | None] = []
+        self.ol_type: dict[int, str] = (
+            {}
+        )  # when inside a &lt;ol&gt; tag, can be &#34;a&#34;, &#34;A&#34;, &#34;i&#34;, &#34;I&#34; or &#34;1&#34;
+        self.bullet: list[int | str] = []
         # &lt;title&gt;-related properties:
         self.render_title_tag = render_title_tag
         self._in_title = False
         # &lt;table&gt;-related properties:
         self.table_line_separators = table_line_separators
-        self.table = None  # becomes a Table instance when processing &lt;table&gt; tags
-        self.table_row = None  # becomes a Row instance when processing &lt;tr&gt; tags
-        self.tr = None  # becomes a dict of attributes when processing &lt;tr&gt; tags
-        self.td_th = None  # becomes a dict of attributes when processing &lt;td&gt;/&lt;th&gt; tags
+        self.table: Optional[Table] = (
+            None  # becomes a Table instance when processing &lt;table&gt; tags
+        )
+        self.table_row: Optional[Row] = (
+            None  # becomes a Row instance when processing &lt;tr&gt; tags
+        )
+        self.tr: Optional[dict[str, Optional[str]]] = (
+            None  # becomes a dict of attributes when processing &lt;tr&gt; tags
+        )
+        self.td_th: Optional[dict[str, Any]] = (
+            None  # becomes a dict of attributes when processing &lt;td&gt;/&lt;th&gt; tags
+        )
         #                    &#34;inserted&#34; is a special attribute indicating that a cell has be inserted in self.table_row
 
         self.tag_styles = _scale_units(pdf, DEFAULT_TAG_STYLES)
@@ -281,9 +293,15 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     color=tag_style.color,
                     fill_color=tag_style.fill_color,
                     # Using default tag margins:
-                    t_margin=self.tag_styles[tag].t_margin,
-                    l_margin=self.tag_styles[tag].l_margin,
-                    b_margin=self.tag_styles[tag].b_margin,
+                    t_margin=self.tag_styles[
+                        tag
+                    ].t_margin,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
+                    l_margin=self.tag_styles[
+                        tag
+                    ].l_margin,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
+                    b_margin=self.tag_styles[
+                        tag
+                    ].b_margin,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
                 )
             self.tag_styles[tag] = tag_style
         if heading_sizes is not None:
@@ -308,12 +326,18 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-            self.tag_styles[&#34;code&#34;] = self.tag_styles[&#34;code&#34;].replace(
-                family=pre_code_font
-            )
-            self.tag_styles[&#34;pre&#34;] = self.tag_styles[&#34;pre&#34;].replace(
-                font_family=pre_code_font
-            )
+            code_style = self.tag_styles[&#34;code&#34;]
+            pre_style = self.tag_styles[&#34;pre&#34;]
+            if isinstance(code_style, TextStyle):
+                code_style = code_style.replace(font_family=pre_code_font)
+            else:
+                code_style = code_style.replace(family=pre_code_font)
+            if isinstance(pre_style, TextStyle):
+                pre_style = pre_style.replace(font_family=pre_code_font)
+            else:
+                pre_style = pre_style.replace(family=pre_code_font)
+            self.tag_styles[&#34;code&#34;] = code_style
+            self.tag_styles[&#34;pre&#34;] = pre_style
         if dd_tag_indent is not None:
             warnings.warn(
                 (
@@ -357,15 +381,23 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     )
                 self.tag_styles[tag] = self.tag_styles[tag].replace(l_margin=indent)
 
+    @staticmethod
+    def _normalize_l_margin(l_margin: Any) -&gt; Union[float, Align]:
+        if isinstance(l_margin, Align):
+            return l_margin
+        if isinstance(l_margin, (int, float)):
+            return float(l_margin)
+        return 0.0
+
     def _new_paragraph(
         self,
         align: Optional[Union[float, Align]] = None,
-        line_height=1.0,
-        top_margin=0,
-        bottom_margin=0,
-        indent=0,
-        bullet=&#34;&#34;,
-    ):
+        line_height: Optional[float] = 1.0,
+        top_margin: float = 0,
+        bottom_margin: float = 0,
+        indent: Union[float, Align] = 0,
+        bullet: str = &#34;&#34;,
+    ) -&gt; None:
         # Note that currently top_margin is ignored if bullet is also provided,
         # due to the behaviour of TextRegion._render_column_lines()
         self._end_paragraph()
@@ -378,7 +410,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         if not top_margin and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
         self._paragraph = self._column.paragraph(
-            text_align=self.align,
+            text_align=self.align if isinstance(self.align, Align) else None,
             line_height=line_height,
             skip_leading_spaces=True,
             top_margin=top_margin,
@@ -389,7 +421,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         self.follows_trailing_space = True
         self.follows_heading = False
 
-    def _end_paragraph(self):
+    def _end_paragraph(self) -&gt; None:
         self.align = None
         if not self._paragraph:
             return
@@ -399,10 +431,10 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         self.follows_trailing_space = True
         if self._page_break_after_paragraph:
             # pylint: disable=protected-access
-            self.pdf._perform_page_break()
+            self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
             self._page_break_after_paragraph = False
 
-    def _write_paragraph(self, text, link=None):
+    def _write_paragraph(self, text: str, link: Optional[int | str] = None) -&gt; None:
         if not text:
             return
         if not self._paragraph:
@@ -413,7 +445,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         # and then to be able to drop those temporary changes,
         # because they will only be &#34;effectively&#34; applied in .end_paragraph().
         # pylint: disable=protected-access
-        self.pdf._push_local_stack()
+        self.pdf._push_local_stack()  # pyright: ignore[reportPrivateUsage]
         prev_page = self.pdf.page
         self.pdf.page = 0
         self.pdf.set_font(
@@ -421,20 +453,21 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             size=self.font_size_pt,
             style=self.font_emphasis.style,
         )
-        if self.font_color != self.pdf.text_color:
+        if self.font_color != self.pdf.text_color and self.font_color is not None:
             self.pdf.set_text_color(self.font_color)
+        assert self._paragraph is not None
         self._paragraph.write(text, link=link)
         self.pdf.page = prev_page
-        self.pdf._pop_local_stack()
+        self.pdf._pop_local_stack()  # pyright: ignore[reportPrivateUsage]
 
-    def _ln(self, h=None):
+    def _ln(self, h: Optional[float] = None) -&gt; None:
         if self._paragraph:
             self._paragraph.ln(h=h)
         else:
             self._column.ln(h=h)
         self.follows_trailing_space = True
 
-    def handle_data(self, data):
+    def handle_data(self, data: str) -&gt; None:
         if self._in_title:
             if self.pdf.title:
                 LOGGER.warning(&#39;Ignoring repeated &lt;title&gt; &#34;%s&#34;&#39;, data)
@@ -457,14 +490,17 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 # However there should be an incoming refactoring of this code
                 # dedicated to text layout, and we should probably wait for that
                 # before supporting this feature.
-            align = self.td_th.get(&#34;align&#34;, self.tr.get(&#34;align&#34;))
+            align = self.td_th.get(&#34;align&#34;)
+            if align is None and self.tr is not None:
+                align = self.tr.get(&#34;align&#34;)
             if align:
                 align = align.upper()
-            bgcolor = color_as_decimal(
-                self.td_th.get(&#34;bgcolor&#34;, self.tr.get(&#34;bgcolor&#34;, None))
-            )
-            colspan = int(self.td_th.get(&#34;colspan&#34;, &#34;1&#34;))
-            rowspan = int(self.td_th.get(&#34;rowspan&#34;, &#34;1&#34;))
+            bgcolor_str = self.td_th.get(&#34;bgcolor&#34;)
+            if bgcolor_str is None and self.tr is not None:
+                bgcolor_str = self.tr.get(&#34;bgcolor&#34;)
+            bgcolor = color_as_decimal(bgcolor_str)
+            colspan = int(self.td_th.get(&#34;colspan&#34;) or &#34;1&#34;)
+            rowspan = int(self.td_th.get(&#34;rowspan&#34;) or &#34;1&#34;)
             emphasis = 0
             if self.td_th.get(&#34;b&#34;):
                 emphasis |= TextEmphasis.B
@@ -489,6 +525,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     color=self.pdf.text_color,
                     fill_color=bgcolor,
                 )
+            assert self.table_row is not None
             self.table_row.cell(
                 text=data,
                 align=align,
@@ -520,7 +557,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         if self._page_break_after_paragraph:
             self._end_paragraph()
 
-    def _write_data(self, data):
+    def _write_data(self, data: str) -&gt; None:
         if self.href:
             self.put_link(data)
         else:
@@ -533,19 +570,20 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 self.pdf.start_section(data, self.heading_level - 1, strict=False)
             self._write_paragraph(data)
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
         self._pre_started = False
-        attrs = dict(attrs)
-        css_style = parse_css_style(attrs.get(&#34;style&#34;, &#34;&#34;))
+        attrs_dict: dict[str, str | None] = dict(attrs)
+        del attrs
+        css_style = parse_css_style(attrs_dict.get(&#34;style&#34;) or &#34;&#34;)
         self._tags_stack.append(tag)
         if css_style.get(&#34;break-before&#34;) == &#34;page&#34;:
             self._end_paragraph()
             # pylint: disable=protected-access
-            self.pdf._perform_page_break()
+            self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
         if tag in (&#34;b&#34;, &#34;i&#34;, &#34;u&#34;) and self.td_th is not None:
             self.td_th[tag] = True
         if tag == &#34;a&#34;:
-            self.href = attrs[&#34;href&#34;]
+            self.href = attrs_dict[&#34;href&#34;] or &#34;&#34;
             try:
                 page = int(self.href)
                 self.href = self.pdf.add_link(page=page)
@@ -555,20 +593,20 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             self._write_paragraph(&#34;\n&#34;)
         if tag == &#34;hr&#34;:
             self._end_paragraph()
-            width = css_style.get(&#34;width&#34;, attrs.get(&#34;width&#34;))
-            if width:
-                if width[-1] == &#34;%&#34;:
-                    width = self.pdf.epw * int(width[:-1]) / 100
+            width_str = css_style.get(&#34;width&#34;, attrs_dict.get(&#34;width&#34;))
+            if width_str:
+                if width_str[-1] == &#34;%&#34;:
+                    hr_width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    width = int(width) / self.pdf.k
+                    hr_width = float(width_str) / self.pdf.k
             else:
-                width = self.pdf.epw
+                hr_width = self.pdf.epw
             # Centering:
-            x_start = self.pdf.l_margin + (self.pdf.epw - width) / 2
+            x_start = self.pdf.l_margin + (self.pdf.epw - hr_width) / 2
             self.pdf.line(
                 x1=x_start,
                 y1=self.pdf.y,
-                x2=x_start + width,
+                x2=x_start + hr_width,
                 y2=self.pdf.y,
             )
             self._write_paragraph(&#34;\n&#34;)
@@ -581,19 +619,24 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     color=self.font_color,
                 )
             )
-            align = None
-            if &#34;align&#34; in attrs:
-                align = attrs.get(&#34;align&#34;)[0].upper()
-                if not align in [&#34;L&#34;, &#34;R&#34;, &#34;J&#34;, &#34;C&#34;]:
+            align: Optional[Align] = None
+            if &#34;align&#34; in attrs_dict:
+                try:
+                    align_str = attrs_dict.get(&#34;align&#34;)
+                    align = Align.coerce(align_str) if align_str is not None else None
+                except ValueError:
                     align = None
-            line_height = css_style.get(&#34;line-height&#34;, attrs.get(&#34;line-height&#34;))
+            line_height_str = css_style.get(
+                &#34;line-height&#34;, attrs_dict.get(&#34;line-height&#34;)
+            )
             # &#34;line-height&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            if line_height:
+            line_height: Optional[float] = None
+            if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    line_height = float(line_height)
+                    line_height = float(line_height_str)
                 except ValueError:
                     line_height = None
             tag_style = self.tag_styles[tag]
@@ -605,12 +648,19 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 self.font_size_pt = tag_style.size_pt
             if tag_style.emphasis:
                 self.font_emphasis |= tag_style.emphasis
+            if isinstance(tag_style, TextStyle):
+                t_margin = tag_style.t_margin
+                b_margin = tag_style.b_margin
+                l_margin = tag_style.l_margin
+            else:
+                t_margin = b_margin = l_margin = 0.0
+            l_margin = self._normalize_l_margin(l_margin)
             self._new_paragraph(
                 align=align,
-                line_height=line_height,
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
+                line_height=line_height or 1.0,
+                top_margin=t_margin,
+                bottom_margin=b_margin,
+                indent=l_margin,
             )
         if tag in HEADING_TAGS:
             self.style_stack.append(
@@ -624,24 +674,32 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             self.heading_level = 0 if tag == &#34;title&#34; else int(tag[1:])
             tag_style = self.tag_styles[tag]
             hsize = (tag_style.size_pt or self.font_size_pt) / self.pdf.k
-            if attrs:
-                align = attrs.get(&#34;align&#34;)
-                if not align in [&#34;L&#34;, &#34;R&#34;, &#34;J&#34;, &#34;C&#34;]:
+            align = None
+            if &#34;align&#34; in attrs_dict:
+                try:
+                    align_str = attrs_dict.get(&#34;align&#34;)
+                    align = Align.coerce(align_str) if align_str is not None else None
+                except ValueError:
                     align = None
+            if isinstance(tag_style, TextStyle):
+                t_margin = tag_style.t_margin
+                b_margin = tag_style.b_margin
+                l_margin = tag_style.l_margin
             else:
-                align = None
+                t_margin = b_margin = l_margin = 0.0
+            l_margin = self._normalize_l_margin(l_margin)
             self._new_paragraph(
                 align=align,
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin * hsize,
-                indent=tag_style.l_margin,
+                top_margin=t_margin,
+                bottom_margin=b_margin * hsize,
+                indent=l_margin,
             )
             if &#34;color&#34; in css_style:
                 self.font_color = color_as_decimal(css_style[&#34;color&#34;])
-            elif &#34;color&#34; in attrs:
+            elif &#34;color&#34; in attrs_dict:
                 # &#34;color&#34; attributes are not valid in HTML,
                 # but we support it for backward compatibility:
-                self.font_color = color_as_decimal(attrs[&#34;color&#34;])
+                self.font_color = color_as_decimal(attrs_dict[&#34;color&#34;])
             elif tag_style.color is not None and tag_style.color != self.font_color:
                 self.font_color = tag_style.color
             if tag_style.family is not None and tag_style.family != self.font_family:
@@ -690,64 +748,96 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     # Not compliant with the HTML spec, but backward-compatible
                     # cf. https://github.com/py-pdf/fpdf2/pull/1217#discussion_r1666643777
                     self.follows_heading = True
+                if isinstance(tag_style, TextStyle):
+                    t_margin = tag_style.t_margin
+                    b_margin = tag_style.b_margin
+                    l_margin = tag_style.l_margin
+                else:
+                    t_margin = b_margin = l_margin = 0.0
+                l_margin = self._normalize_l_margin(l_margin)
                 self._new_paragraph(
                     line_height=(
                         self.line_height_stack[-1] if self.line_height_stack else None
                     ),
-                    top_margin=tag_style.t_margin,
-                    bottom_margin=tag_style.b_margin,
-                    indent=tag_style.l_margin,
+                    top_margin=t_margin,
+                    bottom_margin=b_margin,
+                    indent=l_margin,
                 )
         if tag == &#34;ul&#34;:
             self.indent += 1
-            bullet_char = attrs.get(&#34;type&#34;, self.ul_bullet_char)
+            bullet_char = attrs_dict.get(&#34;type&#34;, self.ul_bullet_char)
+            assert bullet_char is not None
             self.bullet.append(bullet_char)
-            line_height = css_style.get(&#34;line-height&#34;, attrs.get(&#34;line-height&#34;))
+            line_height_str = css_style.get(
+                &#34;line-height&#34;, attrs_dict.get(&#34;line-height&#34;)
+            )
             # &#34;line-height&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            if line_height:
+            if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(line_height))
+                    self.line_height_stack.append(float(line_height_str))
                 except ValueError:
                     pass
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
+                if isinstance(tag_style, TextStyle):
+                    t_margin = tag_style.t_margin
+                    b_margin = tag_style.b_margin
+                    l_margin = tag_style.l_margin
+                else:
+                    t_margin = b_margin = l_margin = 0.0
+                l_margin = self._normalize_l_margin(l_margin)
                 self._new_paragraph(
                     line_height=0,
-                    top_margin=tag_style.t_margin,
-                    bottom_margin=tag_style.b_margin,
-                    indent=tag_style.l_margin,
+                    top_margin=t_margin,
+                    bottom_margin=b_margin,
+                    indent=l_margin,
                 )
                 self._write_paragraph(&#34;\u00a0&#34;)
             self._end_paragraph()
         if tag == &#34;ol&#34;:
             self.indent += 1
-            start = int(attrs[&#34;start&#34;]) if &#34;start&#34; in attrs else 1
+            start = 1
+            if &#34;start&#34; in attrs_dict:
+                start_str = attrs_dict[&#34;start&#34;] or &#34;1&#34;
+                try:
+                    start = int(start_str)
+                except ValueError:
+                    start = 1
             self.bullet.append(start - 1)
-            self.ol_type[self.indent] = attrs.get(&#34;type&#34;, &#34;1&#34;)
-            line_height = css_style.get(&#34;line-height&#34;, attrs.get(&#34;line-height&#34;))
+            self.ol_type[self.indent] = attrs_dict.get(&#34;type&#34;) or &#34;1&#34;
+            line_height_str = css_style.get(&#34;line-height&#34;) or attrs_dict.get(
+                &#34;line-height&#34;
+            )
             # &#34;line-height&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            if line_height:
+            if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(line_height))
+                    self.line_height_stack.append(float(line_height_str))
                 except ValueError:
                     pass
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
+                if isinstance(tag_style, TextStyle):
+                    t_margin = tag_style.t_margin
+                    b_margin = tag_style.b_margin
+                    l_margin = tag_style.l_margin
+                else:
+                    t_margin = b_margin = l_margin = 0.0
+                l_margin = self._normalize_l_margin(l_margin)
                 self._new_paragraph(
                     line_height=0,
-                    top_margin=tag_style.t_margin,
-                    bottom_margin=tag_style.b_margin,
-                    indent=tag_style.l_margin,
+                    top_margin=t_margin,
+                    bottom_margin=b_margin,
+                    indent=l_margin,
                 )
                 self._write_paragraph(&#34;\u00a0&#34;)
             self._end_paragraph()
@@ -767,13 +857,21 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 ol_type = self.ol_type[self.indent]
                 bullet = f&#34;{ol_prefix(ol_type, bullet)}.&#34;
             tag_style = self.tag_styles[tag]
-            self._ln(tag_style.t_margin)
+            if isinstance(tag_style, TextStyle):
+                b_margin = tag_style.b_margin
+                l_margin = tag_style.l_margin
+                t_margin = tag_style.t_margin
+            else:
+                b_margin = l_margin = t_margin = 0.0
+            l_margin = self._normalize_l_margin(l_margin)
+            self._ln(t_margin)
+            numeric_indent = 0.0 if isinstance(l_margin, Align) else l_margin
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                indent=tag_style.l_margin * self.indent,
-                bottom_margin=tag_style.b_margin,
+                indent=numeric_indent * self.indent,
+                bottom_margin=b_margin,
                 bullet=bullet,
             )
             self.pdf.text_color = prev_text_color
@@ -786,37 +884,58 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     color=self.font_color,
                 )
             )
-            if &#34;color&#34; in attrs:
-                self.font_color = color_as_decimal(attrs[&#34;color&#34;])
+            if &#34;color&#34; in attrs_dict:
+                self.font_color = color_as_decimal(attrs_dict[&#34;color&#34;])
             if &#34;font-size&#34; in css_style:
-                self.font_size_pt = int(css_style.get(&#34;font-size&#34;))
-            elif &#34;size&#34; in attrs:
-                self.font_size_pt = int(attrs.get(&#34;size&#34;))
-            if &#34;face&#34; in attrs:
-                self.font_family = attrs.get(&#34;face&#34;).lower()
+                font_size_str = css_style.get(&#34;font-size&#34;) or &#34;&#34;
+                try:
+                    self.font_size_pt = float(font_size_str)
+                except ValueError:
+                    pass
+            elif &#34;size&#34; in attrs_dict:
+                font_size_str = attrs_dict.get(&#34;size&#34;) or &#34;&#34;
+                try:
+                    self.font_size_pt = float(font_size_str)
+                except ValueError:
+                    pass
+            if &#34;face&#34; in attrs_dict:
+                font_family = attrs_dict.get(&#34;face&#34;) or &#34;&#34;
+                self.font_family = font_family.lower()
         if tag == &#34;table&#34;:
             self._end_paragraph()
-            width = css_style.get(&#34;width&#34;, attrs.get(&#34;width&#34;))
-            if width:
-                if width[-1] == &#34;%&#34;:
-                    width = self.pdf.epw * int(width[:-1]) / 100
+            width: Optional[float] = None
+            width_str = css_style.get(&#34;width&#34;) or attrs_dict.get(&#34;width&#34;)
+            if width_str:
+                if width_str[-1] == &#34;%&#34;:
+                    width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    width = int(width) / self.pdf.k
-            if &#34;border&#34; not in attrs:  # default borders
+                    width = float(width_str) / self.pdf.k
+            if &#34;border&#34; not in attrs_dict:  # default borders
                 borders_layout = (
                     &#34;HORIZONTAL_LINES&#34;
                     if self.table_line_separators
                     else &#34;SINGLE_TOP_LINE&#34;
                 )
-            elif int(attrs[&#34;border&#34;]):  # explicitly enabled borders
-                borders_layout = (
-                    &#34;ALL&#34; if self.table_line_separators else &#34;NO_HORIZONTAL_LINES&#34;
-                )
-            else:  # explicitly disabled borders
-                borders_layout = &#34;NONE&#34;
-            align = attrs.get(&#34;align&#34;, &#34;center&#34;).upper()
-            padding = float(attrs[&#34;cellpadding&#34;]) if &#34;cellpadding&#34; in attrs else None
-            spacing = float(attrs.get(&#34;cellspacing&#34;, 0))
+            else:
+                borders_str = attrs_dict[&#34;border&#34;] or &#34;&#34;
+                try:
+                    if int(borders_str) &gt; 0:  # explicitly enabled borders
+                        borders_layout = (
+                            &#34;ALL&#34;
+                            if self.table_line_separators
+                            else &#34;NO_HORIZONTAL_LINES&#34;
+                        )
+                    else:  # explicitly disabled borders
+                        borders_layout = &#34;NONE&#34;
+                except ValueError:
+                    borders_layout = &#34;NONE&#34;
+            align = Align.coerce(attrs_dict.get(&#34;align&#34;) or &#34;CENTER&#34;)
+            padding = (
+                float(attrs_dict[&#34;cellpadding&#34;] or 0)
+                if &#34;cellpadding&#34; in attrs_dict
+                else None
+            )
+            spacing = float(attrs_dict.get(&#34;cellspacing&#34;) or 0)
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -831,12 +950,12 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         if tag == &#34;tr&#34;:
             if not self.table:
                 raise FPDFException(&#34;Invalid HTML: &lt;tr&gt; used outside any &lt;table&gt;&#34;)
-            self.tr = {k.lower(): v for k, v in attrs.items()}
+            self.tr = {k.lower(): v for k, v in attrs_dict.items()}
             self.table_row = self.table.row()
         if tag in (&#34;td&#34;, &#34;th&#34;):
-            if not self.table_row:
+            if not self.table or not self.table_row:
                 raise FPDFException(f&#34;Invalid HTML: &lt;{tag}&gt; used outside any &lt;tr&gt;&#34;)
-            self.td_th = {k.lower(): v for k, v in attrs.items()}
+            self.td_th = {k.lower(): v for k, v in attrs_dict.items()}
             self.td_th[&#34;tag&#34;] = tag
             if tag == &#34;th&#34;:
                 if &#34;align&#34; not in self.td_th:
@@ -846,32 +965,37 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 # =&gt; we are in the 1st &lt;tr&gt;, and the 1st cell is a &lt;td&gt;
                 # =&gt; we do not treat the first row as a header
                 # pylint: disable=protected-access
-                self.table._first_row_as_headings = False
-                self.table._num_heading_rows = 0
-            if &#34;height&#34; in attrs:
+                self.table._first_row_as_headings = (
+                    False  # pyright: ignore[reportPrivateUsage]
+                )
+                self.table._num_heading_rows = 0  # pyright: ignore[reportPrivateUsage]
+            if &#34;height&#34; in attrs_dict:
                 LOGGER.warning(
                     &#39;Ignoring unsupported height=&#34;%s&#34; specified on a &lt;%s&gt;&#39;,
-                    attrs[&#34;height&#34;],
+                    attrs_dict[&#34;height&#34;],
                     tag,
                 )
-            if &#34;width&#34; in attrs:
-                width = attrs[&#34;width&#34;]
+            if &#34;width&#34; in attrs_dict:
+                width_str = attrs_dict[&#34;width&#34;] or &#34;0&#34;
                 # pylint: disable=protected-access
                 if len(self.table.rows) == 1:  # =&gt; first table row
-                    if width[-1] == &#34;%&#34;:
-                        width = width[:-1]
+                    if width_str[-1] == &#34;%&#34;:
+                        width = float(width_str[:-1])
+                    else:
+                        width = float(width_str)
                     if not self.table._col_widths:
                         self.table._col_widths = []
-                    self.table._col_widths.append(int(width))
+                    assert isinstance(self.table._col_widths, list)
+                    self.table._col_widths.append(width)
                 else:
                     LOGGER.warning(
                         &#39;Ignoring width=&#34;%s&#34; specified on a &lt;%s&gt; that is not in the first &lt;tr&gt;&#39;,
-                        width,
+                        width_str,
                         tag,
                     )
-        if tag == &#34;img&#34; and &#34;src&#34; in attrs:
-            width = int(attrs.get(&#34;width&#34;, 0)) / self.pdf.k
-            height = int(attrs.get(&#34;height&#34;, 0)) / self.pdf.k
+        if tag == &#34;img&#34; and &#34;src&#34; in attrs_dict:
+            width = float(attrs_dict.get(&#34;width&#34;) or 0) / self.pdf.k
+            height = float(attrs_dict.get(&#34;height&#34;) or 0) / self.pdf.k
             if self.table_row:  # =&gt; &lt;img&gt; in a &lt;table&gt;
                 if width or height:
                     LOGGER.warning(
@@ -879,35 +1003,40 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     )
                 if self.align:
                     LOGGER.warning(&#34;Ignoring unsupported &lt;img&gt; alignment&#34;)
-                self.table_row.cell(img=attrs[&#34;src&#34;], img_fill_width=True)
+                self.table_row.cell(img=attrs_dict[&#34;src&#34;], img_fill_width=True)
+                assert self.td_th is not None
                 self.td_th[&#34;inserted&#34;] = True
                 return
-            x = self.pdf.get_x()
+            x: float | Align = self.pdf.get_x()
             if self.align:
                 x = self.align
             self.pdf.image(
-                self.image_map(attrs[&#34;src&#34;]), x=x, w=width, h=height, link=self.href
+                self.image_map(attrs_dict[&#34;src&#34;] or &#34;&#34;),
+                x=x,
+                w=width,
+                h=height,
+                link=self.href,
             )
         if tag == &#34;toc&#34;:
             self._end_paragraph()
             self.pdf.insert_toc_placeholder(
-                self.render_toc, pages=int(attrs.get(&#34;pages&#34;, 1))
+                self.render_toc, pages=int(attrs_dict.get(&#34;pages&#34;) or &#34;1&#34;)
             )
         if tag == &#34;sup&#34;:
-            self.pdf.char_vpos = &#34;SUP&#34;
+            self.pdf.char_vpos = CharVPos.SUP
         if tag == &#34;sub&#34;:
-            self.pdf.char_vpos = &#34;SUB&#34;
+            self.pdf.char_vpos = CharVPos.SUB
         if tag == &#34;title&#34;:
             self._in_title = True
         if css_style.get(&#34;break-after&#34;) == &#34;page&#34;:
             if tag in (&#34;br&#34;, &#34;hr&#34;, &#34;img&#34;):
                 self._end_paragraph()
                 # pylint: disable=protected-access
-                self.pdf._perform_page_break()
+                self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
             else:
                 self._page_break_after_paragraph = True
 
-    def handle_endtag(self, tag):
+    def handle_endtag(self, tag: str) -&gt; None:
         while (
             self._tags_stack
             and tag != self._tags_stack[-1]
@@ -934,7 +1063,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 font_face = self.style_stack.pop()
                 self.font_family = font_face.family or self.font_family
                 self.font_size_pt = font_face.size_pt or self.font_size_pt
-                self.font_emphasis = font_face.emphasis
+                self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
                 self.font_color = font_face.color
             self._end_paragraph()
             self.align = None
@@ -944,7 +1073,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 font_face = self.style_stack.pop()
                 self.font_family = font_face.family or self.font_family
                 self.font_size_pt = font_face.size_pt or self.font_size_pt
-                self.font_emphasis = font_face.emphasis
+                self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
                 self.font_color = font_face.color
             self._end_paragraph()
             self.follows_heading = True  # We don&#39;t want extra space below a heading.
@@ -966,7 +1095,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 font_face = self.style_stack.pop()
                 self.font_family = font_face.family or self.font_family
                 self.font_size_pt = font_face.size_pt or self.font_size_pt
-                self.font_emphasis = font_face.emphasis
+                self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
                 self.font_color = font_face.color
             if tag == &#34;pre&#34;:
                 self._pre_formatted = False
@@ -981,6 +1110,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             self.line_height_stack.pop()
             self.bullet.pop()
         if tag == &#34;table&#34;:
+            assert self.table is not None
             self.table.render()
             self.table = None
             self._ln()
@@ -988,10 +1118,15 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             self.tr = None
             self.table_row = None
         if tag in (&#34;td&#34;, &#34;th&#34;):
+            assert (
+                self.td_th is not None
+                and self.tr is not None
+                and self.table_row is not None
+            )
             if &#34;inserted&#34; not in self.td_th:
                 # handle_data() was not called =&gt; we call it to produce an empty cell:
                 bgcolor = color_as_decimal(
-                    self.td_th.get(&#34;bgcolor&#34;, self.tr.get(&#34;bgcolor&#34;, None))
+                    self.td_th.get(&#34;bgcolor&#34;) or self.tr.get(&#34;bgcolor&#34;, None)
                 )
                 style = FontFace(fill_color=bgcolor) if bgcolor else None
                 colspan = int(self.td_th.get(&#34;colspan&#34;, &#34;1&#34;))
@@ -1005,16 +1140,16 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 font_face = self.style_stack.pop()
                 self.font_family = font_face.family or self.font_family
                 self.font_size_pt = font_face.size_pt or self.font_size_pt
-                self.font_emphasis = font_face.emphasis
+                self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
                 self.font_color = font_face.color
         if tag == &#34;sup&#34;:
-            self.pdf.char_vpos = &#34;LINE&#34;
+            self.pdf.char_vpos = CharVPos.LINE
         if tag == &#34;sub&#34;:
-            self.pdf.char_vpos = &#34;LINE&#34;
+            self.pdf.char_vpos = CharVPos.LINE
         if tag == &#34;title&#34;:
             self._in_title = False
 
-    def feed(self, data):
+    def feed(self, data: str) -&gt; None:
         super().feed(data)
         while self._tags_stack and self._tags_stack[-1] in self.HTML_UNCLOSED_TAGS:
             self._tags_stack.pop()
@@ -1022,7 +1157,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         if self._tags_stack and self.warn_on_tags_not_matching:
             LOGGER.warning(&#34;Missing HTML end tag for &lt;%s&gt;&#34;, self._tags_stack[-1])
 
-    def put_link(self, text):
+    def put_link(self, text: str) -&gt; None:
         &#34;Insert a hyperlink&#34;
         prev_style = FontFace(
             family=self.font_family,
@@ -1041,11 +1176,11 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         # Restore previous style:
         self.font_family = prev_style.family or self.font_family
         self.font_size_pt = prev_style.size_pt or self.font_size_pt
-        self.font_emphasis = prev_style.emphasis
+        self.font_emphasis = prev_style.emphasis or TextEmphasis.NONE
         self.font_color = prev_style.color
 
     # pylint: disable=no-self-use
-    def render_toc(self, pdf, outline):
+    def render_toc(self, pdf: &#34;FPDF&#34;, outline: list[OutlineSection]) -&gt; None:
         &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
         pdf.ln()
         for section in outline:
@@ -1062,7 +1197,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             )
 
     # Subclasses of _markupbase.ParserBase must implement this:
-    def error(self, message):
+    def error(self, message: str) -&gt; None:
         raise RuntimeError(message)</code></pre>
 </details>
 <div class="desc"><p>Render basic HTML to FPDF</p>
@@ -1124,29 +1259,29 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.html.HTML2FPDF.error"><code class="name flex">
-<span>def <span class="ident">error</span></span>(<span>self, message)</span>
+<span>def <span class="ident">error</span></span>(<span>self, message: str) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1221-L1222" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1369-L1370" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def error(self, message):
+<pre><code class="python">def error(self, message: str) -&gt; None:
     raise RuntimeError(message)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.html.HTML2FPDF.feed"><code class="name flex">
-<span>def <span class="ident">feed</span></span>(<span>self, data)</span>
+<span>def <span class="ident">feed</span></span>(<span>self, data: str) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1173-L1179" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1321-L1327" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def feed(self, data):
+<pre><code class="python">def feed(self, data: str) -&gt; None:
     super().feed(data)
     while self._tags_stack and self._tags_stack[-1] in self.HTML_UNCLOSED_TAGS:
         self._tags_stack.pop()
@@ -1159,15 +1294,15 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 as you want (may include '\n').</p></div>
 </dd>
 <dt id="fpdf.html.HTML2FPDF.handle_data"><code class="name flex">
-<span>def <span class="ident">handle_data</span></span>(<span>self, data)</span>
+<span>def <span class="ident">handle_data</span></span>(<span>self, data: str) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L593-L677" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L639-L727" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def handle_data(self, data):
+<pre><code class="python">def handle_data(self, data: str) -&gt; None:
     if self._in_title:
         if self.pdf.title:
             LOGGER.warning(&#39;Ignoring repeated &lt;title&gt; &#34;%s&#34;&#39;, data)
@@ -1190,14 +1325,17 @@ as you want (may include '\n').</p></div>
             # However there should be an incoming refactoring of this code
             # dedicated to text layout, and we should probably wait for that
             # before supporting this feature.
-        align = self.td_th.get(&#34;align&#34;, self.tr.get(&#34;align&#34;))
+        align = self.td_th.get(&#34;align&#34;)
+        if align is None and self.tr is not None:
+            align = self.tr.get(&#34;align&#34;)
         if align:
             align = align.upper()
-        bgcolor = color_as_decimal(
-            self.td_th.get(&#34;bgcolor&#34;, self.tr.get(&#34;bgcolor&#34;, None))
-        )
-        colspan = int(self.td_th.get(&#34;colspan&#34;, &#34;1&#34;))
-        rowspan = int(self.td_th.get(&#34;rowspan&#34;, &#34;1&#34;))
+        bgcolor_str = self.td_th.get(&#34;bgcolor&#34;)
+        if bgcolor_str is None and self.tr is not None:
+            bgcolor_str = self.tr.get(&#34;bgcolor&#34;)
+        bgcolor = color_as_decimal(bgcolor_str)
+        colspan = int(self.td_th.get(&#34;colspan&#34;) or &#34;1&#34;)
+        rowspan = int(self.td_th.get(&#34;rowspan&#34;) or &#34;1&#34;)
         emphasis = 0
         if self.td_th.get(&#34;b&#34;):
             emphasis |= TextEmphasis.B
@@ -1222,6 +1360,7 @@ as you want (may include '\n').</p></div>
                 color=self.pdf.text_color,
                 fill_color=bgcolor,
             )
+        assert self.table_row is not None
         self.table_row.cell(
             text=data,
             align=align,
@@ -1256,15 +1395,15 @@ as you want (may include '\n').</p></div>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.html.HTML2FPDF.handle_endtag"><code class="name flex">
-<span>def <span class="ident">handle_endtag</span></span>(<span>self, tag)</span>
+<span>def <span class="ident">handle_endtag</span></span>(<span>self, tag: str) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1066-L1171" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1208-L1319" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def handle_endtag(self, tag):
+<pre><code class="python">def handle_endtag(self, tag: str) -&gt; None:
     while (
         self._tags_stack
         and tag != self._tags_stack[-1]
@@ -1291,7 +1430,7 @@ as you want (may include '\n').</p></div>
             font_face = self.style_stack.pop()
             self.font_family = font_face.family or self.font_family
             self.font_size_pt = font_face.size_pt or self.font_size_pt
-            self.font_emphasis = font_face.emphasis
+            self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
             self.font_color = font_face.color
         self._end_paragraph()
         self.align = None
@@ -1301,7 +1440,7 @@ as you want (may include '\n').</p></div>
             font_face = self.style_stack.pop()
             self.font_family = font_face.family or self.font_family
             self.font_size_pt = font_face.size_pt or self.font_size_pt
-            self.font_emphasis = font_face.emphasis
+            self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
             self.font_color = font_face.color
         self._end_paragraph()
         self.follows_heading = True  # We don&#39;t want extra space below a heading.
@@ -1323,7 +1462,7 @@ as you want (may include '\n').</p></div>
             font_face = self.style_stack.pop()
             self.font_family = font_face.family or self.font_family
             self.font_size_pt = font_face.size_pt or self.font_size_pt
-            self.font_emphasis = font_face.emphasis
+            self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
             self.font_color = font_face.color
         if tag == &#34;pre&#34;:
             self._pre_formatted = False
@@ -1338,6 +1477,7 @@ as you want (may include '\n').</p></div>
         self.line_height_stack.pop()
         self.bullet.pop()
     if tag == &#34;table&#34;:
+        assert self.table is not None
         self.table.render()
         self.table = None
         self._ln()
@@ -1345,10 +1485,15 @@ as you want (may include '\n').</p></div>
         self.tr = None
         self.table_row = None
     if tag in (&#34;td&#34;, &#34;th&#34;):
+        assert (
+            self.td_th is not None
+            and self.tr is not None
+            and self.table_row is not None
+        )
         if &#34;inserted&#34; not in self.td_th:
             # handle_data() was not called =&gt; we call it to produce an empty cell:
             bgcolor = color_as_decimal(
-                self.td_th.get(&#34;bgcolor&#34;, self.tr.get(&#34;bgcolor&#34;, None))
+                self.td_th.get(&#34;bgcolor&#34;) or self.tr.get(&#34;bgcolor&#34;, None)
             )
             style = FontFace(fill_color=bgcolor) if bgcolor else None
             colspan = int(self.td_th.get(&#34;colspan&#34;, &#34;1&#34;))
@@ -1362,39 +1507,40 @@ as you want (may include '\n').</p></div>
             font_face = self.style_stack.pop()
             self.font_family = font_face.family or self.font_family
             self.font_size_pt = font_face.size_pt or self.font_size_pt
-            self.font_emphasis = font_face.emphasis
+            self.font_emphasis = font_face.emphasis or TextEmphasis.NONE
             self.font_color = font_face.color
     if tag == &#34;sup&#34;:
-        self.pdf.char_vpos = &#34;LINE&#34;
+        self.pdf.char_vpos = CharVPos.LINE
     if tag == &#34;sub&#34;:
-        self.pdf.char_vpos = &#34;LINE&#34;
+        self.pdf.char_vpos = CharVPos.LINE
     if tag == &#34;title&#34;:
         self._in_title = False</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.html.HTML2FPDF.handle_starttag"><code class="name flex">
-<span>def <span class="ident">handle_starttag</span></span>(<span>self, tag, attrs)</span>
+<span>def <span class="ident">handle_starttag</span></span>(<span>self, tag: str, attrs: list[tuple[str, str | None]]) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L692-L1064" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L742-L1206" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def handle_starttag(self, tag, attrs):
+<pre><code class="python">def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
     self._pre_started = False
-    attrs = dict(attrs)
-    css_style = parse_css_style(attrs.get(&#34;style&#34;, &#34;&#34;))
+    attrs_dict: dict[str, str | None] = dict(attrs)
+    del attrs
+    css_style = parse_css_style(attrs_dict.get(&#34;style&#34;) or &#34;&#34;)
     self._tags_stack.append(tag)
     if css_style.get(&#34;break-before&#34;) == &#34;page&#34;:
         self._end_paragraph()
         # pylint: disable=protected-access
-        self.pdf._perform_page_break()
+        self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
     if tag in (&#34;b&#34;, &#34;i&#34;, &#34;u&#34;) and self.td_th is not None:
         self.td_th[tag] = True
     if tag == &#34;a&#34;:
-        self.href = attrs[&#34;href&#34;]
+        self.href = attrs_dict[&#34;href&#34;] or &#34;&#34;
         try:
             page = int(self.href)
             self.href = self.pdf.add_link(page=page)
@@ -1404,20 +1550,20 @@ as you want (may include '\n').</p></div>
         self._write_paragraph(&#34;\n&#34;)
     if tag == &#34;hr&#34;:
         self._end_paragraph()
-        width = css_style.get(&#34;width&#34;, attrs.get(&#34;width&#34;))
-        if width:
-            if width[-1] == &#34;%&#34;:
-                width = self.pdf.epw * int(width[:-1]) / 100
+        width_str = css_style.get(&#34;width&#34;, attrs_dict.get(&#34;width&#34;))
+        if width_str:
+            if width_str[-1] == &#34;%&#34;:
+                hr_width = self.pdf.epw * float(width_str[:-1]) / 100
             else:
-                width = int(width) / self.pdf.k
+                hr_width = float(width_str) / self.pdf.k
         else:
-            width = self.pdf.epw
+            hr_width = self.pdf.epw
         # Centering:
-        x_start = self.pdf.l_margin + (self.pdf.epw - width) / 2
+        x_start = self.pdf.l_margin + (self.pdf.epw - hr_width) / 2
         self.pdf.line(
             x1=x_start,
             y1=self.pdf.y,
-            x2=x_start + width,
+            x2=x_start + hr_width,
             y2=self.pdf.y,
         )
         self._write_paragraph(&#34;\n&#34;)
@@ -1430,19 +1576,24 @@ as you want (may include '\n').</p></div>
                 color=self.font_color,
             )
         )
-        align = None
-        if &#34;align&#34; in attrs:
-            align = attrs.get(&#34;align&#34;)[0].upper()
-            if not align in [&#34;L&#34;, &#34;R&#34;, &#34;J&#34;, &#34;C&#34;]:
+        align: Optional[Align] = None
+        if &#34;align&#34; in attrs_dict:
+            try:
+                align_str = attrs_dict.get(&#34;align&#34;)
+                align = Align.coerce(align_str) if align_str is not None else None
+            except ValueError:
                 align = None
-        line_height = css_style.get(&#34;line-height&#34;, attrs.get(&#34;line-height&#34;))
+        line_height_str = css_style.get(
+            &#34;line-height&#34;, attrs_dict.get(&#34;line-height&#34;)
+        )
         # &#34;line-height&#34; attributes are not valid in HTML,
         # but we support it for backward compatibility,
         # because fpdf2 honors it since 2.6.1 and PR #629
-        if line_height:
+        line_height: Optional[float] = None
+        if line_height_str:
             try:
                 # YYY parse and convert non-float line_height values
-                line_height = float(line_height)
+                line_height = float(line_height_str)
             except ValueError:
                 line_height = None
         tag_style = self.tag_styles[tag]
@@ -1454,12 +1605,19 @@ as you want (may include '\n').</p></div>
             self.font_size_pt = tag_style.size_pt
         if tag_style.emphasis:
             self.font_emphasis |= tag_style.emphasis
+        if isinstance(tag_style, TextStyle):
+            t_margin = tag_style.t_margin
+            b_margin = tag_style.b_margin
+            l_margin = tag_style.l_margin
+        else:
+            t_margin = b_margin = l_margin = 0.0
+        l_margin = self._normalize_l_margin(l_margin)
         self._new_paragraph(
             align=align,
-            line_height=line_height,
-            top_margin=tag_style.t_margin,
-            bottom_margin=tag_style.b_margin,
-            indent=tag_style.l_margin,
+            line_height=line_height or 1.0,
+            top_margin=t_margin,
+            bottom_margin=b_margin,
+            indent=l_margin,
         )
     if tag in HEADING_TAGS:
         self.style_stack.append(
@@ -1473,24 +1631,32 @@ as you want (may include '\n').</p></div>
         self.heading_level = 0 if tag == &#34;title&#34; else int(tag[1:])
         tag_style = self.tag_styles[tag]
         hsize = (tag_style.size_pt or self.font_size_pt) / self.pdf.k
-        if attrs:
-            align = attrs.get(&#34;align&#34;)
-            if not align in [&#34;L&#34;, &#34;R&#34;, &#34;J&#34;, &#34;C&#34;]:
+        align = None
+        if &#34;align&#34; in attrs_dict:
+            try:
+                align_str = attrs_dict.get(&#34;align&#34;)
+                align = Align.coerce(align_str) if align_str is not None else None
+            except ValueError:
                 align = None
+        if isinstance(tag_style, TextStyle):
+            t_margin = tag_style.t_margin
+            b_margin = tag_style.b_margin
+            l_margin = tag_style.l_margin
         else:
-            align = None
+            t_margin = b_margin = l_margin = 0.0
+        l_margin = self._normalize_l_margin(l_margin)
         self._new_paragraph(
             align=align,
-            top_margin=tag_style.t_margin,
-            bottom_margin=tag_style.b_margin * hsize,
-            indent=tag_style.l_margin,
+            top_margin=t_margin,
+            bottom_margin=b_margin * hsize,
+            indent=l_margin,
         )
         if &#34;color&#34; in css_style:
             self.font_color = color_as_decimal(css_style[&#34;color&#34;])
-        elif &#34;color&#34; in attrs:
+        elif &#34;color&#34; in attrs_dict:
             # &#34;color&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility:
-            self.font_color = color_as_decimal(attrs[&#34;color&#34;])
+            self.font_color = color_as_decimal(attrs_dict[&#34;color&#34;])
         elif tag_style.color is not None and tag_style.color != self.font_color:
             self.font_color = tag_style.color
         if tag_style.family is not None and tag_style.family != self.font_family:
@@ -1539,64 +1705,96 @@ as you want (may include '\n').</p></div>
                 # Not compliant with the HTML spec, but backward-compatible
                 # cf. https://github.com/py-pdf/fpdf2/pull/1217#discussion_r1666643777
                 self.follows_heading = True
+            if isinstance(tag_style, TextStyle):
+                t_margin = tag_style.t_margin
+                b_margin = tag_style.b_margin
+                l_margin = tag_style.l_margin
+            else:
+                t_margin = b_margin = l_margin = 0.0
+            l_margin = self._normalize_l_margin(l_margin)
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
+                top_margin=t_margin,
+                bottom_margin=b_margin,
+                indent=l_margin,
             )
     if tag == &#34;ul&#34;:
         self.indent += 1
-        bullet_char = attrs.get(&#34;type&#34;, self.ul_bullet_char)
+        bullet_char = attrs_dict.get(&#34;type&#34;, self.ul_bullet_char)
+        assert bullet_char is not None
         self.bullet.append(bullet_char)
-        line_height = css_style.get(&#34;line-height&#34;, attrs.get(&#34;line-height&#34;))
+        line_height_str = css_style.get(
+            &#34;line-height&#34;, attrs_dict.get(&#34;line-height&#34;)
+        )
         # &#34;line-height&#34; attributes are not valid in HTML,
         # but we support it for backward compatibility,
         # because fpdf2 honors it since 2.6.1 and PR #629
-        if line_height:
+        if line_height_str:
             try:
                 # YYY parse and convert non-float line_height values
-                self.line_height_stack.append(float(line_height))
+                self.line_height_stack.append(float(line_height_str))
             except ValueError:
                 pass
         else:
             self.line_height_stack.append(None)
         if self.indent == 1:
             tag_style = self.tag_styles[tag]
+            if isinstance(tag_style, TextStyle):
+                t_margin = tag_style.t_margin
+                b_margin = tag_style.b_margin
+                l_margin = tag_style.l_margin
+            else:
+                t_margin = b_margin = l_margin = 0.0
+            l_margin = self._normalize_l_margin(l_margin)
             self._new_paragraph(
                 line_height=0,
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
+                top_margin=t_margin,
+                bottom_margin=b_margin,
+                indent=l_margin,
             )
             self._write_paragraph(&#34;\u00a0&#34;)
         self._end_paragraph()
     if tag == &#34;ol&#34;:
         self.indent += 1
-        start = int(attrs[&#34;start&#34;]) if &#34;start&#34; in attrs else 1
+        start = 1
+        if &#34;start&#34; in attrs_dict:
+            start_str = attrs_dict[&#34;start&#34;] or &#34;1&#34;
+            try:
+                start = int(start_str)
+            except ValueError:
+                start = 1
         self.bullet.append(start - 1)
-        self.ol_type[self.indent] = attrs.get(&#34;type&#34;, &#34;1&#34;)
-        line_height = css_style.get(&#34;line-height&#34;, attrs.get(&#34;line-height&#34;))
+        self.ol_type[self.indent] = attrs_dict.get(&#34;type&#34;) or &#34;1&#34;
+        line_height_str = css_style.get(&#34;line-height&#34;) or attrs_dict.get(
+            &#34;line-height&#34;
+        )
         # &#34;line-height&#34; attributes are not valid in HTML,
         # but we support it for backward compatibility,
         # because fpdf2 honors it since 2.6.1 and PR #629
-        if line_height:
+        if line_height_str:
             try:
                 # YYY parse and convert non-float line_height values
-                self.line_height_stack.append(float(line_height))
+                self.line_height_stack.append(float(line_height_str))
             except ValueError:
                 pass
         else:
             self.line_height_stack.append(None)
         if self.indent == 1:
             tag_style = self.tag_styles[tag]
+            if isinstance(tag_style, TextStyle):
+                t_margin = tag_style.t_margin
+                b_margin = tag_style.b_margin
+                l_margin = tag_style.l_margin
+            else:
+                t_margin = b_margin = l_margin = 0.0
+            l_margin = self._normalize_l_margin(l_margin)
             self._new_paragraph(
                 line_height=0,
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
+                top_margin=t_margin,
+                bottom_margin=b_margin,
+                indent=l_margin,
             )
             self._write_paragraph(&#34;\u00a0&#34;)
         self._end_paragraph()
@@ -1616,13 +1814,21 @@ as you want (may include '\n').</p></div>
             ol_type = self.ol_type[self.indent]
             bullet = f&#34;{ol_prefix(ol_type, bullet)}.&#34;
         tag_style = self.tag_styles[tag]
-        self._ln(tag_style.t_margin)
+        if isinstance(tag_style, TextStyle):
+            b_margin = tag_style.b_margin
+            l_margin = tag_style.l_margin
+            t_margin = tag_style.t_margin
+        else:
+            b_margin = l_margin = t_margin = 0.0
+        l_margin = self._normalize_l_margin(l_margin)
+        self._ln(t_margin)
+        numeric_indent = 0.0 if isinstance(l_margin, Align) else l_margin
         self._new_paragraph(
             line_height=(
                 self.line_height_stack[-1] if self.line_height_stack else None
             ),
-            indent=tag_style.l_margin * self.indent,
-            bottom_margin=tag_style.b_margin,
+            indent=numeric_indent * self.indent,
+            bottom_margin=b_margin,
             bullet=bullet,
         )
         self.pdf.text_color = prev_text_color
@@ -1635,37 +1841,58 @@ as you want (may include '\n').</p></div>
                 color=self.font_color,
             )
         )
-        if &#34;color&#34; in attrs:
-            self.font_color = color_as_decimal(attrs[&#34;color&#34;])
+        if &#34;color&#34; in attrs_dict:
+            self.font_color = color_as_decimal(attrs_dict[&#34;color&#34;])
         if &#34;font-size&#34; in css_style:
-            self.font_size_pt = int(css_style.get(&#34;font-size&#34;))
-        elif &#34;size&#34; in attrs:
-            self.font_size_pt = int(attrs.get(&#34;size&#34;))
-        if &#34;face&#34; in attrs:
-            self.font_family = attrs.get(&#34;face&#34;).lower()
+            font_size_str = css_style.get(&#34;font-size&#34;) or &#34;&#34;
+            try:
+                self.font_size_pt = float(font_size_str)
+            except ValueError:
+                pass
+        elif &#34;size&#34; in attrs_dict:
+            font_size_str = attrs_dict.get(&#34;size&#34;) or &#34;&#34;
+            try:
+                self.font_size_pt = float(font_size_str)
+            except ValueError:
+                pass
+        if &#34;face&#34; in attrs_dict:
+            font_family = attrs_dict.get(&#34;face&#34;) or &#34;&#34;
+            self.font_family = font_family.lower()
     if tag == &#34;table&#34;:
         self._end_paragraph()
-        width = css_style.get(&#34;width&#34;, attrs.get(&#34;width&#34;))
-        if width:
-            if width[-1] == &#34;%&#34;:
-                width = self.pdf.epw * int(width[:-1]) / 100
+        width: Optional[float] = None
+        width_str = css_style.get(&#34;width&#34;) or attrs_dict.get(&#34;width&#34;)
+        if width_str:
+            if width_str[-1] == &#34;%&#34;:
+                width = self.pdf.epw * float(width_str[:-1]) / 100
             else:
-                width = int(width) / self.pdf.k
-        if &#34;border&#34; not in attrs:  # default borders
+                width = float(width_str) / self.pdf.k
+        if &#34;border&#34; not in attrs_dict:  # default borders
             borders_layout = (
                 &#34;HORIZONTAL_LINES&#34;
                 if self.table_line_separators
                 else &#34;SINGLE_TOP_LINE&#34;
             )
-        elif int(attrs[&#34;border&#34;]):  # explicitly enabled borders
-            borders_layout = (
-                &#34;ALL&#34; if self.table_line_separators else &#34;NO_HORIZONTAL_LINES&#34;
-            )
-        else:  # explicitly disabled borders
-            borders_layout = &#34;NONE&#34;
-        align = attrs.get(&#34;align&#34;, &#34;center&#34;).upper()
-        padding = float(attrs[&#34;cellpadding&#34;]) if &#34;cellpadding&#34; in attrs else None
-        spacing = float(attrs.get(&#34;cellspacing&#34;, 0))
+        else:
+            borders_str = attrs_dict[&#34;border&#34;] or &#34;&#34;
+            try:
+                if int(borders_str) &gt; 0:  # explicitly enabled borders
+                    borders_layout = (
+                        &#34;ALL&#34;
+                        if self.table_line_separators
+                        else &#34;NO_HORIZONTAL_LINES&#34;
+                    )
+                else:  # explicitly disabled borders
+                    borders_layout = &#34;NONE&#34;
+            except ValueError:
+                borders_layout = &#34;NONE&#34;
+        align = Align.coerce(attrs_dict.get(&#34;align&#34;) or &#34;CENTER&#34;)
+        padding = (
+            float(attrs_dict[&#34;cellpadding&#34;] or 0)
+            if &#34;cellpadding&#34; in attrs_dict
+            else None
+        )
+        spacing = float(attrs_dict.get(&#34;cellspacing&#34;) or 0)
         self.table = Table(
             self.pdf,
             align=align,
@@ -1680,12 +1907,12 @@ as you want (may include '\n').</p></div>
     if tag == &#34;tr&#34;:
         if not self.table:
             raise FPDFException(&#34;Invalid HTML: &lt;tr&gt; used outside any &lt;table&gt;&#34;)
-        self.tr = {k.lower(): v for k, v in attrs.items()}
+        self.tr = {k.lower(): v for k, v in attrs_dict.items()}
         self.table_row = self.table.row()
     if tag in (&#34;td&#34;, &#34;th&#34;):
-        if not self.table_row:
+        if not self.table or not self.table_row:
             raise FPDFException(f&#34;Invalid HTML: &lt;{tag}&gt; used outside any &lt;tr&gt;&#34;)
-        self.td_th = {k.lower(): v for k, v in attrs.items()}
+        self.td_th = {k.lower(): v for k, v in attrs_dict.items()}
         self.td_th[&#34;tag&#34;] = tag
         if tag == &#34;th&#34;:
             if &#34;align&#34; not in self.td_th:
@@ -1695,32 +1922,37 @@ as you want (may include '\n').</p></div>
             # =&gt; we are in the 1st &lt;tr&gt;, and the 1st cell is a &lt;td&gt;
             # =&gt; we do not treat the first row as a header
             # pylint: disable=protected-access
-            self.table._first_row_as_headings = False
-            self.table._num_heading_rows = 0
-        if &#34;height&#34; in attrs:
+            self.table._first_row_as_headings = (
+                False  # pyright: ignore[reportPrivateUsage]
+            )
+            self.table._num_heading_rows = 0  # pyright: ignore[reportPrivateUsage]
+        if &#34;height&#34; in attrs_dict:
             LOGGER.warning(
                 &#39;Ignoring unsupported height=&#34;%s&#34; specified on a &lt;%s&gt;&#39;,
-                attrs[&#34;height&#34;],
+                attrs_dict[&#34;height&#34;],
                 tag,
             )
-        if &#34;width&#34; in attrs:
-            width = attrs[&#34;width&#34;]
+        if &#34;width&#34; in attrs_dict:
+            width_str = attrs_dict[&#34;width&#34;] or &#34;0&#34;
             # pylint: disable=protected-access
             if len(self.table.rows) == 1:  # =&gt; first table row
-                if width[-1] == &#34;%&#34;:
-                    width = width[:-1]
+                if width_str[-1] == &#34;%&#34;:
+                    width = float(width_str[:-1])
+                else:
+                    width = float(width_str)
                 if not self.table._col_widths:
                     self.table._col_widths = []
-                self.table._col_widths.append(int(width))
+                assert isinstance(self.table._col_widths, list)
+                self.table._col_widths.append(width)
             else:
                 LOGGER.warning(
                     &#39;Ignoring width=&#34;%s&#34; specified on a &lt;%s&gt; that is not in the first &lt;tr&gt;&#39;,
-                    width,
+                    width_str,
                     tag,
                 )
-    if tag == &#34;img&#34; and &#34;src&#34; in attrs:
-        width = int(attrs.get(&#34;width&#34;, 0)) / self.pdf.k
-        height = int(attrs.get(&#34;height&#34;, 0)) / self.pdf.k
+    if tag == &#34;img&#34; and &#34;src&#34; in attrs_dict:
+        width = float(attrs_dict.get(&#34;width&#34;) or 0) / self.pdf.k
+        height = float(attrs_dict.get(&#34;height&#34;) or 0) / self.pdf.k
         if self.table_row:  # =&gt; &lt;img&gt; in a &lt;table&gt;
             if width or height:
                 LOGGER.warning(
@@ -1728,46 +1960,51 @@ as you want (may include '\n').</p></div>
                 )
             if self.align:
                 LOGGER.warning(&#34;Ignoring unsupported &lt;img&gt; alignment&#34;)
-            self.table_row.cell(img=attrs[&#34;src&#34;], img_fill_width=True)
+            self.table_row.cell(img=attrs_dict[&#34;src&#34;], img_fill_width=True)
+            assert self.td_th is not None
             self.td_th[&#34;inserted&#34;] = True
             return
-        x = self.pdf.get_x()
+        x: float | Align = self.pdf.get_x()
         if self.align:
             x = self.align
         self.pdf.image(
-            self.image_map(attrs[&#34;src&#34;]), x=x, w=width, h=height, link=self.href
+            self.image_map(attrs_dict[&#34;src&#34;] or &#34;&#34;),
+            x=x,
+            w=width,
+            h=height,
+            link=self.href,
         )
     if tag == &#34;toc&#34;:
         self._end_paragraph()
         self.pdf.insert_toc_placeholder(
-            self.render_toc, pages=int(attrs.get(&#34;pages&#34;, 1))
+            self.render_toc, pages=int(attrs_dict.get(&#34;pages&#34;) or &#34;1&#34;)
         )
     if tag == &#34;sup&#34;:
-        self.pdf.char_vpos = &#34;SUP&#34;
+        self.pdf.char_vpos = CharVPos.SUP
     if tag == &#34;sub&#34;:
-        self.pdf.char_vpos = &#34;SUB&#34;
+        self.pdf.char_vpos = CharVPos.SUB
     if tag == &#34;title&#34;:
         self._in_title = True
     if css_style.get(&#34;break-after&#34;) == &#34;page&#34;:
         if tag in (&#34;br&#34;, &#34;hr&#34;, &#34;img&#34;):
             self._end_paragraph()
             # pylint: disable=protected-access
-            self.pdf._perform_page_break()
+            self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
         else:
             self._page_break_after_paragraph = True</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.html.HTML2FPDF.put_link"><code class="name flex">
-<span>def <span class="ident">put_link</span></span>(<span>self, text)</span>
+<span>def <span class="ident">put_link</span></span>(<span>self, text: str) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1181-L1201" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1329-L1349" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def put_link(self, text):
+<pre><code class="python">def put_link(self, text: str) -&gt; None:
     &#34;Insert a hyperlink&#34;
     prev_style = FontFace(
         family=self.font_family,
@@ -1786,21 +2023,21 @@ as you want (may include '\n').</p></div>
     # Restore previous style:
     self.font_family = prev_style.family or self.font_family
     self.font_size_pt = prev_style.size_pt or self.font_size_pt
-    self.font_emphasis = prev_style.emphasis
+    self.font_emphasis = prev_style.emphasis or TextEmphasis.NONE
     self.font_color = prev_style.color</code></pre>
 </details>
 <div class="desc"><p>Insert a hyperlink</p></div>
 </dd>
 <dt id="fpdf.html.HTML2FPDF.render_toc"><code class="name flex">
-<span>def <span class="ident">render_toc</span></span>(<span>self, pdf, outline)</span>
+<span>def <span class="ident">render_toc</span></span>(<span>self,<br>pdf: FPDF,<br>outline: list[<a title="fpdf.outline.OutlineSection" href="outline.html#fpdf.outline.OutlineSection">OutlineSection</a>])</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1204-L1218" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1352-L1366" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def render_toc(self, pdf, outline):
+<pre><code class="python">def render_toc(self, pdf: &#34;FPDF&#34;, outline: list[OutlineSection]) -&gt; None:
     &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
     pdf.ln()
     for section in outline:
@@ -1822,13 +2059,13 @@ as you want (may include '\n').</p></div>
 </dd>
 <dt id="fpdf.html.HTMLMixin"><code class="flex name class">
 <span>class <span class="ident">HTMLMixin</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>*args: Any, **kwargs: Any)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/html.py#L1268-L1283" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/html.py#L1418-L1433" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTMLMixin:
     &#34;&#34;&#34;
@@ -1836,7 +2073,7 @@ as you want (may include '\n').</p></div>
     You can now directly use the `FPDF.write_html()` method
     &#34;&#34;&#34;
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
         super().__init__(*args, **kwargs)
         warnings.warn(
             (

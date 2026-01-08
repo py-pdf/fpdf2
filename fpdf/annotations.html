@@ -49,13 +49,13 @@ el.replaceWith(d);
 <dl>
 <dt id="fpdf.annotations.AnnotationDict"><code class="flex name class">
 <span>class <span class="ident">AnnotationDict</span></span>
-<span>(</span><span>subtype: str,<br>x: int,<br>y: int,<br>width: int,<br>height: int,<br>flags: Tuple[<a title="fpdf.enums.AnnotationFlag" href="enums.html#fpdf.enums.AnnotationFlag">AnnotationFlag</a>] | Tuple[str] = (&lt;AnnotationFlag.PRINT: 4&gt;,),<br>contents: str = None,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a> = None,<br>action: <a title="fpdf.actions.Action" href="actions.html#fpdf.actions.Action">Action</a> = None,<br>color: tuple = None,<br>modification_time: datetime.datetime = None,<br>title: str = None,<br>quad_points: tuple = None,<br>border_width: int = 0,<br>name: <a title="fpdf.enums.AnnotationName" href="enums.html#fpdf.enums.AnnotationName">AnnotationName</a> | <a title="fpdf.enums.FileAttachmentAnnotationName" href="enums.html#fpdf.enums.FileAttachmentAnnotationName">FileAttachmentAnnotationName</a> = None,<br>ink_list: Tuple[int] = (),<br>file_spec: str = None,<br>field_type: str = None,<br>value=None,<br>default_appearance: str = None)</span>
+<span>(</span><span>subtype: str,<br>x: float,<br>y: float,<br>width: float,<br>height: float,<br>flags: tuple[<a title="fpdf.enums.AnnotationFlag" href="enums.html#fpdf.enums.AnnotationFlag">AnnotationFlag</a> | str, ...] = (&lt;AnnotationFlag.PRINT: 4&gt;,),<br>contents: str | None = None,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a> | <a title="fpdf.syntax.PDFString" href="syntax.html#fpdf.syntax.PDFString">PDFString</a> | None = None,<br>action: <a title="fpdf.actions.Action" href="actions.html#fpdf.actions.Action">Action</a> | None = None,<br>color: tuple[float, float, float] | None = None,<br>modification_time: datetime.datetime | None = None,<br>title: str | None = None,<br>quad_points: Sequence[float] | None = None,<br>border_width: float = 0,<br>name: <a title="fpdf.enums.AnnotationName" href="enums.html#fpdf.enums.AnnotationName">AnnotationName</a> | <a title="fpdf.enums.FileAttachmentAnnotationName" href="enums.html#fpdf.enums.FileAttachmentAnnotationName">FileAttachmentAnnotationName</a> | None = None,<br>ink_list: tuple[float, ...] | None = None,<br>file_spec: <a title="fpdf.annotations.FileSpec" href="#fpdf.annotations.FileSpec">FileSpec</a> | str | None = None,<br>field_type: str | None = None,<br>value: str | None = None,<br>default_appearance: str | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -81,7 +81,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -89,7 +93,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -107,7 +111,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -133,7 +137,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -141,7 +149,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -154,7 +162,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -180,7 +188,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -188,7 +200,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -201,7 +213,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -227,7 +239,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -235,7 +251,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -248,7 +264,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -274,7 +290,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -282,7 +302,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -295,7 +315,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -321,7 +341,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -329,7 +353,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -342,7 +366,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -368,7 +392,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -376,7 +404,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -389,7 +417,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -415,7 +443,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -423,7 +455,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -436,7 +468,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -462,7 +494,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -470,7 +506,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -483,7 +519,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -509,7 +545,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -517,7 +557,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -530,7 +570,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -556,7 +596,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -564,7 +608,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -577,7 +621,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -603,7 +647,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -611,7 +659,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -624,7 +672,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -650,7 +698,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -658,7 +710,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -671,7 +723,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -697,7 +749,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -705,7 +761,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -718,7 +774,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -744,7 +800,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -752,7 +812,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -765,7 +825,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -791,7 +851,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -799,7 +863,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -812,7 +876,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -838,7 +902,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -846,7 +914,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -859,7 +927,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -885,7 +953,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -893,7 +965,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -906,7 +978,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L94-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L96-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationDict(AnnotationMixin):
     &#34;A PDF annotation that get serialized as an inline &lt;&lt;dictionary&gt;&gt;&#34;
@@ -932,7 +1004,11 @@ el.replaceWith(d);
         &#34;d_a&#34;,
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+        _obj_id: Optional[int] = None,
+    ) -&gt; str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -940,7 +1016,7 @@ el.replaceWith(d);
         )
         return pdf_dict(obj_dict)
 
-    def __repr__(self):
+    def __repr__(self) -&gt; str:
         keys = [key for key in dir(self) if not key.startswith(&#34;__&#34;)]
         d = {key: getattr(self, key) for key in keys}
         d = {key: value for key, value in d.items() if not callable(value)}
@@ -952,15 +1028,19 @@ el.replaceWith(d);
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.annotations.AnnotationDict.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L118-L124" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L120-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+<pre><code class="python">def serialize(
+    self,
+    _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None,
+    _obj_id: Optional[int] = None,
+) -&gt; str:
     obj_dict = build_obj_dict(
         {key: getattr(self, key) for key in dir(self)},
         _security_handler=_security_handler,
@@ -974,38 +1054,38 @@ el.replaceWith(d);
 </dd>
 <dt id="fpdf.annotations.AnnotationMixin"><code class="flex name class">
 <span>class <span class="ident">AnnotationMixin</span></span>
-<span>(</span><span>subtype: str,<br>x: int,<br>y: int,<br>width: int,<br>height: int,<br>flags: Tuple[<a title="fpdf.enums.AnnotationFlag" href="enums.html#fpdf.enums.AnnotationFlag">AnnotationFlag</a>] | Tuple[str] = (&lt;AnnotationFlag.PRINT: 4&gt;,),<br>contents: str = None,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a> = None,<br>action: <a title="fpdf.actions.Action" href="actions.html#fpdf.actions.Action">Action</a> = None,<br>color: tuple = None,<br>modification_time: datetime.datetime = None,<br>title: str = None,<br>quad_points: tuple = None,<br>border_width: int = 0,<br>name: <a title="fpdf.enums.AnnotationName" href="enums.html#fpdf.enums.AnnotationName">AnnotationName</a> | <a title="fpdf.enums.FileAttachmentAnnotationName" href="enums.html#fpdf.enums.FileAttachmentAnnotationName">FileAttachmentAnnotationName</a> = None,<br>ink_list: Tuple[int] = (),<br>file_spec: str = None,<br>field_type: str = None,<br>value=None,<br>default_appearance: str = None)</span>
+<span>(</span><span>subtype: str,<br>x: float,<br>y: float,<br>width: float,<br>height: float,<br>flags: tuple[<a title="fpdf.enums.AnnotationFlag" href="enums.html#fpdf.enums.AnnotationFlag">AnnotationFlag</a> | str, ...] = (&lt;AnnotationFlag.PRINT: 4&gt;,),<br>contents: str | None = None,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a> | <a title="fpdf.syntax.PDFString" href="syntax.html#fpdf.syntax.PDFString">PDFString</a> | None = None,<br>action: <a title="fpdf.actions.Action" href="actions.html#fpdf.actions.Action">Action</a> | None = None,<br>color: tuple[float, float, float] | None = None,<br>modification_time: datetime.datetime | None = None,<br>title: str | None = None,<br>quad_points: Sequence[float] | None = None,<br>border_width: float = 0,<br>name: <a title="fpdf.enums.AnnotationName" href="enums.html#fpdf.enums.AnnotationName">AnnotationName</a> | <a title="fpdf.enums.FileAttachmentAnnotationName" href="enums.html#fpdf.enums.FileAttachmentAnnotationName">FileAttachmentAnnotationName</a> | None = None,<br>ink_list: tuple[float, ...] | None = None,<br>file_spec: <a title="fpdf.annotations.FileSpec" href="#fpdf.annotations.FileSpec">FileSpec</a> | str | None = None,<br>field_type: str | None = None,<br>value: str | None = None,<br>default_appearance: str | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L34-L84" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L36-L86" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationMixin:
     def __init__(
         self,
         subtype: str,
-        x: int,
-        y: int,
-        width: int,
-        height: int,
-        flags: Union[Tuple[AnnotationFlag], Tuple[str]] = DEFAULT_ANNOT_FLAGS,
-        contents: str = None,
-        dest: Destination = None,
-        action: Action = None,
-        color: tuple = None,
-        modification_time: datetime = None,
-        title: str = None,
-        quad_points: tuple = None,
-        border_width: int = 0,  # PDF readers support: displayed by Acrobat but not Sumatra
-        name: Union[AnnotationName, FileAttachmentAnnotationName] = None,
-        ink_list: Tuple[int] = (),  # for ink annotations
-        file_spec: str = None,
-        field_type: str = None,
-        value=None,
-        default_appearance: str = None,  # for free text annotations
-    ):
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        flags: tuple[AnnotationFlag | str, ...] = DEFAULT_ANNOT_FLAGS,
+        contents: Optional[str] = None,
+        dest: Optional[Destination | PDFString] = None,
+        action: Optional[Action] = None,
+        color: Optional[tuple[float, float, float]] = None,
+        modification_time: Optional[datetime] = None,
+        title: Optional[str] = None,
+        quad_points: Optional[Sequence[float]] = None,
+        border_width: float = 0,  # PDF readers support: displayed by Acrobat but not Sumatra
+        name: Union[AnnotationName, FileAttachmentAnnotationName, None] = None,
+        ink_list: Optional[tuple[float, ...]] = None,  # for ink annotations
+        file_spec: Optional[Union[&#34;FileSpec&#34;, str]] = None,
+        field_type: Optional[str] = None,
+        value: Optional[str] = None,
+        default_appearance: Optional[str] = None,  # for free text annotations
+    ) -&gt; None:
         self.type = Name(&#34;Annot&#34;)
         self.subtype = Name(subtype)
         self.rect = f&#34;[{x:.2f} {y - height:.2f} {x + width:.2f} {y:.2f}]&#34;
@@ -1020,14 +1100,14 @@ el.replaceWith(d);
         self.t = PDFString(title, encrypt=True) if title else None
         self.m = PDFDate(modification_time, encrypt=True) if modification_time else None
         self.quad_points = (
-            pdf_list(f&#34;{quad_point:.2f}&#34; for quad_point in quad_points)
+            pdf_list([f&#34;{quad_point:.2f}&#34; for quad_point in quad_points])
             if quad_points
             else None
         )
         self.p = None  # must always be set before calling .serialize()
         self.name = name
         self.ink_list = (
-            (&#34;[&#34; + pdf_list(f&#34;{coord:.2f}&#34; for coord in ink_list) + &#34;]&#34;)
+            (&#34;[&#34; + pdf_list([f&#34;{coord:.2f}&#34; for coord in ink_list]) + &#34;]&#34;)
             if ink_list
             else None
         )
@@ -1049,7 +1129,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L184-L205" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L190-L211" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FileSpec(PDFObject):
 
@@ -1071,7 +1151,7 @@ el.replaceWith(d);
         self._embedded_file = embedded_file
 
     @property
-    def e_f(self):
+    def e_f(self) -&gt; str:
         return pdf_dict({&#34;/F&#34;: pdf_ref(self._embedded_file.id)})</code></pre>
 </details>
 <div class="desc"></div>
@@ -1081,15 +1161,15 @@ el.replaceWith(d);
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.annotations.FileSpec.e_f"><code class="name">prop <span class="ident">e_f</span></code></dt>
+<dt id="fpdf.annotations.FileSpec.e_f"><code class="name">prop <span class="ident">e_f</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L203-L205" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L209-L211" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
-def e_f(self):
+def e_f(self) -&gt; str:
     return pdf_dict({&#34;/F&#34;: pdf_ref(self._embedded_file.id)})</code></pre>
 </details>
 <div class="desc"></div>
@@ -1098,7 +1178,7 @@ def e_f(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.annotations.FileSpec.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1108,7 +1188,7 @@ def e_f(self):
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.annotations.FileSpec.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1121,18 +1201,18 @@ def e_f(self):
 </dd>
 <dt id="fpdf.annotations.PDFAnnotation"><code class="flex name class">
 <span>class <span class="ident">PDFAnnotation</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>*args: Any, **kwargs: Any)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L87-L91" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L89-L93" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFAnnotation(AnnotationMixin, PDFObject):
     &#34;A PDF annotation that get serialized as an obj&lt;&lt;/&gt;&gt;endobj block&#34;
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
         super().__init__(*args, **kwargs)</code></pre>
 </details>
 <div class="desc"><p>A PDF annotation that get serialized as an obj&lt;&lt;/&gt;&gt;endobj block</p></div>
@@ -1144,7 +1224,7 @@ def e_f(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.annotations.PDFAnnotation.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1154,7 +1234,7 @@ def e_f(self):
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.annotations.PDFAnnotation.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1173,7 +1253,7 @@ def e_f(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L133-L181" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L139-L187" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFEmbeddedFile(PDFContentStream):
     def __init__(
@@ -1190,7 +1270,7 @@ def e_f(self):
     ):
         super().__init__(contents=contents, compress=compress)
         self.type = Name(&#34;EmbeddedFile&#34;)
-        params = {&#34;/Size&#34;: len(contents)}
+        params: dict[str, object] = {&#34;/Size&#34;: len(contents)}
         if creation_date:
             params[&#34;/CreationDate&#34;] = PDFDate(creation_date, with_tz=True).serialize()
         if modification_date:
@@ -1203,22 +1283,22 @@ def e_f(self):
         if mime_type:
             self.subtype = Name(mime_type)
         self.params = pdf_dict(params)
-        self._basename = basename  # private so that it does not get serialized
-        self._desc = desc  # private so that it does not get serialized
-        self._globally_enclosed = True
-        self._af_relationship = af_relationship
-        self._file_spec = None
+        self._basename: str = basename  # private so that it does not get serialized
+        self._desc: str = desc  # private so that it does not get serialized
+        self._globally_enclosed: bool = True
+        self._af_relationship: Optional[AssociatedFileRelationship] = af_relationship
+        self._file_spec: Optional[FileSpec] = None
 
-    def globally_enclosed(self):
+    def globally_enclosed(self) -&gt; bool:
         return self._globally_enclosed
 
-    def set_globally_enclosed(self, value):
+    def set_globally_enclosed(self, value: bool) -&gt; None:
         self._globally_enclosed = value
 
-    def basename(self):
+    def basename(self) -&gt; str:
         return self._basename
 
-    def file_spec(self):
+    def file_spec(self) -&gt; &#34;FileSpec&#34;:
         if not self._file_spec:
             self._file_spec = FileSpec(
                 self, self._basename, self._desc, self._af_relationship
@@ -1234,21 +1314,21 @@ def e_f(self):
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.annotations.PDFEmbeddedFile.basename"><code class="name flex">
-<span>def <span class="ident">basename</span></span>(<span>self)</span>
+<span>def <span class="ident">basename</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L173-L174" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L179-L180" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def basename(self):
+<pre><code class="python">def basename(self) -&gt; str:
     return self._basename</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.annotations.PDFEmbeddedFile.content_stream"><code class="name flex">
-<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+<span>def <span class="ident">content_stream</span></span>(<span>self) ‑> bytes</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1258,15 +1338,15 @@ def e_f(self):
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.annotations.PDFEmbeddedFile.file_spec"><code class="name flex">
-<span>def <span class="ident">file_spec</span></span>(<span>self)</span>
+<span>def <span class="ident">file_spec</span></span>(<span>self) ‑> <a title="fpdf.annotations.FileSpec" href="#fpdf.annotations.FileSpec">FileSpec</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L176-L181" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L182-L187" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def file_spec(self):
+<pre><code class="python">def file_spec(self) -&gt; &#34;FileSpec&#34;:
     if not self._file_spec:
         self._file_spec = FileSpec(
             self, self._basename, self._desc, self._af_relationship
@@ -1276,21 +1356,21 @@ def e_f(self):
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.annotations.PDFEmbeddedFile.globally_enclosed"><code class="name flex">
-<span>def <span class="ident">globally_enclosed</span></span>(<span>self)</span>
+<span>def <span class="ident">globally_enclosed</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L167-L168" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L173-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def globally_enclosed(self):
+<pre><code class="python">def globally_enclosed(self) -&gt; bool:
     return self._globally_enclosed</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.annotations.PDFEmbeddedFile.serialize"><code class="name flex">
-<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict: Dict[str, object] | None = None) ‑> str</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -1300,15 +1380,15 @@ def e_f(self):
 <div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&lt;/&gt;&gt;endobj text block</p></div>
 </dd>
 <dt id="fpdf.annotations.PDFEmbeddedFile.set_globally_enclosed"><code class="name flex">
-<span>def <span class="ident">set_globally_enclosed</span></span>(<span>self, value)</span>
+<span>def <span class="ident">set_globally_enclosed</span></span>(<span>self, value: bool) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/daa28730b5e4cd5047c5296254ebe3d0dc23c5c0/fpdf/annotations.py#L170-L171" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/db21301066bab66811b8b050b796d7841e2834f2/fpdf/annotations.py#L176-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def set_globally_enclosed(self, value):
+<pre><code class="python">def set_globally_enclosed(self, value: bool) -&gt; None:
     self._globally_enclosed = value</code></pre>
 </details>
 <div class="desc"></div>
