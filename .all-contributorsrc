@@ -1653,6 +1653,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "slkoo-cc",
+      "name": "slkoo-cc",
+      "avatar_url": "https://avatars.githubusercontent.com/u/201556645?v=4",
+      "profile": "https://github.com/slkoo-cc",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
