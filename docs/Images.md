@@ -62,7 +62,7 @@ The following unit tests illustrate that:
 * [test_image_fit.py](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_fit.py)
 * resulting document: [image_fit_in_rect.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)
 
-#### Image alignement in the bounding box ####
+#### Image alignment in the bounding box ####
 
 To anchor the image to a specific corner, you can use this function:
 
@@ -113,7 +113,7 @@ def scale_and_position_image(
         keep_aspect_ratio=True,
     )
 
-# Usage example
+# Usage example:
 pdf = FPDF()
 pdf.add_page()
 bounding_box = FpdfBoundingBox(x=pdf.w-pdf.r_margin-100, y=pdf.t_margin, w=100, h=50)
