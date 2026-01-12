@@ -112,6 +112,17 @@ def scale_and_position_image(
         h=scaled_h,
         keep_aspect_ratio=True,
     )
+
+# Usage example
+pdf = FPDF()
+pdf.add_page()
+bounding_box = FpdfBoundingBox(x=pdf.w-pdf.r_margin-100, y=pdf.t_margin, w=100, h=50)
+# Render the bounding box:
+pdf.set_draw_color(255, 0, 0)
+pdf.rect(**bounding_box, style="D")
+# Insert image:
+scale_and_position_image(pdf, "./test/image/png_indexed/flower1.png", bounding_box, "BR")
+pdf.output("image_in_bounding_box_example.pdf")
 ```
 
 ### Blending images ###
