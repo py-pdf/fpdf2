@@ -7,7 +7,6 @@ from defusedxml.common import EntitiesForbidden
 import fpdf
 from test.conftest import assert_pdf_equal
 
-
 HERE = Path(__file__).resolve().parent
 SVG_SRCDIR = HERE.parent / "svg/svg_sources"
 

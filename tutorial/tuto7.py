@@ -3,7 +3,6 @@ from pathlib import Path
 from fpdf import FPDF
 from fpdf import FPDF_VERSION
 
-
 DIR = Path(__file__).parent
 FONT_DIR = DIR / ".." / "test" / "fonts"
 

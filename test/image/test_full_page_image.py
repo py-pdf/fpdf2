@@ -4,7 +4,6 @@ from fpdf import FPDF
 from fpdf.image_parsing import get_img_info
 from test.conftest import assert_pdf_equal
 
-
 HERE = Path(__file__).resolve().parent
 IMAGE_PATH = HERE / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
 

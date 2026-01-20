@@ -8,7 +8,6 @@ from fpdf.outline import TableOfContents
 
 from test.conftest import LOREM_IPSUM, assert_pdf_equal
 
-
 HERE = Path(__file__).resolve().parent
 
 

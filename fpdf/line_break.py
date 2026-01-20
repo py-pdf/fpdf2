@@ -305,7 +305,7 @@ class Fragment:
                 chars = "".join(self.characters[start:end])
             else:
                 chars = "".join(self.characters[start:])
-        (char_len, w) = self.font.get_text_width(
+        char_len, w = self.font.get_text_width(
             chars, self.font_size_pt, self.text_shaping_parameters
         )
         char_spacing = self.char_spacing

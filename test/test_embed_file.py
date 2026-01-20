@@ -5,7 +5,6 @@ from pathlib import Path
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal, EPOCH
 
-
 HERE = Path(__file__).resolve().parent
 
 

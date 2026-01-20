@@ -6,7 +6,6 @@ from PIL import Image
 from fpdf import FPDF, drawing
 from test.conftest import assert_pdf_equal
 
-
 HERE = Path(__file__).resolve().parent
 imgpath = str(HERE / "../image/image_types/insert_images_insert_jpg.jpg")
 

@@ -502,8 +502,8 @@ class COLRFont(Type3Font):
             r0: float = paint.r0
             c1: tuple[float, float] = (paint.x1, paint.y1)
             r1: float = paint.r1
-            (fx, fy) = _lerp_pt(c0, c1, t_min)
-            (cx, cy) = _lerp_pt(c0, c1, t_max)
+            fx, fy = _lerp_pt(c0, c1, t_min)
+            cx, cy = _lerp_pt(c0, c1, t_max)
             fr = max(_lerp(r0, r1, t_min), 0.0)
             r = max(_lerp(r0, r1, t_max), 1e-6)
             if paint.ColorLine.Extend == 2:  # REFLECT

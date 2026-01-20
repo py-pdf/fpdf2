@@ -1,7 +1,6 @@
 from mistletoe import markdown
 
-html = markdown(
-    """
+html = markdown("""
 # Unicode:
 
 | Emoji | Description |
@@ -15,8 +14,7 @@ html = markdown(
 * ☐ item 1
 * ☑ item 2
 * ☐ item 3
-"""
-)
+""")
 
 from fpdf import FPDF
 
