@@ -4081,9 +4081,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             for i, frag in enumerate(fragments):
                 if isinstance(frag, TotalPagesSubstitutionFragment):
                     self.pages[self.page].add_text_substitution(frag)
-                if frag.graphics_state["text_color"] != last_used_color:
+                if frag.text_color != last_used_color:
                     # allow to change color within the line of text.
-                    last_used_color = frag.graphics_state["text_color"]
+                    last_used_color = frag.text_color
                     assert last_used_color is not None
                     sl.append(last_used_color.serialize().lower())
                     fill_color_changed = True
@@ -4412,17 +4412,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         def frag() -> Fragment:
             nonlocal txt_frag, current_fallback_font, current_text_script
             gstate = self._get_current_graphics_state()
-            gstate["font_style"] = ("B" if in_bold else "") + (
-                "I" if in_italics else ""
-            )
-            gstate["strikethrough"] = in_strikethrough
-            gstate["underline"] = in_underline
+            gstate.font_style = ("B" if in_bold else "") + ("I" if in_italics else "")
+            gstate.strikethrough = in_strikethrough
+            gstate.underline = in_underline
             if current_fallback_font:
                 style = "".join(c for c in current_fallback_font if c in ("BI"))
                 family = current_fallback_font.replace("B", "").replace("I", "")
-                gstate["font_family"] = family
-                gstate["font_style"] = style
-                gstate["current_font"] = self.fonts[current_fallback_font]
+                gstate.font_family = family
+                gstate.font_style = style
+                gstate.current_font = self.fonts[current_fallback_font]
                 current_fallback_font = None
                 current_text_script = None
             fragment = Fragment(
@@ -4462,11 +4460,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     if txt_frag:
                         yield frag()
                     gstate = self._get_current_graphics_state()
-                    gstate["font_style"] = ("B" if in_bold else "") + (
+                    gstate.font_style = ("B" if in_bold else "") + (
                         "I" if in_italics else ""
                     )
-                    gstate["strikethrough"] = in_strikethrough
-                    gstate["underline"] = in_underline
+                    gstate.strikethrough = in_strikethrough
+                    gstate.underline = in_underline
                     yield TotalPagesSubstitutionFragment(
                         self.str_alias_nb_pages,
                         gstate,
@@ -4511,9 +4509,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     if txt_frag:
                         yield frag()
                     gstate = self._get_current_graphics_state()
-                    gstate["underline"] = self.MARKDOWN_LINK_UNDERLINE
+                    gstate.underline = self.MARKDOWN_LINK_UNDERLINE
                     if self.MARKDOWN_LINK_COLOR:
-                        gstate["text_color"] = self.MARKDOWN_LINK_COLOR
+                        gstate.text_color = convert_to_device_color(
+                            self.MARKDOWN_LINK_COLOR
+                        )
                     try:
                         page = int(link_dest)
                         link_dest = self.add_link(page=page)
@@ -4604,8 +4604,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._pop_local_stack()
         for prev_gs in reversed(gs_stack):
             self._push_local_stack()
-            prev_gs["current_font_is_set_on_page"] = False
-            self._start_local_context(**prev_gs)
+            prev_gs.current_font_is_set_on_page = False
+            self._start_local_context(**prev_gs.as_kwargs())
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self) -> bool:

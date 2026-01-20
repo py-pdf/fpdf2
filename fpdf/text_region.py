@@ -220,7 +220,7 @@ class Paragraph:
         )[  # pyright: ignore[reportPrivateUsage]
             0
         ]
-        fragment.graphics_state["font_size_pt"] = h * fragment.k
+        fragment.graphics_state.font_size_pt = h * fragment.k
         self._text_fragments.append(fragment)
 
     def build_lines(self, print_sh: bool) -> list[LineWrapper]:

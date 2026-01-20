@@ -28,9 +28,10 @@ from fpdf.drawing_primitives import DeviceCMYK, DeviceGray, DeviceRGB
 from .enums import Align, CharVPos, TextDirection, TextMode, WrapMode
 from .errors import FPDFException
 from .fonts import CoreFont, TTFFont
+from .graphics_state import GraphicsState
 from .util import escape_parens
 
-StateStackType = Dict[str, Any]
+StateStackType = GraphicsState
 
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
@@ -88,12 +89,12 @@ class Fragment:
     @property
     def font(self) -> CoreFont | TTFFont:
         if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["current_font"], (CoreFont, TTFFont))
-        return self.graphics_state["current_font"]
+            assert self.graphics_state.current_font is not None
+        return self.graphics_state.current_font
 
     @font.setter
     def font(self, v: CoreFont | TTFFont) -> None:
-        self.graphics_state["current_font"] = v
+        self.graphics_state.current_font = v
 
     @property
     def is_ttf_font(self) -> bool:
@@ -101,129 +102,84 @@ class Fragment:
 
     @property
     def font_style(self) -> str:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["font_style"], str)
-        return self.graphics_state["font_style"]
+        return self.graphics_state.font_style
 
     @property
     def font_family(self) -> str:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["font_family"], str)
-        return self.graphics_state["font_family"]
+        return self.graphics_state.font_family
 
     @property
     def font_size_pt(self) -> float:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["font_size_pt"], float)
-            assert isinstance(self.graphics_state["char_vpos"], CharVPos)
-        size: float = self.graphics_state["font_size_pt"]
-        vpos: CharVPos = self.graphics_state["char_vpos"]
+        size = self.graphics_state.font_size_pt
+        vpos = self.graphics_state.char_vpos
         if vpos == CharVPos.SUB:
-            size *= self.graphics_state["sub_scale"]
+            size *= self.graphics_state.sub_scale
         elif vpos == CharVPos.SUP:
-            size *= self.graphics_state["sup_scale"]
+            size *= self.graphics_state.sup_scale
         elif vpos == CharVPos.NOM:
-            size *= self.graphics_state["nom_scale"]
+            size *= self.graphics_state.nom_scale
         elif vpos == CharVPos.DENOM:
-            size *= self.graphics_state["denom_scale"]
+            size *= self.graphics_state.denom_scale
         return size
 
     @property
     def font_size(self) -> float:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["font_size_pt"], float)
-        return self.graphics_state["font_size_pt"] / self.k
+        return self.graphics_state.font_size_pt / self.k
 
     @property
     def font_stretching(self) -> float:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["font_stretching"], float)
-        return self.graphics_state["font_stretching"]
+        return self.graphics_state.font_stretching
 
     @property
     def char_spacing(self) -> float:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["char_spacing"], float)
-        return self.graphics_state["char_spacing"]
+        return self.graphics_state.char_spacing
 
     @property
     def text_mode(self) -> TextMode:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["text_mode"], TextMode)
-        return self.graphics_state["text_mode"]
+        return self.graphics_state.text_mode
 
     @property
     def underline(self) -> bool:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["underline"], bool)
-        return self.graphics_state["underline"]
+        return self.graphics_state.underline
 
     @property
     def strikethrough(self) -> bool:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["strikethrough"], bool)
-        return self.graphics_state["strikethrough"]
+        return self.graphics_state.strikethrough
 
     @property
     def draw_color(self) -> Optional[DeviceRGB | DeviceGray | DeviceCMYK]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.graphics_state["draw_color"],
-                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-            )
-        return self.graphics_state["draw_color"]
+        return self.graphics_state.draw_color
 
     @property
     def fill_color(self) -> Optional[DeviceRGB | DeviceGray | DeviceCMYK]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.graphics_state["fill_color"],
-                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-            )
-        return self.graphics_state["fill_color"]
+        return self.graphics_state.fill_color
 
     @property
     def text_color(self) -> Optional[DeviceRGB | DeviceGray | DeviceCMYK]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.graphics_state["text_color"],
-                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-            )
-        return self.graphics_state["text_color"]
+        return self.graphics_state.text_color
 
     @property
     def line_width(self) -> float:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["line_width"], float)
-        return self.graphics_state["line_width"]
+        return self.graphics_state.line_width
 
     @property
     def char_vpos(self) -> CharVPos:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["char_vpos"], CharVPos)
-        return self.graphics_state["char_vpos"]
+        return self.graphics_state.char_vpos
 
     @property
     def lift(self) -> float:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["char_vpos"], CharVPos)
-            assert isinstance(self.graphics_state["sub_lift"], float)
-            assert isinstance(self.graphics_state["sup_lift"], float)
-            assert isinstance(self.graphics_state["nom_lift"], float)
-            assert isinstance(self.graphics_state["denom_lift"], float)
-            assert isinstance(self.graphics_state["font_size_pt"], float)
-        vpos = self.graphics_state["char_vpos"]
+        vpos = self.graphics_state.char_vpos
         if vpos == CharVPos.SUB:
-            lift: float = self.graphics_state["sub_lift"]
+            lift: float = self.graphics_state.sub_lift
         elif vpos == CharVPos.SUP:
-            lift = self.graphics_state["sup_lift"]
+            lift = self.graphics_state.sup_lift
         elif vpos == CharVPos.NOM:
-            lift = self.graphics_state["nom_lift"]
+            lift = self.graphics_state.nom_lift
         elif vpos == CharVPos.DENOM:
-            lift = self.graphics_state["denom_lift"]
+            lift = self.graphics_state.denom_lift
         else:
             lift = 0.0
-        return lift * self.graphics_state["font_size_pt"]
+        return lift * self.graphics_state.font_size_pt
 
     @property
     def string(self) -> str:
@@ -235,11 +191,7 @@ class Fragment:
 
     @property
     def text_shaping_parameters(self) -> Optional[Dict[str, Any]]:
-        if TYPE_CHECKING:
-            assert isinstance(self.graphics_state["text_shaping"], (type(None), Dict))
-        return self.graphics_state[
-            "text_shaping"
-        ]  # pyright: ignore[reportUnknownVariableType]
+        return self.graphics_state.text_shaping
 
     @property
     def paragraph_direction(self) -> TextDirection:
