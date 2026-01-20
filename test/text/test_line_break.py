@@ -7,6 +7,7 @@ from fpdf.line_break import (
     TotalPagesSubstitutionFragment,
 )
 from fpdf.enums import Align, CharVPos
+from fpdf.graphics_state import GraphicsState
 
 import pytest
 
@@ -144,23 +145,23 @@ def test_no_fragments():
     assert multi_line_break.get_line() is None
 
 
-_gs_normal = dict(
+_gs_normal = GraphicsState(
     font_style="normal",
     font_size_pt=12,
     font_family="helvetica",
     font_stretching=100,
     char_spacing=0,
-    current_font={},
+    current_font=None,
     char_vpos=CharVPos.LINE,
     text_shaping=None,
 )
-_gs_bold = dict(
+_gs_bold = GraphicsState(
     font_style="bold",
     font_size_pt=12,
     font_family="helvetica",
     font_stretching=100,
     char_spacing=0,
-    current_font={},
+    current_font=None,
     char_vpos=CharVPos.LINE,
     text_shaping=None,
 )
@@ -168,7 +169,7 @@ _gs_bold = dict(
 
 def gs_with_font(graphics_state, cw):
     gs = graphics_state
-    gs["current_font"] = FxFont(cw)
+    gs.current_font = FxFont(cw)
     return gs
 
 
@@ -189,7 +190,7 @@ def test_width_calculation():
         alphabet["normal"][char] = char_width + i
     alphabet["normal"][" "] = char_width
     gs = _gs_normal
-    gs["current_font"] = FxFont(alphabet["normal"])
+    gs.current_font = FxFont(alphabet["normal"])
     fragments = [FxFragment(text, gs, 1, None, alphabet)]
     multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0])
 
@@ -248,7 +249,7 @@ def test_single_space_in_fragment():
         "normal": {},
     }
     gs = _gs_normal
-    gs["current_font"] = FxFont(alphabet["normal"])
+    gs.current_font = FxFont(alphabet["normal"])
     fragments = [FxFragment(text, gs, 1, None, alphabet)]
     for char in text:
         alphabet["normal"][char] = char_width
