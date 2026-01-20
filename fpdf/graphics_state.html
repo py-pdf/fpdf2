@@ -51,6 +51,2794 @@ in non-backward-compatible ways.</p>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="fpdf.graphics_state.GraphicsState"><code class="flex name class">
+<span>class <span class="ident">GraphicsState</span></span>
+<span>(</span><span>draw_color: <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None = DeviceGray(g=0.0, a=None),<br>fill_color: <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None = DeviceGray(g=0.0, a=None),<br>text_color: <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None = DeviceGray(g=0.0, a=None),<br>underline: bool = False,<br>strikethrough: bool = False,<br>font_style: str = '',<br>font_stretching: float = 100,<br>char_spacing: float = 0,<br>font_family: str = '',<br>font_size_pt: float = 0,<br>current_font: <a title="fpdf.fonts.CoreFont" href="fonts.html#fpdf.fonts.CoreFont">CoreFont</a> | <a title="fpdf.fonts.TTFFont" href="fonts.html#fpdf.fonts.TTFFont">TTFFont</a> | None = None,<br>current_font_is_set_on_page: bool = False,<br>dash_pattern: dict[str, float] = &lt;factory&gt;,<br>line_width: float = 0,<br>text_mode: <a title="fpdf.enums.TextMode" href="enums.html#fpdf.enums.TextMode">TextMode</a> = 0,<br>char_vpos: <a title="fpdf.enums.CharVPos" href="enums.html#fpdf.enums.CharVPos">CharVPos</a> = CharVPos.LINE,<br>sub_scale: float = 0.7,<br>sup_scale: float = 0.7,<br>nom_scale: float = 0.75,<br>denom_scale: float = 0.75,<br>sub_lift: float = -0.15,<br>sup_lift: float = 0.4,<br>nom_lift: float = 0.2,<br>denom_lift: float = 0.0,<br>text_shaping: dict[str, typing.Any] | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"><p>Mutable snapshot of the current graphics state for fragments and local contexts.</p></div>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.graphics_state.GraphicsState.char_spacing"><code class="name">var <span class="ident">char_spacing</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.char_vpos"><code class="name">var <span class="ident">char_vpos</span> : <a title="fpdf.enums.CharVPos" href="enums.html#fpdf.enums.CharVPos">CharVPos</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.current_font"><code class="name">var <span class="ident">current_font</span> : <a title="fpdf.fonts.CoreFont" href="fonts.html#fpdf.fonts.CoreFont">CoreFont</a> | <a title="fpdf.fonts.TTFFont" href="fonts.html#fpdf.fonts.TTFFont">TTFFont</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.current_font_is_set_on_page"><code class="name">var <span class="ident">current_font_is_set_on_page</span> : bool</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.dash_pattern"><code class="name">var <span class="ident">dash_pattern</span> : dict[str, float]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.denom_lift"><code class="name">var <span class="ident">denom_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.denom_scale"><code class="name">var <span class="ident">denom_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.draw_color"><code class="name">var <span class="ident">draw_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.fill_color"><code class="name">var <span class="ident">fill_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_family"><code class="name">var <span class="ident">font_family</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_size_pt"><code class="name">var <span class="ident">font_size_pt</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_stretching"><code class="name">var <span class="ident">font_stretching</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_style"><code class="name">var <span class="ident">font_style</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.line_width"><code class="name">var <span class="ident">line_width</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.nom_lift"><code class="name">var <span class="ident">nom_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.nom_scale"><code class="name">var <span class="ident">nom_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.strikethrough"><code class="name">var <span class="ident">strikethrough</span> : bool</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sub_lift"><code class="name">var <span class="ident">sub_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sub_scale"><code class="name">var <span class="ident">sub_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sup_lift"><code class="name">var <span class="ident">sup_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sup_scale"><code class="name">var <span class="ident">sup_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.text_color"><code class="name">var <span class="ident">text_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.text_mode"><code class="name">var <span class="ident">text_mode</span> : <a title="fpdf.enums.TextMode" href="enums.html#fpdf.enums.TextMode">TextMode</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.text_shaping"><code class="name">var <span class="ident">text_shaping</span> : dict[str, typing.Any] | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.underline"><code class="name">var <span class="ident">underline</span> : bool</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.graphics_state.GraphicsState.as_kwargs"><code class="name flex">
+<span>def <span class="ident">as_kwargs</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L67-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def as_kwargs(self) -&gt; dict[str, Any]:
+    return {
+        state_field.name: getattr(self, state_field.name)
+        for state_field in fields(self)
+    }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self) ‑> <a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L62-L65" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def copy(self) -&gt; &#34;GraphicsState&#34;:
+    new_state = copy(self)
+    new_state.text_shaping = copy(new_state.text_shaping)
+    return new_state</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState"><code class="flex name class">
+<span>class <span class="ident">StateStackType</span></span>
+<span>(</span><span>draw_color: <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None = DeviceGray(g=0.0, a=None),<br>fill_color: <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None = DeviceGray(g=0.0, a=None),<br>text_color: <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None = DeviceGray(g=0.0, a=None),<br>underline: bool = False,<br>strikethrough: bool = False,<br>font_style: str = '',<br>font_stretching: float = 100,<br>char_spacing: float = 0,<br>font_family: str = '',<br>font_size_pt: float = 0,<br>current_font: <a title="fpdf.fonts.CoreFont" href="fonts.html#fpdf.fonts.CoreFont">CoreFont</a> | <a title="fpdf.fonts.TTFFont" href="fonts.html#fpdf.fonts.TTFFont">TTFFont</a> | None = None,<br>current_font_is_set_on_page: bool = False,<br>dash_pattern: dict[str, float] = &lt;factory&gt;,<br>line_width: float = 0,<br>text_mode: <a title="fpdf.enums.TextMode" href="enums.html#fpdf.enums.TextMode">TextMode</a> = 0,<br>char_vpos: <a title="fpdf.enums.CharVPos" href="enums.html#fpdf.enums.CharVPos">CharVPos</a> = CharVPos.LINE,<br>sub_scale: float = 0.7,<br>sup_scale: float = 0.7,<br>nom_scale: float = 0.75,<br>denom_scale: float = 0.75,<br>sub_lift: float = -0.15,<br>sup_lift: float = 0.4,<br>nom_lift: float = 0.2,<br>denom_lift: float = 0.0,<br>text_shaping: dict[str, typing.Any] | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"><p>Mutable snapshot of the current graphics state for fragments and local contexts.</p></div>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.graphics_state.GraphicsState.char_spacing"><code class="name">var <span class="ident">char_spacing</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.char_vpos"><code class="name">var <span class="ident">char_vpos</span> : <a title="fpdf.enums.CharVPos" href="enums.html#fpdf.enums.CharVPos">CharVPos</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.current_font"><code class="name">var <span class="ident">current_font</span> : <a title="fpdf.fonts.CoreFont" href="fonts.html#fpdf.fonts.CoreFont">CoreFont</a> | <a title="fpdf.fonts.TTFFont" href="fonts.html#fpdf.fonts.TTFFont">TTFFont</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.current_font_is_set_on_page"><code class="name">var <span class="ident">current_font_is_set_on_page</span> : bool</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.dash_pattern"><code class="name">var <span class="ident">dash_pattern</span> : dict[str, float]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.denom_lift"><code class="name">var <span class="ident">denom_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.denom_scale"><code class="name">var <span class="ident">denom_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.draw_color"><code class="name">var <span class="ident">draw_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.fill_color"><code class="name">var <span class="ident">fill_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_family"><code class="name">var <span class="ident">font_family</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_size_pt"><code class="name">var <span class="ident">font_size_pt</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_stretching"><code class="name">var <span class="ident">font_stretching</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.font_style"><code class="name">var <span class="ident">font_style</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.line_width"><code class="name">var <span class="ident">line_width</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.nom_lift"><code class="name">var <span class="ident">nom_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.nom_scale"><code class="name">var <span class="ident">nom_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.strikethrough"><code class="name">var <span class="ident">strikethrough</span> : bool</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sub_lift"><code class="name">var <span class="ident">sub_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sub_scale"><code class="name">var <span class="ident">sub_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sup_lift"><code class="name">var <span class="ident">sup_lift</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.sup_scale"><code class="name">var <span class="ident">sup_scale</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.text_color"><code class="name">var <span class="ident">text_color</span> : <a title="fpdf.drawing_primitives.DeviceGray" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing_primitives.DeviceRGB" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing_primitives.DeviceCMYK" href="drawing_primitives.html#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a> | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.text_mode"><code class="name">var <span class="ident">text_mode</span> : <a title="fpdf.enums.TextMode" href="enums.html#fpdf.enums.TextMode">TextMode</a></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.text_shaping"><code class="name">var <span class="ident">text_shaping</span> : dict[str, typing.Any] | None</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.underline"><code class="name">var <span class="ident">underline</span> : bool</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L30-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(slots=True)
+class GraphicsState:
+    &#34;&#34;&#34;Mutable snapshot of the current graphics state for fragments and local contexts.&#34;&#34;&#34;
+
+    draw_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_DRAW_COLOR
+    fill_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_FILL_COLOR
+    text_color: Optional[DeviceRGB | DeviceCMYK | DeviceGray] = _DEFAULT_TEXT_COLOR
+    underline: bool = False
+    strikethrough: bool = False
+    font_style: str = &#34;&#34;
+    font_stretching: float = 100
+    char_spacing: float = 0
+    font_family: str = &#34;&#34;
+    font_size_pt: float = 0
+    current_font: Optional[CoreFont | TTFFont] = None
+    current_font_is_set_on_page: bool = False
+    dash_pattern: dict[str, float] = field(
+        default_factory=lambda: dict(dash=0, gap=0, phase=0)
+    )
+    line_width: float = 0
+    text_mode: TextMode = TextMode.FILL
+    char_vpos: CharVPos = CharVPos.LINE
+    sub_scale: float = 0.7
+    sup_scale: float = 0.7
+    nom_scale: float = 0.75
+    denom_scale: float = 0.75
+    sub_lift: float = -0.15
+    sup_lift: float = 0.4
+    nom_lift: float = 0.2
+    denom_lift: float = 0.0
+    text_shaping: Optional[dict[str, Any]] = None
+
+    def copy(self) -&gt; &#34;GraphicsState&#34;:
+        new_state = copy(self)
+        new_state.text_shaping = copy(new_state.text_shaping)
+        return new_state
+
+    def as_kwargs(self) -&gt; dict[str, Any]:
+        return {
+            state_field.name: getattr(self, state_field.name)
+            for state_field in fields(self)
+        }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.graphics_state.GraphicsState.as_kwargs"><code class="name flex">
+<span>def <span class="ident">as_kwargs</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L67-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def as_kwargs(self) -&gt; dict[str, Any]:
+    return {
+        state_field.name: getattr(self, state_field.name)
+        for state_field in fields(self)
+    }</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.graphics_state.GraphicsState.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self) ‑> <a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L62-L65" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def copy(self) -&gt; &#34;GraphicsState&#34;:
+    new_state = copy(self)
+    new_state.text_shaping = copy(new_state.text_shaping)
+    return new_state</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin"><code class="flex name class">
 <span>class <span class="ident">GraphicsStateMixin</span></span>
 <span>(</span><span>*args: Any, **kwargs: Any)</span>
@@ -59,7 +2847,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L22-L474" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L77-L446" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GraphicsStateMixin:
     &#34;&#34;&#34;Mixin class for managing a stack of graphics state variables.
@@ -73,45 +2861,17 @@ in non-backward-compatible ways.</p>
     directly by user code.
     &#34;&#34;&#34;
 
-    DEFAULT_DRAW_COLOR = DeviceGray(0)
-    DEFAULT_FILL_COLOR = DeviceGray(0)
-    DEFAULT_TEXT_COLOR = DeviceGray(0)
+    DEFAULT_DRAW_COLOR = _DEFAULT_DRAW_COLOR
+    DEFAULT_FILL_COLOR = _DEFAULT_FILL_COLOR
+    DEFAULT_TEXT_COLOR = _DEFAULT_TEXT_COLOR
 
     def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
-        self.__statestack: list[StateStackType] = [
-            dict(
-                draw_color=self.DEFAULT_DRAW_COLOR,
-                fill_color=self.DEFAULT_FILL_COLOR,
-                text_color=self.DEFAULT_TEXT_COLOR,
-                underline=False,
-                strikethrough=False,
-                font_style=&#34;&#34;,
-                font_stretching=100,
-                char_spacing=0,
-                font_family=&#34;&#34;,
-                font_size_pt=0,
-                current_font=None,
-                current_font_is_set_on_page=False,
-                dash_pattern=dict(dash=0, gap=0, phase=0),
-                line_width=0,
-                text_mode=TextMode.FILL,
-                char_vpos=CharVPos.LINE,
-                sub_scale=0.7,
-                sup_scale=0.7,
-                nom_scale=0.75,
-                denom_scale=0.75,
-                sub_lift=-0.15,
-                sup_lift=0.4,
-                nom_lift=0.2,
-                denom_lift=0.0,
-                text_shaping=None,
-            )
-        ]
+        self.__statestack: list[StateStackType] = [GraphicsState()]
         super().__init__(*args, **kwargs)
 
     def _push_local_stack(self, new: Optional[StateStackType] = None) -&gt; StateStackType:
         &#34;Push a graphics state on the stack&#34;
-        if not new:
+        if new is None:
             new = self._get_current_graphics_state()
         self.__statestack.append(new)
         return new
@@ -122,207 +2882,156 @@ in non-backward-compatible ways.</p>
 
     def _get_current_graphics_state(self) -&gt; StateStackType:
         &#34;Retrieve the current graphics state&#34;
-        # &#34;current_font&#34; must be shallow copied
-        # &#34;text_shaping&#34; must be deep copied (different fragments may have different languages/direction)
-        # Doing a whole copy and then creating a copy of text_shaping to achieve this result
-        gs = copy(self.__statestack[-1])
-        gs[&#34;text_shaping&#34;] = copy(gs[&#34;text_shaping&#34;])
-        return gs
+        return self.__statestack[-1].copy()
 
     def _is_current_graphics_state_nested(self) -&gt; bool:
-        &#34;Indicate if the stack contains items (else it is empty)&#34;
+        &#34;Indicate if a nested graphics state is active&#34;
         return len(self.__statestack) &gt; 1
 
     @property
     def draw_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.__statestack[-1][&#34;draw_color&#34;],
-                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-            )
-        return self.__statestack[-1][&#34;draw_color&#34;]
+        return self.__statestack[-1].draw_color
 
     @draw_color.setter
     def draw_color(
         self,
-        v: Optional[
-            DeviceGray | DeviceRGB | DeviceCMYK | str | Number | Sequence[Number]
-        ],
+        v: Optional[ColorInput],
     ) -&gt; None:
-        self.__statestack[-1][&#34;draw_color&#34;] = v
+        self.__statestack[-1].draw_color = (
+            None if v is None else convert_to_device_color(v)
+        )
 
     @property
     def fill_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.__statestack[-1][&#34;fill_color&#34;],
-                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-            )
-        return self.__statestack[-1][&#34;fill_color&#34;]
+        return self.__statestack[-1].fill_color
 
     @fill_color.setter
     def fill_color(
         self,
-        v: Optional[
-            DeviceGray | DeviceRGB | DeviceCMYK | str | Number | Sequence[Number]
-        ],
+        v: Optional[ColorInput],
     ) -&gt; None:
-        self.__statestack[-1][&#34;fill_color&#34;] = v
+        self.__statestack[-1].fill_color = (
+            None if v is None else convert_to_device_color(v)
+        )
 
     @property
     def text_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.__statestack[-1][&#34;text_color&#34;],
-                (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-            )
-        return self.__statestack[-1][&#34;text_color&#34;]
+        return self.__statestack[-1].text_color
 
     @text_color.setter
     def text_color(
         self,
-        v: Optional[
-            DeviceGray | DeviceRGB | DeviceCMYK | str | Number | Sequence[Number]
-        ],
+        v: Optional[ColorInput],
     ) -&gt; None:
-        self.__statestack[-1][&#34;text_color&#34;] = v
+        self.__statestack[-1].text_color = (
+            None if v is None else convert_to_device_color(v)
+        )
 
     @property
     def underline(self) -&gt; bool:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;underline&#34;], bool)
-        return self.__statestack[-1][&#34;underline&#34;]
+        return self.__statestack[-1].underline
 
     @underline.setter
     def underline(self, v: bool) -&gt; None:
-        self.__statestack[-1][&#34;underline&#34;] = v
+        self.__statestack[-1].underline = v
 
     @property
     def strikethrough(self) -&gt; bool:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;strikethrough&#34;], bool)
-        return self.__statestack[-1][&#34;strikethrough&#34;]
+        return self.__statestack[-1].strikethrough
 
     @strikethrough.setter
     def strikethrough(self, v: bool) -&gt; None:
-        self.__statestack[-1][&#34;strikethrough&#34;] = v
+        self.__statestack[-1].strikethrough = v
 
     @property
     def font_style(self) -&gt; str:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;font_style&#34;], str)
-        return self.__statestack[-1][&#34;font_style&#34;]
+        return self.__statestack[-1].font_style
 
     @font_style.setter
     def font_style(self, v: str) -&gt; None:
-        self.__statestack[-1][&#34;font_style&#34;] = v
+        self.__statestack[-1].font_style = v
 
     @property
     def font_stretching(self) -&gt; float:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;font_stretching&#34;], float)
-        return self.__statestack[-1][&#34;font_stretching&#34;]
+        return self.__statestack[-1].font_stretching
 
     @font_stretching.setter
     def font_stretching(self, v: float) -&gt; None:
-        self.__statestack[-1][&#34;font_stretching&#34;] = v
+        self.__statestack[-1].font_stretching = v
 
     @property
     def char_spacing(self) -&gt; float:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;char_spacing&#34;], float)
-        return self.__statestack[-1][&#34;char_spacing&#34;]
+        return self.__statestack[-1].char_spacing
 
     @char_spacing.setter
     def char_spacing(self, v: float) -&gt; None:
-        self.__statestack[-1][&#34;char_spacing&#34;] = v
+        self.__statestack[-1].char_spacing = v
 
     @property
     def font_family(self) -&gt; str:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;font_family&#34;], str)
-        return self.__statestack[-1][&#34;font_family&#34;]
+        return self.__statestack[-1].font_family
 
     @font_family.setter
     def font_family(self, v: str) -&gt; None:
-        self.__statestack[-1][&#34;font_family&#34;] = v
+        self.__statestack[-1].font_family = v
 
     @property
     def font_size_pt(self) -&gt; float:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
-        return self.__statestack[-1][&#34;font_size_pt&#34;]
+        return self.__statestack[-1].font_size_pt
 
     @font_size_pt.setter
     def font_size_pt(self, v: float) -&gt; None:
-        self.__statestack[-1][&#34;font_size_pt&#34;] = v
+        self.__statestack[-1].font_size_pt = v
 
     @property
     def font_size(self) -&gt; float:
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
             assert isinstance(self.k, float)  # type: ignore[attr-defined]
-        return self.__statestack[-1][&#34;font_size_pt&#34;] / self.k  # type: ignore[attr-defined]
+        return self.__statestack[-1].font_size_pt / self.k  # type: ignore[attr-defined]
 
     @font_size.setter
     def font_size(self, v: float) -&gt; None:
-        self.__statestack[-1][&#34;font_size_pt&#34;] = v * self.k  # type: ignore[attr-defined]
+        self.__statestack[-1].font_size_pt = v * self.k  # type: ignore[attr-defined]
 
     @property
     def current_font(self) -&gt; Optional[CoreFont | TTFFont]:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.__statestack[-1][&#34;current_font&#34;], (CoreFont, TTFFont, type(None))
-            )
-        return self.__statestack[-1][&#34;current_font&#34;]
+        return self.__statestack[-1].current_font
 
     @current_font.setter
     def current_font(self, v: CoreFont | TTFFont) -&gt; None:
-        self.__statestack[-1][&#34;current_font&#34;] = v
+        self.__statestack[-1].current_font = v
 
     @property
     def current_font_is_set_on_page(self) -&gt; bool:
-        if TYPE_CHECKING:
-            assert isinstance(
-                self.__statestack[-1][&#34;current_font_is_set_on_page&#34;], bool
-            )
-        return self.__statestack[-1][&#34;current_font_is_set_on_page&#34;]
+        return self.__statestack[-1].current_font_is_set_on_page
 
     @current_font_is_set_on_page.setter
     def current_font_is_set_on_page(self, v: bool) -&gt; None:
-        self.__statestack[-1][&#34;current_font_is_set_on_page&#34;] = v
+        self.__statestack[-1].current_font_is_set_on_page = v
 
     @property
     def dash_pattern(self) -&gt; dict[str, float]:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;dash_pattern&#34;], dict)
-        return self.__statestack[-1][
-            &#34;dash_pattern&#34;
-        ]  # pyright: ignore[reportUnknownVariableType]
+        return self.__statestack[-1].dash_pattern
 
     @dash_pattern.setter
     def dash_pattern(self, v: dict[str, float]) -&gt; None:
-        self.__statestack[-1][&#34;dash_pattern&#34;] = v
+        self.__statestack[-1].dash_pattern = v
 
     @property
     def line_width(self) -&gt; float:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;line_width&#34;], float)
-        return self.__statestack[-1][&#34;line_width&#34;]
+        return self.__statestack[-1].line_width
 
     @line_width.setter
     def line_width(self, v: float) -&gt; None:
-        self.__statestack[-1][&#34;line_width&#34;] = v
+        self.__statestack[-1].line_width = v
 
     @property
     def text_mode(self) -&gt; TextMode:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;text_mode&#34;], TextMode)
-        return self.__statestack[-1][&#34;text_mode&#34;]
+        return self.__statestack[-1].text_mode
 
     @text_mode.setter
     def text_mode(self, v: TextMode | str | int) -&gt; None:
-        self.__statestack[-1][&#34;text_mode&#34;] = TextMode.coerce(v)
+        self.__statestack[-1].text_mode = TextMode.coerce(v)
 
     @property
     def char_vpos(self) -&gt; CharVPos:
@@ -331,8 +3040,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;char_vpos&#34;], CharVPos)
-        return self.__statestack[-1][&#34;char_vpos&#34;]
+            assert isinstance(self.__statestack[-1].char_vpos, CharVPos)
+        return self.__statestack[-1].char_vpos
 
     @char_vpos.setter
     def char_vpos(self, v: CharVPos | str) -&gt; None:
@@ -340,7 +3049,7 @@ in non-backward-compatible ways.</p>
         Set vertical character position relative to line.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;char_vpos&#34;] = CharVPos.coerce(v)
+        self.__statestack[-1].char_vpos = CharVPos.coerce(v)
 
     @property
     def sub_scale(self) -&gt; float:
@@ -349,8 +3058,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;sub_scale&#34;], float)
-        return self.__statestack[-1][&#34;sub_scale&#34;]
+            assert isinstance(self.__statestack[-1].sub_scale, float)
+        return self.__statestack[-1].sub_scale
 
     @sub_scale.setter
     def sub_scale(self, v: float) -&gt; None:
@@ -358,7 +3067,7 @@ in non-backward-compatible ways.</p>
         Set scale factor for subscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;sub_scale&#34;] = float(v)
+        self.__statestack[-1].sub_scale = float(v)
 
     @property
     def sup_scale(self) -&gt; float:
@@ -367,8 +3076,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;sup_scale&#34;], float)
-        return self.__statestack[-1][&#34;sup_scale&#34;]
+            assert isinstance(self.__statestack[-1].sup_scale, float)
+        return self.__statestack[-1].sup_scale
 
     @sup_scale.setter
     def sup_scale(self, v: float) -&gt; None:
@@ -376,7 +3085,7 @@ in non-backward-compatible ways.</p>
         Set scale factor for superscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;sup_scale&#34;] = float(v)
+        self.__statestack[-1].sup_scale = float(v)
 
     @property
     def nom_scale(self) -&gt; float:
@@ -385,8 +3094,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;nom_scale&#34;], float)
-        return self.__statestack[-1][&#34;nom_scale&#34;]
+            assert isinstance(self.__statestack[-1].nom_scale, float)
+        return self.__statestack[-1].nom_scale
 
     @nom_scale.setter
     def nom_scale(self, v: float) -&gt; None:
@@ -394,7 +3103,7 @@ in non-backward-compatible ways.</p>
         Set scale factor for nominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;nom_scale&#34;] = float(v)
+        self.__statestack[-1].nom_scale = float(v)
 
     @property
     def denom_scale(self) -&gt; float:
@@ -403,8 +3112,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;denom_scale&#34;], float)
-        return self.__statestack[-1][&#34;denom_scale&#34;]
+            assert isinstance(self.__statestack[-1].denom_scale, float)
+        return self.__statestack[-1].denom_scale
 
     @denom_scale.setter
     def denom_scale(self, v: float) -&gt; None:
@@ -412,7 +3121,7 @@ in non-backward-compatible ways.</p>
         Set scale factor for denominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;denom_scale&#34;] = float(v)
+        self.__statestack[-1].denom_scale = float(v)
 
     @property
     def sub_lift(self) -&gt; float:
@@ -421,8 +3130,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;sub_lift&#34;], float)
-        return self.__statestack[-1][&#34;sub_lift&#34;]
+            assert isinstance(self.__statestack[-1].sub_lift, float)
+        return self.__statestack[-1].sub_lift
 
     @sub_lift.setter
     def sub_lift(self, v: float) -&gt; None:
@@ -430,7 +3139,7 @@ in non-backward-compatible ways.</p>
         Set lift factor for subscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;sub_lift&#34;] = float(v)
+        self.__statestack[-1].sub_lift = float(v)
 
     @property
     def sup_lift(self) -&gt; float:
@@ -439,8 +3148,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;sup_lift&#34;], float)
-        return self.__statestack[-1][&#34;sup_lift&#34;]
+            assert isinstance(self.__statestack[-1].sup_lift, float)
+        return self.__statestack[-1].sup_lift
 
     @sup_lift.setter
     def sup_lift(self, v: float) -&gt; None:
@@ -448,7 +3157,7 @@ in non-backward-compatible ways.</p>
         Set lift factor for superscript text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;sup_lift&#34;] = float(v)
+        self.__statestack[-1].sup_lift = float(v)
 
     @property
     def nom_lift(self) -&gt; float:
@@ -457,8 +3166,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;nom_lift&#34;], float)
-        return self.__statestack[-1][&#34;nom_lift&#34;]
+            assert isinstance(self.__statestack[-1].nom_lift, float)
+        return self.__statestack[-1].nom_lift
 
     @nom_lift.setter
     def nom_lift(self, v: float) -&gt; None:
@@ -466,7 +3175,7 @@ in non-backward-compatible ways.</p>
         Set lift factor for nominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;nom_lift&#34;] = float(v)
+        self.__statestack[-1].nom_lift = float(v)
 
     @property
     def denom_lift(self) -&gt; float:
@@ -475,8 +3184,8 @@ in non-backward-compatible ways.</p>
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
         if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;denom_lift&#34;], float)
-        return self.__statestack[-1][&#34;denom_lift&#34;]
+            assert isinstance(self.__statestack[-1].denom_lift, float)
+        return self.__statestack[-1].denom_lift
 
     @denom_lift.setter
     def denom_lift(self, v: float) -&gt; None:
@@ -484,19 +3193,15 @@ in non-backward-compatible ways.</p>
         Set lift factor for denominator text.
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         &#34;&#34;&#34;
-        self.__statestack[-1][&#34;denom_lift&#34;] = float(v)
+        self.__statestack[-1].denom_lift = float(v)
 
     @property
     def text_shaping(self) -&gt; Optional[dict[str, Any]]:
-        if TYPE_CHECKING:
-            assert isinstance(self.__statestack[-1][&#34;text_shaping&#34;], dict)
-        return self.__statestack[-1][
-            &#34;text_shaping&#34;
-        ]  # pyright: ignore[reportUnknownVariableType]
+        return self.__statestack[-1].text_shaping
 
     @text_shaping.setter
     def text_shaping(self, v: Optional[dict[str, Any]]) -&gt; None:
-        self.__statestack[-1][&#34;text_shaping&#34;] = v
+        self.__statestack[-1].text_shaping = v
 
     def font_face(self) -&gt; FontFace:
         &#34;&#34;&#34;
@@ -548,13 +3253,11 @@ directly by user code.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L188-L192" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L187-L189" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def char_spacing(self) -&gt; float:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;char_spacing&#34;], float)
-    return self.__statestack[-1][&#34;char_spacing&#34;]</code></pre>
+    return self.__statestack[-1].char_spacing</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -563,7 +3266,7 @@ def char_spacing(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L285-L293" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L261-L269" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def char_vpos(self) -&gt; CharVPos:
@@ -572,8 +3275,8 @@ def char_vpos(self) -&gt; CharVPos:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;char_vpos&#34;], CharVPos)
-    return self.__statestack[-1][&#34;char_vpos&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].char_vpos, CharVPos)
+    return self.__statestack[-1].char_vpos</code></pre>
 </details>
 <div class="desc"><p>Return vertical character position relative to line.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -583,15 +3286,11 @@ def char_vpos(self) -&gt; CharVPos:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L229-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L221-L223" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def current_font(self) -&gt; Optional[CoreFont | TTFFont]:
-    if TYPE_CHECKING:
-        assert isinstance(
-            self.__statestack[-1][&#34;current_font&#34;], (CoreFont, TTFFont, type(None))
-        )
-    return self.__statestack[-1][&#34;current_font&#34;]</code></pre>
+    return self.__statestack[-1].current_font</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -600,15 +3299,11 @@ def current_font(self) -&gt; Optional[CoreFont | TTFFont]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L241-L247" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L229-L231" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def current_font_is_set_on_page(self) -&gt; bool:
-    if TYPE_CHECKING:
-        assert isinstance(
-            self.__statestack[-1][&#34;current_font_is_set_on_page&#34;], bool
-        )
-    return self.__statestack[-1][&#34;current_font_is_set_on_page&#34;]</code></pre>
+    return self.__statestack[-1].current_font_is_set_on_page</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -617,15 +3312,11 @@ def current_font_is_set_on_page(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L253-L259" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L237-L239" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def dash_pattern(self) -&gt; dict[str, float]:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;dash_pattern&#34;], dict)
-    return self.__statestack[-1][
-        &#34;dash_pattern&#34;
-    ]  # pyright: ignore[reportUnknownVariableType]</code></pre>
+    return self.__statestack[-1].dash_pattern</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -634,7 +3325,7 @@ def dash_pattern(self) -&gt; dict[str, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L429-L437" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L405-L413" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def denom_lift(self) -&gt; float:
@@ -643,8 +3334,8 @@ def denom_lift(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;denom_lift&#34;], float)
-    return self.__statestack[-1][&#34;denom_lift&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].denom_lift, float)
+    return self.__statestack[-1].denom_lift</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for denominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -654,7 +3345,7 @@ def denom_lift(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L357-L365" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L333-L341" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def denom_scale(self) -&gt; float:
@@ -663,8 +3354,8 @@ def denom_scale(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;denom_scale&#34;], float)
-    return self.__statestack[-1][&#34;denom_scale&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].denom_scale, float)
+    return self.__statestack[-1].denom_scale</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for denominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -674,16 +3365,11 @@ def denom_scale(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L94-L101" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L116-L118" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def draw_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
-    if TYPE_CHECKING:
-        assert isinstance(
-            self.__statestack[-1][&#34;draw_color&#34;],
-            (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-        )
-    return self.__statestack[-1][&#34;draw_color&#34;]</code></pre>
+    return self.__statestack[-1].draw_color</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -692,16 +3378,11 @@ def draw_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L112-L119" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L129-L131" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def fill_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
-    if TYPE_CHECKING:
-        assert isinstance(
-            self.__statestack[-1][&#34;fill_color&#34;],
-            (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-        )
-    return self.__statestack[-1][&#34;fill_color&#34;]</code></pre>
+    return self.__statestack[-1].fill_color</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -710,13 +3391,11 @@ def fill_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L198-L202" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L195-L197" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_family(self) -&gt; str:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;font_family&#34;], str)
-    return self.__statestack[-1][&#34;font_family&#34;]</code></pre>
+    return self.__statestack[-1].font_family</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -725,14 +3404,13 @@ def font_family(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L218-L223" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L211-L215" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_size(self) -&gt; float:
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
         assert isinstance(self.k, float)  # type: ignore[attr-defined]
-    return self.__statestack[-1][&#34;font_size_pt&#34;] / self.k  # type: ignore[attr-defined]</code></pre>
+    return self.__statestack[-1].font_size_pt / self.k  # type: ignore[attr-defined]</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -741,13 +3419,11 @@ def font_size(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L208-L212" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L203-L205" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_size_pt(self) -&gt; float:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;font_size_pt&#34;], float)
-    return self.__statestack[-1][&#34;font_size_pt&#34;]</code></pre>
+    return self.__statestack[-1].font_size_pt</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -756,13 +3432,11 @@ def font_size_pt(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L178-L182" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L179-L181" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_stretching(self) -&gt; float:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;font_stretching&#34;], float)
-    return self.__statestack[-1][&#34;font_stretching&#34;]</code></pre>
+    return self.__statestack[-1].font_stretching</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -771,13 +3445,11 @@ def font_stretching(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L168-L172" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L171-L173" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_style(self) -&gt; str:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;font_style&#34;], str)
-    return self.__statestack[-1][&#34;font_style&#34;]</code></pre>
+    return self.__statestack[-1].font_style</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -786,13 +3458,11 @@ def font_style(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L265-L269" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L245-L247" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def line_width(self) -&gt; float:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;line_width&#34;], float)
-    return self.__statestack[-1][&#34;line_width&#34;]</code></pre>
+    return self.__statestack[-1].line_width</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -801,7 +3471,7 @@ def line_width(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L411-L419" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L387-L395" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def nom_lift(self) -&gt; float:
@@ -810,8 +3480,8 @@ def nom_lift(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;nom_lift&#34;], float)
-    return self.__statestack[-1][&#34;nom_lift&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].nom_lift, float)
+    return self.__statestack[-1].nom_lift</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for nominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -821,7 +3491,7 @@ def nom_lift(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L339-L347" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L315-L323" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def nom_scale(self) -&gt; float:
@@ -830,8 +3500,8 @@ def nom_scale(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;nom_scale&#34;], float)
-    return self.__statestack[-1][&#34;nom_scale&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].nom_scale, float)
+    return self.__statestack[-1].nom_scale</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for nominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -841,13 +3511,11 @@ def nom_scale(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L158-L162" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L163-L165" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def strikethrough(self) -&gt; bool:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;strikethrough&#34;], bool)
-    return self.__statestack[-1][&#34;strikethrough&#34;]</code></pre>
+    return self.__statestack[-1].strikethrough</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -856,7 +3524,7 @@ def strikethrough(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L375-L383" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L351-L359" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sub_lift(self) -&gt; float:
@@ -865,8 +3533,8 @@ def sub_lift(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;sub_lift&#34;], float)
-    return self.__statestack[-1][&#34;sub_lift&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].sub_lift, float)
+    return self.__statestack[-1].sub_lift</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for subscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -876,7 +3544,7 @@ def sub_lift(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L303-L311" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L279-L287" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sub_scale(self) -&gt; float:
@@ -885,8 +3553,8 @@ def sub_scale(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;sub_scale&#34;], float)
-    return self.__statestack[-1][&#34;sub_scale&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].sub_scale, float)
+    return self.__statestack[-1].sub_scale</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for subscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -896,7 +3564,7 @@ def sub_scale(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L393-L401" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L369-L377" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sup_lift(self) -&gt; float:
@@ -905,8 +3573,8 @@ def sup_lift(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;sup_lift&#34;], float)
-    return self.__statestack[-1][&#34;sup_lift&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].sup_lift, float)
+    return self.__statestack[-1].sup_lift</code></pre>
 </details>
 <div class="desc"><p>Return lift factor for superscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -916,7 +3584,7 @@ def sup_lift(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L321-L329" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L297-L305" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sup_scale(self) -&gt; float:
@@ -925,8 +3593,8 @@ def sup_scale(self) -&gt; float:
     ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
     &#34;&#34;&#34;
     if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;sup_scale&#34;], float)
-    return self.__statestack[-1][&#34;sup_scale&#34;]</code></pre>
+        assert isinstance(self.__statestack[-1].sup_scale, float)
+    return self.__statestack[-1].sup_scale</code></pre>
 </details>
 <div class="desc"><p>Return scale factor for superscript text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
@@ -936,16 +3604,11 @@ def sup_scale(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L130-L137" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L142-L144" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
-    if TYPE_CHECKING:
-        assert isinstance(
-            self.__statestack[-1][&#34;text_color&#34;],
-            (DeviceRGB, DeviceGray, DeviceCMYK, type(None)),
-        )
-    return self.__statestack[-1][&#34;text_color&#34;]</code></pre>
+    return self.__statestack[-1].text_color</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -954,13 +3617,11 @@ def text_color(self) -&gt; Optional[DeviceRGB | DeviceCMYK | DeviceGray]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L275-L279" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L253-L255" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_mode(self) -&gt; TextMode:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;text_mode&#34;], TextMode)
-    return self.__statestack[-1][&#34;text_mode&#34;]</code></pre>
+    return self.__statestack[-1].text_mode</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -969,15 +3630,11 @@ def text_mode(self) -&gt; TextMode:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L447-L453" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L423-L425" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_shaping(self) -&gt; Optional[dict[str, Any]]:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;text_shaping&#34;], dict)
-    return self.__statestack[-1][
-        &#34;text_shaping&#34;
-    ]  # pyright: ignore[reportUnknownVariableType]</code></pre>
+    return self.__statestack[-1].text_shaping</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -986,13 +3643,11 @@ def text_shaping(self) -&gt; Optional[dict[str, Any]]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L148-L152" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L155-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def underline(self) -&gt; bool:
-    if TYPE_CHECKING:
-        assert isinstance(self.__statestack[-1][&#34;underline&#34;], bool)
-    return self.__statestack[-1][&#34;underline&#34;]</code></pre>
+    return self.__statestack[-1].underline</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -1000,22 +3655,17 @@ def underline(self) -&gt; bool:
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._get_current_graphics_state"><code class="name flex">
-<span>def <span class="ident">_get_current_graphics_state</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
+<span>def <span class="ident">_get_current_graphics_state</span></span>(<span>self) ‑> <a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L81-L88" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L108-L110" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def _get_current_graphics_state(self) -&gt; StateStackType:
     &#34;Retrieve the current graphics state&#34;
-    # &#34;current_font&#34; must be shallow copied
-    # &#34;text_shaping&#34; must be deep copied (different fragments may have different languages/direction)
-    # Doing a whole copy and then creating a copy of text_shaping to achieve this result
-    gs = copy(self.__statestack[-1])
-    gs[&#34;text_shaping&#34;] = copy(gs[&#34;text_shaping&#34;])
-    return gs</code></pre>
+    return self.__statestack[-1].copy()</code></pre>
 </details>
 <div class="desc"><p>Retrieve the current graphics state</p></div>
 </dd>
@@ -1026,22 +3676,22 @@ def underline(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L90-L92" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L112-L114" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def _is_current_graphics_state_nested(self) -&gt; bool:
-    &#34;Indicate if the stack contains items (else it is empty)&#34;
+    &#34;Indicate if a nested graphics state is active&#34;
     return len(self.__statestack) &gt; 1</code></pre>
 </details>
-<div class="desc"><p>Indicate if the stack contains items (else it is empty)</p></div>
+<div class="desc"><p>Indicate if a nested graphics state is active</p></div>
 </dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._pop_local_stack"><code class="name flex">
-<span>def <span class="ident">_pop_local_stack</span></span>(<span>self) ‑> dict[str, typing.Any]</span>
+<span>def <span class="ident">_pop_local_stack</span></span>(<span>self) ‑> <a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L77-L79" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L104-L106" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def _pop_local_stack(self) -&gt; StateStackType:
     &#34;Pop the last graphics state on the stack&#34;
@@ -1050,17 +3700,17 @@ def underline(self) -&gt; bool:
 <div class="desc"><p>Pop the last graphics state on the stack</p></div>
 </dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin._push_local_stack"><code class="name flex">
-<span>def <span class="ident">_push_local_stack</span></span>(<span>self, new: dict[str, typing.Any] | None = None) ‑> dict[str, typing.Any]</span>
+<span>def <span class="ident">_push_local_stack</span></span>(<span>self,<br>new: <a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a> | None = None) ‑> <a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L70-L75" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L97-L102" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def _push_local_stack(self, new: Optional[StateStackType] = None) -&gt; StateStackType:
     &#34;Push a graphics state on the stack&#34;
-    if not new:
+    if new is None:
         new = self._get_current_graphics_state()
     self.__statestack.append(new)
     return new</code></pre>
@@ -1074,7 +3724,7 @@ def underline(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5d0135776a9c296de711e4cfc8f341aca731846f/fpdf/graphics_state.py#L459-L474" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/734d21e04013fa760a296c46e6e47926414648ec/fpdf/graphics_state.py#L431-L446" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def font_face(self) -&gt; FontFace:
     &#34;&#34;&#34;
@@ -1113,6 +3763,70 @@ representing a subset of properties of this GraphicsState.</p></div>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.graphics_state.GraphicsState.as_kwargs" href="#fpdf.graphics_state.GraphicsState.as_kwargs">as_kwargs</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.char_spacing" href="#fpdf.graphics_state.GraphicsState.char_spacing">char_spacing</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.char_vpos" href="#fpdf.graphics_state.GraphicsState.char_vpos">char_vpos</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.copy" href="#fpdf.graphics_state.GraphicsState.copy">copy</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.current_font" href="#fpdf.graphics_state.GraphicsState.current_font">current_font</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.current_font_is_set_on_page" href="#fpdf.graphics_state.GraphicsState.current_font_is_set_on_page">current_font_is_set_on_page</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.dash_pattern" href="#fpdf.graphics_state.GraphicsState.dash_pattern">dash_pattern</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.denom_lift" href="#fpdf.graphics_state.GraphicsState.denom_lift">denom_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.denom_scale" href="#fpdf.graphics_state.GraphicsState.denom_scale">denom_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.draw_color" href="#fpdf.graphics_state.GraphicsState.draw_color">draw_color</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.fill_color" href="#fpdf.graphics_state.GraphicsState.fill_color">fill_color</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_family" href="#fpdf.graphics_state.GraphicsState.font_family">font_family</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_size_pt" href="#fpdf.graphics_state.GraphicsState.font_size_pt">font_size_pt</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_stretching" href="#fpdf.graphics_state.GraphicsState.font_stretching">font_stretching</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_style" href="#fpdf.graphics_state.GraphicsState.font_style">font_style</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.line_width" href="#fpdf.graphics_state.GraphicsState.line_width">line_width</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.nom_lift" href="#fpdf.graphics_state.GraphicsState.nom_lift">nom_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.nom_scale" href="#fpdf.graphics_state.GraphicsState.nom_scale">nom_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.strikethrough" href="#fpdf.graphics_state.GraphicsState.strikethrough">strikethrough</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sub_lift" href="#fpdf.graphics_state.GraphicsState.sub_lift">sub_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sub_scale" href="#fpdf.graphics_state.GraphicsState.sub_scale">sub_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sup_lift" href="#fpdf.graphics_state.GraphicsState.sup_lift">sup_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sup_scale" href="#fpdf.graphics_state.GraphicsState.sup_scale">sup_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.text_color" href="#fpdf.graphics_state.GraphicsState.text_color">text_color</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.text_mode" href="#fpdf.graphics_state.GraphicsState.text_mode">text_mode</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.text_shaping" href="#fpdf.graphics_state.GraphicsState.text_shaping">text_shaping</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.underline" href="#fpdf.graphics_state.GraphicsState.underline">underline</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.graphics_state.GraphicsState" href="#fpdf.graphics_state.GraphicsState">GraphicsState</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.graphics_state.GraphicsState.as_kwargs" href="#fpdf.graphics_state.GraphicsState.as_kwargs">as_kwargs</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.char_spacing" href="#fpdf.graphics_state.GraphicsState.char_spacing">char_spacing</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.char_vpos" href="#fpdf.graphics_state.GraphicsState.char_vpos">char_vpos</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.copy" href="#fpdf.graphics_state.GraphicsState.copy">copy</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.current_font" href="#fpdf.graphics_state.GraphicsState.current_font">current_font</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.current_font_is_set_on_page" href="#fpdf.graphics_state.GraphicsState.current_font_is_set_on_page">current_font_is_set_on_page</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.dash_pattern" href="#fpdf.graphics_state.GraphicsState.dash_pattern">dash_pattern</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.denom_lift" href="#fpdf.graphics_state.GraphicsState.denom_lift">denom_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.denom_scale" href="#fpdf.graphics_state.GraphicsState.denom_scale">denom_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.draw_color" href="#fpdf.graphics_state.GraphicsState.draw_color">draw_color</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.fill_color" href="#fpdf.graphics_state.GraphicsState.fill_color">fill_color</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_family" href="#fpdf.graphics_state.GraphicsState.font_family">font_family</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_size_pt" href="#fpdf.graphics_state.GraphicsState.font_size_pt">font_size_pt</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_stretching" href="#fpdf.graphics_state.GraphicsState.font_stretching">font_stretching</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.font_style" href="#fpdf.graphics_state.GraphicsState.font_style">font_style</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.line_width" href="#fpdf.graphics_state.GraphicsState.line_width">line_width</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.nom_lift" href="#fpdf.graphics_state.GraphicsState.nom_lift">nom_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.nom_scale" href="#fpdf.graphics_state.GraphicsState.nom_scale">nom_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.strikethrough" href="#fpdf.graphics_state.GraphicsState.strikethrough">strikethrough</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sub_lift" href="#fpdf.graphics_state.GraphicsState.sub_lift">sub_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sub_scale" href="#fpdf.graphics_state.GraphicsState.sub_scale">sub_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sup_lift" href="#fpdf.graphics_state.GraphicsState.sup_lift">sup_lift</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.sup_scale" href="#fpdf.graphics_state.GraphicsState.sup_scale">sup_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.text_color" href="#fpdf.graphics_state.GraphicsState.text_color">text_color</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.text_mode" href="#fpdf.graphics_state.GraphicsState.text_mode">text_mode</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.text_shaping" href="#fpdf.graphics_state.GraphicsState.text_shaping">text_shaping</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsState.underline" href="#fpdf.graphics_state.GraphicsState.underline">underline</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="fpdf.graphics_state.GraphicsStateMixin" href="#fpdf.graphics_state.GraphicsStateMixin">GraphicsStateMixin</a></code></h4>
 <ul class="">
