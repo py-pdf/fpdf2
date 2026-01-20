@@ -201,7 +201,6 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.fonts</span><span class=w> </span><span class=kn>import</span> <span class=n>FontFace</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TableCellFillMode</span>
 
-
 <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s2>&quot;countries.txt&quot;</span><span class=p>,</span> <span class=n>encoding</span><span class=o>=</span><span class=s2>&quot;utf8&quot;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csv_file</span><span class=p>:</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>csv</span><span class=o>.</span><span class=n>reader</span><span class=p>(</span><span class=n>csv_file</span><span class=p>,</span> <span class=n>delimiter</span><span class=o>=</span><span class=s2>&quot;,&quot;</span><span class=p>))</span>
 
@@ -238,7 +237,6 @@
 
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;tuto5.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <p><a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf">生成的 PDF</a> - <a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt">源文本</a></p> <p>案例一最为基础，仅使用了<a href="https://py-pdf.github.io/fpdf2/Tables.html">FPDF.table()</a>来快速生成一张基础表格。</p> <p>案例二在此基础上进行了色彩、表格限宽、缩减文本高度、标题居中、自定义项目栏宽度、右对齐数据等方面的改良。并选用了<a href="https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout">TableBordersLayout</a>中合适的(<code>borders_layout</code>)参数来去除下边框。</p> <h2 id=-_5>教程六 - 创建链接和混合文本样式<a class=headerlink href=#-_5 title="Permanent link">&para;</a></h2> <p>本教程将演示几种在 pdf 文档中插入内部链接，或指向外部资源 的超链接的方法，以及几种在同一文本中使用不同文本样式 （粗体、斜体、下划线）的方法。</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
-
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 

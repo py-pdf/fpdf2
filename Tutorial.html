@@ -201,7 +201,6 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.fonts</span><span class=w> </span><span class=kn>import</span> <span class=n>FontFace</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TableCellFillMode</span>
 
-
 <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s2>&quot;countries.txt&quot;</span><span class=p>,</span> <span class=n>encoding</span><span class=o>=</span><span class=s2>&quot;utf8&quot;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csv_file</span><span class=p>:</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>csv</span><span class=o>.</span><span class=n>reader</span><span class=p>(</span><span class=n>csv_file</span><span class=p>,</span> <span class=n>delimiter</span><span class=o>=</span><span class=s2>&quot;,&quot;</span><span class=p>))</span>
 
@@ -239,7 +238,6 @@
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;tuto5.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <p><a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf">Resulting PDF</a> - <a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt">Countries CSV data</a></p> <p>The first example is achieved in the most basic way possible, feeding data to <a href="https://py-pdf.github.io/fpdf2/Tables.html"><code>FPDF.table()</code></a>. The result is rudimentary but very quick to obtain.</p> <p>The second table brings some improvements: colors, limited table width, reduced line height, centered titles, columns with custom widths, figures right aligned... Moreover, horizontal lines have been removed. This was done by picking a <code>borders_layout</code> among the available values: <a href="https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout"><code>TableBordersLayout</code></a>.</p> <h2 id=tuto-6-creating-links-and-mixing-text-styles>Tuto 6 - Creating links and mixing text styles<a class=headerlink href=#tuto-6-creating-links-and-mixing-text-styles title="Permanent link">&para;</a></h2> <p>This tutorial will explain several ways to insert links inside a pdf document, as well as adding links to external sources.</p> <p>It will also show several ways we can use different text styles, (bold, italic, underline) within the same text.</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
-
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 
 <span class=c1># First page:</span>
@@ -269,7 +267,6 @@
 
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF_VERSION</span>
-
 
 <span class=n>DIR</span> <span class=o>=</span> <span class=n>Path</span><span class=p>(</span><span class=vm>__file__</span><span class=p>)</span><span class=o>.</span><span class=n>parent</span>
 <span class=n>FONT_DIR</span> <span class=o>=</span> <span class=n>DIR</span> <span class=o>/</span> <span class=s2>&quot;..&quot;</span> <span class=o>/</span> <span class=s2>&quot;test&quot;</span> <span class=o>/</span> <span class=s2>&quot;fonts&quot;</span>

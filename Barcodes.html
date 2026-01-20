@@ -29,7 +29,6 @@
 </code></pre></div> <p>Output preview:</p> <p><img alt src=qrcode.png></p> <h2 id=datamatrix>DataMatrix<a class=headerlink href=#datamatrix title="Permanent link">&para;</a></h2> <p><code>fpdf2</code> can be combined with the <a href="https://github.com/mmulqueen/pyStrich"><code>pystrich</code></a> library to generate <a href="https://en.wikipedia.org/wiki/Data_Matrix">DataMatrix barcodes</a>: <code>pystrich</code> generates pilimages, which can then be inserted into the PDF file via the <code>FPDF.image()</code> method.</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>pystrich.datamatrix</span><span class=w> </span><span class=kn>import</span> <span class=n>DataMatrixEncoder</span><span class=p>,</span> <span class=n>DataMatrixRenderer</span>
 
-
 <span class=c1># Define the properties of the barcode</span>
 <span class=n>positionX</span> <span class=o>=</span> <span class=mi>10</span>
 <span class=n>positionY</span> <span class=o>=</span> <span class=mi>10</span>
@@ -79,7 +78,6 @@
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;datamatrix_from_method.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <h2 id=aztec-code>Aztec Code<a class=headerlink href=#aztec-code title="Permanent link">&para;</a></h2> <p><code>fpdf2</code> can be combined with the <a href="https://pypi.org/project/aztec-code-generator/"><code>aztec_code_generator</code></a> Pypi library to generate <a href="https://en.wikipedia.org/wiki/Aztec_Code">Aztec codes</a>. It can be installed by running <code>pip install aztec_code_generator</code>:</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>aztec_code_generator</span><span class=w> </span><span class=kn>import</span> <span class=n>AztecCode</span>
-
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>

@@ -201,7 +201,6 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.fonts</span><span class=w> </span><span class=kn>import</span> <span class=n>FontFace</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TableCellFillMode</span>
 
-
 <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s2>&quot;countries.txt&quot;</span><span class=p>,</span> <span class=n>encoding</span><span class=o>=</span><span class=s2>&quot;utf8&quot;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csv_file</span><span class=p>:</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>csv</span><span class=o>.</span><span class=n>reader</span><span class=p>(</span><span class=n>csv_file</span><span class=p>,</span> <span class=n>delimiter</span><span class=o>=</span><span class=s2>&quot;,&quot;</span><span class=p>))</span>
 
@@ -238,7 +237,6 @@
 
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;tuto5.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <p><a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf">លទ្ធផលសម្រេច PDF</a> - <a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt">Countries CSV data</a></p> <p>មានមូលដ្ឋានក្នុងការធ្វើដោយជោគជ័យជាមួយឧទារហ៍នេះដោយដាក់ទិន្នន័យដោយប្រើ <a href="https://py-pdf.github.io/fpdf2/Tables.html"><code>FPDF.table()</code></a>. វាមានភាពសម្មាញ់និងធ្វើបានលឿន។</p> <p>តារាងទីពីរយើងនឹងធ្វើអោយប្រសើរជាងមុនរួមមានដូចជា: ដាក់ពណ៌ ដោយកំណត់ប្រវែងទទឹង បន្ថយបន្ទាត់កំពស់។ តម្រឹមចំណងជើងចេញពីកណ្តាល រៀបជួរឈរដោយការប្តូរតម្លៃប្រវែងទទឹងវា និង ការកំណត់តម្រឹមខាងស្តាំ។ ជាងនេះទៅទៀតនោះ គឹដកបន្ទាត់ផ្តេកចេញ។ ធ្វើបែបនេះទៅបានដោយរើសយក <code>borders_layout</code> ដែលមានជម្រើសជាច្រើននៅទីនោះ: <a href="https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout"><code>TableBordersLayout</code></a>.</p> <h2 id=6->មេរៀនទី 6 - បង្កើតតំណរជាមួយអត្ថបទ<a class=headerlink href=#6- title="Permanent link">&para;</a></h2> <p>ក្នុងមេរៀននេះយើងនឹងពន្យល់អំពីរបៀបជាច្រើនក្នុងការដាក់តំណរនៅលើឯកសារ pdf ហើយយើងក៏ដាក់តំណរដៅទៅប្រភពផ្សេងនៅក្រៅផងដែរ។</p> <p>យើងនឹងបង្ហាញពីរបៀបជាច្រើនទៀតក្នុងការលេងម៉ូដអត្ថបទរួមមានដូចជាម៉ូដឌិត ទ្រេត មានបន្ទាត់ពីក្រោម (bold, italic, underline)។</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
-
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 

@@ -201,7 +201,6 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.fonts</span><span class=w> </span><span class=kn>import</span> <span class=n>FontFace</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TableCellFillMode</span>
 
-
 <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s2>&quot;countries.txt&quot;</span><span class=p>,</span> <span class=n>encoding</span><span class=o>=</span><span class=s2>&quot;utf8&quot;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csv_file</span><span class=p>:</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>csv</span><span class=o>.</span><span class=n>reader</span><span class=p>(</span><span class=n>csv_file</span><span class=p>,</span> <span class=n>delimiter</span><span class=o>=</span><span class=s2>&quot;,&quot;</span><span class=p>))</span>
 
@@ -238,7 +237,6 @@
 
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;tuto5.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <p><a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf">生成されるPDF</a> - <a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt">国別CSVデータ</a></p> <p>1つ目の例は最も基本的な方法で、<a href="https://py-pdf.github.io/fpdf2/Tables.html"><code>FPDF.table()</code></a> にデータを与えています。 結果は単純なものですが、非常に短時間で作成できます。</p> <p>2つ目の例ではいくつかの改善を加えています。色、テーブルの幅の制限、行の高さの縮小、中央寄せされたタイトル、列幅の指定、右寄せの数値などに加え、行を区切る横線を削除しています。 これは、<a href="https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout"><code>TableBordersLayout</code></a> の <code>borders_layout</code> を指定することで行うことができます。</p> <h2 id=tuto-6->Tuto 6 - リンクの作成と、テキストスタイルの組み合わせ<a class=headerlink href=#tuto-6- title="Permanent link">&para;</a></h2> <p>このチュートリアルでは、PDF文書内にリンクを埋め込むいくつかの方法を紹介します。 同様の方法で、外部リンクも作成可能です。</p> <p>また、1つのテキスト内で複数のスタイリング（太字、斜体、下線）を使用する方法についても解説します。</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
-
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 

@@ -201,7 +201,6 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.fonts</span><span class=w> </span><span class=kn>import</span> <span class=n>FontFace</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TableCellFillMode</span>
 
-
 <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s2>&quot;countries.txt&quot;</span><span class=p>,</span> <span class=n>encoding</span><span class=o>=</span><span class=s2>&quot;utf8&quot;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csv_file</span><span class=p>:</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>csv</span><span class=o>.</span><span class=n>reader</span><span class=p>(</span><span class=n>csv_file</span><span class=p>,</span> <span class=n>delimiter</span><span class=o>=</span><span class=s2>&quot;,&quot;</span><span class=p>))</span>
 
@@ -238,7 +237,6 @@
 
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;tuto5.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <p><a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf">Rezultatni PDF</a> - <a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt">Countries CSV data</a></p> <p>Prvi primer je izveden na najbolj osnovni način, saj se podatki predajo metodi <a href="https://py-pdf.github.io/fpdf2/Tables.html"><code>FPDF.table()</code></a>. Rezultat je precej preprost, vendar hitro dosegljiv.</p> <p>Druga tabela prinaša nekaj izboljšav: barve, omejeno širino tabele, zmanjšano višino vrstic, centrirane naslove, stolpce s prilagojeno širino, desno poravnane številke ... Poleg tega so odstranjene vodoravne črte. Dosegli smo to z izbiro <code>borders_layout</code> med razpoložljivimi vrednostmi: <a href="https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout"><code>TableBordersLayout</code></a>.</p> <h2 id=vodic-6-ustvarjanje-povezav-in-mesanje-slogov-besedila>Vodič 6 - Ustvarjanje povezav in mešanje slogov besedila<a class=headerlink href=#vodic-6-ustvarjanje-povezav-in-mesanje-slogov-besedila title="Permanent link">&para;</a></h2> <p>Ta vodič bo razložil več načinov, kako vstaviti povezave v PDF dokument, pa tudi, kako dodati povezave na zunanje vire.</p> <p>Poleg tega bo pokazal več načinov uporabe različnih slogov besedila (krepko, ležeče, podčrtano) znotraj istega besedila.</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
-
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 

@@ -201,7 +201,6 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.fonts</span><span class=w> </span><span class=kn>import</span> <span class=n>FontFace</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TableCellFillMode</span>
 
-
 <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s2>&quot;countries.txt&quot;</span><span class=p>,</span> <span class=n>encoding</span><span class=o>=</span><span class=s2>&quot;utf8&quot;</span><span class=p>)</span> <span class=k>as</span> <span class=n>csv_file</span><span class=p>:</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>csv</span><span class=o>.</span><span class=n>reader</span><span class=p>(</span><span class=n>csv_file</span><span class=p>,</span> <span class=n>delimiter</span><span class=o>=</span><span class=s2>&quot;,&quot;</span><span class=p>))</span>
 
@@ -238,7 +237,6 @@
 
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;tuto5.pdf&quot;</span><span class=p>)</span>
 </code></pre></div> <p><a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf">Hasil PDF</a> - <a href="https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt">Data CSV Negara-negara</a></p> <p>Contoh pertama dapat dicapai dengan cara yang mudah, yaitu memasukkan data ke <a href="https://py-pdf.github.io/fpdf2/Tables.html"><code>FPDF.table()</code></a>. Hasil yang didapatkan memang sangat simpel, tetapi sangat cepat untuk dibuat.</p> <p>Tabel kedua menghadirkan beberapa perbaikan: warna, lebar tabel yang dibatasi, tinggi baris yang berkurang, judul dengan rata tengah, kolom dengan lebar custom, gambar yang rata kanan... Selain itu, garis horizontal telah dihapus. Hal ini dilakukan dengan memilih <code>border_layout</code> di antara nilai yang tersedia: <a href="https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout"><code>TableBordersLayout</code></a>.</p> <h2 id=panduan-6-membuat-tautan-dan-mencampur-gaya-teks>Panduan 6 - Membuat tautan dan mencampur gaya teks<a class=headerlink href=#panduan-6-membuat-tautan-dan-mencampur-gaya-teks title="Permanent link">&para;</a></h2> <p>Dalam panduan ini akan dijelaskan beberapa cara untuk menyisipkan tautan di dalam dokumen PDF, serta menambahkan tautan ke sumber eksternal.</p> <p>Panduan ini juga akan menunjukkan beberapa cara untuk menggunakan gaya teks yang berbeda, (tebal, miring, garis bawah) dalam teks yang sama.</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
-
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 
