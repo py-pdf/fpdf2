@@ -48,7 +48,6 @@ import pytest
 
 from . import parameters
 
-
 HERE = Path(__file__).resolve().parent
 bad_path_chars = re.compile(r"[\[\]=#, ]")
 

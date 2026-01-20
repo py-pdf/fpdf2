@@ -7,7 +7,6 @@ from fpdf.enums import MethodReturnValue, YPos
 
 from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
-
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
 

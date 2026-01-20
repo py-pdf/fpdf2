@@ -133,9 +133,7 @@ class DeviceRGB:
 __pdoc__["DeviceRGB.r"] = "The red color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceRGB.g"] = "The green color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceRGB.b"] = "The blue color component. Must be in the interval [0, 1]."
-__pdoc__[
-    "DeviceRGB.a"
-] = """
+__pdoc__["DeviceRGB.a"] = """
 The alpha color component (i.e. opacity). Must be `None` or in the interval [0, 1].
 
 An alpha value of 0 makes the color fully transparent, and a value of 1 makes it fully
@@ -179,16 +177,12 @@ class DeviceGray:
         return f"{number_to_str(self.g)} {self.operator}"
 
 
-__pdoc__[
-    "DeviceGray.g"
-] = """
+__pdoc__["DeviceGray.g"] = """
 The gray color component. Must be in the interval [0, 1].
 
 A value of 0 represents black and a value of 1 represents white.
 """
-__pdoc__[
-    "DeviceGray.a"
-] = """
+__pdoc__["DeviceGray.a"] = """
 The alpha color component (i.e. opacity). Must be `None` or in the interval [0, 1].
 
 An alpha value of 0 makes the color fully transparent, and a value of 1 makes it fully
@@ -243,9 +237,7 @@ __pdoc__["DeviceCMYK.m"] = (
 )
 __pdoc__["DeviceCMYK.y"] = "The yellow color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceCMYK.k"] = "The black color component. Must be in the interval [0, 1]."
-__pdoc__[
-    "DeviceCMYK.a"
-] = """
+__pdoc__["DeviceCMYK.a"] = """
 The alpha color component (i.e. opacity). Must be `None` or in the interval [0, 1].
 
 An alpha value of 0 makes the color fully transparent, and a value of 1 makes it fully

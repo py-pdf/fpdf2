@@ -6,6 +6,7 @@ Hint tables / hint streams have not been implemented yet,
 and there are a few "TODO" comment remaining.
 cf. https://github.com/py-pdf/fpdf2/issues/62
 """
+
 from typing import TYPE_CHECKING, Optional
 
 from .output import ContentWithoutID, OutputProducer, PDFCatalog, PDFHeader, PDFInfo

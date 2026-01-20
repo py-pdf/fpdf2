@@ -232,7 +232,7 @@ class GradientPaint:
             )
 
         if isinstance(self.gradient, RadialGradient):
-            (fx, fy, fr, cx, cy, r) = self.gradient.coords
+            fx, fy, fr, cx, cy, r = self.gradient.coords
             raw_stops = getattr(self.gradient, "raw_stops", None)
             if raw_stops is None:
                 colors = self.gradient.colors

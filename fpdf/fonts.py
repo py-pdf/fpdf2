@@ -395,7 +395,7 @@ class TTFFont:
                 self.fontkey,
             )
             # draw a diagonal cross .notdef glyph
-            (xMin, xMax, yMin, yMax) = (
+            xMin, xMax, yMin, yMax = (
                 self.ttfont["head"].xMin,
                 self.ttfont["head"].xMax,
                 self.ttfont["head"].yMin,
