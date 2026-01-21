@@ -25,6 +25,7 @@ from typing import (
     Protocol,
     Sequence,
     Union,
+    cast,
 )
 
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
@@ -60,6 +61,7 @@ from .enums import (
     GradientUnits,
     PathPaintRule,
 )
+from .image_datastructures import RasterImageInfo
 from .pattern import SweepGradient, shape_linear_gradient, shape_radial_gradient
 
 if TYPE_CHECKING:
@@ -998,14 +1000,15 @@ class CBDTColorFont(Type3Font):
         bio = BytesIO(glyph_bitmap)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+        info = cast(RasterImageInfo, info)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyph.glyph = (
             f"{round(w * self.scale)} 0 d0\n"
             "q\n"
             f"{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n"
-            f"/I{info['i']} Do\nQ"
+            f"/I{info.index} Do\nQ"
         )
-        self.images_used.add(info["i"])  # type: ignore[arg-type]
+        self.images_used.add(info.index)
         glyph.glyph_width = w
 
 
@@ -1052,6 +1055,7 @@ class SBIXColorFont(Type3Font):
         bio = BytesIO(sbix_glyph.imageData)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+        info = cast(RasterImageInfo, info)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyf_metrics = self.base_font.ttfont["glyf"].get(glyph.glyph_name)
         assert glyf_metrics is not None
@@ -1064,9 +1068,9 @@ class SBIXColorFont(Type3Font):
             f"{round(w * self.scale)} 0 d0\n"
             "q\n"
             f"{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n"
-            f"/I{info['i']} Do\nQ"
+            f"/I{info.index} Do\nQ"
         )
-        self.images_used.add(info["i"])  # type: ignore[arg-type]
+        self.images_used.add(info.index)
         glyph.glyph_width = w
 
 
