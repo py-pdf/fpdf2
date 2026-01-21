@@ -16,7 +16,7 @@ import re
 import warnings
 from copy import deepcopy
 from os import PathLike
-from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
+from typing import TYPE_CHECKING, Any, Callable, cast, NamedTuple, Optional
 
 from fontTools.svgLib.path import (
     parse_path,  # pyright: ignore[reportUnknownVariableType]
@@ -54,7 +54,12 @@ from .drawing_primitives import (
     color_from_rgb_string,
     force_nodocument,
 )
-from .image_datastructures import ImageCache, VectorImageInfo
+from .image_datastructures import (
+    ImageCache,
+    is_vector_image_info,
+    RasterImageInfo,
+    size_in_document_units,
+)
 from .output import stream_content_for_raster_image
 from .pattern import shape_linear_gradient, shape_radial_gradient
 
@@ -1872,14 +1877,15 @@ class SVGImage(NamedTuple):
         from .image_parsing import preload_image
 
         _, _, info = preload_image(image_cache, self.href)
-        if isinstance(info, VectorImageInfo):
+        if is_vector_image_info(info):
             LOGGER.warning(
                 "Inserting .svg vector graphics in <image> tags is currently not supported (contributions are welcome to add support for it)"
             )
             return "", last_item, initial_point
-        w, h = info.size_in_document_units(self.width, self.height)
+        raster_info = cast(RasterImageInfo, info)
+        w, h = size_in_document_units(raster_info, self.width, self.height)
         stream_content = stream_content_for_raster_image(
-            info=info,
+            info=raster_info,
             x=self.x,
             y=self.y,
             w=w,

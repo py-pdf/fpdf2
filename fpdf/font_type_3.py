@@ -63,6 +63,7 @@ from .enums import (
     GradientUnits,
     PathPaintRule,
 )
+from .image_datastructures import RasterImageInfo
 from .pattern import SweepGradient, shape_linear_gradient, shape_radial_gradient
 
 try:
@@ -1006,6 +1007,7 @@ class CBDTColorFont(Type3Font):
         bio = BytesIO(glyph_bitmap)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+        info = cast(RasterImageInfo, info)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyph.glyph = (
             f"{round(w * self.scale)} 0 d0\n"
@@ -1013,7 +1015,7 @@ class CBDTColorFont(Type3Font):
             f"{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n"
             f"/I{info['i']} Do\nQ"
         )
-        self.images_used.add(info["i"])  # type: ignore[arg-type]
+        self.images_used.add(info["i"])
         glyph.glyph_width = w
 
 
@@ -1201,6 +1203,7 @@ class EBDTBitmapFont(Type3Font):
         alpha_image.save(bio, format="PNG")
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+        info = cast(RasterImageInfo, info)
 
         mask_matrix = Transform(
             a=(x_max - x_min) * self.scale,
@@ -1216,7 +1219,7 @@ class EBDTBitmapFont(Type3Font):
             x_max * self.scale,
             y_max * self.scale,
         )
-        soft_mask = ImageSoftMask(cast(int, info["i"]), bbox, mask_matrix)
+        soft_mask = ImageSoftMask(info["i"], bbox, mask_matrix)
 
         soft_mask.object_id = self.fpdf._resource_catalog.register_soft_mask(  # pylint: disable=protected-access
             soft_mask
@@ -1284,6 +1287,7 @@ class SBIXColorFont(Type3Font):
         bio = BytesIO(sbix_glyph.imageData)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+        info = cast(RasterImageInfo, info)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyf_metrics = self.base_font.ttfont["glyf"].get(glyph.glyph_name)
         assert glyf_metrics is not None
@@ -1298,7 +1302,7 @@ class SBIXColorFont(Type3Font):
             f"{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n"
             f"/I{info['i']} Do\nQ"
         )
-        self.images_used.add(info["i"])  # type: ignore[arg-type]
+        self.images_used.add(info["i"])
         glyph.glyph_width = w
 
 

@@ -35,8 +35,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Changed
 * improved performance when rendering paths, SVGs, and opaque raster images with an alpha channel - _cf._ [PR #1675](https://github.com/py-pdf/fpdf2/pull/1675)
 * typing annotations added across the codebase as part of the strict typing rollout
-* graphics state snapshots now use a `GraphicsState` dataclass for clearer usage and stronger typing
+* graphics state snapshots now use a [`GraphicsState` dataclass](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html) dataclass for clearer usage and stronger typing
 * `rotation()`, `skew()`, and `mirror()` now delegate to `transform()` for standardized transform application
+* [ImageInfo](https://py-pdf.github.io/fpdf2/fpdf/image_datastructures.html#fpdf.image_datastructures.ImageInfo) now uses typed dictionaries for clearer usage and stronger typing
 
 ## [2.8.5] - 2025-10-29
 ### Added
