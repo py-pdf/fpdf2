@@ -51,6 +51,11 @@ class RendererTemplate(RendererBase):
         raise NotImplementedError("draw_gouraud_triangles not implemented yet")
 
     def draw_path(self, gc, path, transform, rgbFace=None):
+
+        if len(path) == 0:
+            logging.debug("draw_path: empty path - skipping")
+            return
+
         tran = transform + self._trans
         clip_rect = None
         clip_x0, clip_y0, clip_x1, clip_y1 = None, None, None, None
