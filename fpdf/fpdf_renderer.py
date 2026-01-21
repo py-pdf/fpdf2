@@ -64,9 +64,12 @@ class RendererTemplate(RendererBase):
             clip_x0, clip_y0 = self._trans.transform(clip_rect[0:2])
             clip_x1, clip_y1 = self._trans.transform(clip_rect[2:4])
 
-        # else:
-        # print(f"clip-path: {gc.get_clip_path()}\n")
-        c, v = zip(*[(c, v.tolist()) for v, c in path.iter_segments(transform=tran)])
+        try:
+            c, v = zip(*[(c, v.tolist()) for v, c in path.iter_segments(transform=tran)])
+        except ValueError as ve:
+            # Sometimes path segments cannot be iterated - log and skip
+            logging.error(f"Error iterating path segments: {ve}")
+            return
 
         p = self._fpdf
         fill_opacity = None
