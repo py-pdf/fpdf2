@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python 3.14 🔧
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.14
       - name: Install system dependencies ⚙️
@@ -47,7 +47,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
@@ -102,7 +102,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }} 🔧
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
@@ -206,7 +206,7 @@ jobs:
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
       - name: Set up Python 3.14 🔧
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.14
       - name: Install Python dependencies ⚙️
@@ -270,7 +270,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python 3.14 🔧
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.14'
       - name: Build distributions for Pypi 🏗️
