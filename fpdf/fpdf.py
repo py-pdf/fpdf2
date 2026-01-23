@@ -114,7 +114,7 @@ from .errors import (
     PDFAComplianceError,
 )
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
-from .forms import Checkbox, TextField
+from .forms import Checkbox, ComboBox, ListBox, PushButton, RadioButton, TextField
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_datastructures import (
@@ -3244,6 +3244,251 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             border_color=border_color,
             check_color_gray=check_color_gray,
             border_width=border_width,
+            read_only=read_only,
+            required=required,
+        )
+
+        field._generate_appearance()
+        self.pages[self.page].annots.append(field)
+
+        return field
+
+    @check_page
+    def radio_button(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        size: float = 12,
+        selected: bool = False,
+        export_value: str = "Choice1",
+        background_color: tuple = (1, 1, 1),
+        border_color: tuple = (0, 0, 0),
+        mark_color_gray: float = 0,
+        border_width: float = 1,
+        read_only: bool = False,
+        required: bool = False,
+        no_toggle_to_off: bool = True,
+    ):
+        """
+        Adds an interactive radio button to the page.
+
+        Radio buttons with the same name form a group where only one can be selected.
+
+        Args:
+            name (str): name for this radio button group
+            x (float): horizontal position (from the left) of the radio button
+            y (float): vertical position (from the top) of the radio button
+            size (float): size of the radio button
+            selected (bool): initial selected state
+            export_value (str): value exported when this button is selected
+            background_color (tuple): RGB tuple (0-1 range) for background
+            border_color (tuple): RGB tuple (0-1 range) for border
+            mark_color_gray (float): gray value 0.0-1.0 for selection mark (0=black)
+            border_width (float): border width
+            read_only (bool): if True, radio button cannot be toggled
+            required (bool): if True, one option must be selected before form submission
+            no_toggle_to_off (bool): if True, clicking selected button doesn't deselect it
+        """
+        self._set_min_pdf_version("1.4")
+
+        field = RadioButton(
+            field_name=name,
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            size=size * self.k,
+            selected=selected,
+            export_value=export_value,
+            background_color=background_color,
+            border_color=border_color,
+            mark_color_gray=mark_color_gray,
+            border_width=border_width,
+            read_only=read_only,
+            required=required,
+            no_toggle_to_off=no_toggle_to_off,
+        )
+
+        field._generate_appearance()
+        self.pages[self.page].annots.append(field)
+
+        return field
+
+    @check_page
+    def push_button(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        label: str = "",
+        font_size: float = 12,
+        font_color_gray: float = 0,
+        background_color: tuple = (0.9, 0.9, 0.9),
+        border_color: tuple = (0, 0, 0),
+        border_width: float = 1,
+        read_only: bool = False,
+    ):
+        """
+        Adds an interactive push button to the page.
+
+        Push buttons are typically used to trigger actions like form submission or reset.
+
+        Args:
+            name (str): unique name for this button
+            x (float): horizontal position (from the left) of the button
+            y (float): vertical position (from the top) of the button
+            w (float): width of the button
+            h (float): height of the button
+            label (str): text label displayed on the button
+            font_size (float): font size for the label in points
+            font_color_gray (float): gray value 0.0-1.0 for text color (0=black)
+            background_color (tuple): RGB tuple (0-1 range) for background
+            border_color (tuple): RGB tuple (0-1 range) for border
+            border_width (float): border width
+            read_only (bool): if True, button cannot be clicked
+        """
+        self._set_min_pdf_version("1.4")
+
+        field = PushButton(
+            field_name=name,
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            width=w * self.k,
+            height=h * self.k,
+            label=label,
+            font_size=font_size,
+            font_color_gray=font_color_gray,
+            background_color=background_color,
+            border_color=border_color,
+            border_width=border_width,
+            read_only=read_only,
+        )
+
+        field._generate_appearance()
+        self.pages[self.page].annots.append(field)
+
+        return field
+
+    @check_page
+    def combo_box(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        options: list,
+        value: str = None,
+        font_size: float = 12,
+        font_color_gray: float = 0,
+        background_color: tuple = (1, 1, 1),
+        border_color: tuple = (0, 0, 0),
+        border_width: float = 1,
+        editable: bool = False,
+        read_only: bool = False,
+        required: bool = False,
+    ):
+        """
+        Adds an interactive combo box (dropdown list) to the page.
+
+        Args:
+            name (str): unique name for this field
+            x (float): horizontal position (from the left) of the field
+            y (float): vertical position (from the top) of the field
+            w (float): width of the field
+            h (float): height of the field
+            options (list): list of option strings
+            value (str): initially selected value
+            font_size (float): font size in points
+            font_color_gray (float): gray value 0.0-1.0 for text color (0=black)
+            background_color (tuple): RGB tuple (0-1 range) for background
+            border_color (tuple): RGB tuple (0-1 range) for border
+            border_width (float): border width
+            editable (bool): if True, user can type a custom value
+            read_only (bool): if True, field cannot be edited
+            required (bool): if True, field must have a selection before form submission
+        """
+        self._set_min_pdf_version("1.4")
+
+        field = ComboBox(
+            field_name=name,
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            width=w * self.k,
+            height=h * self.k,
+            options=options,
+            value=value,
+            font_size=font_size,
+            font_color_gray=font_color_gray,
+            background_color=background_color,
+            border_color=border_color,
+            border_width=border_width,
+            editable=editable,
+            read_only=read_only,
+            required=required,
+        )
+
+        field._generate_appearance()
+        self.pages[self.page].annots.append(field)
+
+        return field
+
+    @check_page
+    def list_box(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        options: list,
+        value: str = None,
+        font_size: float = 12,
+        font_color_gray: float = 0,
+        background_color: tuple = (1, 1, 1),
+        border_color: tuple = (0, 0, 0),
+        border_width: float = 1,
+        multi_select: bool = False,
+        read_only: bool = False,
+        required: bool = False,
+    ):
+        """
+        Adds an interactive list box to the page.
+
+        Args:
+            name (str): unique name for this field
+            x (float): horizontal position (from the left) of the field
+            y (float): vertical position (from the top) of the field
+            w (float): width of the field
+            h (float): height of the field
+            options (list): list of option strings
+            value (str): initially selected value
+            font_size (float): font size in points
+            font_color_gray (float): gray value 0.0-1.0 for text color (0=black)
+            background_color (tuple): RGB tuple (0-1 range) for background
+            border_color (tuple): RGB tuple (0-1 range) for border
+            border_width (float): border width
+            multi_select (bool): if True, multiple options can be selected
+            read_only (bool): if True, field cannot be edited
+            required (bool): if True, field must have a selection before form submission
+        """
+        self._set_min_pdf_version("1.4")
+
+        field = ListBox(
+            field_name=name,
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            width=w * self.k,
+            height=h * self.k,
+            options=options,
+            value=value,
+            font_size=font_size,
+            font_color_gray=font_color_gray,
+            background_color=background_color,
+            border_color=border_color,
+            border_width=border_width,
+            multi_select=multi_select,
             read_only=read_only,
             required=required,
         )

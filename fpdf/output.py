@@ -224,6 +224,49 @@ class PDFInfo(PDFObject):
         self.creation_date = creation_date
 
 
+# Standard fonts available in the AcroForm /DR dictionary for form field appearance streams.
+# PDF spec recommends using short names like "Helv" for form fields.
+# These are embedded inline in the /DR dictionary as Type1 fonts.
+ACROFORM_STANDARD_FONTS = {
+    "Helv": {"Subtype": "Type1", "BaseFont": "Helvetica", "Encoding": "WinAnsiEncoding"},
+    "ZaDb": {"Subtype": "Type1", "BaseFont": "ZapfDingbats"},
+}
+
+
+def _build_acroform_default_resources(font_names=None):
+    """
+    Build the /DR (Default Resources) dictionary for AcroForm.
+
+    Args:
+        font_names: List of font short names to include (e.g., ["Helv", "ZaDb"]).
+                   If None, includes all standard fonts.
+
+    Returns:
+        A string containing the /DR dictionary, or None if no fonts.
+    """
+    if font_names is None:
+        font_names = list(ACROFORM_STANDARD_FONTS.keys())
+
+    font_dicts = []
+    for name in font_names:
+        if name in ACROFORM_STANDARD_FONTS:
+            font_info = ACROFORM_STANDARD_FONTS[name]
+            parts = ["/Type /Font"]
+            for key, value in font_info.items():
+                parts.append(f"/{key} /{value}")
+            font_dicts.append(f"/{name} <<{' '.join(parts)}>>")
+
+    if not font_dicts:
+        return None
+
+    # Structure: <</Font <</Helv <<...>> /ZaDb <<...>>>>>>
+    # - Outer << >> is the /DR dictionary (2 brackets)
+    # - Inner << >> is the /Font subdictionary (2 brackets)
+    # - Each font entry /{name} <<...>> has its own dict (2 brackets each)
+    # After joining font entries (which end with >>), we add 4 closing >> (2 for Font, 2 for DR)
+    return f"<</Font <<{' '.join(font_dicts)}>>>>"
+
+
 class AcroForm:
     """Represents the AcroForm dictionary in the document catalog."""
 
@@ -1065,13 +1108,16 @@ class OutputProducer:
                         # Add appearance stream XObjects before the annotation that references them.
                         # These attributes are set by _generate_appearance() which is called
                         # during field creation. TextField uses _appearance_normal; Checkbox
-                        # uses _appearance_off and _appearance_yes for its toggle states.
+                        # uses _appearance_off and _appearance_yes for its toggle states;
+                        # RadioButton uses _appearance_off and _appearance_on.
                         if hasattr(annot_obj, '_appearance_normal') and annot_obj._appearance_normal:
                             self._add_pdf_obj(annot_obj._appearance_normal)
                         if hasattr(annot_obj, '_appearance_off') and annot_obj._appearance_off:
                             self._add_pdf_obj(annot_obj._appearance_off)
                         if hasattr(annot_obj, '_appearance_yes') and annot_obj._appearance_yes:
                             self._add_pdf_obj(annot_obj._appearance_yes)
+                        if hasattr(annot_obj, '_appearance_on') and annot_obj._appearance_on:
+                            self._add_pdf_obj(annot_obj._appearance_on)
 
                     self._add_pdf_obj(annot_obj)
                     if isinstance(annot_obj.v, Signature):
@@ -1835,14 +1881,10 @@ class OutputProducer:
             default_resources = None
             default_appearance = None
             if all_form_fields:
-                # /DR dictionary with Helvetica and ZapfDingbats fonts
-                # These are standard PDF fonts that don't require embedding
-                default_resources = (
-                    "<</Font <<"
-                    "/Helv <</Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding>> "
-                    "/ZaDb <</Type /Font /Subtype /Type1 /BaseFont /ZapfDingbats>>"
-                    ">>>>"
-                )
+                # Build /DR dictionary with standard fonts used by form fields.
+                # Currently uses Helvetica (Helv) for text and ZapfDingbats (ZaDb) for checkmarks.
+                # Future enhancement: could integrate with FPDF font system for TrueType support.
+                default_resources = _build_acroform_default_resources(["Helv", "ZaDb"])
                 # Default Appearance string (/DA) per PDF spec 12.7.3.3.
                 # The parentheses are required - this is a PDF literal string value.
                 # Format: "(content_stream_fragment)" e.g., "(/Helv 0 Tf 0 g)"
@@ -1851,7 +1893,11 @@ class OutputProducer:
             catalog_obj.acro_form = AcroForm(
                 fields=PDFArray(acro_fields),
                 sig_flags=sig_flags,
-                need_appearances=True,
+                # NeedAppearances should be False when we provide custom appearance streams.
+                # Setting it to True tells the viewer to regenerate appearances, which would
+                # override our custom /AP entries. We generate appearances for all form fields,
+                # so we don't need the viewer to regenerate them.
+                need_appearances=None,  # Omit from output (equivalent to false)
                 default_appearance=default_appearance,
                 default_resources=default_resources,
             )
