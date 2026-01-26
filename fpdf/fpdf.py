@@ -48,7 +48,7 @@ try:
     from cryptography.hazmat.primitives.serialization import pkcs12
     from endesive import signer
 except ImportError:
-    pkcs12, signer = None, None
+    pkcs12, signer = None, None  # type: ignore[assignment]
 
 try:
     from PIL.Image import Image  # pyright: ignore[reportAssignmentType]
@@ -2513,9 +2513,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError('"fname" parameter is required')
 
         ext = splitext(str(fname))[1].lower()
-        # Accept web-font containers as well (WOFF / WOFF2). These will be
-        # transparently handled by fontTools (WOFF uses zlib; WOFF2 requires
-        # an optional brotli dependency for decompression).
         if ext not in (".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
@@ -6365,7 +6362,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def table(self, *args: Any, **kwargs: Any) -> ContextManager[Table]:
+    def table(self, *args: Any, **kwargs: Any) -> Iterator[Table]:
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
