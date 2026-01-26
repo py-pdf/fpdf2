@@ -366,8 +366,6 @@ class TTFFont:
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
         try:
-            # Let fontTools handle a variety of container formats (TTF/OTF/WOFF/WOFF2).
-            # Note: WOFF2 support in fontTools requires a brotli backend (e.g. `brotli` or `brotlicffi`).
             self.ttfont = ttLib.TTFont(
                 self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
             )
@@ -389,7 +387,6 @@ class TTFFont:
             raise
 
         if axes_dict is not None:
-            # Check if variable font.
             if "fvar" not in self.ttfont:
                 raise AttributeError(f"{self.ttffile} is not a variable font")
 
@@ -541,14 +538,10 @@ class TTFFont:
     @property
     def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
-            # Check if this is a WOFF/WOFF2 font that needs decompression
             if self.is_compressed:
-                # For WOFF/WOFF2, we need to decompress to SFNT format for HarfBuzz.
                 # HarfBuzz cannot load compressed WOFF/WOFF2 files directly, so we
                 # re-serialize the fontTools TTFont to a raw SFNT byte buffer.
-
                 buf = BytesIO()
-                # Ensure we have the decompressed tables in memory
                 self.ttfont.save(buf)
                 buf.seek(0)
                 ttfont_bytes = buf.read()
