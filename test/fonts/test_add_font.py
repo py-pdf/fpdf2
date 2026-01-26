@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
-from test.conftest import assert_pdf_equal, assert_same_file
+from fontTools.ttLib import woff2
+from test.conftest import LOREM_IPSUM, assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
 
@@ -185,3 +186,52 @@ def test_font_with_more_than_10_missing_glyphs(caplog):
         "'Ⓣ' (\\u24c9), 'Ⓔ' (\\u24ba), 'Ⓢ' (\\u24c8), "
         "'𝕥' (\\U0001d565), '𝕖' (\\U0001d556), ... (and 7 others)" in caplog.text
     )
+
+
+def test_add_font_woff(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff")
+    pdf.set_font("Noto", size=32)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff.pdf", tmp_path)
+
+
+def test_add_font_woff_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff")
+    pdf.set_font("Noto", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff_hb.pdf", tmp_path)
+
+
+def test_add_font_woff2(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")
+    pdf.set_font("Noto", size=32)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff2.pdf", tmp_path)
+
+
+def test_add_font_woff2_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")
+    pdf.set_font("Noto", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff2_hb.pdf", tmp_path)
+
+
+def test_add_font_woff2_without_brotli(monkeypatch):
+    monkeypatch.setattr(woff2, "haveBrotli", False, raising=True)
+
+    pdf = FPDF()
+    with pytest.raises(
+        RuntimeError,
+        match=r"^Could not open WOFF2 font\. WOFF2 support requires an external Brotli",
+    ):
+        pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")

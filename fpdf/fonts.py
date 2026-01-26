@@ -20,6 +20,7 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from functools import cache
+from io import BytesIO
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -341,6 +342,7 @@ class TTFFont:
         "color_font",
         "unicode_range",
         "palette_index",
+        "is_compressed",
     )
 
     def __init__(
@@ -356,18 +358,35 @@ class TTFFont:
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
+        self.is_compressed = str(self.ttffile).lower().endswith((".woff", ".woff2"))
         self._hbfont: Optional["HarfBuzzFont"] = None
         self.fontkey = fontkey
         self.biggest_size_pt: float = 0
 
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
-        self.ttfont = ttLib.TTFont(
-            self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
-        )
+        try:
+            self.ttfont = ttLib.TTFont(
+                self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
+            )
+        except (
+            ImportError,
+            RuntimeError,
+        ) as exc:  # pragma: no cover - defensive messaging
+            # If the user passed a WOFF2 file but brotli is not installed, fontTools
+            # raises an ImportError/RuntimeError during parsing. Provide a clearer hint
+            # only for that specific situation. Allow other exceptions (e.g. FileNotFoundError,
+            # OSError, parsing errors) to propagate normally so they aren't masked here.
+            fname_str = str(self.ttffile).lower()
+            if fname_str.endswith(".woff2"):
+                raise RuntimeError(
+                    "Could not open WOFF2 font. WOFF2 support requires an external Brotli "
+                    "library (install 'brotli' or 'brotlicffi'). Original error: "
+                    f"{exc!s}"
+                ) from exc
+            raise
 
         if axes_dict is not None:
-            # Check if variable font.
             if "fvar" not in self.ttfont:
                 raise AttributeError(f"{self.ttffile} is not a variable font")
 
@@ -377,6 +396,9 @@ class TTFFont:
                 inplace=True,
                 static=True,
             )
+        if self.is_compressed:
+            # Normalize to SFNT output for embedding and HarfBuzz.
+            self.ttfont.flavor = None
         upem: float = float(self.ttfont["head"].unitsPerEm)
         self.scale: float = 1000 / upem
 
@@ -516,7 +538,50 @@ class TTFFont:
     @property
     def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
-            self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+            if self.is_compressed:
+                # HarfBuzz cannot load compressed WOFF/WOFF2 files directly, so we
+                # re-serialize the fontTools TTFont to a raw SFNT byte buffer.
+                buf = BytesIO()
+                self.ttfont.save(buf)
+                buf.seek(0)
+                ttfont_bytes = buf.read()
+
+                # Try to create a HarfBuzz blob from bytes; if not available, write a
+                # temporary file as a last resort.
+                try:
+                    blob = hb.Blob.from_bytes(ttfont_bytes)
+                    face = hb.Face(blob)
+                except (AttributeError, RuntimeError):
+                    import tempfile, os  # pylint: disable=import-outside-toplevel
+
+                    tmp_name = None
+                    try:
+                        with tempfile.NamedTemporaryFile(
+                            suffix=".ttf", delete=False
+                        ) as tmp:
+                            tmp_name = tmp.name
+                            tmp.write(ttfont_bytes)
+                            tmp.flush()
+                        face = hb.Face(hb.Blob.from_file_path(tmp_name))
+                    finally:
+                        if tmp_name:
+                            try:
+                                os.unlink(tmp_name)
+                            except OSError as cleanup_error:
+                                # Log warning about failed cleanup - orphaned temp file may cause disk issues
+                                LOGGER.warning(
+                                    "Failed to clean up temporary font file '%s': %s. This may leave an orphaned file on disk.",
+                                    tmp_name,
+                                    cleanup_error,
+                                )
+
+                self._hbfont = HarfBuzzFont(face)
+            else:
+                # For regular TTF/OTF fonts, load directly from file path (faster)
+                self._hbfont = HarfBuzzFont(
+                    hb.Face(hb.Blob.from_file_path(self.ttffile))
+                )
+
         return self._hbfont
 
     def __repr__(self) -> str:
@@ -542,6 +607,7 @@ class TTFFont:
         copy.sp = self.sp
         copy.ss = self.ss
         copy.emphasis = self.emphasis
+        copy.is_compressed = self.is_compressed
         # Attributes shared, to improve FPDFRecorder performances:
         copy.ttfont = self.ttfont
         copy.cmap = self.cmap

@@ -2513,7 +2513,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError('"fname" parameter is required')
 
         ext = splitext(str(fname))[1].lower()
-        if ext not in (".otf", ".otc", ".ttf", ".ttc"):
+        if ext not in (".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"
