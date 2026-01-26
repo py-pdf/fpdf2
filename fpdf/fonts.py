@@ -614,6 +614,7 @@ class TTFFont:
         copy.sp = self.sp
         copy.ss = self.ss
         copy.emphasis = self.emphasis
+        copy.is_compressed = self.is_compressed
         # Attributes shared, to improve FPDFRecorder performances:
         copy.ttfont = self.ttfont
         copy.cmap = self.cmap
