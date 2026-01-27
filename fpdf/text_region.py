@@ -312,11 +312,11 @@ class ImageParagraph:
         if self.height:
             h = self.height
         else:
-            native_h = cast(float, self.info["h"]) / self.region.pdf.k
+            native_h = self.info.height / self.region.pdf.k
         if self.width:
             w = self.width
         else:
-            native_w: float = cast(float, self.info["w"]) / self.region.pdf.k
+            native_w: float = self.info.width / self.region.pdf.k
             if native_w > col_width or self.fill_width:
                 w = col_width
             else:
