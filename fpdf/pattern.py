@@ -6,11 +6,13 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Patterns.html>
 
 import math
 import struct
-
 from abc import ABC
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 
 from .drawing_primitives import (
+    Color,
+    ColorClass,
+    ColorInput,
     DeviceCMYK,
     DeviceGray,
     DeviceRGB,
@@ -18,10 +20,8 @@ from .drawing_primitives import (
     convert_to_device_color,
 )
 from .enums import GradientSpreadMethod
-from .syntax import Name, PDFArray, PDFObject, PDFContentStream
-from .util import format_number
-
-Color = Union[DeviceRGB, DeviceGray, DeviceCMYK]
+from .syntax import Name, PDFArray, PDFContentStream, PDFObject
+from .util import NumberClass, format_number
 
 if TYPE_CHECKING:
     from .drawing import BoundingBox
@@ -34,20 +34,20 @@ def lerp(a: float, b: float, t: float) -> float:
 
 
 def lerp_tuple(
-    a: Tuple[float, ...], b: Tuple[float, ...], t: float
-) -> Tuple[float, ...]:
+    a: tuple[float, ...], b: tuple[float, ...], t: float
+) -> tuple[float, ...]:
     if len(a) != len(b):
         raise ValueError("Mismatched color component counts")
     return tuple(lerp(a[i], b[i], t) for i in range(len(a)))
 
 
-def pick_colorspace_and_promote(colors: List[Color]) -> Tuple[str, List[Color]]:
+def pick_colorspace_and_promote(colors: list[Color]) -> tuple[str, list[Color]]:
     kinds = {type(c).__name__ for c in colors}
     if "DeviceCMYK" in kinds and len(kinds) > 1:
         raise ValueError("Can't mix CMYK with other color spaces.")
     if kinds == {"DeviceGray", "DeviceRGB"}:
         # promote Gray -> RGB
-        promoted = [
+        promoted: list[Color] = [
             DeviceRGB(c.g, c.g, c.g) if isinstance(c, DeviceGray) else c for c in colors
         ]
         return "DeviceRGB", promoted
@@ -59,14 +59,11 @@ def pick_colorspace_and_promote(colors: List[Color]) -> Tuple[str, List[Color]]:
 
 
 def normalize_stops(
-    stops: List[Tuple[float, Union[Color, str]]],
+    stops: Sequence[tuple[float, Union[Color, str]]],
     coerce_to_device: bool = True,
     *,
     return_raw: bool = False,
-) -> Union[
-    Tuple[str, List[Tuple[float, Color]]],
-    Tuple[str, List[Tuple[float, Color]], List[Tuple[float, Color]]],
-]:
+) -> tuple[str, list[tuple[float, Color]], Optional[list[tuple[float, Color]]]]:
     """
     Clamp/sort/merge, ensure endpoints at 0 and 1, coerce to single Device* colorspace.
 
@@ -79,7 +76,7 @@ def normalize_stops(
     if not stops:
         raise ValueError("At least one stop is required")
 
-    raw_entries: List[Tuple[float, Color]] = []
+    raw_entries: list[tuple[float, Color]] = []
     for off, col in stops:
         raw_u = float(off)
         c = (
@@ -90,7 +87,7 @@ def normalize_stops(
         raw_entries.append((raw_u, c))  # type: ignore[arg-type]
     raw_entries.sort(key=lambda t: t[0])
 
-    merged_raw: List[Tuple[float, Color]] = []
+    merged_raw: list[tuple[float, Color]] = []
     for raw_u, color in raw_entries:
         if merged_raw and abs(merged_raw[-1][0] - raw_u) <= TOLERANCE:
             merged_raw[-1] = (raw_u, color)
@@ -140,7 +137,7 @@ def normalize_stops(
     _ensure_stop(0.0)
     _ensure_stop(1.0)
 
-    clamped_entries: List[Tuple[float, Color]] = []
+    clamped_entries: list[tuple[float, Color]] = []
     for raw_u, color in merged_raw:
         if raw_u < 0.0:
             u = 0.0
@@ -152,7 +149,7 @@ def normalize_stops(
 
     clamped_entries.sort(key=lambda t: t[0])
 
-    merged_clamped: List[Tuple[float, Color]] = []
+    merged_clamped: list[tuple[float, Color]] = []
     for u, color in clamped_entries:
         if merged_clamped and abs(merged_clamped[-1][0] - u) <= TOLERANCE:
             merged_clamped[-1] = (u, color)
@@ -198,9 +195,9 @@ def normalize_stops(
 
 
 def merge_near_duplicates(
-    pairs: List[Tuple[float, Union[Color, str]]],
-) -> List[Tuple[float, Union[Color, str]]]:
-    out: List[Tuple[float, Union[Color, str]]] = []
+    pairs: Sequence[tuple[float, Union[Color, str]]],
+) -> Sequence[tuple[float, Union[Color, str]]]:
+    out: list[tuple[float, Union[Color, str]]] = []
     for u, col in pairs:
         if out and abs(out[-1][0] - u) <= TOLERANCE:
             prev_u, prev_col = out[-1]
@@ -238,7 +235,7 @@ def spread_map(u: float, method: GradientSpreadMethod) -> float:
     return v if v <= 1.0 else 2.0 - v
 
 
-def sample_stops(stops01: List[Tuple[float, Color]], u: float) -> Tuple[float, ...]:
+def sample_stops(stops01: list[tuple[float, Color]], u: float) -> tuple[float, ...]:
     """Piecewise-linear sampling in [0,1]. Assumes normalized/sorted stops incl. endpoints."""
     for i in range(1, len(stops01)):
         u1, c1 = stops01[i]
@@ -251,10 +248,10 @@ def sample_stops(stops01: List[Tuple[float, Color]], u: float) -> Tuple[float, .
 
 
 def extract_alpha_stops(
-    stops01: List[Tuple[float, Color]],
-) -> List[Tuple[float, float]]:
+    stops01: list[tuple[float, Color]],
+) -> list[tuple[float, float]]:
     """Return [(u, a)] with a∈[0,1]; missing alpha => 1.0."""
-    out: List[Tuple[float, float]] = []
+    out: list[tuple[float, float]] = []
     for u, c in stops01:
         a = getattr(c, "a", None)
         out.append((u, 1.0 if a is None else float(a)))
@@ -270,7 +267,7 @@ class Pattern(PDFObject):
     are not yet implemented.
     """
 
-    def __init__(self, shading: "Gradient"):
+    def __init__(self, shading: Union["Gradient", "Shading", "MeshShading"]):
         super().__init__()
         self.type = Name("Pattern")
         # 1 for a tiling pattern or type 2 for a shading pattern:
@@ -293,7 +290,7 @@ class Pattern(PDFObject):
             f"{format_number(self._matrix.e)} {format_number(self._matrix.f)}]"
         )
 
-    def set_matrix(self, matrix) -> "Pattern":
+    def set_matrix(self, matrix: Transform) -> "Pattern":
         self._matrix = matrix
         return self
 
@@ -310,7 +307,7 @@ class Pattern(PDFObject):
 class Type2Function(PDFObject):
     """Transition between 2 colors"""
 
-    def __init__(self, color_1, color_2):
+    def __init__(self, color_1: Color, color_2: Color):
         super().__init__()
         # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
         self.function_type = 2
@@ -324,9 +321,9 @@ class Type2Function(PDFObject):
         self.n = 1
 
     @classmethod
-    def _get_color_components(cls, color):
+    def _get_color_components(cls, color: Color) -> tuple[float, ...]:
         if isinstance(color, DeviceGray):
-            return [color.g]
+            return (color.g,)
         return color.colors
 
 
@@ -346,7 +343,11 @@ class Type3Function(PDFObject):
     """When multiple colors are used, a type 3 function is necessary to stitch type 2 functions together
     and define the bounds between each color transition"""
 
-    def __init__(self, functions, bounds):
+    def __init__(
+        self,
+        functions: Sequence[Union[Type2Function, Type2FunctionGray, "Type3Function"]],
+        bounds: Sequence[float],
+    ):
         super().__init__()
         # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
         self.function_type = 3
@@ -356,7 +357,7 @@ class Type3Function(PDFObject):
         self.encode = f"[{' '.join('0 1' for _ in functions)}]"
 
     @property
-    def functions(self):
+    def functions(self) -> str:
         return f"[{' '.join(f'{f.id} 0 R' for f in self._functions)}]"
 
 
@@ -366,8 +367,8 @@ class Shading(PDFObject):
         shading_type: int,  # 2 for axial shading, 3 for radial shading
         background: Optional[Color],
         color_space: str,
-        coords: List[float],
-        functions: List[Union[Type2Function, Type3Function]],
+        coords: Sequence[float] | str,
+        functions: Sequence[Type2Function | Type2FunctionGray | Type3Function],
         extend_before: bool,
         extend_after: bool,
     ):
@@ -389,7 +390,9 @@ class Shading(PDFObject):
         """Reference to the *top-level* function object for the shading dictionary."""
         return f"{self._functions[-1].id} 0 R"
 
-    def get_functions(self):
+    def get_functions(
+        self,
+    ) -> Sequence[Type2Function | Type2FunctionGray | Type3Function]:
         """All function objects used by this shading (Type2 segments + final Type3)."""
         return self._functions
 
@@ -399,13 +402,20 @@ class Shading(PDFObject):
 
 
 class Gradient(ABC):
-    def __init__(self, colors, background, extend_before, extend_after, bounds):
+    def __init__(
+        self,
+        colors: Sequence[ColorInput],
+        background: Optional[ColorInput],
+        extend_before: bool,
+        extend_after: bool,
+        bounds: Optional[Sequence[float]],
+    ):
         self.color_space, self.colors, self._alphas = self._convert_colors(colors)
         self.background = None
         if background:
             bg = (
                 convert_to_device_color(background)
-                if isinstance(background, (str, DeviceGray, DeviceRGB, DeviceCMYK))
+                if isinstance(background, (str, *ColorClass, *NumberClass))
                 else convert_to_device_color(*background)
             )
             # Re-map background to the chosen palette colorspace
@@ -433,25 +443,28 @@ class Gradient(ABC):
             )
         self.functions = self._generate_functions()
         self.pattern = Pattern(self)
-        self._shading_object = None
-        self._alpha_shading_object = None
-        self.coords = None
+        self._shading_object: Optional[Shading] = None
+        self._alpha_shading_object: Optional[Shading] = None
+        self.coords: Optional[Sequence[float]] = None
         self.shading_type = 0
+        self.raw_stops: Optional[list[tuple[float, Color]]] = None
 
     @classmethod
-    def _convert_colors(cls, colors) -> Tuple[str, List, List[float]]:
+    def _convert_colors(
+        cls, colors: Sequence[ColorInput]
+    ) -> tuple[str, list[Color], list[float]]:
         """Normalize colors to a single device colorspace and capture per-stop alpha (default 1.0)."""
         if len(colors) < 2:
             raise ValueError("A gradient must have at least two colors")
 
         # 1) Convert everything to Device* instances
-        palette = []
-        spaces = set()
-        alphas = []
+        palette: list[Color] = []
+        spaces: set[str] = set()
+        alphas: list[float] = []
         for color in colors:
             dc = (
                 convert_to_device_color(color)
-                if isinstance(color, (str, DeviceGray, DeviceRGB, DeviceCMYK))
+                if isinstance(color, (str, *ColorClass, *NumberClass))
                 else convert_to_device_color(*color)
             )
             palette.append(dc)
@@ -469,11 +482,12 @@ class Gradient(ABC):
 
         # 4) Promote mix of Gray+RGB to RGB
         if spaces == {"DeviceGray", "DeviceRGB"}:
-            promoted = []
+            promoted: list[Color] = []
             for c in palette:
                 if isinstance(c, DeviceGray):
                     promoted.append(DeviceRGB(c.g, c.g, c.g))
                 else:
+                    assert isinstance(c, DeviceRGB)
                     promoted.append(c)
             return "DeviceRGB", promoted, alphas
 
@@ -483,36 +497,50 @@ class Gradient(ABC):
 
         # 6) All RGB: optionally downcast to Gray if all are achromatic
         if spaces == {"DeviceRGB"}:
-            if all(c.is_achromatic() for c in palette):
-                return "DeviceGray", [c.to_gray() for c in palette], alphas
+            # changing palette to typed list to please mypy
+            rgb_palette: list[DeviceRGB] = [
+                c for c in palette if isinstance(c, DeviceRGB)
+            ]
+            if all(c.is_achromatic() for c in rgb_palette):
+                return "DeviceGray", [c.to_gray() for c in rgb_palette], alphas
             return "DeviceRGB", palette, alphas
 
         # Fallback: default to RGB
         return "DeviceRGB", palette, alphas
 
-    def _generate_functions(self):
+    def _generate_functions(
+        self,
+    ) -> list[Type2Function | Type2FunctionGray | Type3Function]:
         if len(self.colors) < 2:
             raise ValueError("A gradient must have at least two colors")
         if len(self.colors) == 2:
             return [Type2Function(self.colors[0], self.colors[1])]
         number_of_colors = len(self.colors)
-        functions = []
+        functions: list[Type2Function | Type2FunctionGray | Type3Function] = []
         for i in range(number_of_colors - 1):
             functions.append(Type2Function(self.colors[i], self.colors[i + 1]))
         functions.append(Type3Function(functions[:], self.bounds))
         return functions
 
-    def get_functions(self):
+    def get_functions(self) -> list[Type2Function | Type2FunctionGray | Type3Function]:
         return self.functions
 
-    def get_shading_object(self):
+    def get_shading_object(self) -> "Shading":
         if not self._shading_object:
-            coords = [
-                format_number(value) if isinstance(value, (int, float)) else value
-                for value in self.coords
-            ]
-            if len(coords) > 1:
-                coords = PDFArray(coords)
+            coords = (
+                ""
+                if self.coords is None
+                else PDFArray(
+                    [
+                        (
+                            format_number(value)
+                            if isinstance(value, (int, float))
+                            else value
+                        )
+                        for value in self.coords
+                    ]
+                ).serialize()
+            )
             self._shading_object = Shading(
                 shading_type=self.shading_type,
                 background=self.background,
@@ -524,38 +552,42 @@ class Gradient(ABC):
             )
         return self._shading_object
 
-    def get_pattern(self):
+    def get_pattern(self) -> Pattern:
         return self.pattern
 
     def has_alpha(self) -> bool:
         """True if any stop carries alpha != 1.0."""
         return any(abs(a - 1.0) > TOLERANCE for a in self._alphas)
 
-    def _generate_alpha_functions(self):
+    def _generate_alpha_functions(
+        self,
+    ) -> Sequence[Type2Function | Type2FunctionGray | Type3Function]:
         """Stitched Type2 gray functions mirroring the color ramp bounds."""
         if len(self._alphas) < 2:
             raise ValueError("Alpha ramp requires at least two stops")
         if len(self._alphas) == 2:
             return [Type2FunctionGray(self._alphas[0], self._alphas[1])]
-        functions = []
+        functions: list[Type2FunctionGray | Type3Function] = []
         for i in range(len(self._alphas) - 1):
             functions.append(Type2FunctionGray(self._alphas[i], self._alphas[i + 1]))
         functions.append(Type3Function(functions[:], self.bounds))
         return functions
 
-    def get_alpha_shading_object(self, _=None) -> Optional["Shading"]:
+    def get_alpha_shading_object(
+        self, _: Optional["BoundingBox"] = None
+    ) -> Optional["Shading"]:
         """Grayscale Shading object representing the alpha ramp (for a soft mask)."""
         if not self.has_alpha():
             return None
         if not self._alpha_shading_object:
             if (
                 self.coords is not None
-                and isinstance(self.coords, list)
+                and isinstance(self.coords, (list, tuple))
                 and len(self.coords) > 1
             ):
-                coords = PDFArray(self.coords)
+                coords = PDFArray(self.coords).serialize()
             else:
-                coords = self.coords
+                coords = ""
             self._alpha_shading_object = Shading(
                 shading_type=self.shading_type,
                 background=None,  # mask content should be pure coverage, no bg
@@ -575,11 +607,11 @@ class LinearGradient(Gradient):
         from_y: float,
         to_x: float,
         to_y: float,
-        colors: List,
-        background=None,
+        colors: Sequence[ColorInput],
+        background: Optional[ColorInput] = None,
         extend_before: bool = False,
         extend_after: bool = False,
-        bounds: Optional[List[float]] = None,
+        bounds: Optional[list[float]] = None,
     ):
         """
         A shading pattern that creates a linear (axial) gradient in a PDF.
@@ -598,23 +630,30 @@ class LinearGradient(Gradient):
                 in user space units.
             to_y (int or float): The y-coordinate of the ending point of the gradient,
                 in user space units.
-            colors (List[str or Tuple[int, int, int]]): A list of colors along which the gradient
+            colors (list[str or tuple[int, int, int]]): A list of colors along which the gradient
                 will be interpolated. Colors may be given as hex strings (e.g., "#FF0000") or
                 (R, G, B) tuples.
-            background (str or Tuple[int, int, int], optional): A background color to use
+            background (str or tuple[int, int, int], optional): A background color to use
                 if the gradient does not fully cover the region it is applied to.
                 Defaults to None (no background).
             extend_before (bool, optional): Whether to extend the first color beyond the
                 starting point (from_x, from_y). Defaults to False.
             extend_after (bool, optional): Whether to extend the last color beyond the
                 ending point (to_x, to_y). Defaults to False.
-            bounds (List[float], optional): An optional list of floats in the range (0, 1)
+            bounds (list[float], optional): An optional list of floats in the range (0, 1)
                 that represent gradient stops for color transitions. The number of bounds
                 should be two less than the number of colors (for multi-color gradients).
                 Defaults to None, which evenly distributes color stops.
         """
         super().__init__(colors, background, extend_before, extend_after, bounds)
-        self.coords = [from_x, from_y, to_x, to_y]
+        self.coords: tuple[  # pyright: ignore[reportIncompatibleVariableOverride]
+            float, float, float, float
+        ] = (
+            from_x,
+            from_y,
+            to_x,
+            to_y,
+        )
         self.shading_type = 2
 
 
@@ -627,11 +666,11 @@ class RadialGradient(Gradient):
         end_circle_x: float,
         end_circle_y: float,
         end_circle_radius: float,
-        colors: List,
-        background=None,
+        colors: Sequence[ColorInput],
+        background: Optional[ColorInput] = None,
         extend_before: bool = False,
         extend_after: bool = False,
-        bounds: Optional[List[float]] = None,
+        bounds: Optional[list[float]] = None,
     ):
         """
         A shading pattern that creates a radial (or circular/elliptical) gradient in a PDF.
@@ -652,30 +691,32 @@ class RadialGradient(Gradient):
             end_circle_y (int or float): The y-coordinate of the outer circle's center,
                 in user space units.
             end_circle_radius (int or float): The radius of the outer circle, in user space units.
-            colors (List[str or Tuple[int, int, int]]): A list of colors along which the gradient
+            colors (list[str or tuple[int, int, int]]): A list of colors along which the gradient
                 will be interpolated. Colors may be given as hex strings (e.g., "#FF0000") or
                 (R, G, B) tuples.
-            background (str or Tuple[int, int, int], optional): A background color to display
+            background (str or tuple[int, int, int], optional): A background color to display
                 if the gradient does not fully cover the region it's applied to. Defaults to None
                 (no background).
             extend_before (bool, optional): Whether to extend the gradient beyond the start circle.
                 Defaults to False.
             extend_after (bool, optional): Whether to extend the gradient beyond the end circle.
                 Defaults to False.
-            bounds (List[float], optional): An optional list of floats in the range (0, 1) that
+            bounds (list[float], optional): An optional list of floats in the range (0, 1) that
                 represent gradient stops for color transitions. The number of bounds should be one
                 less than the number of colors (for multi-color gradients). Defaults to None,
                 which evenly distributes color stops.
         """
         super().__init__(colors, background, extend_before, extend_after, bounds)
-        self.coords = [
+        self.coords: tuple[  # pyright: ignore[reportIncompatibleVariableOverride]
+            float, float, float, float, float, float
+        ] = (
             start_circle_x,
             start_circle_y,
             start_circle_radius,
             end_circle_x,
             end_circle_y,
             end_circle_radius,
-        ]
+        )
         self.shading_type = 3
 
 
@@ -690,10 +731,10 @@ class MeshShading(PDFContentStream):
         color_space: str,
         bbox: "BoundingBox",
         comp_count: int,
-        triangles: List[
-            Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
+        triangles: list[
+            tuple[tuple[float, float], tuple[float, float], tuple[float, float]]
         ],
-        colors: List[Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, ...]]],
+        colors: list[tuple[tuple[float, ...], tuple[float, ...], tuple[float, ...]]],
         background: Optional["Color"] = None,
         anti_alias: bool = True,
     ):
@@ -740,11 +781,11 @@ class MeshShading(PDFContentStream):
         sy = maxc / max(ymax - ymin, TOLERANCE)
         max_comp = (1 << self.bits_per_component) - 1
 
-        def q16(u, umin, scale):
+        def q16(u: float, umin: float, scale: float) -> int:
             ui = int(round((u - umin) * scale))
             return 0 if ui < 0 else maxc if ui > maxc else ui
 
-        def q_component(v):
+        def q_component(v: float) -> int:
             iv = int(round(float(v) * max_comp))
             return 0 if iv < 0 else max_comp if iv > max_comp else iv
 
@@ -767,7 +808,9 @@ class MeshShading(PDFContentStream):
         return bytes(out)
 
     @classmethod
-    def get_functions(cls):
+    def get_functions(
+        cls,
+    ) -> Sequence[Type2Function | Type2FunctionGray | Type3Function]:
         """Type-4 mesh shadings don't use Function objects; return empty list for output."""
         return []
 
@@ -798,7 +841,7 @@ class SweepGradient(PDFObject):
         cy: float,
         start_angle: float,
         end_angle: float,
-        stops: List[Tuple[float, Union[Color, str]]],
+        stops: Sequence[tuple[float, Union[Color, str]]],
         spread_method: Union["GradientSpreadMethod", str] = GradientSpreadMethod.PAD,
         segments: Optional[int] = None,
         inner_radius_factor: float = 0.002,
@@ -814,9 +857,23 @@ class SweepGradient(PDFObject):
         )
         self.segments = segments
         self.inner_radius_factor = inner_radius_factor
-        self._cached_key = None
-        self._shading = None
-        self._alpha_shading = None
+        self._cached_key: Optional[
+            tuple[
+                float,
+                float,
+                float,
+                float,
+                float,
+                float,
+                float,
+                float,
+                Optional[int],
+                float,
+                str,
+            ]
+        ] = None
+        self._shading: Optional[MeshShading] = None
+        self._alpha_shading: Optional[MeshShading] = None
 
     def has_alpha(self) -> bool:
         # any stop carries alpha != 1
@@ -857,14 +914,16 @@ class SweepGradient(PDFObject):
         )
         return self._shading
 
-    def get_alpha_shading_object(self, bbox):
+    def get_alpha_shading_object(self, bbox: "BoundingBox") -> Optional["MeshShading"]:
         if not self.has_alpha():
             return None
 
         # Normalize color stops once, then extract alpha
         _, stops01, _ = normalize_stops(self.stops)
         alpha01 = extract_alpha_stops(stops01)
-        gray_stops = [(u, DeviceGray(a)) for (u, a) in alpha01]
+        gray_stops: list[tuple[float, Color | str]] = [
+            (u, DeviceGray(a)) for (u, a) in alpha01
+        ]
 
         key = (
             "alpha",
@@ -904,8 +963,7 @@ def shape_sweep_gradient_as_mesh(
     cy: float,
     start_angle: float,
     end_angle: float,
-    stops: List[Tuple[float, Union[Color, str]]],
-    *,
+    stops: Sequence[tuple[float, Union[Color, str]]],
     spread_method: GradientSpreadMethod,
     bbox: "BoundingBox",
     segments: Optional[int] = None,
@@ -964,7 +1022,7 @@ def shape_sweep_gradient_as_mesh(
     if seam_progress <= TOLERANCE:
         seam_progress = cover_span
 
-    progress_candidates: List[float] = [0.0]
+    progress_candidates: list[float] = [0.0]
     tile_count = int(math.floor(cover_span / span))
     remainder = cover_span - tile_count * span
     if remainder < TOLERANCE:
@@ -1003,7 +1061,7 @@ def shape_sweep_gradient_as_mesh(
                 progress_candidates.append(seam_progress - seam_eps)
 
     progress_candidates.sort()
-    progress_nodes: List[float] = []
+    progress_nodes: list[float] = []
     for progress in progress_candidates:
         if progress_nodes and abs(progress - progress_nodes[-1]) <= TOLERANCE:
             progress_nodes[-1] = progress
@@ -1058,7 +1116,7 @@ def shape_sweep_gradient_as_mesh(
 
         return progress / span
 
-    fan_line_raw: List[Tuple[float, float, Tuple[float, ...]]] = []
+    fan_line_raw: list[tuple[float, float, tuple[float, ...]]] = []
     for progress in progress_nodes:
         if (
             progress >= cover_span - TOLERANCE
@@ -1077,7 +1135,7 @@ def shape_sweep_gradient_as_mesh(
         fan_line_raw.append((theta, raw, color))
 
     if not fan_line_raw:
-        fan_line: List[Tuple[float, Tuple[float, ...]]] = []
+        fan_line: list[tuple[float, tuple[float, ...]]] = []
     elif (
         spread_method == GradientSpreadMethod.PAD
         and not span_covers_full_circle
@@ -1097,7 +1155,7 @@ def shape_sweep_gradient_as_mesh(
     else:
         fan_line = [(theta, color) for (theta, _, color) in fan_line_raw]
 
-    samples: List[Tuple[float, Tuple[float, ...]]] = []
+    samples: list[tuple[float, tuple[float, ...]]] = []
     start_color_components = norm_stops[0][1].colors
     if fan_line:
         samples.append(fan_line[0])
@@ -1131,10 +1189,10 @@ def shape_sweep_gradient_as_mesh(
             (theta + cover_span, base_color),
         ]
 
-    triangles: List[
-        Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
+    triangles: list[
+        tuple[tuple[float, float], tuple[float, float], tuple[float, float]]
     ] = []
-    tri_colors: List[Tuple[Tuple[float, ...], Tuple[float, ...], Tuple[float, ...]]] = (
+    tri_colors: list[tuple[tuple[float, ...], tuple[float, ...], tuple[float, ...]]] = (
         []
     )
 
@@ -1188,7 +1246,7 @@ def shape_linear_gradient(
     y1: float,
     x2: float,
     y2: float,
-    stops: List[Tuple[float, Union[Color, str]]],
+    stops: Sequence[tuple[float, Union[Color, str]]],
     spread_method: Union[GradientSpreadMethod, str] = GradientSpreadMethod.PAD,
     bbox: Optional["BoundingBox"] = None,
 ) -> LinearGradient:
@@ -1225,14 +1283,9 @@ def shape_linear_gradient(
         return gradient
 
     # 5) Expand for REPEAT / REFLECT
-
-    use_raw_period = (
-        spread_method != GradientSpreadMethod.PAD
-        and raw_stops is not None
-        and len(raw_stops) >= 2
-    )
-
+    use_raw_period = raw_stops is not None and len(raw_stops) >= 2
     tile_stops = raw_stops if use_raw_period else normalized_stops
+    assert tile_stops is not None  # pleasing mypy
     base_start = tile_stops[0][0]
     base_end = tile_stops[-1][0]
     base_span = max(base_end - base_start, TOLERANCE)
@@ -1262,7 +1315,7 @@ def shape_linear_gradient(
     start_tile = math.floor((tmin_norm - base_start) / base_span) - 1
     end_tile = math.ceil((tmax_norm - base_start) / base_span) + 1
 
-    expanded: List[Tuple[float, Union[Color, str]]] = []
+    expanded: list[tuple[float, Union[Color, str]]] = []
     for k in range(start_tile, end_tile + 1):
         shift = k * base_span
         if spread_method == GradientSpreadMethod.REPEAT or (k & 1) == 0:
@@ -1300,16 +1353,16 @@ def shape_linear_gradient(
     # Merge identical offsets after math
     merged = merge_near_duplicates(renorm)
 
-    colors = [c for _, c in merged]
-    bounds = [o for o, _ in merged[1:-1]]
+    linear_gradient_colors = [c for _, c in merged]
+    linear_gradient_bounds = [o for o, _ in merged[1:-1]]
 
     gradient = LinearGradient(
         from_x=nx1,
         from_y=ny1,
         to_x=nx2,
         to_y=ny2,
-        colors=colors,
-        bounds=bounds,
+        colors=linear_gradient_colors,
+        bounds=linear_gradient_bounds,
         extend_before=False,
         extend_after=False,
     )
@@ -1321,7 +1374,7 @@ def shape_radial_gradient(
     cx: float,
     cy: float,
     r: float,
-    stops: List[Tuple[float, Union[Color, str]]],
+    stops: Sequence[tuple[float, Union[Color, str]]],
     fx: Optional[float] = None,
     fy: Optional[float] = None,
     fr: float = 0.0,
@@ -1377,13 +1430,9 @@ def shape_radial_gradient(
         return gradient
 
     # 5) Expand for REPEAT / REFLECT across rings
-    use_raw_period = (
-        spread_method != GradientSpreadMethod.PAD
-        and raw_stops is not None
-        and len(raw_stops) >= 2
-    )
-
+    use_raw_period = raw_stops is not None and len(raw_stops) >= 2
     tile_stops = raw_stops if use_raw_period else normalized_stops
+    assert tile_stops is not None  # pleasing mypy
     base_start = tile_stops[0][0]
     base_end = tile_stops[-1][0]
     base_span = max(base_end - base_start, TOLERANCE)
@@ -1414,7 +1463,7 @@ def shape_radial_gradient(
     def sigma_to_lambda(sigma: float) -> float:
         return (sigma - base_start) / base_span
 
-    def circle_at(lam: float) -> Tuple[float, float, float]:
+    def circle_at(lam: float) -> tuple[float, float, float]:
         return (
             lerp(fx, cx, lam),
             lerp(fy, cy, lam),
@@ -1437,7 +1486,7 @@ def shape_radial_gradient(
     if target_sigma > base_end:
         tiles_needed = math.ceil((target_sigma - base_end) / base_span)
 
-    expanded: List[Tuple[float, Union[Color, str]]] = []
+    expanded: list[tuple[float, Color]] = []
     for k in range(tiles_needed + 1):
         shift = k * base_span
         if spread_method == GradientSpreadMethod.REPEAT or (k & 1) == 0:
@@ -1468,8 +1517,8 @@ def shape_radial_gradient(
     # Merge identical offsets after math
     merged = merge_near_duplicates(renorm)
 
-    colors = [c for _, c in merged]
-    bounds = [o for o, _ in merged[1:-1]]
+    radial_gradient_colors = [c for _, c in merged]
+    radial_gradient_bounds = [o for o, _ in merged[1:-1]]
 
     gradient = RadialGradient(
         start_circle_x=sx,
@@ -1478,8 +1527,8 @@ def shape_radial_gradient(
         end_circle_x=ex,
         end_circle_y=ey,
         end_circle_radius=er,
-        colors=colors,
-        bounds=bounds,
+        colors=radial_gradient_colors,
+        bounds=radial_gradient_bounds,
         extend_before=False,
         extend_after=False,
     )

@@ -1,43 +1,57 @@
+# pyright: reportUnknownVariableType=false
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Literal, TypeAlias, cast
+
+ImageFilter: TypeAlias = Literal[
+    "AUTO",
+    "FlateDecode",
+    "DCTDecode",
+    "JPXDecode",
+    "LZWDecode",
+    "CCITTFaxDecode",
+]
 
 
-class ImageInfo(dict):
+class ImageInfo(dict[str, object]):
     """Information about an image used in the PDF document (base class).
     We subclass this to distinguish between raster and vector images."""
 
     @property
-    def width(self):
+    def width(self) -> float:
         "Intrinsic image width"
-        return self["w"]
+        return cast(float, self["w"])
 
     @property
-    def height(self):
+    def height(self) -> float:
         "Intrinsic image height"
-        return self["h"]
+        return cast(float, self["h"])
 
     @property
-    def rendered_width(self):
+    def rendered_width(self) -> float:
         "Only available if the image has been placed on the document"
-        return self["rendered_width"]
+        return cast(float, self["rendered_width"])
 
     @property
-    def rendered_height(self):
+    def rendered_height(self) -> float:
         "Only available if the image has been placed on the document"
-        return self["rendered_height"]
+        return cast(float, self["rendered_height"])
 
-    def __str__(self):
+    def __str__(self) -> str:
         d = {
             k: ("..." if k in ("data", "iccp", "smask") else v) for k, v in self.items()
         }
         return f"self.__class__.__name__({d})"
 
-    def scale_inside_box(self, x, y, w, h):
+    def scale_inside_box(
+        self, x: float, y: float, w: float, h: float
+    ) -> tuple[float, float, float, float]:
         """
         Make an image fit within a bounding box, maintaining its proportions.
         In the reduced dimension it will be centered within the available space.
         """
-        ratio = self.width / self.height
+        img_w: float = self["w"]  # type: ignore
+        img_h: float = self["h"]  # type: ignore
+        ratio = img_w / img_h
         if h * ratio < w:
             new_w = h * ratio
             new_h = h
@@ -52,14 +66,18 @@ class ImageInfo(dict):
 class RasterImageInfo(ImageInfo):
     "Information about a raster image used in the PDF document"
 
-    def size_in_document_units(self, w, h, scale=1):
+    def size_in_document_units(
+        self, w: float, h: float, scale: float = 1
+    ) -> tuple[float, float]:
+        img_w: float = self["w"]  # type: ignore
+        img_h: float = self["h"]  # type: ignore
         if w == 0 and h == 0:  # Put image at 72 dpi
-            w = self["w"] / scale
-            h = self["h"] / scale
+            w = img_w / scale
+            h = img_h / scale
         elif w == 0:
-            w = h * self["w"] / self["h"]
+            w = h * img_w / img_h
         elif h == 0:
-            h = w * self["h"] / self["w"]
+            h = w * img_h / img_w
         return w, h
 
 
@@ -71,13 +89,13 @@ class VectorImageInfo(ImageInfo):
 
 @dataclass
 class ImageCache:
-    # Map image identifiers to dicts describing the raster images
-    images: Dict[str, dict] = field(default_factory=dict)
+    # Map image identifiers to dicts describing raster or vector images
+    images: dict[str, RasterImageInfo | VectorImageInfo] = field(default_factory=dict)
     # Map icc profiles (bytes) to their index (number)
-    icc_profiles: Dict[bytes, int] = field(default_factory=dict)
+    icc_profiles: dict[bytes, int] = field(default_factory=dict)
     # Must be one of SUPPORTED_IMAGE_FILTERS values
-    image_filter: str = "AUTO"
+    image_filter: ImageFilter = "AUTO"
 
-    def reset_usages(self):
+    def reset_usages(self) -> None:
         for img in self.images.values():
             img["usages"] = 0

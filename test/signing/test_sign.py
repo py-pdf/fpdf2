@@ -5,7 +5,6 @@ from pathlib import Path
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal, check_signature, EPOCH
 
-
 HERE = Path(__file__).resolve().parent
 TRUSTED_CERT_PEMS = (HERE / "signing-certificate.crt",)
 

@@ -8,7 +8,6 @@ import fpdf
 
 from test.conftest import assert_pdf_equal, ensure_rss_memory_below, time_execution
 
-
 HERE = Path(__file__).resolve().parent
 
 

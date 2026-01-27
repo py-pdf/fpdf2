@@ -5,7 +5,6 @@ from test.conftest import assert_pdf_equal, assert_same_file
 
 import pytest
 
-
 HERE = Path(__file__).resolve().parent
 
 TABLE_DATA = (

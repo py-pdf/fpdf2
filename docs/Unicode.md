@@ -18,6 +18,10 @@ FreeSerif, FreeMono
 
 To use a Unicode font in your program, use the [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font), and then the  [`set_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) method calls.
 
+### Web fonts (WOFF and WOFF2) ###
+
+WOFF and WOFF2 are web-optimized, compressed containers for TrueType and OpenType fonts, designed to reduce download size for browsers. `fpdf2` supports these formats by decompressing them before embedding the resulting font data into the generated PDF.
+
 
 ### Built-in Fonts vs. Unicode Fonts ###
 
