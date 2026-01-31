@@ -26,7 +26,33 @@ def report(request):
 ```
 
 
-## Flask ##
+## WSGI applications
+The following code can be placed in a `fpdf2_app.py` to make a WSGI application
+
+```python
+from fpdf import FPDF
+
+def app(environ, start_response):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.cell(text="Hello world!")
+    data = bytes(pdf.output())
+    start_response("200 OK", [
+        ("Content-Type", "application/pdf"),
+        ("Content-Length", str(len(data)))
+    ])
+    return iter([data])
+```
+
+This script can then be served as a HTTP application using either:
+
+* the standard [`wsgiref`](https://docs.python.org/3/library/wsgiref.html) module
+* [`werkzeug.serving.run_simple`](https://werkzeug.palletsprojects.com/en/stable/serving/)
+* [Gunicorn](https://gunicorn.org/), using: `gunicorn --bind localhost:8000 fpdf2_app:app`
+* [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/), using: `uwsgi --http :8000 --module fpdf2_app:app`
+
+### Flask ##
 [Flask](https://flask.palletsprojects.com) is a micro web framework written in Python.
 
 The following code can be placed in a `app.py` file and launched using `flask run`:
@@ -48,31 +74,63 @@ def hello_world():
     return response
 ```
 
+### Bottle
+[Bottle](https://bottlepy.org/docs/dev/index.html) is:
+> Bottle is a fast, simple and lightweight WSGI micro web-framework for Python. It is distributed as a single file module and has no dependencies other than the Python Standard Library.
 
-## WSGI applications
-The following code can be placed in a `fpdf2_app.py` to make a WSGI application
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
 
 ```python
+from bottle import route, run, response
 from fpdf import FPDF
 
-def app(environ, start_response):
+@route('/')
+def hello():
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", size=12)
-    pdf.cell(text="Hello world!")
-    data = bytes(pdf.output())
-    start_response("200 OK", [
-        ("Content-Type", "application/pdf"),
-        ("Content-Length", str(len(data)))
-    ])
-    return iter([data])
+    pdf.set_font("Helvetica", size=24)
+    pdf.cell(text="hello world")
+    pdf_bytes = bytes(pdf.output())
+    
+    response.set_header('Content-Type', 'application/pdf')
+    response.status = 200
+    response.content_length = len(pdf_bytes)
+    
+    return pdf_bytes
+
+if __name__ == '__main__':
+    run(host='localhost', port=8080, debug=True)
 ```
 
-This script can then be served as a HTTP application using either:
-* the standard [`wsgiref`](https://docs.python.org/3/library/wsgiref.html) module
-* [`werkzeug.serving.run_simple`](https://werkzeug.palletsprojects.com/en/stable/serving/)
-* [Gunicorn](https://gunicorn.org/), using: `gunicorn --bind localhost:8000 fpdf2_app:app`
-* [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/), using: `uwsgi --http :8000 --module fpdf2_app:app`
+### CherryPy
+[CherryPy](https://cherrypy.dev) is:
+> a pythonic, object-oriented web framework, allowing developers to build web applications in much the same way they would build any other object-oriented Python program.
+
+The following code can be placed in a `app.py` file and launched using `python3 app.py`
+
+
+```python
+import cherrypy
+from fpdf import FPDF
+
+class HelloWorld(object):
+    @cherrypy.expose
+    def index(self):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(text="hello world")
+        pdf_bytes = bytes(pdf.output())
+
+        cherrypy.response.headers['content-type'] = 'application/pdf'
+        cherrypy.response.status = 200
+
+        return pdf_bytes
+
+
+if __name__ == "__main__":
+    cherrypy.quickstart(HelloWorld())
+```
 
 
 ## AWS lambda
@@ -181,7 +239,6 @@ st.download_button(
 
 The following code shows how to generate a PDF file via a POST endpoint that receives a JSON object. The JSON object can be used to write into the PDF file. The generated PDF file will be returned back to the user/frontend as the response. 
 
-
 ```python
 from fastapi import FastAPI, Request, Response, HTTPException, status
 from fpdf import FPDF
@@ -224,8 +281,167 @@ async def create_pdf(request: Request):
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
 ```
+
+
+## Plone
+[Plone](https://plone.org/) is:
+> a powerful open source Content Management System built on Python and the Zope application server
+
+Plone is widely used for building secure and scalable web applications. Here's how to generate and serve PDF documents with fpdf2 in Plone.
+
+### As a Browser View
+
+The most common approach is to create a browser view that generates and returns a PDF:
+
+```python
+from Products.Five import BrowserView
+from fpdf import FPDF
+
+class PDFReportView(BrowserView):
+    """Generate and serve a PDF report"""
+    
+    def __call__(self):
+        # Create PDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(text="Hello from Plone!")
+        
+        # Add content from the context
+        pdf.ln(10)
+        pdf.set_font("Helvetica", size=12)
+        pdf.cell(text=f"Title: {self.context.Title()}")
+        
+        # Generate PDF bytes
+        pdf_bytes = bytes(pdf.output())
+        
+        # Set response headers
+        self.request.response.setHeader('Content-Type', 'application/pdf')
+        self.request.response.setHeader(
+            'Content-Disposition',
+            'attachment; filename="report.pdf"'
+        )
+        self.request.response.setHeader('Content-Length', len(pdf_bytes))
+        
+        return pdf_bytes
+```
+
+Register the view in your package's `configure.zcml`:
+
+```xml
+<browser:page
+    name="pdf-report"
+    for="*"
+    class=".views.PDFReportView"
+    permission="zope2.View"
+    />
+```
+
+The PDF can then be accessed at: `http://yoursite.com/path/to/content/@@pdf-report`
+
+### As a Custom Content Type Method
+
+For a custom Dexterity content type, you can add a method that generates PDFs:
+
+```python
+from plone.dexterity.content import Container
+from fpdf import FPDF
+
+class Report(Container):
+    """Custom content type that can generate PDF reports"""
+    
+    def generate_pdf(self):
+        """Generate PDF from content type data"""
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(text=self.title)
+        
+        pdf.ln(10)
+        pdf.set_font("Helvetica", size=12)
+        if self.description:
+            pdf.multi_cell(0, 5, text=self.description)
+        
+        return bytes(pdf.output())
+```
+
+Then create a view to serve it:
+
+```python
+from Products.Five import BrowserView
+
+class DownloadPDFView(BrowserView):
+    """Download PDF for Report content type"""
+    
+    def __call__(self):
+        pdf_bytes = self.context.generate_pdf()
+        
+        self.request.response.setHeader('Content-Type', 'application/pdf')
+        self.request.response.setHeader(
+            'Content-Disposition',
+            f'attachment; filename="{self.context.getId()}.pdf"'
+        )
+        
+        return pdf_bytes
+```
+
+Register this view in `configure.zcml`:
+
+```xml
+<browser:page
+    name="download-pdf"
+    for=".interfaces.IReport"
+    class=".views.DownloadPDFView"
+    permission="zope2.View"
+    />
+```
+
+### With Catalog Queries
+
+Generate PDFs from catalog search results:
+
+```python
+from Products.Five import BrowserView
+from fpdf import FPDF
+
+class CatalogReportView(BrowserView):
+    """Generate PDF report from catalog query"""
+    
+    def __call__(self):
+        catalog = self.context.portal_catalog
+        results = catalog(portal_type='Document',
+                         review_state='published')
+        
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(text="Published Documents Report")
+        
+        pdf.ln(10)
+        pdf.set_font("Helvetica", size=10)
+        
+        for brain in results:
+            pdf.cell(text=brain.Title)
+            pdf.ln()
+        
+        pdf_bytes = bytes(pdf.output())
+        
+        self.request.response.setHeader('Content-Type', 'application/pdf')
+        self.request.response.setHeader(
+            'Content-Disposition',
+            'attachment; filename="catalog-report.pdf"'
+        )
+        
+        return pdf_bytes
+```
+
+### Notes for Plone Developers
+
+- Always create a new `FPDF()` instance for each request to ensure thread safety
+- Use appropriate permissions in your ZCML configuration
+- Consider caching PDF generation for large documents using `plone.memoize`
+- For complex PDFs, consider generating them asynchronously using Celery or similar task queues
 
 
 ## Jupyter

@@ -5,15 +5,15 @@ from fpdf.line_break import Fragment
 PDF = FPDF()
 GSTATE = PDF._get_current_graphics_state()
 GSTATE_B = GSTATE.copy()
-GSTATE_B["font_style"] = "B"
+GSTATE_B.font_style = "B"
 GSTATE_I = GSTATE.copy()
-GSTATE_I["font_style"] = "I"
+GSTATE_I.font_style = "I"
 GSTATE_S = GSTATE.copy()
-GSTATE_S["strikethrough"] = True
+GSTATE_S.strikethrough = True
 GSTATE_U = GSTATE.copy()
-GSTATE_U["underline"] = True
+GSTATE_U.underline = True
 GSTATE_BI = GSTATE.copy()
-GSTATE_BI["font_style"] = "BI"
+GSTATE_BI.font_style = "BI"
 
 
 def test_markdown_parse_simple_ok():
@@ -172,10 +172,12 @@ def test_markdown_parse_line_of_markers_escaped():
 def test_markdown_parse_newline_after_markdown_link():  # issue 916
     text = "[fpdf2](https://py-pdf.github.io/fpdf2/)\nGo visit it!"
     frags = tuple(FPDF()._parse_chars(text, True))
+    gstate_link = GSTATE.copy()
+    gstate_link.underline = True
     expected = (
         Fragment(
             "fpdf2",
-            {**GSTATE, "underline": True},
+            gstate_link,
             k=PDF.k,
             link="https://py-pdf.github.io/fpdf2/",
         ),

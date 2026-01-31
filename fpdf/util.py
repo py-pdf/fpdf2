@@ -6,41 +6,78 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import gc
-import os
-import warnings
-from numbers import Number
-from tracemalloc import get_traced_memory, is_tracing
-from typing import Iterable, NamedTuple, Tuple, Union
+import decimal
 
-# default block size from src/libImaging/Storage.c:
-PIL_MEM_BLOCK_SIZE_IN_MIB = 16
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.9)
+from importlib import resources
+from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Iterable,
+    NamedTuple,
+    Sequence,
+    TypeVar,
+    Union,
+    overload,
+)
+
+if TYPE_CHECKING:
+    from PIL.Image import Image as PILImage
+
+    from .svg import SVGObject
+
+ImageType = Union[str, bytes, BinaryIO, "PILImage", Path, None]
+ImageClass = (str, bytes, BinaryIO, "PILImage", Path)
+ImageData = Union["SVGObject", "PILImage", bytes, BinaryIO, Path, None]
+SVGObjectType = TypeVar("SVGObjectType", bound="SVGObject")
+Number = Union[int, float, decimal.Decimal]
+NumberClass = (int, float, decimal.Decimal)
+_StrBytes = TypeVar("_StrBytes", str, bytes)
 
 
 class Padding(NamedTuple):
-    top: Number = 0
-    right: Number = 0
-    bottom: Number = 0
-    left: Number = 0
+    top: float = 0
+    right: float = 0
+    bottom: float = 0
+    left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[int, float, tuple, list]):
+    def new(cls, padding: Union[Number, Sequence[Number], "Padding"]) -> "Padding":
         """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
-        if isinstance(padding, (int, float)):
-            return Padding(padding, padding, padding, padding)
+        if isinstance(padding, NumberClass):
+            return Padding(
+                float(padding), float(padding), float(padding), float(padding)
+            )
         if len(padding) == 2:
-            return Padding(padding[0], padding[1], padding[0], padding[1])
+            return Padding(
+                float(padding[0]),
+                float(padding[1]),
+                float(padding[0]),
+                float(padding[1]),
+            )
         if len(padding) == 3:
-            return Padding(padding[0], padding[1], padding[2], padding[1])
+            return Padding(
+                float(padding[0]),
+                float(padding[1]),
+                float(padding[2]),
+                float(padding[1]),
+            )
         if len(padding) == 4:
-            return Padding(*padding)
+            return Padding(
+                float(padding[0]),
+                float(padding[1]),
+                float(padding[2]),
+                float(padding[3]),
+            )
 
         raise ValueError(
             f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
         )
 
 
-def buffer_subst(buffer, placeholder, value):
+def buffer_subst(buffer: bytearray, placeholder: str, value: str) -> bytearray:
     buffer_size = len(buffer)
     assert len(placeholder) == len(value), f"placeholder={placeholder} value={value}"
     buffer = buffer.replace(placeholder.encode(), value.encode(), 1)
@@ -48,7 +85,15 @@ def buffer_subst(buffer, placeholder, value):
     return buffer
 
 
-def escape_parens(s):
+@overload
+def escape_parens(s: str) -> str: ...
+
+
+@overload
+def escape_parens(s: bytes) -> bytes: ...
+
+
+def escape_parens(s: _StrBytes) -> _StrBytes:
     """Add a backslash character before , ( and )"""
     if isinstance(s, str):
         return (
@@ -76,7 +121,7 @@ def get_scale_factor(unit: Union[str, Number]) -> float:
     Raises:
         ValueError
     """
-    if isinstance(unit, Number):
+    if isinstance(unit, NumberClass):
         return float(unit)
 
     if unit == "pt":
@@ -91,10 +136,10 @@ def get_scale_factor(unit: Union[str, Number]) -> float:
 
 
 def convert_unit(
-    to_convert: Union[float, int, Iterable[Union[float, int, Iterable]]],
+    to_convert: Number | Iterable[Any],
     old_unit: Union[str, Number],
     new_unit: Union[str, Number],
-) -> Union[float, tuple]:
+) -> Union[float, tuple[Any, ...]]:
     """
      Convert a number or sequence of numbers from one unit to another.
 
@@ -110,7 +155,22 @@ def convert_unit(
     unit_conversion_factor = get_scale_factor(new_unit) / get_scale_factor(old_unit)
     if isinstance(to_convert, Iterable):
         return tuple(convert_unit(i, 1, unit_conversion_factor) for i in to_convert)
-    return to_convert / unit_conversion_factor
+    return float(to_convert) / unit_conversion_factor
+
+
+def number_to_str(number: Number) -> str:
+    """
+    Convert a decimal number to a minimal string representation (no trailing 0 or .).
+
+    Args:
+        number (Number): the number to be converted to a string.
+
+    Returns:
+        The number's string representation.
+    """
+    # this approach tries to produce minimal representations of floating point numbers
+    # but can also produce "-0".
+    return f"{number:.4f}".rstrip("0").rstrip(".")
 
 
 ROMAN_NUMERAL_MAP = (
@@ -130,7 +190,7 @@ ROMAN_NUMERAL_MAP = (
 )
 
 
-def int2roman(n):
+def int2roman(n: int) -> str:
     "Convert an integer to Roman numeral"
     result = ""
     if n is None:
@@ -149,115 +209,96 @@ def int_to_letters(n: int) -> str:
     return chr(n + ord("A"))
 
 
-################################################################################
-################### Utility functions to track memory usage ####################
-################################################################################
+def builtin_srgb2014_bytes() -> bytes:
+    pkg = "fpdf.data.color_profiles"
+    return (resources.files(pkg) / "sRGB2014.icc").read_bytes()
 
 
-def print_mem_usage(prefix):
-    print(get_mem_usage(prefix))
+def format_number(x: float, digits: int = 8) -> str:
+    # snap tiny values to zero to avoid "-0" and scientific notation
+    if abs(x) < 1e-12:
+        x = 0.0
+    s = f"{x:.{digits}f}"
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+    if s == "-0":
+        s = "0"
+    if s.startswith("."):
+        s = "0" + s
+    if s.startswith("-."):
+        s = s.replace("-.", "-0.", 1)
+    return s
 
 
-def get_mem_usage(prefix) -> str:
-    _collected_count = gc.collect()
-    rss = get_process_rss()
-    # heap_size, stack_size = get_process_heap_and_stack_sizes()
-    # objs_size_sum = get_gc_managed_objs_total_size()
-    pillow = get_pillow_allocated_memory()
-    # malloc_stats = "Malloc stats: " + get_pymalloc_allocated_over_total_size()
-    malloc_stats = ""
-    if is_tracing():
-        malloc_stats = "Malloc stats: " + get_tracemalloc_traced_memory()
-    return f"{prefix:<40} {malloc_stats} | Pillow: {pillow} | Process RSS: {rss}"
+def get_parsed_unicode_range(
+    unicode_range: str | Sequence[str | int | tuple[int, int]],
+) -> set[int]:
+    """
+    Parse unicode_range parameter into a set of codepoints.
 
+    Supports CSS-style formats:
 
-def get_process_rss() -> str:
-    rss_as_mib = get_process_rss_as_mib()
-    if rss_as_mib:
-        return f"{rss_as_mib:.1f} MiB"
-    return "<unavailable>"
+    - String with comma-separated ranges: "U+1F600-1F64F, U+2600-26FF, U+2615"
+    - List of strings: ["U+1F600-1F64F", "U+2600", "U+26FF"]
+    - List of tuples: [(0x1F600, 0x1F64F), (0x2600, 0x26FF)]
+    - List of integers: [0x1F600, 0x2600, 128512]
+    - Mixed formats: [(0x1F600, 0x1F64F), "U+2600", 128512]
 
+    Returns a set of integer codepoints.
+    """
+    if unicode_range is not None and len(unicode_range) == 0:
+        raise ValueError("unicode_range cannot be empty")
 
-def get_process_rss_as_mib() -> Union[Number, None]:
-    "Inspired by psutil source code"
-    pid = os.getpid()
-    try:
-        with open(f"/proc/{pid}/statm", encoding="utf8") as statm:
-            return (
-                int(statm.readline().split()[1])
-                * os.sysconf("SC_PAGE_SIZE")
-                / 1024
-                / 1024
+    codepoints: set[int] = set()
+
+    if isinstance(unicode_range, str):
+        unicode_range = [item.strip() for item in unicode_range.split(",")]
+
+    for item in unicode_range:
+        if isinstance(item, tuple):
+            if len(item) != 2:
+                raise ValueError(f"Tuple must have exactly 2 elements: {item}")
+            start, end = item
+
+            if isinstance(start, str):
+                start = int(start.replace("U+", "").replace("u+", ""), 16)
+            if isinstance(end, str):
+                end = int(end.replace("U+", "").replace("u+", ""), 16)
+
+            if start > end:
+                raise ValueError(f"Invalid range: start ({start}) > end ({end})")
+
+            codepoints.update(range(start, end + 1))
+
+        elif isinstance(item, str):
+            item_stripped = item.strip().replace("u+", "U+")
+
+            if "-" in item_stripped and not item_stripped.startswith("-"):
+                parts = item_stripped.split("-")
+                if len(parts) != 2:
+                    raise ValueError(f"Invalid range format: {item_stripped}")
+
+                start = int(parts[0].replace("U+", ""), 16)
+                end = int(parts[1].replace("U+", ""), 16)
+
+                if start > end:
+                    raise ValueError(
+                        f"Invalid range: start ({hex(start)}) > end ({hex(end)})"
+                    )
+
+                codepoints.update(range(start, end + 1))
+            else:
+                codepoint = int(item_stripped.replace("U+", ""), 16)
+                codepoints.add(codepoint)
+
+        elif isinstance(item, int):
+            if item < 0:
+                raise ValueError(f"Invalid codepoint: {item} (must be non-negative)")
+            codepoints.add(item)
+
+        else:
+            raise ValueError(
+                f"Unsupported unicode_range item type: {type(item).__name__}"
             )
-    except FileNotFoundError:  # /proc files only exist under Linux
-        return None
 
-
-def get_process_heap_and_stack_sizes() -> Tuple[str]:
-    heap_size_in_mib, stack_size_in_mib = "<unavailable>", "<unavailable>"
-    pid = os.getpid()
-    try:
-        with open(f"/proc/{pid}/maps", encoding="utf8") as maps_file:
-            maps_lines = list(maps_file)
-    except FileNotFoundError:  # This file only exists under Linux
-        return heap_size_in_mib, stack_size_in_mib
-    for line in maps_lines:
-        words = line.split()
-        addr_range, path = words[0], words[-1]
-        addr_start, addr_end = addr_range.split("-")
-        addr_start, addr_end = int(addr_start, 16), int(addr_end, 16)
-        size = addr_end - addr_start
-        if path == "[heap]":
-            heap_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
-        elif path == "[stack]":
-            stack_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
-    return heap_size_in_mib, stack_size_in_mib
-
-
-def get_pymalloc_allocated_over_total_size() -> Tuple[str]:
-    """
-    Get PyMalloc stats from sys._debugmallocstats()
-    From experiments, not very reliable
-    """
-    try:
-        # pylint: disable=import-outside-toplevel
-        from pymemtrace.debug_malloc_stats import get_debugmallocstats
-
-        allocated, total = -1, -1
-        for line in get_debugmallocstats().decode().splitlines():
-            if line.startswith("Total"):
-                total = int(line.split()[-1].replace(",", ""))
-            elif line.startswith("# bytes in allocated blocks"):
-                allocated = int(line.split()[-1].replace(",", ""))
-        return f"{allocated / 1024 / 1024:.1f} / {total / 1024 / 1024:.1f} MiB"
-    except ImportError:
-        warnings.warn("pymemtrace could not be imported - Run: pip install pymemtrace")
-        return "<unavailable>"
-
-
-def get_gc_managed_objs_total_size() -> str:
-    "From experiments, not very reliable"
-    try:
-        # pylint: disable=import-outside-toplevel
-        from pympler.muppy import get_objects, getsizeof
-
-        objs_total_size = sum(getsizeof(obj) for obj in get_objects())
-        return f"{objs_total_size / 1024 / 1024:.1f} MiB"
-    except ImportError:
-        warnings.warn("pympler could not be imported - Run: pip install pympler")
-        return "<unavailable>"
-
-
-def get_tracemalloc_traced_memory() -> str:
-    "Requires python -X tracemalloc"
-    current, peak = get_traced_memory()
-    return f"{current / 1024 / 1024:.1f} (peak={peak / 1024 / 1024:.1f}) MiB"
-
-
-def get_pillow_allocated_memory() -> str:
-    # pylint: disable=c-extension-no-member,import-outside-toplevel
-    from PIL import Image
-
-    stats = Image.core.get_stats()
-    blocks_in_use = stats["allocated_blocks"] - stats["freed_blocks"]
-    return f"{blocks_in_use * PIL_MEM_BLOCK_SIZE_IN_MIB:.1f} MiB"
+    return codepoints

@@ -1,11 +1,9 @@
+import pytest
+import sys
+
 from pathlib import Path
-from sys import version_info
-
-
-from pytest import mark
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal, check_signature, EPOCH
-
 
 HERE = Path(__file__).resolve().parent
 TRUSTED_CERT_PEMS = (HERE / "signing-certificate.crt",)
@@ -20,6 +18,10 @@ def test_sign_pkcs12(tmp_path):
     check_signature(pdf, TRUSTED_CERT_PEMS)
 
 
+@pytest.mark.skipif(
+    sys.platform in ("cygwin", "win32") and sys.version_info[:2] == (3, 14),
+    reason="Skipped on Windows with Python 3.14 due to zlib compressed data differences",
+)
 def test_sign_pkcs12_with_link(tmp_path):
     "This test ensures that Signature & Link annotations can be combined"
     pdf = FPDF()

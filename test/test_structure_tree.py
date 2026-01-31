@@ -27,9 +27,7 @@ def test_pdf_object_serialize():
     pdf_content = (
         point_a.serialize() + "\n" + point_b.serialize() + "\n" + square.serialize()
     )
-    assert (
-        pdf_content
-        == """\
+    assert pdf_content == """\
 1 0 obj
 <<
 /X 0
@@ -48,7 +46,6 @@ endobj
 /TopLeft 1 0 R
 >>
 endobj"""
-    )
 
 
 def _serialize(struct_builder, first_object_id=1):
@@ -61,9 +58,7 @@ def _serialize(struct_builder, first_object_id=1):
 
 def test_empty_structure_tree():
     struct_builder = StructureTreeBuilder()
-    assert (
-        _serialize(struct_builder)
-        == """\
+    assert _serialize(struct_builder) == """\
 1 0 obj
 <<
 /K [2 0 R]
@@ -84,7 +79,6 @@ endobj
 /Nums []
 >>
 endobj"""
-    )
 
 
 def test_single_image_structure_tree():
@@ -92,9 +86,7 @@ def test_single_image_structure_tree():
     struct_builder.add_marked_content(
         1, "/Figure", 0, "Image title", "Image description"
     )
-    assert (
-        _serialize(struct_builder, first_object_id=3)
-        == """\
+    assert _serialize(struct_builder, first_object_id=3) == """\
 3 0 obj
 <<
 /K [4 0 R]
@@ -125,4 +117,3 @@ endobj
 /Type /StructElem
 >>
 endobj"""
-    )

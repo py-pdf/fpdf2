@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
+from fpdf.actions import GoToAction
 from fpdf.encryption import StandardSecurityHandler as sh
 from fpdf.enums import AccessPermission, EncryptionMethod
 from fpdf.errors import FPDFException
@@ -142,7 +143,6 @@ def test_encrypt_metadata(tmp_path):
     pdf = FPDF()
 
     def custom_file_id():
-        # return pdf._default_file_id(bytearray([0xFF]))
         return "<AC2718D5DA802D34E7F97EEF0A0B52C5><AC2718D5DA802D34E7F97EEF0A0B52C5>"
 
     pdf.file_id = custom_file_id
@@ -304,3 +304,27 @@ def test_encryption_unicode(tmp_path):
     )
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encryption_unicode.pdf", tmp_path)
+
+
+def test_goto_named_destination(tmp_path):
+    pdf = FPDF()
+    pdf.set_encryption(owner_password="fpdf2")
+    pdf.set_font("Helvetica", size=24)
+    pdf.add_page()
+    x, y, text = 80, 140, "GoTo action"
+    pdf.text(x=x, y=y, text=text)
+    pdf.add_action(
+        GoToAction(dest="#page2"),
+        x=x,
+        y=y - pdf.font_size,
+        w=pdf.get_string_width(text),
+        h=pdf.font_size,
+    )
+    pdf.add_page()
+    pdf.add_link(y=140, name="page2")
+    pdf.text(x=80, y=140, text="Page 2")
+    assert_pdf_equal(
+        pdf,
+        HERE / "encryption_goto_named_destination.pdf",
+        tmp_path,
+    )

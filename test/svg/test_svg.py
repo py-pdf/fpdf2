@@ -1,5 +1,4 @@
 # pylint: disable=no-self-use, protected-access
-import io
 from pathlib import Path
 
 import fpdf
@@ -11,7 +10,8 @@ import pytest
 
 from . import parameters
 
-GENERATED_PDF_DIR = Path(__file__).resolve().parent / "generated_pdf"
+HERE = Path(__file__).resolve().parent
+GENERATED_PDF_DIR = HERE / "generated_pdf"
 
 
 def assert_style_match(lhs, rhs):
@@ -109,11 +109,8 @@ class TestSVGPathParsing:
         with pytest.raises(ValueError):
             fpdf.svg.svg_path_converter(pdf_path, "A 1 2 0 1 0 4 5")
 
-    @pytest.mark.parametrize(
-        "debug", (pytest.param(False, id="no debug"), pytest.param(True, id="debug"))
-    )
     @pytest.mark.parametrize("path, expected", parameters.svg_path_render_tests)
-    def test_rendering_smooth_curves(self, debug, path, expected):
+    def test_rendering_smooth_curves(self, path, expected):
         pdf_path = fpdf.drawing.PaintedPath()
 
         fpdf.svg.svg_path_converter(pdf_path, path)
@@ -123,13 +120,7 @@ class TestSVGPathParsing:
         first_point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(first_point)
 
-        if debug:
-            dbg = io.StringIO()
-            result = pdf_path.render_debug(
-                resource_catalog, style, start, first_point, dbg, ""
-            )[0]
-        else:
-            result = pdf_path.render(resource_catalog, style, start, first_point)[0]
+        result = pdf_path.render(resource_catalog, style, start, first_point)[0]
 
         assert result == expected
 
@@ -327,4 +318,24 @@ class TestSVGObject:
         # In the resulting document, a page break occurs before the image being rendered:
         assert_pdf_equal(
             pdf, GENERATED_PDF_DIR / "svg_rendering_image_over_page_break.pdf", tmp_path
+        )
+
+    def test_svg_text_ttf_font(self, tmp_path):
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.add_font(
+            family="serif", style="", fname=HERE.parent / "fonts" / "DejaVuSans.ttf"
+        )
+        pdf.image(
+            name=HERE / "svg_sources" / "ocanada.svg",
+            x=pdf.l_margin,
+            y=pdf.t_margin,
+            w=pdf.epw,
+            h=pdf.eph,
+            keep_aspect_ratio=True,
+        )
+        assert_pdf_equal(
+            pdf,
+            GENERATED_PDF_DIR / "ocanada.pdf",
+            tmp_path,
         )

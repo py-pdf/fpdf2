@@ -258,22 +258,6 @@ Para lograr esto, aquí hay un pequeño ejemplo:
 
 [PDF resultante: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
 
-Primero, agregamos las fuentes incrustadas necesarias usando el método
-[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
-para cada estilo.
-
-Luego, agregamos el objeto con el perfil ICC al vector de intenciones de salida usando el método
-[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent).
-
-Tras agregar algunas páginas, utilizando las fuentes incrustadas y escribiendo algo de texto,
-creamos el pdf llamando `create_pdf_with_metadata()`,
-que usa [pikepdf](https://pypi.org/project/pikepdf/)
-para crear los metadatos necesarios y establecer el tipo a PDF/A-3B.
-
-Para mayor información acerca de los metadatos de un PDF, revisa la página de documentación: [Metadata](Metadata.md).
-
-Nota que, en lugar de usar una función, podrías también crear una subclase de `FPDF.output()` para asegurarte de que todos tus documentos son compatibles con PDF-A, como se hizo en [test/pdf-a/test_pdf_a.py](https://github.com/py-pdf/fpdf2/blob/master/test/pdf-a/test_pdf_a.py).
-
 Herramientas como [VeraPDF](https://verapdf.org/) pueden verificar la conformidad de los documentos PDF producidos:
 
     verapdf --format text -v tutorial/tuto7.pdf

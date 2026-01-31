@@ -1308,7 +1308,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/13610623?v=4",
       "profile": "https://github.com/philj56",
       "contributions": [
-        "bug"
+        "bug",
+        "code"
       ]
     },
     {
@@ -1522,6 +1523,144 @@
       "profile": "http://www.dabell.ca",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "woopzz",
+      "name": "Bohdan Kovtunovych",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20585814?v=4",
+      "profile": "https://github.com/woopzz",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "RamBelitkar",
+      "name": "RamBelitkar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144576048?v=4",
+      "profile": "https://github.com/RamBelitkar",
+      "contributions": [
+        "research",
+        "code"
+      ]
+    },
+    {
+      "login": "tanmayc07",
+      "name": "Tanmay Chaudhari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48885301?v=4",
+      "profile": "https://techtracer.pages.dev",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Malay-dev",
+      "name": "Malay Kumar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/91375797?v=4",
+      "profile": "https://github.com/Malay-dev",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Rapteon",
+      "name": "Rapteon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42870679?v=4",
+      "profile": "https://rapteon.github.io",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "Vidushi2709",
+      "name": "Vin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/159937181?v=4",
+      "profile": "http://vinspace.live",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Vedant817",
+      "name": "Vedant Mahajan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/113882531?v=4",
+      "profile": "https://vedantmahajan.vercel.app/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "alhman",
+      "name": "alhman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23240822?v=4",
+      "profile": "https://www.jobsta.at",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Ai-Chetan",
+      "name": "Chetan Chaudhari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/175849359?v=4",
+      "profile": "https://ai-chetan.github.io/chetan-chaudhari/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ystepanoff",
+      "name": "Yegor Stepanov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12848470?v=4",
+      "profile": "https://github.com/ystepanoff",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "RaphaelFLT",
+      "name": "Raphaël FLT",
+      "avatar_url": "https://avatars.githubusercontent.com/u/143359117?v=4",
+      "profile": "https://github.com/RaphaelFLT",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Ani07-05",
+      "name": "Ani07-05",
+      "avatar_url": "https://avatars.githubusercontent.com/u/86768646?v=4",
+      "profile": "https://github.com/Ani07-05",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ByZay",
+      "name": "ByZay",
+      "avatar_url": "https://avatars.githubusercontent.com/u/235472384?v=4",
+      "profile": "https://github.com/ByZay",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "bruceoberg",
+      "name": "bruce oberg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10665776?v=4",
+      "profile": "https://oberg.org",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "slkoo-cc",
+      "name": "slkoo-cc",
+      "avatar_url": "https://avatars.githubusercontent.com/u/201556645?v=4",
+      "profile": "https://github.com/slkoo-cc",
+      "contributions": [
+        "doc"
       ]
     }
   ],

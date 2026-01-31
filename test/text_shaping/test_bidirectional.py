@@ -1,5 +1,5 @@
 from pathlib import Path
-from urllib.request import urlopen
+import lzma
 
 from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
@@ -44,6 +44,11 @@ def test_bidi_conformance():
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
     https://www.unicode.org/reports/tr41/tr41-32.html#Tests9
     This file contains 770,241 tests
+
+    The file BidiTest.txt is available from:
+    https://www.unicode.org/Public/17.0.0/ucd/BidiTest.txt
+
+    The local copy is compressed with xz to save space (the original file is 7.7 MB)
     """
 
     def check_result(string, base_direction, levels, reorder):
@@ -57,18 +62,16 @@ def test_bidi_conformance():
             len_levels = len(levels)
         if len(characters) != len_levels:
             return False
-        for indx, char in enumerate(characters):
-            if levels[indx] != "x" and levels[indx] != str(char.embedding_level):
+        for index, char in enumerate(characters):
+            if levels[index] != "x" and levels[index] != str(char.embedding_level):
                 return False
         return not any(
-            reorder[indx] != str(char.character_index)
-            for (indx, char) in enumerate(reordered_characters)
+            reorder[index] != str(char.character_index)
+            for (index, char) in enumerate(reordered_characters)
         )
 
-    with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt"
-    ) as url_file:  # nosec B310
-        data = url_file.read().decode("utf-8").split("\n")
+    with lzma.open(HERE / "BidiTest.txt.xz", "rb") as compressed_file:
+        data = compressed_file.read().decode("utf-8").split("\n")
 
     levels = []
     reorder = []
@@ -108,12 +111,15 @@ def test_bidi_character():
     """
     The other test file, BidiCharacterTest.txt, contains test sequences of explicit code points, including, for example, bracket pairs.
     There are 91,707 tests on this file
+
+    The file BidiCharacterTest.txt is available from:
+    https://www.unicode.org/Public/17.0.0/ucd/BidiCharacterTest.txt
+
+    The local copy is compressed with xz to save space (the original file is 6.7 MB)
     """
 
-    with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt"
-    ) as url_file:  # nosec B310
-        data = url_file.read().decode("utf-8").split("\n")
+    with lzma.open(HERE / "BidiCharacterTest.txt.xz", "rb") as compressed_file:
+        data = compressed_file.read().decode("utf-8").split("\n")
 
     test_count = 0
     for line in data:

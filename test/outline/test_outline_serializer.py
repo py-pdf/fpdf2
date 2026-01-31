@@ -32,9 +32,7 @@ def test_serialize_outline():
             "Subtitle 2.2", level=1, page_number=1, dest=DestinationXYZ(page=5, top=0)
         ),
     )
-    assert (
-        _serialize_outline(sections, first_object_id=6)
-        == """\
+    assert _serialize_outline(sections, first_object_id=6) == """\
 6 0 obj
 <<
 /Count 2
@@ -91,7 +89,6 @@ endobj
 /Title (Subtitle 2.2)
 >>
 endobj"""
-    )
 
 
 def test__serialize_outline_with_headless_hierarchy():  # issues 239
@@ -110,9 +107,7 @@ def test__serialize_outline_with_headless_hierarchy():  # issues 239
             "1-1-1", level=2, page_number=2, dest=DestinationXYZ(page=2, top=0)
         ),
     )
-    assert (
-        _serialize_outline(sections, first_object_id=6)
-        == """\
+    assert _serialize_outline(sections, first_object_id=6) == """\
 6 0 obj
 <<
 /Count 2
@@ -167,7 +162,6 @@ endobj
 /Title (1-1-1)
 >>
 endobj"""
-    )
 
 
 def test_serialize_outline_with_hex_encoding():  # issue-458
@@ -179,9 +173,7 @@ def test_serialize_outline_with_hex_encoding():  # issue-458
             dest=DestinationXYZ(page=1, top=0),
         ),
     )
-    assert (
-        _serialize_outline(sections, first_object_id=1)
-        == """\
+    assert _serialize_outline(sections, first_object_id=1) == """\
 1 0 obj
 <<
 /Count 1
@@ -198,7 +190,6 @@ endobj
 /Title <feff005400690074006c0065002000770069007400680020006e006f006e002d004100530043004300490020006c006500740074006500720073003a002000e900ea00e8>
 >>
 endobj"""
-    )
 
 
 def test_serialize_outline_without_hex_encoding():  # issue-458
@@ -212,9 +203,7 @@ def test_serialize_outline_without_hex_encoding():  # issue-458
                 dest=DestinationXYZ(page=1, top=0),
             ),
         )
-        assert (
-            _serialize_outline(sections, first_object_id=1)
-            == f"""\
+        assert _serialize_outline(sections, first_object_id=1) == f"""\
 1 0 obj
 <<
 /Count 1
@@ -231,6 +220,5 @@ endobj
 /Title ({'Title with non-ASCCI letters: éêè'.encode('UTF-16').decode('latin-1')})
 >>
 endobj"""
-        )
     finally:
         PDFString.USE_HEX_ENCODING = True  # restore default value

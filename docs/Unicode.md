@@ -18,6 +18,10 @@ FreeSerif, FreeMono
 
 To use a Unicode font in your program, use the [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font), and then the  [`set_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) method calls.
 
+### Web fonts (WOFF and WOFF2) ###
+
+WOFF and WOFF2 are web-optimized, compressed containers for TrueType and OpenType fonts, designed to reduce download size for browsers. `fpdf2` supports these formats by decompressing them before embedding the resulting font data into the generated PDF.
+
 
 ### Built-in Fonts vs. Unicode Fonts ###
 
@@ -216,3 +220,174 @@ By default, if it does not find such matching font, the character will not be re
 Moreover, for more control over font fallback election logic,
 the [`get_fallback_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overridden.
 An example of this can be found in [test/fonts/test_font_fallback.py](https://github.com/py-pdf/fpdf2/blob/master/test/fonts/test_font_fallback.py).
+
+
+## Unicode range limits ##
+
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+The `unicode_range` parameter in [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to restrict which Unicode characters a font will handle, similar to CSS `@font-face` unicode-range rules. This gives you fine-grained control over font priority on a per-character basis.
+
+This is particularly useful when you want fallback fonts to take priority for specific character ranges, even when the main font technically supports those characters. A common scenario is preferring colorful emoji fonts over monochrome glyphs that exist in regular fonts.
+
+Example:
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+
+# Main font for text
+pdf.add_font(family="DejaVu", fname="DejaVuSans.ttf", unicode_range="U+0020-007E")
+
+# Emoji font restricted to emoticons range only
+pdf.add_font(
+    family="NotoEmoji",
+    fname="colrv1-NotoColorEmoji.ttf",
+    unicode_range="U+1F600-1F64F",  # Emoticons
+)
+
+pdf.set_font("DejaVu", size=24)
+pdf.set_fallback_fonts(["NotoEmoji"])
+
+# Emojis in the specified range render from NotoEmoji (colorful)
+pdf.write(text="Hello World! 😀 😊 😎")
+pdf.output("emoji_with_unicode_range.pdf")
+```
+
+![unicode_range_color_emojis](unicode_range_color_emojis.png)
+
+Supported Formats for `unicode_range` param
+
+```python
+# CSS-style string with comma-separated ranges
+pdf.add_font(fname="font.ttf", unicode_range="U+1F600-1F64F, U+2600-26FF, U+2615")
+
+# List of strings
+pdf.add_font(fname="font.ttf", unicode_range=["U+1F600-1F64F", "U+2600", "U+26FF"])
+
+# List of tuples (start, end)
+pdf.add_font(fname="font.ttf", unicode_range=[(0x1F600, 0x1F64F), (0x2600, 0x26FF)])
+
+# List of integers (individual codepoints)
+pdf.add_font(fname="font.ttf", unicode_range=[0x1F600, 0x2600, 128512])
+```
+
+When you specify a unicode_range, the font's internal character map (cmap) is trimmed to only include codepoints within the specified ranges. This ensures that:
+
+- The font will only be used for characters in its allowed ranges
+- Fallback fonts can take priority for characters outside those ranges
+- You avoid unwanted "fallback pollution" from fonts with poor-quality glyphs
+
+For more information on fallback fonts, see the [Fallback fonts](#fallback-fonts) section.
+
+
+## Variable Fonts ##
+
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+A variable font allows users to use a single font file containing many
+variations of a typeface, such as weight, width, optical size, and slant. Each such variable which modifies the typeface is called an axis.
+These variables have specific tags which are used to specify their values, such as `"wdth"` for modifying width,
+and `"wght"` for modifying weight. For a full list
+of tags, please check the documentation of your variable font.
+
+The `variations` parameter in [add_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to specify the value
+of one or more axes, thus creating a static font from the variable font.
+
+The following examples assume that the provided font is a variable font.
+
+```python
+# Specify width and weight in regular style.
+pdf.add_font(
+    "Roboto Variable", "", "Roboto-Variable.ttf", variations={"wdth": 75, "wght": 300}
+)
+
+# Specify weight for bold style.
+pdf.add_font("Roboto Variable", "B", "Roboto-Variable.ttf", variations={"wght": 600})
+
+```
+
+The above examples provide the axes dictionary to specify
+the styles. If an axis is not mentioned, the default width will be used, and the axis will be dropped as shown below.
+
+```python
+# Creating an italic version of the variable font.
+# If an axis is set to None, or if the axis is unspecified,
+# it will not be variable in the created font.
+pdf.add_font(
+    "Roboto Variable",
+    "B",
+    "Roboto-Variable.ttf",
+    variations={"wght": 800, "wdth": None},
+)
+```
+
+It is also possible to specify more than 1 style in the `variations` dictionary.
+If a separate axes dictionary is specified for each style, then the `style` parameter
+is ignored as shown below.
+
+```python
+pdf.add_font(
+    "Roboto Variable",
+    style="", # ignored
+    fname="Roboto-Variable.ttf",
+    variations={"": {"wght": 300}, "B": {"wght": 700}},
+)
+```
+A `TypeError` will be raised if `variations` is not a dictionary, and
+an `AttributeError` will be raised if `variations` is used but the font is **not** a variable font.
+
+
+## Color Font Palette Selection ##
+
+_New in [:octicons-tag-24: 2.8.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Some color fonts (COLRv0, COLRv1, CBDT, SBIX, SVG) contain multiple predefined color palettes.
+The `palette` parameter in [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) allows you to select which palette to use when rendering the font.
+
+This is useful when you want to use different color schemes from the same font file without having to embed the font multiple times.
+
+Example:
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+
+# Add the same color font with different palettes using different family names
+pdf.add_font(
+    family="Nabla-Default",
+    fname="Nabla-Regular-COLRv1.ttf",
+    palette=0  # Use palette 0 (default)
+)
+
+pdf.add_font(
+    family="Nabla-Blue",
+    fname="Nabla-Regular-COLRv1.ttf",
+    palette=1  # Use palette 1
+)
+
+pdf.add_font(
+    family="Nabla-Grey",
+    fname="Nabla-Regular-COLRv1.ttf",
+    palette=2  # Use palette 2
+)
+
+# Use the fonts with different palettes
+pdf.set_font("Nabla-Default", size=24)
+pdf.cell(text="Text with Palette 0", new_x="lmargin", new_y="next")
+
+pdf.set_font("Nabla-Blue", size=24)
+pdf.cell(text="Text with Palette 1", new_x="lmargin", new_y="next")
+
+pdf.set_font("Nabla-Grey", size=24)
+pdf.cell(text="Text with Palette 2", new_x="lmargin", new_y="next")
+
+pdf.output("color_font_palettes.pdf")
+```
+
+If you specify a palette index that is out of range, `fpdf2` will log a warning and fall back to palette 0.
+You can check the number of available palettes in your color font's documentation or by inspecting the font file.

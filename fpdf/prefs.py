@@ -2,8 +2,13 @@
 Usage documentation at: <https://py-pdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences>
 """
 
-from .enums import TextDirection, Duplex, PageBoundaries, PageMode
-from .syntax import build_obj_dict, create_dictionary_string, Name
+from typing import TYPE_CHECKING, Optional
+
+from .enums import Duplex, PageBoundaries, PageMode, TextDirection
+from .syntax import Name, build_obj_dict, create_dictionary_string
+
+if TYPE_CHECKING:
+    from .encryption import StandardSecurityHandler
 
 
 class ViewerPreferences:
@@ -11,24 +16,25 @@ class ViewerPreferences:
 
     def __init__(
         self,
-        hide_toolbar=False,
-        hide_menubar=False,
-        hide_window_u_i=False,
-        fit_window=False,
-        center_window=False,
-        display_doc_title=False,
-        non_full_screen_page_mode=PageMode.USE_NONE,
-        num_copies=None,
-        print_page_range=None,
-        direction=None,
-        duplex=None,
-        view_area=None,
-        view_clip=None,
-        print_area=None,
-        print_clip=None,
-        print_scaling=None,
-    ):
+        hide_toolbar: bool = False,
+        hide_menubar: bool = False,
+        hide_window_u_i: bool = False,
+        fit_window: bool = False,
+        center_window: bool = False,
+        display_doc_title: bool = False,
+        non_full_screen_page_mode: PageMode = PageMode.USE_NONE,
+        num_copies: Optional[int] = None,
+        print_page_range: Optional[list[int]] = None,
+        direction: Optional[TextDirection | str] = None,
+        duplex: Optional[Duplex | str] = None,
+        view_area: Optional[PageBoundaries | str] = None,
+        view_clip: Optional[PageBoundaries | str] = None,
+        print_area: Optional[PageBoundaries | str] = None,
+        print_clip: Optional[PageBoundaries | str] = None,
+        print_scaling: Optional[str] = None,
+    ) -> None:
         self._min_pdf_version = "1.3"
+
         self.hide_toolbar = hide_toolbar
         """
         (`bool`)
@@ -126,15 +132,15 @@ class ViewerPreferences:
         If this entry is not specified or has an unrecognised value, `AppDefault` shall be used.
         """
 
-    def _set_min_pdf_version(self, version):
+    def _set_min_pdf_version(self, version: str) -> None:
         self._min_pdf_version = max(self._min_pdf_version, version)
 
     @property
-    def non_full_screen_page_mode(self):
+    def non_full_screen_page_mode(self) -> Optional[PageMode]:
         return self._non_full_screen_page_mode
 
     @non_full_screen_page_mode.setter
-    def non_full_screen_page_mode(self, page_mode):
+    def non_full_screen_page_mode(self, page_mode: Optional[PageMode | str]) -> None:
         self._non_full_screen_page_mode = (
             None if page_mode is None else PageMode.coerce(page_mode)
         )
@@ -147,59 +153,59 @@ class ViewerPreferences:
             )
 
     @property
-    def num_copies(self):
+    def num_copies(self) -> Optional[int]:
         return self._num_copies
 
     @num_copies.setter
-    def num_copies(self, num_copies):
+    def num_copies(self, num_copies: Optional[int]) -> None:
         if num_copies is not None:
             self._set_min_pdf_version("1.7")
         self._num_copies = num_copies
 
     @property
-    def print_page_range(self):
+    def print_page_range(self) -> Optional[list[int]]:
         return self._print_page_range
 
     @print_page_range.setter
-    def print_page_range(self, print_page_range):
+    def print_page_range(self, print_page_range: Optional[list[int]]) -> None:
         if print_page_range is not None:
             self._set_min_pdf_version("1.7")
         self._print_page_range = print_page_range
 
     @property
-    def direction(self):
+    def direction(self) -> Optional[TextDirection]:
         return self._direction
 
     @direction.setter
-    def direction(self, direction):
+    def direction(self, direction: Optional[TextDirection | str]) -> None:
         self._direction = None if direction is None else TextDirection.coerce(direction)
 
     @property
-    def display_doc_title(self):
+    def display_doc_title(self) -> bool:
         return self._display_doc_title
 
     @display_doc_title.setter
-    def display_doc_title(self, display_doc_title):
+    def display_doc_title(self, display_doc_title: bool) -> None:
         if display_doc_title:
             self._set_min_pdf_version("1.4")
         self._display_doc_title = display_doc_title
 
     @property
-    def duplex(self):
+    def duplex(self) -> Optional[Duplex]:
         return self._duplex
 
     @duplex.setter
-    def duplex(self, duplex):
+    def duplex(self, duplex: Optional[Duplex | str]) -> None:
         if duplex is not None:
             self._set_min_pdf_version("1.7")
         self._duplex = None if duplex is None else Duplex.coerce(duplex)
 
     @property
-    def view_area(self):
+    def view_area(self) -> Optional[PageBoundaries]:
         return self._view_area
 
     @view_area.setter
-    def view_area(self, view_area):
+    def view_area(self, view_area: Optional[PageBoundaries | str]) -> None:
         if view_area is not None:
             self._set_min_pdf_version("1.4")
         self._view_area = (
@@ -207,11 +213,11 @@ class ViewerPreferences:
         )
 
     @property
-    def view_clip(self):
+    def view_clip(self) -> Optional[PageBoundaries]:
         return self._view_clip
 
     @view_clip.setter
-    def view_clip(self, view_clip):
+    def view_clip(self, view_clip: Optional[PageBoundaries | str]) -> None:
         if view_clip is not None:
             self._set_min_pdf_version("1.4")
         self._view_clip = (
@@ -219,11 +225,11 @@ class ViewerPreferences:
         )
 
     @property
-    def print_area(self):
+    def print_area(self) -> Optional[PageBoundaries]:
         return self._print_area
 
     @print_area.setter
-    def print_area(self, print_area):
+    def print_area(self, print_area: Optional[PageBoundaries | str]) -> None:
         if print_area is not None:
             self._set_min_pdf_version("1.4")
         self._print_area = (
@@ -231,11 +237,11 @@ class ViewerPreferences:
         )
 
     @property
-    def print_clip(self):
+    def print_clip(self) -> Optional[PageBoundaries]:
         return self._print_clip
 
     @print_clip.setter
-    def print_clip(self, print_clip):
+    def print_clip(self, print_clip: Optional[PageBoundaries | str]) -> None:
         if print_clip is not None:
             self._set_min_pdf_version("1.4")
         self._print_clip = (
@@ -243,11 +249,11 @@ class ViewerPreferences:
         )
 
     @property
-    def print_scaling(self):
+    def print_scaling(self) -> Optional[Name]:
         return self._print_scaling
 
     @print_scaling.setter
-    def print_scaling(self, print_scaling):
+    def print_scaling(self, print_scaling: Optional[str]) -> None:
         if print_scaling is None:
             self._print_scaling = None
             return
@@ -256,7 +262,11 @@ class ViewerPreferences:
             raise ValueError(f"Invalid {print_scaling=} value provided")
         self._print_scaling = Name(print_scaling)
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,

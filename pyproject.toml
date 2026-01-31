@@ -1,0 +1,164 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "fonttools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fpdf2"
+dynamic = ["version"]
+description = "Simple & fast PDF generation for Python"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LGPL-3.0-only"
+license-files = ["LICENSE"]
+
+authors = [
+  { name = "Olivier PLATHEY" },
+  { name = "Max" },
+  { name = "Lucas Cimon (@Lucas-C)" },
+  { name = "Georg Mischler (@gmischler)" },
+  { name = "Anderson Herzogenrath da Costa (@andersonhc)" }
+]
+
+keywords = ["pdf", "unicode", "png", "jpg", "ttf", "barcode", "library", "markdown"]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Operating System :: OS Independent",
+  "Topic :: Printing",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Processing :: Markup",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Graphics :: Presentation"
+]
+
+dependencies = [
+  "defusedxml",
+  "Pillow>=8.3.2,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
+                            # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
+                            # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
+  "fonttools>=4.34.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "bandit",
+  "black",
+  "mypy",
+  "pre-commit",
+  "pyright",
+  "pylint",
+  "semgrep",
+  "zizmor",
+]
+docs = [
+  "lxml", 
+  "mkdocs", 
+  "mkdocs-git-revision-date-localized-plugin", 
+  "mkdocs-include-markdown-plugin", 
+  "mkdocs-macros-plugin", 
+  "mkdocs-material", 
+  "mkdocs-minify-plugin", 
+  "mkdocs-redirects", 
+  "mkdocs-with-pdf", 
+  "mknotebooks",
+  "pdoc3",
+]
+test = [
+  "brotli",
+  "camelot-py[base]",
+  "endesive[full]",
+  "pytest",
+  "pytest-cov",
+  "qrcode",
+  "tabula-py",
+  "uharfbuzz"
+]
+
+[project.urls]
+Homepage = "https://py-pdf.github.io/fpdf2/"
+Documentation = "https://py-pdf.github.io/fpdf2/"
+Code = "https://github.com/py-pdf/fpdf2"
+"Issue tracker" = "https://github.com/py-pdf/fpdf2/issues"
+
+[tool.setuptools]
+packages = ["fpdf", "fpdf.data", "fpdf.data.color_profiles"]
+
+[tool.setuptools.package-data]
+fpdf = [
+  "data/color_profiles/*.icc",
+  "data/color_profiles/*.LICENSE",
+  "py.typed"
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "fpdf.FPDF_VERSION" }
+
+[project.entry-points."mkdocs.plugins"]
+check_toc = "docs.plugins.check_toc:CheckTocPlugin"
+
+[tool.pytest.ini_options]
+addopts = "--cov=fpdf --cov-report=xml"
+log_cli = true
+log_cli_level = "WARN"
+
+[tool.flake8]
+ignore = ["E203", "E221", "E241", "E251", "E701", "E731", "W503"]
+
+[tool.black]
+line-length = 88
+skip-string-normalization = false
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+combine_as_imports = true
+include_trailing_comma = true
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+
+files = ["fpdf"]
+
+# Optional dependencies to ignore
+[[tool.mypy.overrides]]
+module = "defusedxml.ElementTree"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "endesive"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fontTools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "uharfbuzz"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pymemtrace.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pympler.*"
+ignore_missing_imports = true
+
+[tool.pyright]
+include = ["fpdf"]
+typeCheckingMode = "strict"
+pythonVersion = "3.14"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnnecessaryIsInstance = false
+reportUnnecessaryComparison = false

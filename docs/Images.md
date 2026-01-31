@@ -55,11 +55,75 @@ pdf.output("side-by-side.pdf")
 When you want to scale an image to fill a rectangle, while keeping its aspect ratio,
 and ensuring it does **not** overflow the rectangle width nor height in the process,
 you can set `w` / `h` and also provide `keep_aspect_ratio=True` to the [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
+This will place the image at the centre of the bounding box.
 
 The following unit tests illustrate that:
 
 * [test_image_fit.py](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_fit.py)
 * resulting document: [image_fit_in_rect.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)
+
+#### Image alignment in the bounding box ####
+
+To anchor the image to a specific corner, you can use this function:
+
+```python
+from typing import Literal, TypedDict
+from fpdf import FPDF
+from fpdf.image_parsing import preload_image
+
+class FpdfBoundingBox(TypedDict):
+    x: float
+    y: float
+    w: float
+    h: float
+
+def scale_and_position_image(
+    pdf: FPDF,
+    image_path: str,
+    bounding_box: FpdfBoundingBox,
+    anchor: Literal["TL", "TR", "BL", "BR", "C"],
+) -> None:
+    if anchor == "C":
+        pdf.image(
+            str(image_path),
+            x=bounding_box["x"],
+            y=bounding_box["y"],
+            w=bounding_box["w"],
+            h=bounding_box["h"],
+            keep_aspect_ratio=True,
+        )
+        return
+
+    info = preload_image(pdf.image_cache, str(image_path))[2]
+    _, _, scaled_w, scaled_h = info.scale_inside_box(**bounding_box)
+
+    # default to top left
+    x, y = bounding_box["x"], bounding_box["y"]
+    if "B" in anchor:
+        y = bounding_box["y"] + bounding_box["h"] - scaled_h
+    if "R" in anchor:
+        x = bounding_box["x"] + bounding_box["w"] - scaled_w
+
+    pdf.image(
+        str(image_path),
+        x=x,
+        y=y,
+        w=scaled_w,
+        h=scaled_h,
+        keep_aspect_ratio=True,
+    )
+
+# Usage example:
+pdf = FPDF()
+pdf.add_page()
+bounding_box = FpdfBoundingBox(x=pdf.w-pdf.r_margin-100, y=pdf.t_margin, w=100, h=50)
+# Render the bounding box:
+pdf.set_draw_color(255, 0, 0)
+pdf.rect(**bounding_box, style="D")
+# Insert image:
+scale_and_position_image(pdf, "./test/image/png_indexed/flower1.png", bounding_box, "BR")
+pdf.output("image_in_bounding_box_example.pdf")
+```
 
 ### Blending images ###
 
