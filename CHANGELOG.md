@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 * mypy and pyright checks in the CI pipeline to enforce strict typing
 * support WOFF and WOFF2 fonts - thanks to @BharathPESU
+* Unicode font detection and enhanced error handling via `UnicodeFontManager` class for automatic font recommendations when working with non-Latin scripts (Cyrillic, Arabic, Chinese, etc.), providing helpful suggestions in encoding error messages - _cf._ [PR #1563](https://github.com/py-pdf/fpdf2/pull/1563) - thanks to @otrepid4github
 ### Fixed
 * the `A5` value that could be specified as page `format` to the `FPDF` constructor was slightly incorrect, and the corresponding page dimensions have been fixed. This could lead to a minor change in your documents dimensions if you used this `A5` page format. - _cf._ [issue #1699](https://github.com/py-pdf/fpdf2/issues/1699)
 * a bug when rendering empty tables with `INTERNAL` layout, that caused an extra border to be rendered due to an erroneous use of `list.index()` - _cf._ [issue #1669](https://github.com/py-pdf/fpdf2/issues/1669)

@@ -35,7 +35,9 @@ class FPDFPageFormatException(FPDFException):
 class FPDFUnicodeEncodingException(FPDFException):
     """Error is thrown when a character that cannot be encoded by the chosen encoder is provided"""
 
-    def __init__(self, text_index: int, character: str, font_name: str, suggestion: str = None) -> None:
+    def __init__(
+        self, text_index: int, character: str, font_name: str, suggestion: str = None
+    ) -> None:
         super().__init__()
         self.text_index = text_index
         self.character = character
