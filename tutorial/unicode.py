@@ -2,6 +2,9 @@
 
 from fpdf import FPDF
 
+# Note: For automatic Unicode font detection and recommendations,
+# see the new tutorial: unicode_font_detection.py
+
 pdf = FPDF()
 pdf.add_page()
 

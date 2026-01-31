@@ -123,6 +123,7 @@ from .errors import (
     FPDFUnicodeEncodingException,
     PDFAComplianceError,
 )
+from .unicode_font_utils import suggest_unicode_font_for_error
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin, StateStackType
 from .html import HTML2FPDF
@@ -5639,10 +5640,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             try:
                 return text.encode(self.core_fonts_encoding).decode("latin-1")
             except UnicodeEncodeError as error:
+                font_name = self.font_family + self.font_style
+                suggestion = suggest_unicode_font_for_error(text, font_name)
                 raise FPDFUnicodeEncodingException(
                     text_index=error.start,
                     character=text[error.start],
-                    font_name=self.font_family + self.font_style,
+                    font_name=font_name,
+                    suggestion=suggestion,
                 ) from error
         return text
 
