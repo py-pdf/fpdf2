@@ -53,7 +53,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L250-L258" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L249-L257" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def extract_alpha_stops(
     stops01: list[tuple[float, Color]],
@@ -74,7 +74,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L32-L33" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L30-L31" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def lerp(a: float, b: float, t: float) -&gt; float:
     return a + (b - a) * t</code></pre>
@@ -88,7 +88,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L36-L41" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L34-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def lerp_tuple(
     a: tuple[float, ...], b: tuple[float, ...], t: float
@@ -106,23 +106,23 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L197-L224" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L196-L223" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def merge_near_duplicates(
     pairs: Sequence[tuple[float, Union[Color, str]]],
 ) -&gt; Sequence[tuple[float, Union[Color, str]]]:
     out: list[tuple[float, Union[Color, str]]] = []
     for u, col in pairs:
-        if out and abs(out[-1][0] - u) &lt;= TOLERANCE:
+        if out and FloatTolerance.equal(out[-1][0], u):
             prev_u, prev_col = out[-1]
             if prev_col == col:
                 # identical color: keep the newest sample
                 out[-1] = (u, col)
                 continue
 
-            step = max(TOLERANCE * 10, 1e-6)
+            step = max(FloatTolerance.TOLERANCE * 10, 1e-6)
             nudged_prev = prev_u - step
-            if nudged_prev &gt;= -TOLERANCE:
+            if FloatTolerance.greater_equal(nudged_prev, 0.0):
                 out[-1] = (nudged_prev, prev_col)
                 out.append((u, col))
             else:
@@ -146,7 +146,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L61-L194" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L59-L193" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def normalize_stops(
     stops: Sequence[tuple[float, Union[Color, str]]],
@@ -179,7 +179,7 @@ el.replaceWith(d);
 
     merged_raw: list[tuple[float, Color]] = []
     for raw_u, color in raw_entries:
-        if merged_raw and abs(merged_raw[-1][0] - raw_u) &lt;= TOLERANCE:
+        if merged_raw and FloatTolerance.equal(merged_raw[-1][0], raw_u):
             merged_raw[-1] = (raw_u, color)
         else:
             merged_raw.append((raw_u, color))
@@ -207,19 +207,20 @@ el.replaceWith(d);
     def _ensure_stop(target: float) -&gt; None:
         if not merged_raw:
             return
-        if (
-            target &lt; merged_raw[0][0] - TOLERANCE
-            or target &gt; merged_raw[-1][0] + TOLERANCE
-        ):
+        if FloatTolerance.less_than(
+            target, merged_raw[0][0]
+        ) or FloatTolerance.greater_than(target, merged_raw[-1][0]):
             return
         for u, _ in merged_raw:
-            if abs(u - target) &lt;= TOLERANCE:
+            if FloatTolerance.equal(u, target):
                 return
         for idx in range(1, len(merged_raw)):
             u0, c0 = merged_raw[idx - 1]
             u1, c1 = merged_raw[idx]
-            if u0 - TOLERANCE &lt;= target &lt;= u1 + TOLERANCE:
-                span = max(u1 - u0, TOLERANCE)
+            if FloatTolerance.greater_equal(target, u0) and FloatTolerance.less_equal(
+                target, u1
+            ):
+                span = max(u1 - u0, FloatTolerance.TOLERANCE)
                 t = (target - u0) / span
                 merged_raw.insert(idx, (target, _lerp_color(c0, c1, t)))
                 return
@@ -241,7 +242,7 @@ el.replaceWith(d);
 
     merged_clamped: list[tuple[float, Color]] = []
     for u, color in clamped_entries:
-        if merged_clamped and abs(merged_clamped[-1][0] - u) &lt;= TOLERANCE:
+        if merged_clamped and FloatTolerance.equal(merged_clamped[-1][0], u):
             merged_clamped[-1] = (u, color)
         else:
             merged_clamped.append((u, color))
@@ -250,11 +251,11 @@ el.replaceWith(d);
         u, color = merged_clamped[0]
         merged_clamped = [(0.0, color), (1.0, color)]
     else:
-        if abs(merged_clamped[0][0] - 0.0) &gt; TOLERANCE:
+        if not FloatTolerance.is_zero(merged_clamped[0][0]):
             merged_clamped.insert(0, (0.0, merged_clamped[0][1]))
         else:
             merged_clamped[0] = (0.0, merged_clamped[0][1])
-        if abs(merged_clamped[-1][0] - 1.0) &gt; TOLERANCE:
+        if not FloatTolerance.equal(merged_clamped[-1][0], 1.0):
             merged_clamped.append((1.0, merged_clamped[-1][1]))
         else:
             merged_clamped[-1] = (1.0, merged_clamped[-1][1])
@@ -296,7 +297,7 @@ implicit 0/1 endpoints are synthesized.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L44-L58" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L42-L56" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def pick_colorspace_and_promote(colors: list[Color]) -&gt; tuple[str, list[Color]]:
     kinds = {type(c).__name__ for c in colors}
@@ -323,15 +324,15 @@ implicit 0/1 endpoints are synthesized.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L238-L247" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L237-L246" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def sample_stops(stops01: list[tuple[float, Color]], u: float) -&gt; tuple[float, ...]:
     &#34;&#34;&#34;Piecewise-linear sampling in [0,1]. Assumes normalized/sorted stops incl. endpoints.&#34;&#34;&#34;
     for i in range(1, len(stops01)):
         u1, c1 = stops01[i]
-        if u &lt;= u1 + TOLERANCE:
+        if FloatTolerance.less_equal(u, u1):
             u0, c0 = stops01[i - 1]
-            span = max(u1 - u0, TOLERANCE)
+            span = max(u1 - u0, FloatTolerance.TOLERANCE)
             t = (u - u0) / span
             return lerp_tuple(c0.colors, c1.colors, t)
     return stops01[-1][1].colors</code></pre>
@@ -345,7 +346,7 @@ implicit 0/1 endpoints are synthesized.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L1244-L1370" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L1251-L1379" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def shape_linear_gradient(
     x1: float,
@@ -394,14 +395,14 @@ implicit 0/1 endpoints are synthesized.</p></div>
     assert tile_stops is not None  # pleasing mypy
     base_start = tile_stops[0][0]
     base_end = tile_stops[-1][0]
-    base_span = max(base_end - base_start, TOLERANCE)
-    if base_span &lt;= TOLERANCE:
+    base_span = max(base_end - base_start, FloatTolerance.TOLERANCE)
+    if FloatTolerance.less_equal(base_span, 0.0):
         base_start = 0.0
         base_span = 1.0
         tile_stops = normalized_stops
 
     tmin, tmax, L = bbox.project_interval_on_axis(x1, y1, x2, y2)
-    if L &lt;= TOLERANCE:
+    if FloatTolerance.less_equal(L, 0.0):
         # Degenerate axis: synthesize flat
         c0, c1 = normalized_stops[0][1], normalized_stops[-1][1]
         return LinearGradient(
@@ -439,13 +440,15 @@ implicit 0/1 endpoints are synthesized.</p></div>
     a = tmin_norm - margin
     b = tmax_norm + margin
     clipped = [
-        (s, c) for (s, c) in expanded if a - TOLERANCE &lt;= s &lt;= b + TOLERANCE
+        (s, c)
+        for (s, c) in expanded
+        if FloatTolerance.greater_equal(s, a) and FloatTolerance.less_equal(s, b)
     ] or expanded
 
     # Renormalize to [0..1] over synthetic span
     s0 = clipped[0][0]
     sN = clipped[-1][0]
-    span = max(sN - s0, TOLERANCE)
+    span = max(sN - s0, FloatTolerance.TOLERANCE)
     renorm = [((s - s0) / span, c) for (s, c) in clipped]
 
     # Shift/scale the coords so u=0..1 aligns to absolute positions s0..sN
@@ -485,7 +488,7 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L1373-L1536" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L1382-L1547" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def shape_radial_gradient(
     cx: float,
@@ -552,14 +555,14 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
     assert tile_stops is not None  # pleasing mypy
     base_start = tile_stops[0][0]
     base_end = tile_stops[-1][0]
-    base_span = max(base_end - base_start, TOLERANCE)
-    if base_span &lt;= TOLERANCE:
+    base_span = max(base_end - base_start, FloatTolerance.TOLERANCE)
+    if FloatTolerance.less_equal(base_span, 0.0):
         base_start = 0.0
         base_span = 1.0
         tile_stops = normalized_stops
 
     # Degenerate gradients with no radial growth can&#39;t be meaningfully repeated
-    if abs(r - fr) &lt;= TOLERANCE:
+    if FloatTolerance.equal(r, fr):
         colors = [color for _, color in normalized_stops]
         bounds = [offset for offset, _ in normalized_stops[1:-1]]
         gradient = RadialGradient(
@@ -593,7 +596,9 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
         for _ in range(max_tiles):
             lam = sigma_to_lambda(target_sigma)
             cx_lam, cy_lam, r_lam = circle_at(lam)
-            if bbox.max_distance_to_point(cx_lam, cy_lam) &lt;= r_lam + 1e-6:
+            if FloatTolerance.less_equal(
+                bbox.max_distance_to_point(cx_lam, cy_lam), r_lam
+            ):
                 break
             target_sigma += base_span
         else:
@@ -623,7 +628,7 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
 
     s0 = expanded[0][0]
     sN = expanded[-1][0]
-    span = max(sN - s0, TOLERANCE)
+    span = max(sN - s0, FloatTolerance.TOLERANCE)
     renorm = [((s - s0) / span, c) for (s, c) in expanded]
 
     lam0 = sigma_to_lambda(s0)
@@ -664,7 +669,7 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L961-L1241" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L960-L1248" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def shape_sweep_gradient_as_mesh(
     cx: float,
@@ -696,7 +701,7 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
 
     tau = 2.0 * math.pi
     delta = end_angle - start_angle
-    if abs(delta) &lt;= TOLERANCE:
+    if FloatTolerance.is_zero(delta):
         delta = tau
 
     if delta &lt; 0.0:
@@ -705,7 +710,7 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
         norm_stops.sort(key=lambda t: t[0])
         delta = -delta
 
-    span = delta if delta &gt; TOLERANCE else tau
+    span = delta if FloatTolerance.greater_than(delta, 0.0) else tau
     cover_span = max(span, tau)
 
     if segments is None:
@@ -716,7 +721,10 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
     max_angle = max(min(max_angle, math.pi / 2.0), math.pi / 360.0)
 
     r_outer = bbox.max_distance_to_point(cx, cy)
-    r_inner = max(min(bbox.width, bbox.height) * float(inner_radius_factor), TOLERANCE)
+    r_inner = max(
+        min(bbox.width, bbox.height) * float(inner_radius_factor),
+        FloatTolerance.TOLERANCE,
+    )
 
     start_mod = math.fmod(start_angle, tau)
     if start_mod &lt; 0.0:
@@ -724,16 +732,16 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
     end_mod = math.fmod(start_mod + span, tau)
     if end_mod &lt; 0.0:
         end_mod += tau
-    wraps = span &lt; tau - TOLERANCE and end_mod &lt; start_mod
-    span_covers_full_circle = span &gt;= tau - TOLERANCE
+    wraps = FloatTolerance.less_than(span, tau) and end_mod &lt; start_mod
+    span_covers_full_circle = FloatTolerance.greater_equal(span, tau)
     seam_progress = (tau - start_mod) % tau
-    if seam_progress &lt;= TOLERANCE:
+    if FloatTolerance.less_equal(seam_progress, 0.0):
         seam_progress = cover_span
 
     progress_candidates: list[float] = [0.0]
     tile_count = int(math.floor(cover_span / span))
     remainder = cover_span - tile_count * span
-    if remainder &lt; TOLERANCE:
+    if FloatTolerance.less_equal(remainder, 0.0):
         remainder = 0.0
 
     for tile in range(tile_count):
@@ -745,7 +753,7 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
         portion = remainder / span
         base_progress = tile_count * span
         for u, _ in norm_stops:
-            if u &gt; portion + TOLERANCE:
+            if FloatTolerance.greater_than(u, portion):
                 break
             progress_candidates.append(base_progress + u * span)
         progress_candidates.append(cover_span)
@@ -754,24 +762,27 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
 
     if spread_method == GradientSpreadMethod.PAD and not span_covers_full_circle:
         tail_length = max(cover_span - span, 0.0)
-        if TOLERANCE &lt; seam_progress &lt; cover_span + TOLERANCE:
+        if FloatTolerance.greater_than(
+            seam_progress, 0.0
+        ) and FloatTolerance.less_equal(seam_progress, cover_span):
             progress_candidates.append(seam_progress)
         if (
-            tail_length &gt; TOLERANCE
-            and cover_span - TOLERANCE &gt; seam_progress &gt; span + TOLERANCE
+            FloatTolerance.greater_than(tail_length, 0.0)
+            and FloatTolerance.less_than(seam_progress, cover_span)
+            and FloatTolerance.greater_than(seam_progress, span)
         ):
             seam_eps = min(
-                max(span * 0.01, TOLERANCE),
-                seam_progress - span - TOLERANCE,
-                cover_span - seam_progress - TOLERANCE,
+                max(span * 0.01, FloatTolerance.TOLERANCE),
+                seam_progress - span - FloatTolerance.TOLERANCE,
+                cover_span - seam_progress - FloatTolerance.TOLERANCE,
             )
-            if seam_eps &gt; TOLERANCE:
+            if FloatTolerance.greater_than(seam_eps, 0.0):
                 progress_candidates.append(seam_progress - seam_eps)
 
     progress_candidates.sort()
     progress_nodes: list[float] = []
     for progress in progress_candidates:
-        if progress_nodes and abs(progress - progress_nodes[-1]) &lt;= TOLERANCE:
+        if progress_nodes and FloatTolerance.equal(progress, progress_nodes[-1]):
             progress_nodes[-1] = progress
         else:
             progress_nodes.append(progress)
@@ -782,43 +793,45 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
         progress_nodes.append(progress_nodes[0] + cover_span)
 
     span_plus = start_mod + span
-    crosses_360 = span_plus &gt; tau + TOLERANCE
+    crosses_360 = FloatTolerance.greater_than(span_plus, tau)
     limit_theta = start_angle + seam_progress
 
     # pylint: disable=too-many-return-statements
     def raw_from_progress(progress: float) -&gt; float:
-        if span &lt;= TOLERANCE:
+        if FloatTolerance.less_equal(span, 0.0):
             return 0.0
 
         theta = start_angle + progress
 
-        if progress &gt;= cover_span - TOLERANCE:
+        if FloatTolerance.greater_equal(progress, cover_span):
             if (
                 spread_method == GradientSpreadMethod.PAD
                 and not span_covers_full_circle
-                and cover_span &gt; span + TOLERANCE
+                and FloatTolerance.greater_than(cover_span, span)
             ):
                 return 0.0
             return 1.0
 
         if spread_method == GradientSpreadMethod.PAD:
             if span_covers_full_circle:
-                return progress / span if span &gt; TOLERANCE else 0.0
+                return (
+                    progress / span if FloatTolerance.greater_than(span, 0.0) else 0.0
+                )
 
             if not crosses_360:
                 angle_mod = math.fmod(theta, tau)
                 if angle_mod &lt; 0.0:
                     angle_mod += tau
                 end_limit = start_mod + span
-                if angle_mod &lt; start_mod - TOLERANCE:
+                if FloatTolerance.less_than(angle_mod, start_mod):
                     return 0.0
-                if angle_mod &lt;= end_limit + TOLERANCE:
+                if FloatTolerance.less_equal(angle_mod, end_limit):
                     return (angle_mod - start_mod) / span
                 return 0.0
 
             # crosses 360°: only sample up to the seam (start -&gt; 360°)
-            visible = max(seam_progress, TOLERANCE)
-            if progress &lt;= visible + TOLERANCE:
+            visible = max(seam_progress, FloatTolerance.TOLERANCE)
+            if FloatTolerance.less_equal(progress, visible):
                 return progress / visible
             return 0.0
 
@@ -827,9 +840,9 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
     fan_line_raw: list[tuple[float, float, tuple[float, ...]]] = []
     for progress in progress_nodes:
         if (
-            progress &gt;= cover_span - TOLERANCE
+            FloatTolerance.greater_equal(progress, cover_span)
             and not span_covers_full_circle
-            and cover_span &gt; span + TOLERANCE
+            and FloatTolerance.greater_than(cover_span, span)
             and spread_method != GradientSpreadMethod.PAD
         ):
             continue
@@ -855,11 +868,11 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
         inserted = False
         for theta, raw, color in fan_line_raw:
             fan_line.append((theta, color))
-            if not inserted and abs(theta - limit_theta) &lt;= TOLERANCE:
-                fan_line.append((theta + TOLERANCE, pad_color))
+            if not inserted and FloatTolerance.equal(theta, limit_theta):
+                fan_line.append((theta + FloatTolerance.TOLERANCE, pad_color))
                 inserted = True
         if not inserted:
-            fan_line.append((limit_theta + TOLERANCE, pad_color))
+            fan_line.append((limit_theta + FloatTolerance.TOLERANCE, pad_color))
     else:
         fan_line = [(theta, color) for (theta, _, color) in fan_line_raw]
 
@@ -871,13 +884,13 @@ REPEAT/REFLECT are implemented by expanding stops to cover the bbox projection.<
             theta0, color0 = fan_line[idx]
             theta1, color1 = fan_line[idx + 1]
             delta_theta = theta1 - theta0
-            if delta_theta &lt;= TOLERANCE:
+            if FloatTolerance.less_equal(delta_theta, 0.0):
                 if samples:
                     samples[-1] = (theta1, color1)
                 else:
                     samples.append((theta1, color1))
                 continue
-            if wraps and theta0 &gt; limit_theta + TOLERANCE:
+            if wraps and FloatTolerance.greater_than(theta0, limit_theta):
                 color0 = start_color_components
                 color1 = start_color_components
             splits = max(1, int(math.ceil(delta_theta / max_angle)))
@@ -959,7 +972,7 @@ Angles are expected in radians.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L227-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L226-L234" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def spread_map(u: float, method: GradientSpreadMethod) -&gt; float:
     &#34;&#34;&#34;Map u∈R -&gt; [0,1] via PAD/REPEAT/REFLECT.&#34;&#34;&#34;
@@ -986,7 +999,7 @@ Angles are expected in radians.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L404-L600" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L403-L599" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Gradient(ABC):
     def __init__(
@@ -1144,7 +1157,7 @@ Angles are expected in radians.</p></div>
 
     def has_alpha(self) -&gt; bool:
         &#34;&#34;&#34;True if any stop carries alpha != 1.0.&#34;&#34;&#34;
-        return any(abs(a - 1.0) &gt; TOLERANCE for a in self._alphas)
+        return any(not FloatTolerance.equal(a, 1.0) for a in self._alphas)
 
     def _generate_alpha_functions(
         self,
@@ -1206,7 +1219,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L576-L600" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L575-L599" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_alpha_shading_object(
     self, _: Optional[&#34;BoundingBox&#34;] = None
@@ -1243,7 +1256,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L525-L526" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L524-L525" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_functions(self) -&gt; list[Type2Function | Type2FunctionGray | Type3Function]:
     return self.functions</code></pre>
@@ -1257,7 +1270,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L555-L556" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L554-L555" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_pattern(self) -&gt; Pattern:
     return self.pattern</code></pre>
@@ -1271,7 +1284,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L528-L553" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L527-L552" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_shading_object(self) -&gt; &#34;Shading&#34;:
     if not self._shading_object:
@@ -1309,11 +1322,11 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L558-L560" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L557-L559" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def has_alpha(self) -&gt; bool:
     &#34;&#34;&#34;True if any stop carries alpha != 1.0.&#34;&#34;&#34;
-    return any(abs(a - 1.0) &gt; TOLERANCE for a in self._alphas)</code></pre>
+    return any(not FloatTolerance.equal(a, 1.0) for a in self._alphas)</code></pre>
 </details>
 <div class="desc"><p>True if any stop carries alpha != 1.0.</p></div>
 </dd>
@@ -1327,7 +1340,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L603-L657" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L602-L656" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LinearGradient(Gradient):
     def __init__(
@@ -1463,7 +1476,7 @@ Defaults to None, which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L723-L815" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L722-L814" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class MeshShading(PDFContentStream):
     &#34;&#34;&#34;
@@ -1522,8 +1535,8 @@ Defaults to None, which evenly distributes color stops.</dd>
         xmin, xmax = self._bbox.x0, self._bbox.x1
         ymin, ymax = self._bbox.y0, self._bbox.y1
         maxc = (1 &lt;&lt; self.bits_per_coordinate) - 1
-        sx = maxc / max(xmax - xmin, TOLERANCE)
-        sy = maxc / max(ymax - ymin, TOLERANCE)
+        sx = maxc / max(xmax - xmin, FloatTolerance.TOLERANCE)
+        sy = maxc / max(ymax - ymin, FloatTolerance.TOLERANCE)
         max_comp = (1 &lt;&lt; self.bits_per_component) - 1
 
         def q16(u: float, umin: float, scale: float) -&gt; int:
@@ -1593,7 +1606,7 @@ Defaults to None, which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L773-L774" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L772-L773" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_shading_object(self) -&gt; &#34;MeshShading&#34;:
     return self</code></pre>
@@ -1620,7 +1633,7 @@ Defaults to None, which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L261-L304" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L260-L303" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Pattern(PDFObject):
     &#34;&#34;&#34;
@@ -1682,7 +1695,7 @@ are not yet implemented.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L285-L291" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L284-L290" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def matrix(self) -&gt; str:
@@ -1699,7 +1712,7 @@ def matrix(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L281-L283" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L280-L282" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def shading(self) -&gt; str:
@@ -1727,7 +1740,7 @@ def shading(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L303-L304" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L302-L303" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_apply_page_ctm(self) -&gt; bool:
     return self._apply_page_ctm</code></pre>
@@ -1741,7 +1754,7 @@ def shading(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L297-L298" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L296-L297" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_matrix(self) -&gt; Transform:
     return self._matrix</code></pre>
@@ -1765,7 +1778,7 @@ def shading(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L300-L301" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L299-L300" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_apply_page_ctm(self, apply: bool) -&gt; None:
     self._apply_page_ctm = apply</code></pre>
@@ -1779,7 +1792,7 @@ def shading(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L293-L295" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L292-L294" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_matrix(self, matrix: Transform) -&gt; &#34;Pattern&#34;:
     self._matrix = matrix
@@ -1797,7 +1810,7 @@ def shading(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L660-L720" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L659-L719" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RadialGradient(Gradient):
     def __init__(
@@ -1943,7 +1956,7 @@ which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L364-L401" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L363-L400" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Shading(PDFObject):
     def __init__(
@@ -1996,7 +2009,7 @@ which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L388-L391" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L387-L390" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def function(self) -&gt; str:
@@ -2025,7 +2038,7 @@ def function(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L393-L397" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L392-L396" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_functions(
     self,
@@ -2042,7 +2055,7 @@ def function(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L399-L401" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L398-L400" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_shading_object(self) -&gt; &#34;Shading&#34;:
     &#34;&#34;&#34;Return self, as this is already a shading object.&#34;&#34;&#34;
@@ -2070,7 +2083,7 @@ def function(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -2137,7 +2150,7 @@ def function(self) -&gt; str:
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -2227,7 +2240,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -2294,7 +2307,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -2378,7 +2391,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -2445,7 +2458,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -2529,7 +2542,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -2596,7 +2609,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -2680,7 +2693,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -2747,7 +2760,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -2831,7 +2844,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -2898,7 +2911,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -2982,7 +2995,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -3049,7 +3062,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -3133,7 +3146,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -3200,7 +3213,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -3284,7 +3297,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L818-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L817-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SweepGradient(PDFObject):
     &#34;&#34;&#34;
@@ -3351,7 +3364,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
             a = getattr(dc, &#34;a&#34;, None)
-            if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -3450,7 +3463,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L917-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L916-L957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_alpha_shading_object(self, bbox: &#34;BoundingBox&#34;) -&gt; Optional[&#34;MeshShading&#34;]:
     if not self.has_alpha():
@@ -3504,7 +3517,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L887-L915" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L886-L914" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_shading_object(self, bbox: &#34;BoundingBox&#34;) -&gt; &#34;MeshShading&#34;:
     key = (
@@ -3545,14 +3558,14 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L878-L885" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L877-L884" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def has_alpha(self) -&gt; bool:
     # any stop carries alpha != 1
     for _, c in self.stops:
         dc = convert_to_device_color(c) if not hasattr(c, &#34;colors&#34;) else c
         a = getattr(dc, &#34;a&#34;, None)
-        if a is not None and abs(float(a) - 1.0) &gt; TOLERANCE:
+        if a is not None and not FloatTolerance.equal(float(a), 1.0):
             return True
     return False</code></pre>
 </details>
@@ -3578,7 +3591,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L307-L327" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L306-L326" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type2Function(PDFObject):
     &#34;&#34;&#34;Transition between 2 colors&#34;&#34;&#34;
@@ -3639,7 +3652,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L330-L339" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L329-L338" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type2FunctionGray(PDFObject):
     &#34;&#34;&#34;1‑channel exponential interpolation for alpha/luminance ramps.&#34;&#34;&#34;
@@ -3689,7 +3702,7 @@ Build is bbox-dependent, so we create the shading lazily at emit time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L342-L361" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L341-L360" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3Function(PDFObject):
     &#34;&#34;&#34;When multiple colors are used, a type 3 function is necessary to stitch type 2 functions together
@@ -3725,7 +3738,7 @@ and define the bounds between each color transition</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f0ffbf34d79d512d28109b5af0155fa05497f26b/fpdf/pattern.py#L359-L361" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b052d45c9bc04de3b1fec295c5a815d31cc83225/fpdf/pattern.py#L358-L360" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def functions(self) -&gt; str:
