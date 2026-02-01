@@ -1338,13 +1338,41 @@ class OutputProducer:
                 self._add_pdf_obj(composite_font_obj, "fonts")
                 font_objs_per_index[font.i] = composite_font_obj
 
-                # A CIDFont whose glyph descriptions are based on
-                # TrueType font technology
+                # A CIDFont whose glyph descriptions are based on TrueType or CFF technology
+                is_cff_cid = font.is_cff and font.is_cid_keyed
+                code_to_cid: Optional[dict[int, int]] = None
+                cid_widths: Optional[dict[int, int]] = None
+                if is_cff_cid:
+                    code_to_cid = {}
+                    cid_widths = {}
+                    for glyph, code_mapped in font.subset.items():
+                        if glyph is None:
+                            continue
+                        if (
+                            glyph.glyph_name.startswith("cid")
+                            and glyph.glyph_name[3:].isdigit()
+                        ):
+                            cid = int(glyph.glyph_name[3:])
+                        else:
+                            cid = glyph.glyph_id
+                        if cid > 0xFFFF:
+                            LOGGER.warning(
+                                "Glyph CID %s exceeds 0xFFFF and cannot be encoded in a 2-byte CID font: %s",
+                                cid,
+                                font.fontkey,
+                            )
+                            continue
+                        code_to_cid[code_mapped] = cid
+                        cid_widths[cid] = glyph.glyph_width
                 cid_font_obj = PDFFont(
-                    subtype="CIDFontType2",
+                    subtype="CIDFontType0" if is_cff_cid else "CIDFontType2",
                     base_font=fontname,
                     d_w=font.desc.missing_width,
-                    w=_tt_font_widths(font),
+                    w=(
+                        _cid_font_widths(cid_widths)
+                        if is_cff_cid and cid_widths
+                        else _tt_font_widths(font)
+                    ),
                 )
                 self._add_pdf_obj(cid_font_obj, "fonts")
                 composite_font_obj.descendant_fonts = PDFArray([cid_font_obj])
@@ -1401,7 +1429,56 @@ class OutputProducer:
                 self._add_pdf_obj(to_unicode_obj, "fonts")
                 composite_font_obj.to_unicode = to_unicode_obj
 
+                if is_cff_cid and code_to_cid:
+                    registry = "Adobe"
+                    ordering = "Identity"
+                    supplement = 0
+                    if font.cff_ros:
+                        registry, ordering, supplement = font.cff_ros
+                    cid_mapping = [
+                        f"<{code:04X}> {cid}\n"
+                        for code, cid in sorted(code_to_cid.items())
+                    ]
+                    encoding_cmap_obj = PDFContentStream(
+                        (
+                            "/CIDInit /ProcSet findresource begin\n"
+                            "12 dict begin\n"
+                            "begincmap\n"
+                            "/CIDSystemInfo\n"
+                            f"<</Registry ({registry})\n"
+                            f"/Ordering ({ordering})\n"
+                            f"/Supplement {supplement}\n"
+                            ">> def\n"
+                            f"/CMapName /{registry}-{ordering}-UCS def\n"
+                            "/CMapType 2 def\n"
+                            "1 begincodespacerange\n"
+                            "<0000> <FFFF>\n"
+                            "endcodespacerange\n"
+                            f"{len(cid_mapping)} begincidchar\n"
+                            f"{''.join(cid_mapping)}"
+                            "endcidchar\n"
+                            "endcmap\n"
+                            "CMapName currentdict /CMap defineresource pop\n"
+                            "end\n"
+                            "end"
+                        ).encode("latin-1")
+                    )
+                    encoding_cmap_obj.type = Name("CMap")  # type: ignore[attr-defined]
+                    encoding_cmap_obj.c_map_name = Name(  # type: ignore[attr-defined]
+                        f"{registry}-{ordering}-UCS"
+                    )
+                    encoding_cmap_obj.c_i_d_system_info = Raw(  # type: ignore[attr-defined]
+                        f"<< /Registry ({registry}) /Ordering ({ordering}) /Supplement {supplement} >>"
+                    )
+                    self._add_pdf_obj(encoding_cmap_obj, "fonts")
+                    composite_font_obj.encoding = encoding_cmap_obj  # type: ignore[assignment]
+
                 cid_system_info_obj = CIDSystemInfo()
+                if is_cff_cid and font.cff_ros:
+                    registry, ordering, supplement = font.cff_ros
+                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
+                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
+                    cid_system_info_obj.supplement = supplement
                 self._add_pdf_obj(cid_system_info_obj, "fonts")
                 cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
@@ -1410,24 +1487,30 @@ class OutputProducer:
                 self._add_pdf_obj(font_descriptor_obj, "fonts")
                 cid_font_obj.font_descriptor = font_descriptor_obj
 
-                # Embed CIDToGIDMap
-                # A specification of the mapping from CIDs to glyph indices
-                cid_to_gid_list = ["\x00"] * 256 * 256 * 2
-                for cc, glyph_i in code_to_glyph.items():
-                    cid_to_gid_list[cc * 2] = chr(glyph_i >> 8)
-                    cid_to_gid_list[cc * 2 + 1] = chr(glyph_i & 0xFF)
-                cid_to_gid_map = "".join(cid_to_gid_list)
+                if not is_cff_cid:
+                    # Embed CIDToGIDMap
+                    # A specification of the mapping from CIDs to glyph indices
+                    cid_to_gid_list = ["\x00"] * 256 * 256 * 2
+                    for cc, glyph_i in code_to_glyph.items():
+                        cid_to_gid_list[cc * 2] = chr(glyph_i >> 8)
+                        cid_to_gid_list[cc * 2 + 1] = chr(glyph_i & 0xFF)
+                    cid_to_gid_map = "".join(cid_to_gid_list)
 
-                # manage binary data as latin1 until PEP461-like function is implemented
-                cid_to_gid_map_obj = PDFContentStream(
-                    contents=cid_to_gid_map.encode("latin1"), compress=True
-                )
-                self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
-                cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
+                    # manage binary data as latin1 until PEP461-like function is implemented
+                    cid_to_gid_map_obj = PDFContentStream(
+                        contents=cid_to_gid_map.encode("latin1"), compress=True
+                    )
+                    self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
+                    cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
 
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
+                if is_cff_cid:
+                    font_file_cs_obj.subtype = Name("OpenType")  # type: ignore[attr-defined]
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
-                font_descriptor_obj.font_file2 = font_file_cs_obj  # type: ignore[attr-defined]
+                if is_cff_cid:
+                    font_descriptor_obj.font_file3 = font_file_cs_obj  # type: ignore[attr-defined]
+                else:
+                    font_descriptor_obj.font_file2 = font_file_cs_obj  # type: ignore[attr-defined]
 
                 font.subset.pick.cache_clear()
                 font.subset.get_glyph.cache_clear()
@@ -2095,6 +2178,69 @@ def _tt_font_widths(font: TTFFont) -> str:
             interval = False
         prevcid = cid_mapped
         prevwidth = glyph.glyph_width
+    prevk = -1
+    nextk = -1
+    prevint = False
+
+    ri = range_interval
+    for k, ws in sorted(range_.items()):
+        cws = len(ws)
+        if k == nextk and not prevint and (k not in ri or cws < 3):
+            if k in ri:
+                del ri[k]
+            range_[prevk] = range_[prevk] + range_[k]
+            del range_[k]
+        else:
+            prevk = k
+        nextk = k + cws
+        if k in ri:
+            prevint = cws > 3
+            del ri[k]
+            nextk -= 1
+        else:
+            prevint = False
+    w: list[str] = []
+    for k, ws in sorted(range_.items()):
+        if len(set(ws)) == 1:
+            w.append(f" {k} {k + len(ws) - 1} {ws[0]}")
+        else:
+            w.append(f" {k} [ {' '.join(str(int(h)) for h in ws)} ]\n")
+    return f"[{''.join(w)}]"
+
+
+def _cid_font_widths(cid_widths: dict[int, int]) -> str:
+    rangeid: int = 0
+    range_: dict[int, list[int]] = {}
+    range_interval: dict[int, bool] = {}
+    prevcid: int = -2
+    prevwidth: int = -1
+    interval: bool = False
+
+    for cid, width in sorted(cid_widths.items()):
+        if cid == (prevcid + 1):
+            if width == prevwidth:
+                if width == range_[rangeid][0]:
+                    range_.setdefault(rangeid, []).append(width)
+                else:
+                    range_[rangeid].pop()
+                    rangeid = prevcid
+                    range_[rangeid] = [prevwidth, width]
+                interval = True
+                range_interval[rangeid] = True
+            else:
+                if interval:
+                    rangeid = cid
+                    range_[rangeid] = [width]
+                else:
+                    range_[rangeid].append(width)
+                interval = False
+        else:
+            rangeid = cid
+            range_[rangeid] = [width]
+            interval = False
+        prevcid = cid
+        prevwidth = width
+
     prevk = -1
     nextk = -1
     prevint = False

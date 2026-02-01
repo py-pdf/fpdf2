@@ -22,6 +22,10 @@ To use a Unicode font in your program, use the [`add_font()`](https://py-pdf.git
 
 WOFF and WOFF2 are web-optimized, compressed containers for TrueType and OpenType fonts, designed to reduce download size for browsers. `fpdf2` supports these formats by decompressing them before embedding the resulting font data into the generated PDF.
 
+### Font collections (TTC/OTC) ###
+
+TrueType and OpenType collections bundle multiple font faces into a single file. When adding a collection with `add_font()`, you can choose which face to load using the `collection_font_number` argument. If not specified, it defaults to 0 (the first face in the collection).
+
 
 ### Built-in Fonts vs. Unicode Fonts ###
 

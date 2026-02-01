@@ -1,10 +1,11 @@
 from os import devnull
+import sys
 from pathlib import Path
 
 import pytest
 
 from fpdf import FPDF
-from fontTools.ttLib import woff2
+from fontTools.ttLib import TTCollection, woff2
 from test.conftest import LOREM_IPSUM, assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
@@ -235,3 +236,99 @@ def test_add_font_woff2_without_brotli(monkeypatch):
         match=r"^Could not open WOFF2 font\. WOFF2 support requires an external Brotli",
     ):
         pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")
+
+
+def test_add_font_collection_all_faces(tmp_path):
+    """
+    This test will render all faces in the NotoSansCJK font collection.
+    This font has multiple faces for the same glyphs, with regional variations
+    for Chinese, Japanese, and Korean.
+    The output PDF will show the glyphs with those slight regional variations.
+    """
+    COLLECTION_FONT = HERE / "NotoSansCJK-Regular.ttc"
+    COLLECTION_TEXT_ALL_FACES = "\u7e9b\u88ef\u8b56\u8c41\u904d\u98ef"
+    pdf = FPDF()
+    pdf.add_page()
+    collection = TTCollection(str(COLLECTION_FONT))
+    face_count = len(collection.fonts)
+    for face_number in range(face_count):
+        family = f"NotoCJKFace{face_number}"
+        pdf.add_font(
+            family=family,
+            style="",
+            fname=COLLECTION_FONT,
+            collection_font_number=face_number,
+        )
+        pdf.set_font("helvetica", size=12)
+        pdf.cell(text=f"Face {face_number}: ")
+        pdf.set_font(family, size=12)
+        pdf.cell(text=COLLECTION_TEXT_ALL_FACES)
+        pdf.ln()
+    assert_pdf_equal(pdf, HERE / "collection_all_faces.pdf", tmp_path)
+
+
+def test_add_font_collection_shaping(tmp_path):
+    """
+    This test will render all faces in the NotoSansCJK font collection.
+    This font has multiple faces for the same glyphs, with regional variations
+    for Chinese, Japanese, and Korean.
+    The output PDF will show the glyphs with those slight regional variations.
+    """
+    COLLECTION_FONT = HERE / "NotoSansCJK-Regular.ttc"
+    COLLECTION_TEXT_ALL_FACES = "\u7e9b\u88ef\u8b56\u8c41\u904d\u98ef"
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_text_shaping(True)
+    collection = TTCollection(str(COLLECTION_FONT))
+    face_count = len(collection.fonts)
+    for face_number in range(face_count):
+        family = f"NotoCJKFace{face_number}"
+        pdf.add_font(
+            family=family,
+            style="",
+            fname=COLLECTION_FONT,
+            collection_font_number=face_number,
+        )
+        pdf.set_font("helvetica", size=12)
+        pdf.cell(text=f"Face {face_number}: ")
+        pdf.set_font(family, size=12)
+        pdf.cell(text=COLLECTION_TEXT_ALL_FACES)
+        pdf.ln()
+    assert_pdf_equal(pdf, HERE / "collection_all_faces_shaping.pdf", tmp_path)
+
+
+SYMBOL_FONT_PATH = Path(r"c:\Windows\Fonts\symbol.ttf")
+
+
+@pytest.mark.skipif(
+    sys.platform not in ("cygwin", "win32"), reason="Windows-only symbol font test"
+)
+@pytest.mark.skipif(not SYMBOL_FONT_PATH.exists(), reason="symbol.ttf not available")
+def test_add_font_symbol(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("MSSymbol", style="", fname=SYMBOL_FONT_PATH)
+    pdf.set_font("MSSymbol", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(
+        w=pdf.epw,
+        text="ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+    )
+    assert_pdf_equal(pdf, HERE / "symbol.pdf", tmp_path)
+
+
+@pytest.mark.skipif(
+    sys.platform not in ("cygwin", "win32"), reason="Windows-only symbol font test"
+)
+@pytest.mark.skipif(not SYMBOL_FONT_PATH.exists(), reason="symbol.ttf not available")
+def test_add_font_symbol_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("MSSymbol", style="", fname=SYMBOL_FONT_PATH)
+    pdf.set_font("MSSymbol", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(
+        w=pdf.epw,
+        text="ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+    )
+    assert_pdf_equal(pdf, HERE / "symbol_shaping.pdf", tmp_path)
