@@ -22,7 +22,6 @@ from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
-from math import isclose
 from os.path import splitext
 from pathlib import Path
 from typing import (
@@ -169,6 +168,7 @@ from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
 from .util import (
+    FloatTolerance,
     ImageType,
     Number,
     NumberClass,
@@ -2662,7 +2662,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if (
             self.font_family == family
             and self.font_style == style
-            and isclose(self.font_size_pt, size)
+            and FloatTolerance.equal(self.font_size_pt, size)
         ):
             return
 
@@ -2696,7 +2696,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             size (float): font size in points
         """
-        if isclose(self.font_size_pt, size):
+        if FloatTolerance.equal(self.font_size_pt, size):
             return
         self.font_size_pt = size
         self.current_font_is_set_on_page = False
@@ -4016,7 +4016,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # currently all font sizes within a line are vertically aligned on the baseline.
         fragments = text_line.get_ordered_fragments()
         for frag in fragments:
-            if frag.font_size > max_font_size:
+            if FloatTolerance.greater_than(frag.font_size, max_font_size):
                 max_font_size = frag.font_size
         if h is None:
             h = max_font_size

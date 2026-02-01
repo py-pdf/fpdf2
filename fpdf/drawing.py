@@ -67,7 +67,7 @@ from .pattern import (
     shape_radial_gradient,
 )
 from .syntax import Name, PDFObject, Raw, render_pdf_primitive
-from .util import Number, NumberClass, number_to_str
+from .util import FloatTolerance, Number, NumberClass, number_to_str
 
 if TYPE_CHECKING:
     from fontTools.ttLib import ttGlyphSet
@@ -456,12 +456,11 @@ class BoundingBox(NamedTuple):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BoundingBox):
             return False
-        tolerance = 1e-6
         return (
-            abs(self.x0 - other.x0) < tolerance
-            and abs(self.y0 - other.y0) < tolerance
-            and abs(self.x1 - other.x1) < tolerance
-            and abs(self.y1 - other.y1) < tolerance
+            FloatTolerance.equal(self.x0, other.x0)
+            and FloatTolerance.equal(self.y0, other.y0)
+            and FloatTolerance.equal(self.x1, other.x1)
+            and FloatTolerance.equal(self.y1, other.y1)
         )
 
     def __hash__(self) -> int:

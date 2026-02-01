@@ -302,3 +302,44 @@ def get_parsed_unicode_range(
             )
 
     return codepoints
+
+
+class FloatTolerance:
+    """Utility class for floating point math with a defined tolerance."""
+
+    TOLERANCE = 1e-9
+
+    @classmethod
+    def equal(cls, a: float, b: float) -> bool:
+        """Check if two floats are almost equal within the defined tolerance."""
+        return abs(a - b) <= cls.TOLERANCE
+
+    @classmethod
+    def not_equal(cls, a: float, b: float) -> bool:
+        """Check if two floats are not almost equal within the defined tolerance."""
+        return not cls.equal(a, b)
+
+    @classmethod
+    def is_zero(cls, a: float) -> bool:
+        """Check if a float is almost zero within the defined tolerance."""
+        return abs(a) <= cls.TOLERANCE
+
+    @classmethod
+    def less_than(cls, a: float, b: float) -> bool:
+        """Check if a is less than b considering the defined tolerance."""
+        return (b - a) > cls.TOLERANCE
+
+    @classmethod
+    def greater_than(cls, a: float, b: float) -> bool:
+        """Check if a is greater than b considering the defined tolerance."""
+        return (a - b) > cls.TOLERANCE
+
+    @classmethod
+    def less_equal(cls, a: float, b: float) -> bool:
+        """Check if a is less than or almost equal to b considering the defined tolerance."""
+        return cls.less_than(a, b) or cls.equal(a, b)
+
+    @classmethod
+    def greater_equal(cls, a: float, b: float) -> bool:
+        """Check if a is greater than or almost equal to b considering the defined tolerance."""
+        return cls.greater_than(a, b) or cls.equal(a, b)

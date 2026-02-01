@@ -29,7 +29,7 @@ from .enums import Align, CharVPos, TextDirection, TextMode, WrapMode
 from .errors import FPDFException
 from .fonts import CoreFont, TTFFont
 from .graphics_state import GraphicsState
-from .util import escape_parens
+from .util import FloatTolerance, escape_parens
 
 StateStackType = GraphicsState
 
@@ -793,7 +793,9 @@ class MultiLineBreak:
         while self.fragment_index < len(self.fragments):
             current_fragment = self.fragments[self.fragment_index]
 
-            if current_fragment.font_size > current_font_height:
+            if FloatTolerance.greater_than(
+                current_fragment.font_size, current_font_height
+            ):
                 current_font_height = current_fragment.font_size  # document units
                 max_width = self.get_width(current_font_height)
                 current_line.max_width = max_width
@@ -823,7 +825,9 @@ class MultiLineBreak:
                     trailing_nl=character == NEWLINE,
                     trailing_form_feed=character == FORM_FEED,
                 )
-            if current_line.width + character_width > max_width:
+            if FloatTolerance.greater_than(
+                current_line.width + character_width, max_width
+            ):
                 self._is_first_line = False
                 if (
                     character in BREAKING_SPACE_SYMBOLS_STR
