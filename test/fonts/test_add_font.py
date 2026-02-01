@@ -245,7 +245,7 @@ def test_add_font_collection_all_faces(tmp_path):
     for Chinese, Japanese, and Korean.
     The output PDF will show the glyphs with those slight regional variations.
     """
-    COLLECTION_FONT = HERE / "NotoSansCJK-Regular.ttc"
+    COLLECTION_FONT = HERE / "noto-cjk-subset.ttc"
     COLLECTION_TEXT_ALL_FACES = "\u7e9b\u88ef\u8b56\u8c41\u904d\u98ef"
     pdf = FPDF()
     pdf.add_page()
@@ -268,13 +268,7 @@ def test_add_font_collection_all_faces(tmp_path):
 
 
 def test_add_font_collection_shaping(tmp_path):
-    """
-    This test will render all faces in the NotoSansCJK font collection.
-    This font has multiple faces for the same glyphs, with regional variations
-    for Chinese, Japanese, and Korean.
-    The output PDF will show the glyphs with those slight regional variations.
-    """
-    COLLECTION_FONT = HERE / "NotoSansCJK-Regular.ttc"
+    COLLECTION_FONT = HERE / "noto-cjk-subset.ttc"
     COLLECTION_TEXT_ALL_FACES = "\u7e9b\u88ef\u8b56\u8c41\u904d\u98ef"
     pdf = FPDF()
     pdf.add_page()

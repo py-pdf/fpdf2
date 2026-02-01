@@ -1505,7 +1505,7 @@ class OutputProducer:
 
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
                 if is_cff_cid:
-                    font_file_cs_obj.subtype = Name("OpenType")  # type: ignore[attr-defined]
+                    font_file_cs_obj.subtype = Name("CIDFontType0C")  # type: ignore[attr-defined]
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
                 if is_cff_cid:
                     font_descriptor_obj.font_file3 = font_file_cs_obj  # type: ignore[attr-defined]
