@@ -21,12 +21,10 @@ from .drawing_primitives import (
 )
 from .enums import GradientSpreadMethod
 from .syntax import Name, PDFArray, PDFContentStream, PDFObject
-from .util import NumberClass, format_number
+from .util import FloatTolerance, NumberClass, format_number
 
 if TYPE_CHECKING:
     from .drawing import BoundingBox
-
-TOLERANCE = 1e-9
 
 
 def lerp(a: float, b: float, t: float) -> float:
@@ -89,7 +87,7 @@ def normalize_stops(
 
     merged_raw: list[tuple[float, Color]] = []
     for raw_u, color in raw_entries:
-        if merged_raw and abs(merged_raw[-1][0] - raw_u) <= TOLERANCE:
+        if merged_raw and FloatTolerance.equal(merged_raw[-1][0], raw_u):
             merged_raw[-1] = (raw_u, color)
         else:
             merged_raw.append((raw_u, color))
@@ -117,19 +115,20 @@ def normalize_stops(
     def _ensure_stop(target: float) -> None:
         if not merged_raw:
             return
-        if (
-            target < merged_raw[0][0] - TOLERANCE
-            or target > merged_raw[-1][0] + TOLERANCE
-        ):
+        if FloatTolerance.less_than(
+            target, merged_raw[0][0]
+        ) or FloatTolerance.greater_than(target, merged_raw[-1][0]):
             return
         for u, _ in merged_raw:
-            if abs(u - target) <= TOLERANCE:
+            if FloatTolerance.equal(u, target):
                 return
         for idx in range(1, len(merged_raw)):
             u0, c0 = merged_raw[idx - 1]
             u1, c1 = merged_raw[idx]
-            if u0 - TOLERANCE <= target <= u1 + TOLERANCE:
-                span = max(u1 - u0, TOLERANCE)
+            if FloatTolerance.greater_equal(target, u0) and FloatTolerance.less_equal(
+                target, u1
+            ):
+                span = max(u1 - u0, FloatTolerance.TOLERANCE)
                 t = (target - u0) / span
                 merged_raw.insert(idx, (target, _lerp_color(c0, c1, t)))
                 return
@@ -151,7 +150,7 @@ def normalize_stops(
 
     merged_clamped: list[tuple[float, Color]] = []
     for u, color in clamped_entries:
-        if merged_clamped and abs(merged_clamped[-1][0] - u) <= TOLERANCE:
+        if merged_clamped and FloatTolerance.equal(merged_clamped[-1][0], u):
             merged_clamped[-1] = (u, color)
         else:
             merged_clamped.append((u, color))
@@ -160,11 +159,11 @@ def normalize_stops(
         u, color = merged_clamped[0]
         merged_clamped = [(0.0, color), (1.0, color)]
     else:
-        if abs(merged_clamped[0][0] - 0.0) > TOLERANCE:
+        if not FloatTolerance.is_zero(merged_clamped[0][0]):
             merged_clamped.insert(0, (0.0, merged_clamped[0][1]))
         else:
             merged_clamped[0] = (0.0, merged_clamped[0][1])
-        if abs(merged_clamped[-1][0] - 1.0) > TOLERANCE:
+        if not FloatTolerance.equal(merged_clamped[-1][0], 1.0):
             merged_clamped.append((1.0, merged_clamped[-1][1]))
         else:
             merged_clamped[-1] = (1.0, merged_clamped[-1][1])
@@ -199,16 +198,16 @@ def merge_near_duplicates(
 ) -> Sequence[tuple[float, Union[Color, str]]]:
     out: list[tuple[float, Union[Color, str]]] = []
     for u, col in pairs:
-        if out and abs(out[-1][0] - u) <= TOLERANCE:
+        if out and FloatTolerance.equal(out[-1][0], u):
             prev_u, prev_col = out[-1]
             if prev_col == col:
                 # identical color: keep the newest sample
                 out[-1] = (u, col)
                 continue
 
-            step = max(TOLERANCE * 10, 1e-6)
+            step = max(FloatTolerance.TOLERANCE * 10, 1e-6)
             nudged_prev = prev_u - step
-            if nudged_prev >= -TOLERANCE:
+            if FloatTolerance.greater_equal(nudged_prev, 0.0):
                 out[-1] = (nudged_prev, prev_col)
                 out.append((u, col))
             else:
@@ -239,9 +238,9 @@ def sample_stops(stops01: list[tuple[float, Color]], u: float) -> tuple[float, .
     """Piecewise-linear sampling in [0,1]. Assumes normalized/sorted stops incl. endpoints."""
     for i in range(1, len(stops01)):
         u1, c1 = stops01[i]
-        if u <= u1 + TOLERANCE:
+        if FloatTolerance.less_equal(u, u1):
             u0, c0 = stops01[i - 1]
-            span = max(u1 - u0, TOLERANCE)
+            span = max(u1 - u0, FloatTolerance.TOLERANCE)
             t = (u - u0) / span
             return lerp_tuple(c0.colors, c1.colors, t)
     return stops01[-1][1].colors
@@ -557,7 +556,7 @@ class Gradient(ABC):
 
     def has_alpha(self) -> bool:
         """True if any stop carries alpha != 1.0."""
-        return any(abs(a - 1.0) > TOLERANCE for a in self._alphas)
+        return any(not FloatTolerance.equal(a, 1.0) for a in self._alphas)
 
     def _generate_alpha_functions(
         self,
@@ -777,8 +776,8 @@ class MeshShading(PDFContentStream):
         xmin, xmax = self._bbox.x0, self._bbox.x1
         ymin, ymax = self._bbox.y0, self._bbox.y1
         maxc = (1 << self.bits_per_coordinate) - 1
-        sx = maxc / max(xmax - xmin, TOLERANCE)
-        sy = maxc / max(ymax - ymin, TOLERANCE)
+        sx = maxc / max(xmax - xmin, FloatTolerance.TOLERANCE)
+        sy = maxc / max(ymax - ymin, FloatTolerance.TOLERANCE)
         max_comp = (1 << self.bits_per_component) - 1
 
         def q16(u: float, umin: float, scale: float) -> int:
@@ -880,7 +879,7 @@ class SweepGradient(PDFObject):
         for _, c in self.stops:
             dc = convert_to_device_color(c) if not hasattr(c, "colors") else c
             a = getattr(dc, "a", None)
-            if a is not None and abs(float(a) - 1.0) > TOLERANCE:
+            if a is not None and not FloatTolerance.equal(float(a), 1.0):
                 return True
         return False
 
@@ -988,7 +987,7 @@ def shape_sweep_gradient_as_mesh(
 
     tau = 2.0 * math.pi
     delta = end_angle - start_angle
-    if abs(delta) <= TOLERANCE:
+    if FloatTolerance.is_zero(delta):
         delta = tau
 
     if delta < 0.0:
@@ -997,7 +996,7 @@ def shape_sweep_gradient_as_mesh(
         norm_stops.sort(key=lambda t: t[0])
         delta = -delta
 
-    span = delta if delta > TOLERANCE else tau
+    span = delta if FloatTolerance.greater_than(delta, 0.0) else tau
     cover_span = max(span, tau)
 
     if segments is None:
@@ -1008,7 +1007,10 @@ def shape_sweep_gradient_as_mesh(
     max_angle = max(min(max_angle, math.pi / 2.0), math.pi / 360.0)
 
     r_outer = bbox.max_distance_to_point(cx, cy)
-    r_inner = max(min(bbox.width, bbox.height) * float(inner_radius_factor), TOLERANCE)
+    r_inner = max(
+        min(bbox.width, bbox.height) * float(inner_radius_factor),
+        FloatTolerance.TOLERANCE,
+    )
 
     start_mod = math.fmod(start_angle, tau)
     if start_mod < 0.0:
@@ -1016,16 +1018,16 @@ def shape_sweep_gradient_as_mesh(
     end_mod = math.fmod(start_mod + span, tau)
     if end_mod < 0.0:
         end_mod += tau
-    wraps = span < tau - TOLERANCE and end_mod < start_mod
-    span_covers_full_circle = span >= tau - TOLERANCE
+    wraps = FloatTolerance.less_than(span, tau) and end_mod < start_mod
+    span_covers_full_circle = FloatTolerance.greater_equal(span, tau)
     seam_progress = (tau - start_mod) % tau
-    if seam_progress <= TOLERANCE:
+    if FloatTolerance.less_equal(seam_progress, 0.0):
         seam_progress = cover_span
 
     progress_candidates: list[float] = [0.0]
     tile_count = int(math.floor(cover_span / span))
     remainder = cover_span - tile_count * span
-    if remainder < TOLERANCE:
+    if FloatTolerance.less_equal(remainder, 0.0):
         remainder = 0.0
 
     for tile in range(tile_count):
@@ -1037,7 +1039,7 @@ def shape_sweep_gradient_as_mesh(
         portion = remainder / span
         base_progress = tile_count * span
         for u, _ in norm_stops:
-            if u > portion + TOLERANCE:
+            if FloatTolerance.greater_than(u, portion):
                 break
             progress_candidates.append(base_progress + u * span)
         progress_candidates.append(cover_span)
@@ -1046,24 +1048,27 @@ def shape_sweep_gradient_as_mesh(
 
     if spread_method == GradientSpreadMethod.PAD and not span_covers_full_circle:
         tail_length = max(cover_span - span, 0.0)
-        if TOLERANCE < seam_progress < cover_span + TOLERANCE:
+        if FloatTolerance.greater_than(
+            seam_progress, 0.0
+        ) and FloatTolerance.less_equal(seam_progress, cover_span):
             progress_candidates.append(seam_progress)
         if (
-            tail_length > TOLERANCE
-            and cover_span - TOLERANCE > seam_progress > span + TOLERANCE
+            FloatTolerance.greater_than(tail_length, 0.0)
+            and FloatTolerance.less_than(seam_progress, cover_span)
+            and FloatTolerance.greater_than(seam_progress, span)
         ):
             seam_eps = min(
-                max(span * 0.01, TOLERANCE),
-                seam_progress - span - TOLERANCE,
-                cover_span - seam_progress - TOLERANCE,
+                max(span * 0.01, FloatTolerance.TOLERANCE),
+                seam_progress - span - FloatTolerance.TOLERANCE,
+                cover_span - seam_progress - FloatTolerance.TOLERANCE,
             )
-            if seam_eps > TOLERANCE:
+            if FloatTolerance.greater_than(seam_eps, 0.0):
                 progress_candidates.append(seam_progress - seam_eps)
 
     progress_candidates.sort()
     progress_nodes: list[float] = []
     for progress in progress_candidates:
-        if progress_nodes and abs(progress - progress_nodes[-1]) <= TOLERANCE:
+        if progress_nodes and FloatTolerance.equal(progress, progress_nodes[-1]):
             progress_nodes[-1] = progress
         else:
             progress_nodes.append(progress)
@@ -1074,43 +1079,45 @@ def shape_sweep_gradient_as_mesh(
         progress_nodes.append(progress_nodes[0] + cover_span)
 
     span_plus = start_mod + span
-    crosses_360 = span_plus > tau + TOLERANCE
+    crosses_360 = FloatTolerance.greater_than(span_plus, tau)
     limit_theta = start_angle + seam_progress
 
     # pylint: disable=too-many-return-statements
     def raw_from_progress(progress: float) -> float:
-        if span <= TOLERANCE:
+        if FloatTolerance.less_equal(span, 0.0):
             return 0.0
 
         theta = start_angle + progress
 
-        if progress >= cover_span - TOLERANCE:
+        if FloatTolerance.greater_equal(progress, cover_span):
             if (
                 spread_method == GradientSpreadMethod.PAD
                 and not span_covers_full_circle
-                and cover_span > span + TOLERANCE
+                and FloatTolerance.greater_than(cover_span, span)
             ):
                 return 0.0
             return 1.0
 
         if spread_method == GradientSpreadMethod.PAD:
             if span_covers_full_circle:
-                return progress / span if span > TOLERANCE else 0.0
+                return (
+                    progress / span if FloatTolerance.greater_than(span, 0.0) else 0.0
+                )
 
             if not crosses_360:
                 angle_mod = math.fmod(theta, tau)
                 if angle_mod < 0.0:
                     angle_mod += tau
                 end_limit = start_mod + span
-                if angle_mod < start_mod - TOLERANCE:
+                if FloatTolerance.less_than(angle_mod, start_mod):
                     return 0.0
-                if angle_mod <= end_limit + TOLERANCE:
+                if FloatTolerance.less_equal(angle_mod, end_limit):
                     return (angle_mod - start_mod) / span
                 return 0.0
 
             # crosses 360°: only sample up to the seam (start -> 360°)
-            visible = max(seam_progress, TOLERANCE)
-            if progress <= visible + TOLERANCE:
+            visible = max(seam_progress, FloatTolerance.TOLERANCE)
+            if FloatTolerance.less_equal(progress, visible):
                 return progress / visible
             return 0.0
 
@@ -1119,9 +1126,9 @@ def shape_sweep_gradient_as_mesh(
     fan_line_raw: list[tuple[float, float, tuple[float, ...]]] = []
     for progress in progress_nodes:
         if (
-            progress >= cover_span - TOLERANCE
+            FloatTolerance.greater_equal(progress, cover_span)
             and not span_covers_full_circle
-            and cover_span > span + TOLERANCE
+            and FloatTolerance.greater_than(cover_span, span)
             and spread_method != GradientSpreadMethod.PAD
         ):
             continue
@@ -1147,11 +1154,11 @@ def shape_sweep_gradient_as_mesh(
         inserted = False
         for theta, raw, color in fan_line_raw:
             fan_line.append((theta, color))
-            if not inserted and abs(theta - limit_theta) <= TOLERANCE:
-                fan_line.append((theta + TOLERANCE, pad_color))
+            if not inserted and FloatTolerance.equal(theta, limit_theta):
+                fan_line.append((theta + FloatTolerance.TOLERANCE, pad_color))
                 inserted = True
         if not inserted:
-            fan_line.append((limit_theta + TOLERANCE, pad_color))
+            fan_line.append((limit_theta + FloatTolerance.TOLERANCE, pad_color))
     else:
         fan_line = [(theta, color) for (theta, _, color) in fan_line_raw]
 
@@ -1163,13 +1170,13 @@ def shape_sweep_gradient_as_mesh(
             theta0, color0 = fan_line[idx]
             theta1, color1 = fan_line[idx + 1]
             delta_theta = theta1 - theta0
-            if delta_theta <= TOLERANCE:
+            if FloatTolerance.less_equal(delta_theta, 0.0):
                 if samples:
                     samples[-1] = (theta1, color1)
                 else:
                     samples.append((theta1, color1))
                 continue
-            if wraps and theta0 > limit_theta + TOLERANCE:
+            if wraps and FloatTolerance.greater_than(theta0, limit_theta):
                 color0 = start_color_components
                 color1 = start_color_components
             splits = max(1, int(math.ceil(delta_theta / max_angle)))
@@ -1288,14 +1295,14 @@ def shape_linear_gradient(
     assert tile_stops is not None  # pleasing mypy
     base_start = tile_stops[0][0]
     base_end = tile_stops[-1][0]
-    base_span = max(base_end - base_start, TOLERANCE)
-    if base_span <= TOLERANCE:
+    base_span = max(base_end - base_start, FloatTolerance.TOLERANCE)
+    if FloatTolerance.less_equal(base_span, 0.0):
         base_start = 0.0
         base_span = 1.0
         tile_stops = normalized_stops
 
     tmin, tmax, L = bbox.project_interval_on_axis(x1, y1, x2, y2)
-    if L <= TOLERANCE:
+    if FloatTolerance.less_equal(L, 0.0):
         # Degenerate axis: synthesize flat
         c0, c1 = normalized_stops[0][1], normalized_stops[-1][1]
         return LinearGradient(
@@ -1333,13 +1340,15 @@ def shape_linear_gradient(
     a = tmin_norm - margin
     b = tmax_norm + margin
     clipped = [
-        (s, c) for (s, c) in expanded if a - TOLERANCE <= s <= b + TOLERANCE
+        (s, c)
+        for (s, c) in expanded
+        if FloatTolerance.greater_equal(s, a) and FloatTolerance.less_equal(s, b)
     ] or expanded
 
     # Renormalize to [0..1] over synthetic span
     s0 = clipped[0][0]
     sN = clipped[-1][0]
-    span = max(sN - s0, TOLERANCE)
+    span = max(sN - s0, FloatTolerance.TOLERANCE)
     renorm = [((s - s0) / span, c) for (s, c) in clipped]
 
     # Shift/scale the coords so u=0..1 aligns to absolute positions s0..sN
@@ -1435,14 +1444,14 @@ def shape_radial_gradient(
     assert tile_stops is not None  # pleasing mypy
     base_start = tile_stops[0][0]
     base_end = tile_stops[-1][0]
-    base_span = max(base_end - base_start, TOLERANCE)
-    if base_span <= TOLERANCE:
+    base_span = max(base_end - base_start, FloatTolerance.TOLERANCE)
+    if FloatTolerance.less_equal(base_span, 0.0):
         base_start = 0.0
         base_span = 1.0
         tile_stops = normalized_stops
 
     # Degenerate gradients with no radial growth can't be meaningfully repeated
-    if abs(r - fr) <= TOLERANCE:
+    if FloatTolerance.equal(r, fr):
         colors = [color for _, color in normalized_stops]
         bounds = [offset for offset, _ in normalized_stops[1:-1]]
         gradient = RadialGradient(
@@ -1476,7 +1485,9 @@ def shape_radial_gradient(
         for _ in range(max_tiles):
             lam = sigma_to_lambda(target_sigma)
             cx_lam, cy_lam, r_lam = circle_at(lam)
-            if bbox.max_distance_to_point(cx_lam, cy_lam) <= r_lam + 1e-6:
+            if FloatTolerance.less_equal(
+                bbox.max_distance_to_point(cx_lam, cy_lam), r_lam
+            ):
                 break
             target_sigma += base_span
         else:
@@ -1506,7 +1517,7 @@ def shape_radial_gradient(
 
     s0 = expanded[0][0]
     sN = expanded[-1][0]
-    span = max(sN - s0, TOLERANCE)
+    span = max(sN - s0, FloatTolerance.TOLERANCE)
     renorm = [((s - s0) / span, c) for (s, c) in expanded]
 
     lam0 = sigma_to_lambda(s0)

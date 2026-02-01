@@ -17,6 +17,7 @@ from .enums import Align, XPos, YPos
 from .fonts import TextStyle
 from .structure_tree import StructElem
 from .syntax import DestinationXYZ, PDFObject, PDFString
+from .util import FloatTolerance
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -213,9 +214,9 @@ class TableOfContents:
                 in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
             in_between = ""
             if in_between_space > 0:
-                while (
-                    pdf.get_string_width(in_between) + clearance_margin
-                    < in_between_space
+                while FloatTolerance.less_than(
+                    pdf.get_string_width(in_between) + clearance_margin,
+                    in_between_space,
                 ):
                     in_between += "."
 
