@@ -2489,6 +2489,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         unicode_range: Optional[str | Sequence[str | int | tuple[int, int]]] = None,
         variations: Optional[dict[str, dict[str, float]] | dict[str, float]] = None,
         palette: Optional[int] = None,
+        collection_font_number: int = 0,
     ) -> None:
         """
         Imports a TrueType or OpenType font and makes it available
@@ -2508,6 +2509,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             variations (dict[style, dict]): maps style to limits of axes for the variable font.
             palette (int): optional palette index for color fonts (COLR/CPAL). Defaults to 0 (first palette).
                 Only applicable to fonts with CPAL table (color fonts).
+            collection_font_number (int): face index for TTC/OTC collections.
         """
         if not fname:
             raise ValueError('"fname" parameter is required')
@@ -2558,6 +2560,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         unicode_range=unicode_range,
                         variations=axes_dict,  # type: ignore[arg-type]
                         palette=palette,
+                        collection_font_number=collection_font_number,
                     )
                 return
         fontkey = f"{family.lower()}{style}"
@@ -2569,7 +2572,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
             return
 
-        self.fonts[fontkey] = TTFFont(
+        font_obj = TTFFont(
             self,
             font_file_path,
             fontkey,
@@ -2577,7 +2580,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             parsed_unicode_range,
             variations,  # type: ignore[arg-type]
             palette,
+            collection_font_number,
         )
+        self.fonts[fontkey] = font_obj
+        if font_obj.is_cff and font_obj.is_cid_keyed:
+            self._set_min_pdf_version("1.6")
 
     def set_font(
         self,
