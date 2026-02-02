@@ -9,7 +9,11 @@ HERE = Path(__file__).resolve().parent
 
 
 def _make_text_file(tmp_path: Path) -> Path:
-    p = tmp_path / "helloworld.txt"
+    return _make_text_file_with_name(tmp_path, "helloworld.txt")
+
+
+def _make_text_file_with_name(tmp_path: Path, filename: str) -> Path:
+    p = tmp_path / filename
     p.write_text("Hello world", encoding="utf-8")
     return p
 
@@ -19,6 +23,27 @@ def test_embed_file_self(tmp_path):
     pdf.add_page()
     pdf.embed_file(_make_text_file(tmp_path), modification_date=False)
     assert_pdf_equal(pdf, HERE / "embed_file_self.pdf", tmp_path)
+
+
+def test_embed_file_parens(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.embed_file(
+        _make_text_file_with_name(tmp_path, "helloworld(1).txt"),
+        modification_date=False,
+    )
+    assert_pdf_equal(pdf, HERE / "embed_file_parens.pdf", tmp_path)
+
+
+def test_embed_file_single_parens(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.embed_file(
+        _make_text_file_with_name(tmp_path, "helloworld(1.txt"),
+        modification_date=False,
+        desc="with (parens",
+    )
+    assert_pdf_equal(pdf, HERE / "embed_file_single_parens.pdf", tmp_path)
 
 
 @pytest.mark.skipif(
