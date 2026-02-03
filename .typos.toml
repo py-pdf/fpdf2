@@ -12,6 +12,7 @@ extend-ignore-identifiers-re = [
     "VAI",
     "^TAI_THAM$",
     "wdth", # variable font axis name.
+    "^iz$",
 ]
 extend-ignore-re = [
     "loca subsetting",
@@ -26,9 +27,3 @@ extend-exclude = [
     "*.pdf",
     "docs/Tutorial-*.md",
 ]
-
-[type.svg_parameters]
-extend-glob = ["test/svg/parameters.py"]
-
-[type.svg_parameters.extend-identifiers]
-iz = "iz"
