@@ -27,6 +27,6 @@ extend-exclude = [
     "docs/Tutorial-*.md",
 ]
 
-[type.svg_parameters]
-extend-glob = ["test/svg/parameters.py"]
+[[files]]
+path = "test/svg/parameters.py"
 extend-ignore-identifiers-re = ["^iz$"]
