@@ -21,16 +21,14 @@ extend-ignore-re = [
 [default.extend-identifiers]
 otTables = "otTables"
 
-# ---- exclusions ----
-[[files]]
-glob = "*.pdf"
-exclude = true
+[files]
+extend-exclude = [
+    "*.pdf",
+    "docs/Tutorial-*.md",
+]
 
-[[files]]
-glob = "docs/Tutorial-*.md"
-exclude = true
+[type.svg_parameters]
+extend-glob = ["test/svg/parameters.py"]
 
-# ---- file-specific ignore ----
-[[files]]
-path = "test/svg/parameters.py"
-extend-ignore-identifiers-re = ["^iz$"]
+[type.svg_parameters.extend-identifiers]
+iz = "iz"
