@@ -276,19 +276,6 @@ class Table:
         for i in range(len(self.rows)):
             pagebreak_height = rows_info[i].pagebreak_height
             # pylint: disable=protected-access
-            page_break = self._fpdf._perform_page_break_if_need_be(pagebreak_height)
-            # Modification pour issue #1460 : On autorise le dépassement de page
-            # if (
-            #     page_break
-            #     and self._fpdf.y + pagebreak_height > self._fpdf.page_break_trigger
-            # ):
-            #     # Restoring original position on page:
-            #     self._fpdf.x = prev_x
-            #     self._fpdf.y = prev_y
-            #     self._fpdf.l_margin = prev_l_margin
-            #     raise ValueError(
-            #         f"The row with index {i} is too high and cannot be rendered on a single page"
-            #     )
             page_break = self._fpdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
                 pagebreak_height
             )
@@ -349,7 +336,6 @@ class Table:
 
         for j, cell in enumerate(row.cells):
             if cell is None:
-                # --- START MODIFICATION: Ghost borders management ---
                 # If the cell is None, it might be the continuation of a rowspan.
                 origin_cell, origin_idx = self._get_span_origin(i, j)
 
@@ -366,23 +352,14 @@ class Table:
                     # Ideally we should parse origin_cell.border to check if L or R are required.
                     self._fpdf.line(x1, y1, x1, y2)  # Left
                     self._fpdf.line(x2, y1, x2, y2)  # Right
-
-                    # --- CALCULATE END OF SPAN ---
                     current_span_progress = i - origin_idx + 1
                     total_span_rows = origin_cell.rowspan
                     is_end_of_span = current_span_progress == total_span_rows
-
-                    # SECURITY: Is this the very last row of the entire table?
                     is_last_table_row = i == len(self.rows) - 1
-
-                    # If we are at the end of the span OR at the end of the table, draw the bottom line
                     if is_end_of_span or is_last_table_row:
                         self._fpdf.line(x1, y2, x2, y2)  # Bottom
-
-                # Continue to the next cell
             if not isinstance(cell, Cell):
                 continue
-                # --- END MODIFICATION ---
             self._render_table_cell(
                 i,
                 j,
