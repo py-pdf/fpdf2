@@ -21,12 +21,16 @@ extend-ignore-re = [
 [default.extend-identifiers]
 otTables = "otTables"
 
-[files]
-extend-exclude = [
-    "*.pdf",
-    "docs/Tutorial-*.md",
-]
+# ---- exclusions ----
+[[files]]
+glob = "*.pdf"
+exclude = true
 
+[[files]]
+glob = "docs/Tutorial-*.md"
+exclude = true
+
+# ---- file-specific ignore ----
 [[files]]
 path = "test/svg/parameters.py"
 extend-ignore-identifiers-re = ["^iz$"]
