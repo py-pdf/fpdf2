@@ -1,7 +1,6 @@
 from mistletoe import markdown
 
-html = markdown(
-    """
+html = markdown("""
 # Top title (ATX)
 
 Subtitle (setext)
@@ -52,8 +51,7 @@ Some horizontal thematic breaks:
 ___
 
 ![Alternate description](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
-"""
-)
+""")
 
 from fpdf import FPDF
 

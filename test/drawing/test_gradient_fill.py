@@ -6,11 +6,13 @@ from fpdf import FPDF
 from fpdf.pattern import (
     LinearGradient,
     RadialGradient,
+    SweepGradient,
     shape_linear_gradient,
     shape_radial_gradient,
 )
 from fpdf.drawing_primitives import DeviceRGB
 from fpdf.drawing import PaintedPath, Transform, GradientPaint
+from fpdf.enums import GradientSpreadMethod
 
 from test.conftest import assert_pdf_equal
 
@@ -391,6 +393,159 @@ def test_gradient_shape_radial(tmp_path: Path):
     assert_pdf_equal(
         pdf,
         HERE / "generated_pdf" / "gradient_shape_radial.pdf",
+        tmp_path,
+    )
+
+
+def test_linear_gradient_spread_methods(tmp_path: Path):
+    pdf = _new_pdf()
+
+    def build_paint(spread_method: GradientSpreadMethod) -> GradientPaint:
+        return GradientPaint(
+            LinearGradient(
+                0,
+                0,
+                1,
+                0,
+                colors=["#ff6600", "#003366"],
+                extend_before=False,
+                extend_after=False,
+            ),
+            units="objectBoundingBox",
+            gradient_transform=Transform.scaling(0.4, 1.0).translate(0.3, 0.0),
+            spread_method=spread_method,
+        )
+
+    path_pad = _rect(40, 60, 120, 80)
+    path_pad.style.fill_color = build_paint(GradientSpreadMethod.PAD)
+    path_pad.style.stroke_color = "#000000"
+    path_pad.style.stroke_width = 0.8
+
+    path_repeat = _rect(200, 60, 120, 80)
+    path_repeat.style.fill_color = build_paint(GradientSpreadMethod.REPEAT)
+    path_repeat.style.stroke_color = "#000000"
+    path_repeat.style.stroke_width = 0.8
+
+    path_reflect = _rect(360, 60, 120, 80)
+    path_reflect.style.fill_color = build_paint(GradientSpreadMethod.REFLECT)
+    path_reflect.style.stroke_color = "#000000"
+    path_reflect.style.stroke_width = 0.8
+
+    with pdf.drawing_context() as dc:
+        dc.add_item(path_pad)
+        dc.add_item(path_repeat)
+        dc.add_item(path_reflect)
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "generated_pdf" / "gradient_linear_spread_methods.pdf",
+        tmp_path,
+    )
+
+
+def test_radial_gradient_spread_methods(tmp_path: Path):
+    pdf = _new_pdf()
+
+    def build_paint(spread_method: GradientSpreadMethod) -> GradientPaint:
+        return GradientPaint(
+            RadialGradient(
+                0.5,
+                0.5,
+                0.0,
+                0.5,
+                0.5,
+                0.3,
+                colors=["#ffffcc", "#ff6600", "#660000"],
+                extend_before=False,
+                extend_after=False,
+            ),
+            units="objectBoundingBox",
+            spread_method=spread_method,
+        )
+
+    circle_pad = _circle(110, 200, 70)
+    circle_pad.style.fill_color = build_paint(GradientSpreadMethod.PAD)
+    circle_pad.style.stroke_color = None
+
+    circle_repeat = _circle(260, 200, 70)
+    circle_repeat.style.fill_color = build_paint(GradientSpreadMethod.REPEAT)
+    circle_repeat.style.stroke_color = None
+
+    circle_reflect = _circle(410, 200, 70)
+    circle_reflect.style.fill_color = build_paint(GradientSpreadMethod.REFLECT)
+    circle_reflect.style.stroke_color = None
+
+    with pdf.drawing_context() as dc:
+        dc.add_item(circle_pad)
+        dc.add_item(circle_repeat)
+        dc.add_item(circle_reflect)
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "generated_pdf" / "gradient_radial_spread_methods.pdf",
+        tmp_path,
+    )
+
+
+def test_sweep_gradient_types(tmp_path: Path):
+    pdf = _new_pdf()
+
+    stops = [
+        (0.0, "#ff0000"),
+        (0.5, "#00ff00"),
+        (1.0, "#0000ff"),
+    ]
+
+    circle_pad = _circle(120, 160, 60)
+    circle_pad.style.fill_color = GradientPaint(
+        SweepGradient(
+            cx=0.5,
+            cy=0.5,
+            start_angle=0.0,
+            end_angle=math.tau,
+            stops=stops,
+        ),
+        units="objectBoundingBox",
+        spread_method=GradientSpreadMethod.PAD,
+    )
+    circle_pad.style.stroke_color = None
+
+    circle_repeat = _circle(270, 160, 60)
+    circle_repeat.style.fill_color = GradientPaint(
+        SweepGradient(
+            cx=0.5,
+            cy=0.5,
+            start_angle=0.0,
+            end_angle=1.5 * math.pi,
+            stops=stops,
+        ),
+        units="objectBoundingBox",
+        spread_method=GradientSpreadMethod.REPEAT,
+    )
+    circle_repeat.style.stroke_color = None
+
+    circle_reflect = _circle(420, 160, 60)
+    circle_reflect.style.fill_color = GradientPaint(
+        SweepGradient(
+            cx=0.5,
+            cy=0.5,
+            start_angle=0.0,
+            end_angle=1.5 * math.pi,
+            stops=stops,
+        ),
+        units="objectBoundingBox",
+        spread_method=GradientSpreadMethod.REFLECT,
+    )
+    circle_reflect.style.stroke_color = None
+
+    with pdf.drawing_context() as dc:
+        dc.add_item(circle_pad)
+        dc.add_item(circle_repeat)
+        dc.add_item(circle_reflect)
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "generated_pdf" / "gradient_sweep_types.pdf",
         tmp_path,
     )
 

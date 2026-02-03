@@ -787,6 +787,11 @@ test_svg_sources = (
     pytest.param(svgfile("text01.svg"), id="<text> test"),
     pytest.param(svgfile("tspan01.svg"), id="<text> with <tspan>"),
     pytest.param(svgfile("tspan02.svg"), id="<text> with multiple <tspan>"),
+    pytest.param(svgfile("gradient_linear.svg"), id="Linear gradient"),
+    pytest.param(svgfile("gradient_radial.svg"), id="Radial gradient"),
+    pytest.param(svgfile("gradient_multiple.svg"), id="Multiple gradients"),
+    pytest.param(svgfile("gradient_opacity.svg"), id="Gradient with opacity"),
+    pytest.param(svgfile("gradient_spread_methods.svg"), id="Gradient spread methods"),
 )
 
 svg_path_edge_cases = (

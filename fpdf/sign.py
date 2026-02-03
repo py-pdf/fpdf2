@@ -8,17 +8,34 @@ in non-backward-compatible ways.
 Usage documentation at: <https://py-pdf.github.io/fpdf2/Signing.html>
 """
 
+# pyright: reportUnknownArgumentType=false, reportUnknownMemberType=false, reportUnknownVariableType=false
+
 import hashlib
 from datetime import timezone
+from typing import TYPE_CHECKING, Any, Optional
 from unittest.mock import patch
 
-from .syntax import build_obj_dict, Name
-from .syntax import create_dictionary_string as pdf_dict
+from .syntax import Name, PDFDate, build_obj_dict, create_dictionary_string as pdf_dict
 from .util import buffer_subst
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
+    from cryptography.x509 import Certificate
+    from endesive import signer
+
+    from .encryption import StandardSecurityHandler
 
 
 class Signature:
-    def __init__(self, contact_info=None, location=None, m=None, reason=None):
+    def __init__(
+        self,
+        contact_info: Optional[str] = None,
+        location: Optional[str] = None,
+        m: Optional[PDFDate] = None,
+        reason: Optional[str] = None,
+    ) -> None:
         self.type = Name("Sig")
         self.filter = Name("Adobe.PPKLite")
         self.sub_filter = Name("adbe.pkcs7.detached")
@@ -33,7 +50,11 @@ class Signature:
         self.byte_range = _SIGNATURE_BYTERANGE_PLACEHOLDER
         self.contents = "<" + _SIGNATURE_CONTENTS_PLACEHOLDER + ">"
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -42,7 +63,15 @@ class Signature:
         return pdf_dict(obj_dict)
 
 
-def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
+def sign_content(
+    signer: "signer",  # pyright: ignore[reportGeneralTypeIssues]
+    buffer: bytearray,
+    key: Optional["PrivateKeyTypes"],
+    cert: "Certificate",
+    extra_certs: list["Certificate"],
+    hashalgo: str,
+    sign_time: "datetime",
+) -> bytearray:
     """
     Perform PDF signing based on the content of the buffer, performing substitutions on it.
     The signing operation does not alter the buffer size
@@ -70,7 +99,7 @@ def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
     # to get control over signed_time, initialized by endesive.signer.sign() to be datetime.now():
     class mock_datetime:
         @staticmethod
-        def now(tz):  # pylint: disable=unused-argument
+        def now(tz: Any) -> "datetime":  # pylint: disable=unused-argument
             return sign_time.astimezone(timezone.utc)
 
     sign = patch("endesive.signer.datetime", mock_datetime)(signer.sign)
@@ -90,9 +119,9 @@ def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
     return buffer.replace(sig_placeholder, contents, 1)
 
 
-def _pkcs11_aligned(data):
-    data = "".join(f"{i:02x}" for i in data)
-    return data + "0" * (0x4000 - len(data))
+def _pkcs11_aligned(data: tuple[int, ...]) -> str:
+    data_str = "".join(f"{i:02x}" for i in data)
+    return data_str + "0" * (0x4000 - len(data_str))
 
 
 _SIGNATURE_BYTERANGE_PLACEHOLDER = "[0000000000 0000000000 0000000000 0000000000]"

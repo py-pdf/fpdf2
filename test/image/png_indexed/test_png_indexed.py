@@ -4,7 +4,6 @@ import fpdf
 from test.conftest import assert_pdf_equal
 from PIL import Image
 
-
 HERE = Path(__file__).resolve().parent
 
 

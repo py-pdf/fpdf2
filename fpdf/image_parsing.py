@@ -1,34 +1,62 @@
-import base64, hashlib, io, zlib
+# pyright: reportOptionalMemberAccess=false
+# mypy: disable-error-code=no-untyped-call
+import base64
+import hashlib
+import io
+import logging
+import zlib
 from dataclasses import dataclass
 from io import BytesIO
 from math import ceil
-from urllib.request import urlopen
 from pathlib import Path
-import logging
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Iterable,
+    Optional,
+    TypeAlias,
+    TypeGuard,
+    Union,
+    no_type_check,
+)
+from urllib.request import urlopen
+
+from .errors import FPDFException
+from .image_datastructures import (
+    ImageCache,
+    ImageFilter,
+    RasterImageInfo,
+    VectorImageInfo,
+)
+from .svg import SVGObject
+from .util import ImageType
 
 try:
-    from PIL import Image, TiffImagePlugin
-    from PIL import ImageCms, features as PIL_features
-
-    try:
-        from PIL.Image import Resampling
-
-        RESAMPLE = Resampling.LANCZOS
-    except ImportError:  # For Pillow < 9.1.0
-        # pylint: disable=no-member, useless-suppression
-        RESAMPLE = Image.ANTIALIAS
+    from PIL import Image, ImageCms, TiffImagePlugin, features as PIL_features
 except ImportError:
-    Image = None
-    PIL_features = None
+    Image = None  # type: ignore[assignment]
+    ImageCms = None  # type: ignore[assignment]
+    TiffImagePlugin = None  # type: ignore[assignment]
+    PIL_features = None  # type: ignore[assignment]
+
+try:
+    from PIL.Image import Resampling
+
+    RESAMPLE = Resampling.LANCZOS
+except (ImportError, AttributeError):
+    RESAMPLE = None  # type: ignore[assignment]
+
+if TYPE_CHECKING:
+    from PIL.Image import Image as PILImage
+    from PIL.ImageCms import ImageCmsProfile
+else:
+    PILImage: TypeAlias = Any
 
 try:
     import numpy
 except ImportError:
-    numpy = None
-
-from .errors import FPDFException
-from .image_datastructures import ImageCache, RasterImageInfo, VectorImageInfo
-from .svg import SVGObject
+    numpy = None  # type: ignore[assignment]
 
 
 @dataclass
@@ -40,6 +68,7 @@ class ImageSettings:
 LOGGER = logging.getLogger(__name__)
 SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode", "JPXDecode", "LZWDecode")
 SETTINGS = ImageSettings()
+
 
 # fmt: off
 TIFFBitRevTable = [
@@ -78,7 +107,15 @@ LZW_INITIAL_BITS_PER_CODE = 9  # Initial code bit width
 LZW_MAX_BITS_PER_CODE = 12  # Maximum code bit width
 
 
-def preload_image(image_cache: ImageCache, name, dims=None):
+def preload_image(
+    image_cache: ImageCache,
+    name: ImageType,
+    dims: Optional[tuple[float, float]] = None,
+) -> tuple[
+    str,
+    Union[SVGObject, "PILImage", bytes, BinaryIO, Path, None],
+    RasterImageInfo | VectorImageInfo,
+]:
     """
     Read an image and load it into memory.
 
@@ -91,77 +128,93 @@ def preload_image(image_cache: ImageCache, name, dims=None):
         image_cache: an `ImageCache` instance, usually the `.image_cache` attribute of a `FPDF` instance.
         name: either a string representing a file path to an image, an URL to an image,
             an io.BytesIO, or a instance of `PIL.Image.Image`.
-        dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+        dims (tuple[int, int]): optional dimensions as a tuple (width, height) to resize the image
             (raster only) before storing it in the PDF.
 
     Returns: A tuple, consisting of 3 values: the name, the image data,
         and an instance of a subclass of `ImageInfo`.
     """
     # Identify and load SVG data:
-    if str(name).endswith(".svg"):
+    if isinstance(name, (str, Path)) and str(name).endswith(".svg"):
         try:
-            return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
+            return get_svg_info(
+                str(name), load_image(str(name)), image_cache=image_cache
+            )
         except Exception as error:
             raise ValueError(f"Could not parse file: {name}") from error
     if isinstance(name, bytes) and _is_svg(name.strip()):
-        return get_svg_info(name, io.BytesIO(name), image_cache=image_cache)
+        return get_svg_info("vector_image", io.BytesIO(name), image_cache=image_cache)
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
         return get_svg_info("vector_image", name, image_cache=image_cache)
 
     # Load raster data.
+    img: Union["PILImage", bytes, BinaryIO, Path, None]
+    raster_name: str
     if isinstance(name, str):
-        img = None
-    elif isinstance(name, Image.Image):
+        raster_name, img = name, None
+    elif _is_pil_image(name):
         bytes_ = name.tobytes()
         img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
-        name, img = img_hash.hexdigest(), name
+        raster_name, img = img_hash.hexdigest(), name
     elif isinstance(name, (bytes, io.BytesIO)):
         bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
         bytes_ = bytes_.strip()
         img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
-        name, img = img_hash.hexdigest(), name
+        raster_name, img = img_hash.hexdigest(), name
     else:
-        name, img = str(name), name
-    info = image_cache.images.get(name)
-    if info:
-        info["usages"] += 1
+        raster_name, img = str(name), None
+    info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
+    if info is not None:
+        info["usages"] = info["usages"] + 1  # type: ignore[operator]
     else:
-        info = get_img_info(name, img, image_cache.image_filter, dims)
+        info = get_img_info(
+            raster_name,
+            img,
+            image_cache.image_filter,
+            dims,
+        )
         info["i"] = len(image_cache.images) + 1
         info["usages"] = 1
         info["iccp_i"] = None
         iccp = info.get("iccp")
-        if iccp:
+        if iccp is not None:
             LOGGER.debug(
                 "ICC profile found for image %s - It will be inserted in the PDF document",
-                name,
+                raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info["iccp_i"] = image_cache.icc_profiles[iccp]
+                info["iccp_i"] = image_cache.icc_profiles[iccp]  # type: ignore[index]
             else:
                 iccp_i = len(image_cache.icc_profiles)
-                image_cache.icc_profiles[iccp] = iccp_i
+                image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
                 info["iccp_i"] = iccp_i
             info["iccp"] = None
-        image_cache.images[name] = info
-    return name, img, info
+        image_cache.images[raster_name] = info
+    return raster_name, img, info
 
 
-def _is_svg(bytes_):
+def _is_svg(bytes_: bytes) -> bool:
     return bytes_.startswith(b"<?xml ") or bytes_.startswith(b"<svg ")
 
 
-def load_image(filename):
+def _is_pil_image(obj: Any) -> TypeGuard[PILImage]:
+    return Image is not None and isinstance(obj, Image.Image)
+
+
+def load_image(filename: str | Path | BinaryIO) -> BinaryIO:
     """
     This method is used to load external resources, such as images.
     It is automatically called when resource added to document by `fpdf.fpdf.FPDF.image()`.
     It always return a BytesIO buffer.
     """
-    # if a bytesio instance is passed in, use it as is.
-    if isinstance(filename, BytesIO):
+    # if a file-like object is passed in, use it directly or copy it into a BytesIO buffer
+    if isinstance(filename, (BytesIO, io.BufferedIOBase, BinaryIO)):
         return filename
+    if hasattr(filename, "read") and not isinstance(filename, (str, Path)):
+        # Copy other file-like objects into a BytesIO so downstream code can seek/read freely
+        return BytesIO(filename.read())
     if isinstance(filename, Path):
         filename = str(filename)
     # by default loading from network is allowed for all images
@@ -176,7 +229,7 @@ def load_image(filename):
         return BytesIO(local_file.read())
 
 
-def _decode_base64_image(base64Image):
+def _decode_base64_image(base64Image: str) -> BytesIO:
     "Decode the base 64 image string into an io byte stream."
     frags = base64Image.split("base64,")
     if len(frags) != 2:
@@ -186,14 +239,15 @@ def _decode_base64_image(base64Image):
     return BytesIO(decodedData)
 
 
-def is_iccp_valid(iccp, filename):
+@no_type_check
+def is_iccp_valid(iccp: bytes, filename: str | Path) -> bool:
     "Checks the validity of an ICC profile"
     try:
-        profile = ImageCms.getOpenProfile(BytesIO(iccp))
+        profile: "ImageCmsProfile" = ImageCms.getOpenProfile(BytesIO(iccp))
     except ImageCms.PyCMSError:
         LOGGER.info("Invalid ICC Profile in file %s", filename)
         return False
-    color_space = profile.profile.xcolor_space.strip()
+    color_space = str(profile.profile.xcolor_space).strip()
     if color_space not in ("GRAY", "RGB"):
         LOGGER.info(
             "Unsupported color space %s in ICC Profile of file %s - cf. issue #711",
@@ -204,8 +258,12 @@ def is_iccp_valid(iccp, filename):
     return True
 
 
-def get_svg_info(filename, img, image_cache):
-    svg = SVGObject(img.getvalue(), image_cache=image_cache)
+def get_svg_info(
+    filename: str, img: BinaryIO, image_cache: ImageCache
+) -> tuple[str, SVGObject, VectorImageInfo]:
+    img.seek(0)
+    svg_data = img.read()
+    svg = SVGObject(svg_data, image_cache=image_cache)
     if svg.viewbox:
         _, _, w, h = svg.viewbox
     else:
@@ -218,7 +276,12 @@ def get_svg_info(filename, img, image_cache):
     return filename, svg, info
 
 
-def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
+def get_img_info(
+    filename: Union[str, BinaryIO, Path],
+    img: Union["PILImage", bytes, BinaryIO, Path, str, None] = None,
+    image_filter: ImageFilter = "AUTO",
+    dims: Optional[tuple[float, float]] = None,
+) -> RasterImageInfo:
     """
     Args:
         filename: in a format that can be passed to load_image
@@ -233,20 +296,25 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     # Flag to check whether a cmyk image is jpeg or not, if set to True the decode array
     # is inverted in output.py
     jpeg_inverted = False
-    img_raw_data = None
+    img_raw_data: Optional[BinaryIO] = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
         img = Image.open(img_raw_data)
         is_pil_img = False
-    elif not isinstance(img, Image.Image):
+    elif not _is_pil_image(img):
         keep_bytes_io_open = isinstance(img, BytesIO)
-        img_raw_data = BytesIO(img) if isinstance(img, bytes) else img
+        if isinstance(img, bytes):
+            img_raw_data = BytesIO(img)
+        else:
+            img_raw_data = img  # type: ignore[assignment]
+        assert img_raw_data is not None
         img = Image.open(img_raw_data)
         is_pil_img = False
+    assert _is_pil_image(img)
 
     img_altered = False
     if dims:
-        img = img.resize(dims, resample=RESAMPLE)
+        img = img.resize(dims, resample=RESAMPLE)  # type: ignore[arg-type]
         img_altered = True
 
     if image_filter == "AUTO":
@@ -314,10 +382,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             img.format == "TIFF"
             and image_filter == "CCITTFaxDecode"
             and img.info["compression"] == "group4"
-            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
-            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1
+            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1  # type: ignore[attr-defined]
+            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1  # type: ignore[attr-defined]
         ):
-            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
+            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]  # type: ignore[attr-defined]
             inverted = False
             if photo == 0:
                 inverted = True
@@ -327,8 +395,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 )
             offset, length = ccitt_payload_location_from_pil(img)
             img_raw_data.seek(offset)
-            ccittrawdata = img_raw_data.read(length)
-            fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)
+            ccittrawdata: bytes | bytearray = img_raw_data.read(length)
+            fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)  # type: ignore[attr-defined]
             if fillorder is None or fillorder == 1:
                 # no FillOrder or msb-to-lsb: nothing to do
                 pass
@@ -370,7 +438,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(img, alpha_channel) and image_filter not in (
+        if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
@@ -378,7 +446,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     elif img.mode == "P":
         dpn, bpc, colspace = 1, 8, "Indexed"
         info["data"] = _to_data(img, image_filter)
-        info["pal"] = img.palette.palette
+        info["pal"] = img.palette.palette if img.palette is not None else None
 
         # check if the P image has transparency
         if img.info.get("transparency", None) is not None and image_filter not in (
@@ -391,10 +459,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             )
     elif img.mode == "PA":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        info["pal"] = img.palette.palette
+        info["pal"] = img.palette.palette if img.palette is not None else None
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(img, alpha_channel) and image_filter not in (
+        if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
@@ -409,7 +477,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         alpha_channel = slice(3, None, 4)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(img, alpha_channel) and image_filter not in (
+        if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
@@ -422,7 +490,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
 
     if not is_pil_img:
         if keep_bytes_io_open:
-            img.fp = None  # cf. issue #881
+            setattr(img, "fp", None)
         else:
             img.close()
 
@@ -447,50 +515,57 @@ class temp_attr:
     temporary change the attribute of an object using a context manager
     """
 
-    def __init__(self, obj, field, value):
+    def __init__(self, obj: Any, field: str, value: Any):
         self.obj = obj
         self.field = field
         self.value = value
-
-    def __enter__(self):
         self.exists = False
+        self.old_value: Any = None
+
+    def __enter__(self) -> None:
         if hasattr(self.obj, self.field):
             self.exists = True
             self.old_value = getattr(self.obj, self.field)
         setattr(self.obj, self.field, self.value)
 
-    def __exit__(self, exctype, excinst, exctb):
+    def __exit__(self, exctype: Any, excinst: Any, exctb: Any) -> None:
         if self.exists:
             setattr(self.obj, self.field, self.old_value)
         else:
             delattr(self.obj, self.field)
 
 
-def ccitt_payload_location_from_pil(img):
+def ccitt_payload_location_from_pil(img: "PILImage") -> tuple[int, int]:
     """
     returns the byte offset and length of the CCITT payload in the original TIFF data
     """
     # assert(img.info["compression"] == "group4")
 
     # Read the TIFF tags to find the offset(s) of the compressed data strips.
-    strip_offsets = img.tag_v2[TiffImagePlugin.STRIPOFFSETS]
-    strip_bytes = img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]
+    strip_offsets = img.tag_v2[TiffImagePlugin.STRIPOFFSETS]  # type: ignore[attr-defined]
+    strip_bytes = img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]  # type: ignore[attr-defined]
 
     # PIL always seems to create a single strip even for very large TIFFs when
     # it saves images, so assume we only have to read a single strip.
     # A test ~10 GPixel image was still encoded as a single strip. Just to be
     # safe check throw an error if there is more than one offset.
-    if len(strip_offsets) != 1 or len(strip_bytes) != 1:
+    if (
+        len(strip_offsets) != 1  # pyright: ignore[reportUnknownArgumentType]
+        or len(strip_bytes) != 1  # pyright: ignore[reportUnknownArgumentType]
+    ):  # pyright: ignore[reportUnknownArgumentType]
         raise NotImplementedError(
             "Transcoding multiple strips not supported by the PDF format"
         )
 
-    (offset,), (length,) = strip_offsets, strip_bytes
+    (offset,), (length,) = (  # pyright: ignore[reportUnknownVariableType]
+        strip_offsets,
+        strip_bytes,
+    )  # pyright: ignore[reportUnknownVariableType]
 
-    return offset, length
+    return offset, length  # pyright: ignore[reportUnknownVariableType]
 
 
-def transcode_monochrome(img):
+def transcode_monochrome(img: "PILImage") -> bytes:
     """
     Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
 
@@ -520,7 +595,7 @@ def transcode_monochrome(img):
         # well
         pillow__getitem__ = TiffImagePlugin.ImageFileDirectory_v2.__getitem__
 
-        def __getitem__(self, tag):
+        def __getitem__(self: Any, tag: int) -> object:
             overrides = {
                 TiffImagePlugin.ROWSPERSTRIP: img.size[1],
                 TiffImagePlugin.STRIPBYTECOUNTS: [tmp_strip_size],
@@ -543,7 +618,11 @@ def transcode_monochrome(img):
     return newimgio.read(length)
 
 
-def _to_lzwdata(img, remove_slice=None, select_slice=None):
+def _to_lzwdata(
+    img: "PILImage",
+    remove_slice: slice | None = None,
+    select_slice: slice | None = None,
+) -> bytes:
     data = bytearray(img.tobytes())
 
     if remove_slice:
@@ -603,7 +682,7 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
     return pack_codes_into_bytes(result_codes)
 
 
-def pack_codes_into_bytes(codes):
+def pack_codes_into_bytes(codes: Iterable[int]) -> bytes:
     """
     Convert the list of result codes into a continuous byte stream, with codes packed as per the code bit-width.
     The bit-width starts at 9 bits and expands as needed.
@@ -646,7 +725,7 @@ def pack_codes_into_bytes(codes):
     return bytes(output)
 
 
-def clear_table():
+def clear_table() -> tuple[dict[bytes, int], int, int, int]:
     """
     Reset the encoding table and coding state to initial conditions.
 
@@ -659,7 +738,7 @@ def clear_table():
     return table, next_code, bits_per_code, max_code_value
 
 
-def _to_data(img, image_filter, **kwargs):
+def _to_data(img: "PILImage", image_filter: ImageFilter, **kwargs: Any) -> bytes:
     if image_filter == "FlateDecode":
         return _to_zdata(img, **kwargs)
 
@@ -688,7 +767,11 @@ def _to_data(img, image_filter, **kwargs):
     raise FPDFException(f'Unsupported image filter: "{image_filter}"')
 
 
-def _to_zdata(img, remove_slice=None, select_slice=None):
+def _to_zdata(
+    img: "PILImage",
+    remove_slice: slice | None = None,
+    select_slice: slice | None = None,
+) -> bytes:
     data = bytearray(img.tobytes())
     if remove_slice:
         del data[remove_slice]
@@ -709,6 +792,21 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
     return zlib.compress(data_with_padding, level=SETTINGS.compression_level)
 
 
-def _has_alpha(img, alpha_channel):
-    alpha = bytearray(img.tobytes())[alpha_channel]
-    return any(c != 255 for c in alpha)
+def _has_alpha(img: "PILImage") -> bool:
+    """
+    Return True if the image has any non-opaque alpha channel values.
+
+    For the alpha band, `getextrema()` yields the min & max values across all pixels:
+    - (255, 255): every pixel is fully opaque, so we can fast-return False.
+    - (x, x) where x != 255: the channel is a flat non-opaque mask, so True.
+    Otherwise we need to scan for any value different from 255 (using NumPy if available).
+    """
+    alpha_channel = img.getchannel("A")
+    lo, hi = alpha_channel.getextrema()
+    if lo == 255 and hi == 255:
+        return False
+    if lo == hi:
+        return True
+    if numpy is not None:
+        return (numpy.asarray(alpha_channel) != 255).any()  # type: ignore[no-any-return]
+    return any(c != 255 for c in alpha_channel.tobytes())

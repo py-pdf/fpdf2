@@ -1,5 +1,4 @@
 # pylint: disable=no-self-use, protected-access
-import io
 from pathlib import Path
 
 import fpdf
@@ -110,11 +109,8 @@ class TestSVGPathParsing:
         with pytest.raises(ValueError):
             fpdf.svg.svg_path_converter(pdf_path, "A 1 2 0 1 0 4 5")
 
-    @pytest.mark.parametrize(
-        "debug", (pytest.param(False, id="no debug"), pytest.param(True, id="debug"))
-    )
     @pytest.mark.parametrize("path, expected", parameters.svg_path_render_tests)
-    def test_rendering_smooth_curves(self, debug, path, expected):
+    def test_rendering_smooth_curves(self, path, expected):
         pdf_path = fpdf.drawing.PaintedPath()
 
         fpdf.svg.svg_path_converter(pdf_path, path)
@@ -124,13 +120,7 @@ class TestSVGPathParsing:
         first_point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(first_point)
 
-        if debug:
-            dbg = io.StringIO()
-            result = pdf_path.render_debug(
-                resource_catalog, style, start, first_point, dbg, ""
-            )[0]
-        else:
-            result = pdf_path.render(resource_catalog, style, start, first_point)[0]
+        result = pdf_path.render(resource_catalog, style, start, first_point)[0]
 
         assert result == expected
 

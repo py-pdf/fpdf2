@@ -8,7 +8,6 @@ from fpdf.drawing import DeviceRGB
 from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
-
 HERE = Path(__file__).resolve().parent
 FONT_DIR = HERE / ".." / "fonts"
 
@@ -186,12 +185,10 @@ def test_html_bold_italic_underline(tmp_path):
     pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
-    pdf.write_html(
-        """<B>bold</B>
+    pdf.write_html("""<B>bold</B>
            <I>italic</I>
            <U>underlined</U>
-           <b><i><u>all at once!</u></i></b>"""
-    )
+           <b><i><u>all at once!</u></i></b>""")
     assert_pdf_equal(pdf, HERE / "html_bold_italic_underline.pdf", tmp_path)
 
 
@@ -254,13 +251,11 @@ def test_html_ol_start_and_type(tmp_path):
     pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
-    pdf.write_html(
-        """<ol start="2" type="i">
+    pdf.write_html("""<ol start="2" type="i">
             <li>item</li>
             <li>item</li>
             <li>item</li>
-        </ol>"""
-    )
+        </ol>""")
     assert_pdf_equal(pdf, HERE / "html_ol_start_and_type.pdf", tmp_path)
 
 
@@ -268,25 +263,21 @@ def test_html_ul_type(tmp_path):
     pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
-    pdf.write_html(
-        text="""
+    pdf.write_html(text="""
         <ul type="circle">
           <li>a list item</li>
         </ul>
         <ul type="disc">
           <li>another list item</li>
-        </ul>"""
-    )
+        </ul>""")
     pdf.ln()
     pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
-    pdf.write_html(
-        """
+    pdf.write_html("""
         <ul type="■">
           <li>a list item</li>
           <li>another list item</li>
-        </ul>"""
-    )
+        </ul>""")
     assert_pdf_equal(pdf, HERE / "html_ul_type.pdf", tmp_path)
 
 
@@ -295,8 +286,7 @@ def test_html_list_with_custom_font(caplog, tmp_path):  # cf. issue #1496
     pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.add_page()
-    pdf.write_html(
-        """<ul>
+    pdf.write_html("""<ul>
           <li>item</li>
         </ul>
         <ul type="circle">
@@ -304,8 +294,7 @@ def test_html_list_with_custom_font(caplog, tmp_path):  # cf. issue #1496
         </ul>
         <ul type="disc">
           <li>item</li>
-        </ul>"""
-    )
+        </ul>""")
     assert_pdf_equal(pdf, HERE / "html_list_with_custom_font.pdf", tmp_path)
     assert "WARN" not in caplog.text
 
@@ -333,8 +322,7 @@ def test_html_align_paragraph(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_margins(50, 20)
-    pdf.write_html(
-        f"""
+    pdf.write_html(f"""
         No align given, default left:
         <p>{LOREM_IPSUM[:200]}"</p>
         align=justify:
@@ -347,8 +335,7 @@ def test_html_align_paragraph(tmp_path):
         <p align="center">{LOREM_IPSUM[600:800]}"</p>
         <!-- ignore invalid align -->
         align=invalid, ignore and default left:
-        <p align="invalid">{LOREM_IPSUM[800:1000]}"</p>"""
-    )
+        <p align="invalid">{LOREM_IPSUM[800:1000]}"</p>""")
     assert_pdf_equal(pdf, HERE / "html_align_paragraph.pdf", tmp_path)
 
 
@@ -395,16 +382,14 @@ def test_html_headings_line_height(tmp_path):  # issue-223
     pdf = FPDF()
     pdf.add_page()
     long_title = "The Quick Brown Fox Jumped Over The Lazy Dog "
-    pdf.write_html(
-        f"""
+    pdf.write_html(f"""
         <h1>H1   {long_title*2}</h1>
         <h2>H2   {long_title*2}</h2>
         <h3>H3   {long_title*2}</h3>
         <h4>H4   {long_title*3}</h4>
         <h5>H5   {long_title*3}</h5>
         <h6>H6   {long_title*4}</h6>
-        <p>P   {long_title*5}</p>"""
-    )
+        <p>P   {long_title*5}</p>""")
     assert_pdf_equal(pdf, HERE / "html_headings_line_height.pdf", tmp_path)
 
 
@@ -471,15 +456,13 @@ def test_html_superscript(tmp_path):
 def test_html_description(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """
+    pdf.write_html("""
         <dt>description title</dt>
         <dd>description details</dd>
         <dl>
             <dt>description title</dt>
             <dd>description details</dd>
-        </dl>"""
-    )
+        </dl>""")
     assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
 
 
@@ -495,15 +478,13 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
     with pytest.warns(DeprecationWarning, match=msg) as record:
         pdf = PDF()
         pdf.add_page()
-        pdf.write_html(
-            """
+        pdf.write_html("""
            <dt>description title</dt>
            <dd>description details</dd>
             <dl>
                 <dt>description title</dt>
                 <dd>description details</dd>
-            </dl>"""
-        )
+            </dl>""")
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
 
     assert len(record) == 1
@@ -514,8 +495,7 @@ def test_html_whitespace_handling(tmp_path):  # Issue 547
     """Testing whitespace handling for write_html()."""
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """
+    pdf.write_html("""
 <body>
 <h1>Issue 547 Test</h1>
 <p>
@@ -543,16 +523,14 @@ and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
 <br>\u00a0&nbsp;&nbsp;Testing leading nbsp
 </p>
 </body>
-"""
-    )
+""")
     assert_pdf_equal(pdf, HERE / "html_whitespace_handling.pdf", tmp_path)
 
 
 def test_html_custom_line_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<p line-height=3>
+    pdf.write_html("""<p line-height=3>
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text</p>
@@ -564,8 +542,7 @@ text-text-text-text-text-text-text-text-text-text-</p>
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-</p>
-"""
-    )
+""")
     assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
 
 
@@ -610,10 +587,8 @@ def test_warn_on_tags_not_matching(caplog):
 def test_html_unorthodox_headings_hierarchy(tmp_path):  # issue 631
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<h1>H1</h1>
-           <h5>H5</h5>"""
-    )
+    pdf.write_html("""<h1>H1</h1>
+           <h5>H5</h5>""")
     assert_pdf_equal(pdf, HERE / "html_unorthodox_headings_hierarchy.pdf", tmp_path)
 
 
@@ -649,14 +624,12 @@ def test_html_preserve_initial_text_color(tmp_path):  # issue 846
 def test_html_heading_color_attribute(tmp_path):  # discussion 880
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """
+    pdf.write_html("""
         <h1>Title</h1>
         Content
         <h2 color="#00ff00">Subtitle in green</h2>
         Content
-        """
-    )
+        """)
     assert_pdf_equal(pdf, HERE / "html_heading_color_attribute.pdf", tmp_path)
 
 
@@ -665,14 +638,12 @@ def test_html_format_within_p(tmp_path):  # discussion 880
     pdf.add_page()
     pdf.set_font("times", size=18)
     pdf.set_margins(20, 20, 100)
-    pdf.write_html(
-        """
+    pdf.write_html("""
 <p align="justify">This is a sample text that will be justified
 in the PDF. <u>This</u> is a <font color="red">sample text</font> that will be justified
 in the PDF. <b>This</b> is a sample text that will be justified in the PDF.
 <i>This</i> is a sample text that will be justified in the PDF.</p>
-        """
-    )
+        """)
     assert_pdf_equal(pdf, HERE / "html_format_within_p.pdf", tmp_path)
 
 
@@ -700,8 +671,7 @@ def test_html_sections(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=12)
-    pdf.write_html(
-        """
+    pdf.write_html("""
         <section>
            <h2>Subtitle 1</h2>
             <section>
@@ -714,8 +684,7 @@ def test_html_sections(tmp_path):
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
             </section>
         </section>
-        """
-    )
+        """)
     assert_pdf_equal(pdf, HERE / "html_sections.pdf", tmp_path)
 
 
@@ -725,14 +694,12 @@ def test_html_and_section_title_styles():  # issue 1080
     pdf.set_font("Helvetica", size=10)
     pdf.set_section_title_styles(TextStyle("Helvetica", "B", 20, (0, 0, 0)))
     with pytest.raises(NotImplementedError):
-        pdf.write_html(
-            """
+        pdf.write_html("""
             <h1>Heading One</h1>
             <p>Just enough text to show how bad the situation really is</p>
             <h2>Heading Two</h2>
             <p>This will not overflow</p>
-            """
-        )
+            """)
 
 
 def test_html_and_section_title_styles_with_deprecated_TitleStyle():
@@ -742,14 +709,12 @@ def test_html_and_section_title_styles_with_deprecated_TitleStyle():
     with pytest.warns(DeprecationWarning):
         pdf.set_section_title_styles(TitleStyle("Helvetica", "B", 20, (0, 0, 0)))
     with pytest.raises(NotImplementedError):
-        pdf.write_html(
-            """
+        pdf.write_html("""
             <h1>Heading One</h1>
             <p>Just enough text to show how bad the situation really is</p>
             <h2>Heading Two</h2>
             <p>This will not overflow</p>
-            """
-        )
+            """)
 
 
 def test_html_link_underline(tmp_path):
@@ -913,8 +878,7 @@ def test_html_blockquote_indent_using_deprecated_tag_indents(tmp_path):  # issue
 def test_html_ol_ul_line_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<p>Default line-height:</p>
+    pdf.write_html("""<p>Default line-height:</p>
         <ul>
             <li>item</li>
             <li>item</li>
@@ -943,8 +907,7 @@ def test_html_ol_ul_line_height(tmp_path):
             <li>item</li>
             <li>item</li>
             <li>item</li>
-        </ul>"""
-    )
+        </ul>""")
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)
 
 
@@ -1105,29 +1068,25 @@ def test_html_list_vertical_margin(tmp_path):
 def test_html_page_break_before(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """Content on first page.
+    pdf.write_html("""Content on first page.
         <br style="break-before: page">
         Content on second page, with some slight top margin.
         <p style="break-before: page">
         Content on third page.
-        </p>"""
-    )
+        </p>""")
     assert_pdf_equal(pdf, HERE / "html_page_break_before.pdf", tmp_path)
 
 
 def test_html_page_break_after(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """Content on first page.
+    pdf.write_html("""Content on first page.
         <br style="break-after: page">
         Content on second page.
         <p style="break-after: page">
         Other content on second page.
         </p>
-        Content on third page."""
-    )
+        Content on third page.""")
     assert_pdf_equal(pdf, HERE / "html_page_break_after.pdf", tmp_path)
 
 
@@ -1238,11 +1197,9 @@ def test_html_font_tag(tmp_path):
 def test_html_title(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<head>
+    pdf.write_html("""<head>
             <title>Document title</title>
-        </head>"""
-    )
+        </head>""")
     assert_pdf_equal(pdf, HERE / "html_title.pdf", tmp_path)
 
 
@@ -1261,11 +1218,9 @@ def test_html_title_with_render_title_tag(tmp_path):
 def test_html_title_in_body(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<body>
+    pdf.write_html("""<body>
             <title>Document title</title>
-        </body>"""
-    )
+        </body>""")
     assert_pdf_equal(pdf, HERE / "html_title_in_body.pdf", tmp_path)
 
 
@@ -1273,12 +1228,10 @@ def test_html_title_duplicated(caplog, tmp_path):
     pdf = FPDF()
     pdf.add_page()
     with caplog.at_level(logging.WARN):
-        pdf.write_html(
-            """<head>
+        pdf.write_html("""<head>
                 <title>Hello</title>
                 <title>World</title>
-            </head>"""
-        )
+            </head>""")
     assert 'Ignoring repeated <title> "World"' in caplog.text
     assert_pdf_equal(pdf, HERE / "html_title_duplicated.pdf", tmp_path)
 
@@ -1286,13 +1239,11 @@ def test_html_title_duplicated(caplog, tmp_path):
 def test_html_ol_nested_in_ul(tmp_path):  # cf. issue #1358
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<ul>
+    pdf.write_html("""<ul>
           <li>item
           <ol>
             <li>sub-item</li>
           </ol>
           </li>
-        </ul>"""
-    )
+        </ul>""")
     assert_pdf_equal(pdf, HERE / "html_ol_nested_in_ul.pdf", tmp_path)

@@ -1,7 +1,6 @@
 from fpdf import FPDF
 from pystrich.datamatrix import DataMatrixEncoder, DataMatrixRenderer
 
-
 # Define the properties of the barcode
 positionX = 10
 positionY = 10

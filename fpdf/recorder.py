@@ -6,11 +6,19 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import types, warnings
+import types
+import warnings
 from copy import deepcopy
+from typing import TYPE_CHECKING, Any, Callable
 
 from .deprecation import get_stack_level
 from .errors import FPDFException
+
+if TYPE_CHECKING:
+    from .fpdf import FPDF
+
+# One recorded call: function + positional args + keyword args
+CallRecord = tuple[Callable[..., Any], tuple[Any, ...], dict[str, Any]]
 
 
 class FPDFRecorder:
@@ -33,24 +41,28 @@ class FPDFRecorder:
     when generating large PDFs, doubling memory usage may be troublesome.
     """
 
-    def __init__(self, pdf, accept_page_break=True):
+    page_break_triggered: bool
+
+    def __init__(self, pdf: "FPDF", accept_page_break: bool = True) -> None:
         self.pdf = pdf
-        self._initial = deepcopy(self.pdf.__dict__)
-        self._calls = []
+        self._initial: dict[str, Any] = deepcopy(vars(self.pdf))
+        self._calls: list[CallRecord] = []
         if not accept_page_break:
             self.accept_page_break = False
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         attr = getattr(self.pdf, name)
         if callable(attr):
             return CallRecorder(attr, self._calls)
         return attr
 
-    def rewind(self):
-        self.pdf.__dict__ = self._initial
-        self._initial = deepcopy(self.pdf.__dict__)
+    def rewind(self) -> None:
+        pdf_dict = vars(self.pdf)
+        pdf_dict.clear()
+        pdf_dict.update(self._initial)
+        self._initial = deepcopy(pdf_dict)
 
-    def replay(self):
+    def replay(self) -> None:
         for call in self._calls:
             func, args, kwargs = call
             try:
@@ -69,10 +81,10 @@ class FPDFRecorder:
 
 
 class CallRecorder:
-    def __init__(self, func, calls):
-        self._func = func
-        self._calls = calls
+    def __init__(self, func: Callable[..., Any], calls: list[CallRecord]) -> None:
+        self._func: Callable[..., Any] = func
+        self._calls: list[CallRecord] = calls
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         self._calls.append((self._func, args, kwargs))
         return self._func(*args, **kwargs)
