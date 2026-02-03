@@ -25,6 +25,7 @@ from typing import (
     Protocol,
     Sequence,
     Union,
+    cast,
 )
 
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
@@ -47,7 +48,9 @@ from .drawing import (
     ClippingPath,
     GlyphPathPen,
     GradientPaint,
+    GraphicsStyle,
     GraphicsContext,
+    ImageSoftMask,
     PaintBlendComposite,
     PaintComposite,
     PaintedPath,
@@ -61,6 +64,11 @@ from .enums import (
     PathPaintRule,
 )
 from .pattern import SweepGradient, shape_linear_gradient, shape_radial_gradient
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None  # type: ignore[assignment]
 
 if TYPE_CHECKING:
     from .fonts import TTFFont
@@ -1009,6 +1017,230 @@ class CBDTColorFont(Type3Font):
         glyph.glyph_width = w
 
 
+class EBDTBitmapFont(Type3Font):
+    """Support for EBLC+EBDT bitmap fonts."""
+
+    def __init__(self, fpdf: "FPDF", base_font: "TTFFont"):
+        super().__init__(fpdf, base_font)
+        self._glyph_strike_indexes: dict[str, int] = {}
+
+    def _find_glyph_strike_index(self, glyph_name: str) -> Optional[int]:
+        strike_index = self._glyph_strike_indexes.get(glyph_name)
+        if strike_index is not None:
+            return strike_index
+
+        strikes_data = self.base_font.ttfont["EBDT"].strikeData
+        strikes = self.base_font.ttfont["EBLC"].strikes
+        strike_indexes = [
+            i for i, strike_data in enumerate(strikes_data) if glyph_name in strike_data
+        ]
+        if not strike_indexes:
+            return None
+
+        target_ppem = self.get_target_ppem(self.base_font.biggest_size_pt)
+        bigger_or_equal = [
+            i for i in strike_indexes if strikes[i].bitmapSizeTable.ppemX >= target_ppem
+        ]
+        if bigger_or_equal:
+            strike_index = min(bigger_or_equal, key=lambda i: self._ppem_x(strikes, i))
+        else:
+            strike_index = max(strike_indexes, key=lambda i: self._ppem_x(strikes, i))
+        self._glyph_strike_indexes[glyph_name] = strike_index
+        return strike_index
+
+    @staticmethod
+    def _ppem_x(strikes: Sequence[Any], strike_index: int) -> int:
+        return int(strikes[strike_index].bitmapSizeTable.ppemX)
+
+    def _get_glyph_metrics(
+        self, strike_index: int, glyph_name: str, bitmap_glyph: Any
+    ) -> Any:
+        metrics = getattr(bitmap_glyph, "metrics", None)
+        if metrics is not None:
+            return metrics
+        for index_sub_table in (
+            self.base_font.ttfont["EBLC"].strikes[strike_index].indexSubTables
+        ):
+            if glyph_name not in index_sub_table.names:
+                continue
+            metrics = getattr(index_sub_table, "metrics", None)
+            if metrics is not None:
+                return metrics
+            break
+        return None
+
+    @classmethod
+    def _decode_row(cls, packed_row: bytes, width: int, bit_depth: int) -> bytearray:
+        max_value = (1 << bit_depth) - 1
+        row_values = bytearray(width)
+        bit_index = 0
+        for pixel_index in range(width):
+            byte_index = bit_index // 8
+            bit_offset = bit_index % 8
+            bits_in_first_byte = min(bit_depth, 8 - bit_offset)
+            if bits_in_first_byte == bit_depth:
+                shift = 8 - bit_offset - bit_depth
+                value = (packed_row[byte_index] >> shift) & max_value
+            else:
+                first = packed_row[byte_index] & ((1 << bits_in_first_byte) - 1)
+                second_bits = bit_depth - bits_in_first_byte
+                second = packed_row[byte_index + 1] >> (8 - second_bits)
+                value = (first << second_bits) | second
+            row_values[pixel_index] = round(value * 255 / max_value)
+            bit_index += bit_depth
+        return row_values
+
+    @classmethod
+    def _bitmap_to_alpha(
+        cls,
+        bitmap_glyph: Any,
+        metrics: Any,
+        bit_depth: int,
+    ) -> bytes:
+        alpha = bytearray(metrics.width * metrics.height)
+        for row_index in range(metrics.height):
+            packed_row = bitmap_glyph.getRow(
+                row_index, bitDepth=bit_depth, metrics=metrics
+            )
+            row = cls._decode_row(packed_row, metrics.width, bit_depth)
+            start = row_index * metrics.width
+            alpha[start : start + metrics.width] = row
+        return bytes(alpha)
+
+    def glyph_exists(self, glyph_name: str) -> bool:
+        return self._find_glyph_strike_index(glyph_name) is not None
+
+    def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
+        if Image is None:
+            raise EnvironmentError(
+                f"{glyph.glyph_name}: Pillow is required to render EBDT glyphs."
+            )
+
+        strike_index = self._find_glyph_strike_index(glyph.glyph_name)
+        if strike_index is None:
+            raise ValueError(f"{glyph.glyph_name}: glyph not found in EBDT strikes.")
+
+        strike = self.base_font.ttfont["EBLC"].strikes[strike_index]
+        bit_depth = strike.bitmapSizeTable.bitDepth
+        if bit_depth not in (1, 2, 4, 8):
+            raise NotImplementedError(
+                f"{glyph.glyph_name}: unsupported EBDT bit depth {bit_depth}."
+            )
+
+        bitmap_glyph = self.base_font.ttfont["EBDT"].strikeData[strike_index][
+            glyph.glyph_name
+        ]
+        metrics = self._get_glyph_metrics(strike_index, glyph.glyph_name, bitmap_glyph)
+        if metrics is None:
+            raise NotImplementedError(
+                f"{glyph.glyph_name}: EBDT glyph metrics could not be resolved."
+            )
+        if not hasattr(bitmap_glyph, "getRow"):
+            raise NotImplementedError(
+                f"{glyph.glyph_name}: unsupported EBDT glyph format ({type(bitmap_glyph).__name__})."
+            )
+
+        ppem_x = strike.bitmapSizeTable.ppemX or 1
+        ppem_y = strike.bitmapSizeTable.ppemY or ppem_x
+        if isinstance(metrics, SmallGlyphMetrics):
+            x_min = round(metrics.BearingX * self.upem / ppem_x)
+            y_min = round((metrics.BearingY - metrics.height) * self.upem / ppem_y)
+            x_max = round((metrics.BearingX + metrics.width) * self.upem / ppem_x)
+            y_max = round(metrics.BearingY * self.upem / ppem_y)
+        elif isinstance(metrics, BigGlyphMetrics):
+            x_min = round(metrics.horiBearingX * self.upem / ppem_x)
+            y_min = round((metrics.horiBearingY - metrics.height) * self.upem / ppem_y)
+            x_max = round((metrics.horiBearingX + metrics.width) * self.upem / ppem_x)
+            y_max = round(metrics.horiBearingY * self.upem / ppem_y)
+        else:  # fallback scenario: use font bounding box
+            x_min = self.base_font.ttfont["head"].xMin
+            y_min = self.base_font.ttfont["head"].yMin
+            x_max = self.base_font.ttfont["head"].xMax
+            y_max = self.base_font.ttfont["head"].yMax
+
+        w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
+        if bit_depth == 1:
+            alpha = self._bitmap_to_alpha(bitmap_glyph, metrics, bit_depth)
+            pixel_w = (x_max - x_min) / max(metrics.width, 1)
+            pixel_h = (y_max - y_min) / max(metrics.height, 1)
+            path_cmds: list[str] = []
+            for row_index in range(metrics.height):
+                row_start = row_index * metrics.width
+                row = alpha[row_start : row_start + metrics.width]
+                col = 0
+                while col < metrics.width:
+                    if row[col] == 0:
+                        col += 1
+                        continue
+                    start = col
+                    while col < metrics.width and row[col] != 0:
+                        col += 1
+                    run_len = col - start
+                    x = (x_min + start * pixel_w) * self.scale
+                    y = (
+                        y_min + (metrics.height - row_index - 1) * pixel_h
+                    ) * self.scale
+                    w_run = (run_len * pixel_w) * self.scale
+                    h_run = pixel_h * self.scale
+                    path_cmds.append(f"{x:.3f} {y:.3f} {w_run:.3f} {h_run:.3f} re")
+            if path_cmds:
+                glyph.glyph = (
+                    f"{round(w * self.scale)} 0 d0\n"
+                    "q\n"
+                    f"{' '.join(path_cmds)} f\n"
+                    "Q"
+                )
+            else:
+                glyph.glyph = f"{round(w * self.scale)} 0 d0"
+            glyph.glyph_width = w
+            return
+
+        alpha = self._bitmap_to_alpha(bitmap_glyph, metrics, bit_depth)
+        alpha_image = Image.frombytes("L", (metrics.width, metrics.height), alpha)
+        bio = BytesIO()
+        alpha_image.save(bio, format="PNG")
+        bio.seek(0)
+        _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
+
+        mask_matrix = Transform(
+            a=(x_max - x_min) * self.scale,
+            b=0,
+            c=0,
+            d=(y_max - y_min) * self.scale,
+            e=x_min * self.scale,
+            f=y_min * self.scale,
+        )
+        bbox = (
+            x_min * self.scale,
+            y_min * self.scale,
+            x_max * self.scale,
+            y_max * self.scale,
+        )
+        soft_mask = ImageSoftMask(cast(int, info["i"]), bbox, mask_matrix)
+
+        soft_mask.object_id = self.fpdf._resource_catalog.register_soft_mask(  # pylint: disable=protected-access
+            soft_mask
+        )
+        style = GraphicsStyle()
+        style.soft_mask = soft_mask
+        gs_name = self.fpdf._resource_catalog.register_graphics_style(  # pylint: disable=protected-access
+            style
+        )
+        if gs_name is None:
+            raise RuntimeError("Failed to register soft mask graphics state.")
+        self.graphics_style_used.add(str(gs_name))
+
+        glyph.glyph = (
+            f"{round(w * self.scale)} 0 d0\n"
+            "q\n"
+            f"/{gs_name} gs\n"
+            f"{x_min * self.scale} {y_min * self.scale} "
+            f"{(x_max - x_min) * self.scale} {(y_max - y_min) * self.scale} re f\n"
+            "Q"
+        )
+        glyph.glyph_width = w
+
+
 class SBIXColorFont(Type3Font):
     """Support for SBIX bitmap color fonts."""
 
@@ -1077,9 +1309,8 @@ def get_color_font_object(
         LOGGER.debug("Font %s is a CBLC+CBDT color font", base_font.name)
         return CBDTColorFont(fpdf, base_font)
     if "EBDT" in base_font.ttfont:
-        raise NotImplementedError(
-            f"{base_font.name} - EBLC+EBDT color font is not supported yet"
-        )
+        LOGGER.debug("Font %s is a EBLC+EBDT color font", base_font.name)
+        return EBDTBitmapFont(fpdf, base_font)
     if "COLR" in base_font.ttfont:
         if base_font.ttfont["COLR"].version == 0:
             LOGGER.debug("Font %s is a COLRv0 color font", base_font.name)

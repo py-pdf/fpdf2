@@ -23,7 +23,7 @@ from io import BytesIO
 from fontTools import subset as ftsubset
 
 from .annotations import AnnotationDict, PDFAnnotation
-from .drawing import PaintSoftMask
+from .drawing import ImageSoftMask, PaintSoftMask
 from .drawing_primitives import Transform
 from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
@@ -357,6 +357,7 @@ class PDFXObject(PDFContentStream):
         "decode",
         "decode_parms",
         "s_mask",
+        "image_mask",
     )
 
     def __init__(
@@ -365,11 +366,12 @@ class PDFXObject(PDFContentStream):
         subtype: str,
         width: float,
         height: float,
-        color_space: PDFArray | Name,
+        color_space: PDFArray | Name | None,
         bits_per_component: int,
         img_filter: Optional[str] = None,
         decode: Optional[str] = None,
         decode_parms: Optional[str] = None,
+        image_mask: bool = False,
     ) -> None:
         super().__init__(contents=contents)
         self.type = Name("XObject")
@@ -382,6 +384,7 @@ class PDFXObject(PDFContentStream):
         self.decode = decode
         self.decode_parms = decode_parms
         self.s_mask: Optional[PDFXObject] = None
+        self.image_mask = True if image_mask else None
 
 
 class PDFICCProfile(PDFContentStream):
@@ -801,7 +804,7 @@ class ResourceCatalog:
 
         return self.graphics_styles[style_str]
 
-    def register_soft_mask(self, soft_mask: PaintSoftMask) -> int:
+    def register_soft_mask(self, soft_mask: PaintSoftMask | ImageSoftMask) -> int:
         """Register a soft mask xobject and return its object id"""
         self.last_reserved_object_id += 1
         xobject = soft_mask_path_to_xobject(soft_mask, self)
@@ -1552,9 +1555,10 @@ class OutputProducer:
         return iccp_pdf_i
 
     def _add_image(self, info: dict[str, object]) -> PDFXObject:
-        color_space: Name | PDFArray = Name(info["cs"])
+        image_mask = bool(info.get("image_mask"))
+        color_space: Name | PDFArray | None = None if image_mask else Name(info["cs"])
         decode = None
-        iccp_i = info.get("iccp_i")
+        iccp_i = None if image_mask else info.get("iccp_i")
         if color_space == "Indexed":
             color_space = PDFArray(
                 ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]  # type: ignore[arg-type]
@@ -1565,6 +1569,8 @@ class OutputProducer:
         elif color_space == "DeviceCMYK":
             if info["inverted"] is True:
                 decode = "[1 0 1 0 1 0 1 0]"
+        if "decode" in info:
+            decode = cast(str, info["decode"])
 
         decode_parms = f"<<{info['dp']} /BitsPerComponent {info['bpc']}>>"
         img_obj = PDFXObject(
@@ -1577,11 +1583,12 @@ class OutputProducer:
             img_filter=cast(str, info["f"]),
             decode=decode,
             decode_parms=decode_parms,
+            image_mask=image_mask,
         )
         info["obj_id"] = self._add_pdf_obj(img_obj, "images")
 
         # Soft mask
-        if self.fpdf.allow_images_transparency and "smask" in info:
+        if self.fpdf.allow_images_transparency and "smask" in info and not image_mask:
             dp = f"/Predictor 15 /Colors 1 /Columns {info['w']}"
             img_obj.s_mask = self._add_image(
                 {
@@ -1596,7 +1603,7 @@ class OutputProducer:
             )
 
         # Palette
-        if "/Indexed" in color_space:
+        if isinstance(color_space, PDFArray) and "/Indexed" in color_space:
             assert isinstance(img_obj.color_space, PDFArray)
             pal_cs_obj = PDFContentStream(
                 contents=cast(bytes, info["pal"]), compress=self.fpdf.compress
@@ -1618,11 +1625,12 @@ class OutputProducer:
         self,
         gfxstate_objs_per_name: dict[str, PDFExtGState],
         pattern_objs_per_name: dict[str, "Pattern"],
+        img_objs_per_index: dict[int, PDFXObject],
     ) -> None:
         """Append soft-mask Form XObjects after patterns exist so we can resolve /Pattern ids."""
         for soft_mask in self.fpdf._resource_catalog.soft_mask_xobjects:
             soft_mask.resources = soft_mask._path.get_resource_dictionary(  # type: ignore[attr-defined]
-                gfxstate_objs_per_name, pattern_objs_per_name
+                gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
             )
             self.pdf_objs.append(soft_mask)
 
@@ -1703,7 +1711,9 @@ class OutputProducer:
             shading_objs_per_name,
             font_objs_per_index,
         )
-        self._add_soft_masks(gfxstate_objs_per_name, pattern_objs_per_name)
+        self._add_soft_masks(
+            gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
+        )
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
@@ -2286,7 +2296,7 @@ def _sizeof_fmt(num: float, suffix: str = "B") -> str:
 
 
 def soft_mask_path_to_xobject(
-    path: PaintSoftMask, resource_catalog: ResourceCatalog
+    path: PaintSoftMask | ImageSoftMask, resource_catalog: ResourceCatalog
 ) -> PDFContentStream:
     """Converts a PaintedSoftMask into a PDF XObject Form suitable for use as a soft mask."""
     xobject = PDFContentStream(contents=path.render(resource_catalog).encode("latin-1"))
