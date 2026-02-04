@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.6] - Not released yet
 ### Added
+* support for `FPDF.transform()` context manager to apply geometric transformations (translation, rotation, scaling, skewing) to the current graphics state.
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 * mypy and pyright checks in the CI pipeline to enforce strict typing
 ### Fixed
