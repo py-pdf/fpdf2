@@ -4447,9 +4447,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_glyphs = self.current_font.cmap  # type: ignore[union-attr]
         else:
             font_glyphs = []
-        num_escape_chars = 0
 
         while text:
+            tlt = text[:3]  ## get triples to check for escape character
+            if self.MARKDOWN_ESCAPE_CHARACTER == tlt[0] and tlt[1:] in [
+                "**",
+                "__",
+                "~~",
+                "--",
+            ]:
+                ## remove the escape character
+                txt_frag.append(text[1])
+                txt_frag.append(text[2])
+                yield frag()
+                text = text[3:]
+                continue
+
+            if self.MARKDOWN_ESCAPE_CHARACTER == tlt[0:1] and \
+               self.MARKDOWN_ESCAPE_CHARACTER == tlt[1:2]:
+                # double-escape, juste produce it
+                txt_frag.append(text[0])
+                txt_frag.append(text[1])
+                yield frag()
+                text = text[2:]
+                continue
+    
+
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
                 self.MARKDOWN_ITALICS_MARKER,
@@ -4492,29 +4515,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     and (not txt_frag or txt_frag[-1] != half_marker)
                     and (len(text) < 3 or text[2] != half_marker)
                 ):
-                    txt_frag = (
-                        txt_frag[: -((num_escape_chars + 1) // 2)]
-                        if num_escape_chars > 0
-                        else txt_frag
-                    )
-                    if num_escape_chars % 2 == 0:
-                        if txt_frag:
-                            yield frag()
-                        if text[:2] == self.MARKDOWN_BOLD_MARKER:
-                            in_bold = not in_bold
-                        if text[:2] == self.MARKDOWN_ITALICS_MARKER:
-                            in_italics = not in_italics
-                        if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
-                            in_strikethrough = not in_strikethrough
-                        if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
-                            in_underline = not in_underline
-                        text = text[2:]
-                        continue
-                num_escape_chars = (
-                    num_escape_chars + 1
-                    if text[0] == self.MARKDOWN_ESCAPE_CHARACTER
-                    else 0
-                )
+                    if txt_frag:
+                        yield frag()
+                    if text[:2] == self.MARKDOWN_BOLD_MARKER:
+                        in_bold = not in_bold
+                    if text[:2] == self.MARKDOWN_ITALICS_MARKER:
+                        in_italics = not in_italics
+                    if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
+                        in_strikethrough = not in_strikethrough
+                    if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
+                        in_underline = not in_underline
+                    text = text[2:]
+                    continue
+                
                 is_link = self.MARKDOWN_LINK_REGEX.match(text)
                 if is_link:
                     link_text, link_dest, text = is_link.groups()
