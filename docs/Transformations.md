@@ -77,3 +77,23 @@ with pdf.mirror((pdf.x, pdf.y), "NORTHEAST"):
     pdf.multi_cell(w=50, text=LOREM_IPSUM, fill=True)
 ```
 ![](diagonal_mirror.png)
+
+
+## Translation ##
+
+_New in [:octicons-tag-24: 2.8.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+
+The `translation` context-manager creates a translation transformation, effectively moving the coordinate system origin by `x` and `y`.
+
+```python
+pdf.rect(x=20, y=20, w=40, h=20)
+pdf.text(x=20, y=18, text="Original")
+
+# Translate the origin by 50 units to the right and 10 down
+with pdf.translation(x=50, y=10):
+    pdf.set_draw_color(255, 0, 0) # Red
+    pdf.rect(x=20, y=20, w=40, h=20)
+    pdf.text(x=20, y=18, text="Translated")
+```
+![](translation-capture.png)
