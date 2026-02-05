@@ -1006,9 +1006,9 @@ class CBDTColorFont(Type3Font):
             f"{round(w * self.scale)} 0 d0\n"
             "q\n"
             f"{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n"
-            f"/I{info.index} Do\nQ"
+            f"/I{info['i']} Do\nQ"
         )
-        self.images_used.add(info.index)
+        self.images_used.add(info["i"])
         glyph.glyph_width = w
 
 
@@ -1068,9 +1068,9 @@ class SBIXColorFont(Type3Font):
             f"{round(w * self.scale)} 0 d0\n"
             "q\n"
             f"{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n"
-            f"/I{info.index} Do\nQ"
+            f"/I{info['i']} Do\nQ"
         )
-        self.images_used.add(info.index)
+        self.images_used.add(info["i"])
         glyph.glyph_width = w
 
 

@@ -121,4 +121,4 @@ def test_oversized_images_downscale_biggest_2nd(caplog, tmp_path):
 
 
 def _in_use_img_names(pdf):
-    return [name for name, img in pdf.image_cache.images.items() if img.usage_count]
+    return [name for name, img in pdf.image_cache.images.items() if img["usages"]]

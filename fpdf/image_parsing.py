@@ -167,32 +167,31 @@ def preload_image(
         raster_name, img = str(name), None
     info = image_cache.images.get(raster_name)
     if info is not None:
-        info.usage_count += 1
-        return raster_name, img, info
-
-    info = get_img_info(
-        raster_name,
-        img,
-        image_cache.image_filter,
-        dims,
-    )
-    info.index = len(image_cache.images) + 1
-    info.usage_count = 1
-    info.icc_profile_index = None
-    iccp = info.icc_profile
-    if iccp is not None:
-        LOGGER.debug(
-            "ICC profile found for image %s - It will be inserted in the PDF document",
+        info["usages"] += 1
+    else:
+        info = get_img_info(
             raster_name,
+            img,
+            image_cache.image_filter,
+            dims,
         )
-        if iccp in image_cache.icc_profiles:
-            info.icc_profile_index = image_cache.icc_profiles[iccp]
-        else:
-            iccp_i = len(image_cache.icc_profiles)
-            image_cache.icc_profiles[iccp] = iccp_i
-            info.icc_profile_index = iccp_i
-        info.icc_profile = None
-    image_cache.images[raster_name] = info
+        info["i"] = len(image_cache.images) + 1
+        info["usages"] = 1
+        info["iccp_i"] = None
+        iccp = info.get("iccp")
+        if iccp is not None:
+            LOGGER.debug(
+                "ICC profile found for image %s - It will be inserted in the PDF document",
+                raster_name,
+            )
+            if iccp in image_cache.icc_profiles:
+                info["iccp_i"] = image_cache.icc_profiles[iccp]
+            else:
+                iccp_i = len(image_cache.icc_profiles)
+                image_cache.icc_profiles[iccp] = iccp_i
+                info["iccp_i"] = iccp_i
+            info["iccp"] = None
+        image_cache.images[raster_name] = info
     return raster_name, img, info
 
 
@@ -273,7 +272,13 @@ def get_svg_info(
         w = svg.width
     if svg.height:
         h = svg.height
-    info = VectorImageInfo(data=svg, width=w, height=h)
+    info: VectorImageInfo = {
+        "data": svg,
+        "w": w,
+        "h": h,
+        "rendered_width": 0.0,
+        "rendered_height": 0.0,
+    }
     return filename, svg, info
 
 
@@ -360,18 +365,26 @@ def get_img_info(
             else:
                 raise ValueError(f"Unsupported image mode: {img.mode}")
             img_raw_data.seek(0)
-            return RasterImageInfo(
-                data=img_raw_data.read(),
-                width=w,
-                height=h,
-                color_space=colspace,
-                icc_profile=iccp,
-                color_components=dpn,
-                bits_per_component=bpc,
-                filter=image_filter,
-                is_inverted=jpeg_inverted,
-                decode_params=f"/Predictor 15 /Colors {dpn} /Columns {w}",
-            )
+            return {
+                "data": img_raw_data.read(),
+                "w": w,
+                "h": h,
+                "cs": colspace,
+                "iccp": iccp,
+                "dpn": dpn,
+                "bpc": bpc,
+                "f": image_filter,
+                "inverted": jpeg_inverted,
+                "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
+                "pal": None,
+                "smask": None,
+                "i": 0,
+                "usages": 0,
+                "obj_id": None,
+                "iccp_i": None,
+                "rendered_width": 0.0,
+                "rendered_height": 0.0,
+            }
         # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
         # only contains a single strip
         if (
@@ -405,18 +418,26 @@ def get_img_info(
             else:
                 raise ValueError(f"unsupported FillOrder: {fillorder}")
             dpn, bpc, colspace = 1, 1, "DeviceGray"
-            return RasterImageInfo(
-                data=bytes(ccittrawdata),
-                width=w,
-                height=h,
-                color_space=colspace,
-                icc_profile=None,
-                color_components=dpn,
-                bits_per_component=bpc,
-                filter=image_filter,
-                is_inverted=jpeg_inverted,
-                decode_params=f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
-            )
+            return {
+                "data": bytes(ccittrawdata),
+                "w": w,
+                "h": h,
+                "cs": colspace,
+                "iccp": None,
+                "dpn": dpn,
+                "bpc": bpc,
+                "f": image_filter,
+                "inverted": jpeg_inverted,
+                "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
+                "pal": None,
+                "smask": None,
+                "i": 0,
+                "usages": 0,
+                "obj_id": None,
+                "iccp_i": None,
+                "rendered_width": 0.0,
+                "rendered_height": 0.0,
+            }
 
     # garbage collection
     img_raw_data = None
@@ -492,20 +513,26 @@ def get_img_info(
         else:
             img.close()
 
-    return RasterImageInfo(
-        data=data,
-        width=w,
-        height=h,
-        color_space=colspace,
-        icc_profile=iccp,
-        color_components=dpn,
-        bits_per_component=bpc,
-        filter=image_filter,
-        is_inverted=jpeg_inverted,
-        decode_params=dp,
-        soft_mask=smask,
-        palette=pal,
-    )
+    return {
+        "data": data,
+        "w": w,
+        "h": h,
+        "cs": colspace,
+        "iccp": iccp,
+        "dpn": dpn,
+        "bpc": bpc,
+        "f": image_filter,
+        "inverted": jpeg_inverted,
+        "dp": dp,
+        "smask": smask,
+        "pal": pal,
+        "i": 0,
+        "usages": 0,
+        "obj_id": None,
+        "iccp_i": None,
+        "rendered_width": 0.0,
+        "rendered_height": 0.0,
+    }
 
 
 class temp_attr:

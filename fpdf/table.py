@@ -503,7 +503,7 @@ class Table:
             )
 
             img_height = (
-                image.rendered_height
+                image["rendered_height"]
                 + padding.top
                 + padding.bottom
                 + cell_border_line_width

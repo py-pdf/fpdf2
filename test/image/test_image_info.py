@@ -38,25 +38,19 @@ def test_get_img_info():
             blob = BytesIO(path.read_bytes())
             info = fpdf.image_parsing.get_img_info(blob)
             short_info = {}
-            if info.soft_mask is not None:
-                short_info["smask"] = zlib.decompress(info.soft_mask)
-            if "f" in short_keys:
-                short_info["f"] = info.filter
-            if "h" in short_keys:
-                short_info["h"] = info.height
-            if "bpc" in short_keys:
-                short_info["bpc"] = info.bits_per_component
-            if "w" in short_keys:
-                short_info["w"] = info.width
-            if "cs" in short_keys:
-                short_info["cs"] = info.color_space
-            if "dp" in short_keys:
-                short_info["dp"] = info.decode_params
-            if info.color_space == "Indexed" and "pal" in short_keys:
+            for k, v in info.items():
+                if k == "smask" and v is not None:
+                    short_info["smask"] = zlib.decompress(v)
+                elif k == "pal" and v is None:
+                    continue
+                elif k in short_keys:
+                    short_info[k] = v.decode("latin-1") if isinstance(v, bytes) else v
+
+            if info["cs"] == "Indexed" and "pal" in short_keys:
                 short_info["pal"] = (
-                    info.palette.decode("latin-1")
-                    if isinstance(info.palette, bytes)
-                    else info.palette
+                    info["pal"].decode("latin-1")
+                    if isinstance(info["pal"], bytes)
+                    else info["pal"]
                 )
 
             if "smask" in expected[path.name]:
@@ -69,7 +63,7 @@ def test_get_img_info():
 def test_get_img_info_data_rgba():
     blob = BytesIO((HERE / "png_test_suite" / "basi6a08.png").read_bytes())
     info = fpdf.image_parsing.get_img_info(blob)
-    assert zlib.decompress(info.data) == zlib.decompress(
+    assert zlib.decompress(info["data"]) == zlib.decompress(
         b"x\x9c\xb5\xd5[\x15@P\x18D\xe198\x97\x164\xa1\tMhB\x13\x9a\xd0d"
         b"\xfc%\xf6Z\xdf<\xef\xc7\x91\xd5P\xf2\xd8P\xf2\xdcP\xf2\xdaP\xf2^Q\xf2YQ"
         b"\xf2]Q\xf2[Q\xb2\x0bJ\x9f\x0bJ\x8f\x0bJ\x973J\x873J\x9b3J\x8b3J\x93\x07"
@@ -81,7 +75,7 @@ def test_get_img_info_data_rgba():
 def test_get_img_info_data_palette():
     blob = BytesIO((HERE / "png_test_suite" / "basi3p02.png").read_bytes())
     info = fpdf.image_parsing.get_img_info(blob)
-    assert zlib.decompress(info.data) == zlib.decompress(
+    assert zlib.decompress(info["data"]) == zlib.decompress(
         b"x\x9cc`\x06\x02F `\x02\x02\x06 @\xe7c\x08\xd0@\x01\x9d\xac\xc1\xab\x00\x97."
         b"\x18\x9f\x1e\n\xf0\xb9\x1e\xc4\xa7\x87\x82\x81\x8e\x87\xd1\xf40\xa8\xd2\x03\x00d\xd4\x06\x01"
     )
@@ -90,7 +84,7 @@ def test_get_img_info_data_palette():
 def test_get_img_info_data_gray():
     blob = BytesIO((HERE / "png_test_suite" / "basi0g08.png").read_bytes())
     info = fpdf.image_parsing.get_img_info(blob)
-    assert zlib.decompress(info.data) == zlib.decompress(
+    assert zlib.decompress(info["data"]) == zlib.decompress(
         b"x\x9cc``dbfaec\xe7\xe0\xe4\xe2\xe6\xe1\xe5\xe3\x17\x10\x14\x12\x16\x11\x15"
         b"\x13\x97\x90\x94\x92\x96\x91\x95\x93gPPTRVQUS\xd7\xd0\xd4\xd2\xd6\xd1\xd5"
         b"\xd370426153\xb7\xb0\xb4\xb2\xb6\xb1\xb5\xb3gpptrvqus\xf7\xf0\xf4\xf2\xf6"

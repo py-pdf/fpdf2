@@ -129,9 +129,12 @@ from .image_datastructures import (
     ImageCache,
     ImageFilter,
     ImageInfo,
-    LegacyImageInfo,
     RasterImageInfo,
     VectorImageInfo,
+    is_vector_image_info,
+    raster_image_size_in_document_units,
+    scale_image_to_box,
+    update_raster_image_info,
 )
 from .image_parsing import (
     SUPPORTED_IMAGE_FILTERS,
@@ -5150,7 +5153,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         alt_text: Optional[str] = None,
         dims: Optional[tuple[float, float]] = None,
         keep_aspect_ratio: bool = False,
-    ) -> LegacyImageInfo:
+    ) -> RasterImageInfo | VectorImageInfo:
         """
         Put an image on the page.
 
@@ -5199,7 +5202,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         If `y` is provided, this method will not trigger any page break;
         otherwise, auto page break detection will be performed.
 
-        Returns: a legacy dict-based image info structure with historical keys (w, h, cs, ...).
+        Returns: a dict-based image info structure with historical keys (w, h, cs, ...).
         """
         if not self.page:
             raise FPDFException("No page open, you need to call add_page() first")
@@ -5214,7 +5217,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
 
         name, img, info = preload_image(self.image_cache, name, dims)
-        if isinstance(info, VectorImageInfo):
+        if is_vector_image_info(info):
             return self._vector_image(
                 name,
                 cast(SVGObject, img),
@@ -5227,13 +5230,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 title,
                 alt_text,
                 keep_aspect_ratio,
-            ).legacy_info
+            )
         if TYPE_CHECKING:
             assert not isinstance(img, SVGObject)
         return self._raster_image(
             name,
             img,
-            info,
+            cast(RasterImageInfo, info),
             x,
             y,
             w,
@@ -5243,7 +5246,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             alt_text,
             dims,
             keep_aspect_ratio,
-        ).legacy_info
+        )
 
     def _raster_image(
         self,
@@ -5260,11 +5263,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         dims: Optional[tuple[float, float]] = None,
         keep_aspect_ratio: bool = False,
     ) -> RasterImageInfo:
-        if info.soft_mask is not None:
+        if info.get("smask") is not None:
             self._set_min_pdf_version("1.4")
 
         # Automatic width and height calculation if needed
-        w, h = info.size_in_document_units(w, h, scale=self.k)
+        w, h = raster_image_size_in_document_units(info, w, h, scale=self.k)
 
         # Flowing mode
         if y is None:
@@ -5279,8 +5282,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if TYPE_CHECKING:
             x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
-        if self.oversized_images and info.usage_count == 1 and not dims:
+            x, y, w, h = scale_image_to_box(info, x, y, w, h)
+        if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h, scale=self.k)
 
         stream_content = stream_content_for_raster_image(
@@ -5295,9 +5298,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        self._resource_catalog.add(PDFResourceType.X_OBJECT, info.index, self.page)
-        info.rendered_width = w
-        info.rendered_height = h
+        self._resource_catalog.add(PDFResourceType.X_OBJECT, info["i"], self.page)
+        info["rendered_width"] = w
+        info["rendered_height"] = h
         return info
 
     def x_by_align(
@@ -5309,7 +5312,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         keep_aspect_ratio: bool,
     ) -> float:
         if keep_aspect_ratio:
-            _, _, w, h = img_info.scale_inside_box(0, 0, w, h)
+            _, _, w, h = scale_image_to_box(img_info, 0, 0, w, h)
         x = Align.coerce(x)
         if x == Align.C:
             return (self.w - w) / 2
@@ -5384,7 +5387,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
         x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
+            x, y, w, h = scale_image_to_box(info, x, y, w, h)
 
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
@@ -5407,8 +5410,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        info.rendered_width = w
-        info.rendered_height = h
+        info["rendered_width"] = w
+        info["rendered_height"] = h
         return info
 
     def _downscale_image(
@@ -5423,8 +5426,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         images = self.image_cache.images
         width_in_pt, height_in_pt = w * scale, h * scale
         lowres_name = f"lowres-{name}"
-        image_width = float(info.width)
-        image_height = float(info.height)
+        image_width = float(info["w"])
+        image_height = float(info["h"])
         assert self.oversized_images is not None
         if (
             image_width > width_in_pt * self.oversized_images_ratio
@@ -5452,34 +5455,35 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     round(width_in_pt * self.oversized_images_ratio),
                     round(height_in_pt * self.oversized_images_ratio),
                 )
-                info.usage_count -= 1  # no need to embed highres version
-                if info.usage_count == 0:
+                info["usages"] -= 1  # no need to embed highres version
+                if info["usages"] == 0:
                     resources_per_page = self._resource_catalog.resources_per_page
                     for (_, rtype), resource in resources_per_page.items():
-                        if rtype == PDFResourceType.X_OBJECT and info.index in resource:
-                            resource.remove(info.index)
+                        if rtype == PDFResourceType.X_OBJECT and info["i"] in resource:
+                            resource.remove(info["i"])
                 lowres_info = images.get(lowres_name)
                 if lowres_info:  # Great, we've already done the job!
                     info = lowres_info
-                    lowres_width = float(info.width)
-                    lowres_height = float(info.height)
+                    lowres_width = float(info["w"])
+                    lowres_height = float(info["h"])
                     if lowres_width * lowres_height < dims[0] * dims[1]:
                         # The existing low-res image is too small, we need a bigger low-res image:
-                        info.update_from(
+                        update_raster_image_info(
+                            info,
                             get_img_info(
                                 name,
                                 img or load_image(name),
                                 self.image_cache.image_filter,
                                 dims,
-                            )
+                            ),
                         )
                         LOGGER.debug(
                             "OVERSIZED: Updated low-res image with name=%s id=%d to dims=%s",
                             lowres_name,
-                            info.index,
+                            info["i"],
                             dims,
                         )
-                    info.usage_count += 1
+                    info["usages"] += 1
                 else:
                     info = get_img_info(
                         name,
@@ -5487,14 +5491,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         self.image_cache.image_filter,
                         dims,
                     )
-                    info.index = len(images) + 1
-                    info.usage_count = 1
+                    info["i"] = len(images) + 1
+                    info["usages"] = 1
                     images[lowres_name] = info
                     LOGGER.debug(
                         "OVERSIZED: Generated new low-res image with name=%s dims=%s id=%d",
                         lowres_name,
                         dims,
-                        info.index,
+                        info["i"],
                     )
             else:
                 raise ValueError(
