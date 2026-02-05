@@ -347,6 +347,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ByZay"><img src="https://avatars.githubusercontent.com/u/235472384?v=4?s=100" width="100px;" alt="ByZay"/><br /><sub><b>ByZay</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=ByZay" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://oberg.org"><img src="https://avatars.githubusercontent.com/u/10665776?v=4?s=100" width="100px;" alt="bruce oberg"/><br /><sub><b>bruce oberg</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Abruceoberg" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/slkoo-cc"><img src="https://avatars.githubusercontent.com/u/201556645?v=4?s=100" width="100px;" alt="slkoo-cc"/><br /><sub><b>slkoo-cc</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=slkoo-cc" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/deltragon"><img src="https://avatars.githubusercontent.com/u/11904241?v=4?s=100" width="100px;" alt="deltragon"/><br /><sub><b>deltragon</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Adeltragon" title="Bug reports">🐛</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=deltragon" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

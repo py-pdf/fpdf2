@@ -340,8 +340,8 @@ class PDFString(str):
             return _security_handler.encrypt_string(self, _obj_id)
         try:
             self.encode("ascii")
-            # => this string only contains ASCII characters, no need for special encoding:
-            return f"({self})"
+            # => this string only contains ASCII characters
+            return f"({escape_parens(self)})"
         except UnicodeEncodeError:
             pass
         if self.USE_HEX_ENCODING:

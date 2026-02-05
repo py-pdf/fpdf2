@@ -3613,6 +3613,28 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
+    def transform(self, transform: Transform) -> Iterator[None]:
+        """
+        Apply a transformation matrix to the current graphics state.
+        This context manager isolates the transformation so it doesn't affect
+        rendering outside the 'with' block.
+
+        It automatically handles the conversion from FPDF's User Units (usually mm, top-left origin)
+        to PDF Device Units (points, bottom-left origin).
+
+        Args:
+            transform (fpdf.drawing_primitives.Transform): The transformation matrix to apply.
+        """
+        with self.local_context():
+            user_to_pdf = Transform.scaling(self.k, -self.k).translate(0, self.h_pt)
+            adjusted_transform = user_to_pdf.inverse() @ transform @ user_to_pdf
+
+            command, _ = adjusted_transform.render(None)  # type: ignore
+            self._out(command)
+            yield
+
+    @check_page
+    @contextmanager
     def local_context(self, **kwargs: Any) -> Iterator[None]:
         """
         Creates a local graphics state, which won't affect the surrounding code.

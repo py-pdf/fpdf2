@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.6] - Not released yet
 ### Added
+* support for `FPDF.transform()` context manager to apply geometric transformations (translation, rotation, scaling, skewing) to the current graphics state.
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 * mypy and pyright checks in the CI pipeline to enforce strict typing
 * support WOFF and WOFF2 fonts - thanks to @BharathPESU
@@ -29,6 +30,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * a bug when rendering empty tables with `INTERNAL` layout, that caused an extra border to be rendered due to an erroneous use of `list.index()` - _cf._ [issue #1669](https://github.com/py-pdf/fpdf2/issues/1669)
 * edge cases where tiny floating-point drift could trigger incorrect behaviour like [issue #1393](https://github.com/py-pdf/fpdf2/issues/1393)
 * the bug “Escape character escaping multiple consecutive markdown characters” (https://github.com/py-pdf/fpdf2/issues/1236) has been fixed.
+* parentheses are now escaped in more places. This fixes embedding a file with a single parenthesis in the filename, but might also have impacts on e.g. section names.
 ### Changed
 * improved performance when rendering paths, SVGs, and opaque raster images with an alpha channel - _cf._ [PR #1675](https://github.com/py-pdf/fpdf2/pull/1675)
 * typing annotations added across the codebase as part of the strict typing rollout

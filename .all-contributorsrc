@@ -1662,6 +1662,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "deltragon",
+      "name": "deltragon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11904241?v=4",
+      "profile": "https://github.com/deltragon",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
