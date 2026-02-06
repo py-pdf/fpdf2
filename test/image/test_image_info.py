@@ -39,10 +39,19 @@ def test_get_img_info():
             info = fpdf.image_parsing.get_img_info(blob)
             short_info = {}
             for k, v in info.items():
-                if k == "smask":
+                if k == "smask" and v is not None:
                     short_info["smask"] = zlib.decompress(v)
+                elif k == "pal" and v is None:
+                    continue
                 elif k in short_keys:
                     short_info[k] = v.decode("latin-1") if isinstance(v, bytes) else v
+
+            if info["cs"] == "Indexed" and "pal" in short_keys:
+                short_info["pal"] = (
+                    info["pal"].decode("latin-1")
+                    if isinstance(info["pal"], bytes)
+                    else info["pal"]
+                )
 
             if "smask" in expected[path.name]:
                 expected[path.name]["smask"] = zlib.decompress(

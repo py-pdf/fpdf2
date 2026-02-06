@@ -29,7 +29,7 @@ from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, Signatu
 from .errors import FPDFException
 from .font_type_3 import Type3Font
 from .fonts import CORE_FONTS, CoreFont, TTFFont
-from .image_datastructures import RasterImageInfo
+from .image_datastructures import RasterImageInfo, scale_image_to_box
 from .line_break import TotalPagesSubstitutionFragment
 from .outline import OutlineDictionary, OutlineItemDictionary, build_outline_objs
 from .pattern import Gradient, MeshShading, Pattern, Shading
@@ -1521,13 +1521,13 @@ class OutputProducer:
     def _add_images(self) -> dict[int, PDFXObject]:
         img_objs_per_index: dict[int, PDFXObject] = {}
         for img in sorted(
-            self.fpdf.image_cache.images.values(), key=lambda img: cast(int, img["i"])
+            self.fpdf.image_cache.images.values(), key=lambda img: img["i"]
         ):
-            if cast(int, img["usages"]) > 0:
-                img_objs_per_index[cast(int, img["i"])] = self._add_image(img)
+            if img["usages"] > 0:
+                img_objs_per_index[img["i"]] = self._add_image(img)
         return img_objs_per_index
 
-    def _ensure_iccp(self, img_info: dict[str, object]) -> int:
+    def _ensure_iccp(self, img_info: RasterImageInfo) -> int:
         """
         Returns the PDF object of the ICC profile indexed iccp_i in the FPDF object.
         Adds it if not present.
@@ -1544,54 +1544,65 @@ class OutputProducer:
         # Note: n should be 4 if the profile ColorSpace is CMYK
         iccp_obj = PDFICCProfile(
             contents=iccp_content,
-            n=cast(int, img_info["dpn"]),
-            alternate=cast(str, img_info["cs"]),
+            n=img_info["dpn"],
+            alternate=img_info["cs"],
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")
         self.iccp_i_to_pdf_i[iccp_i] = iccp_pdf_i
         return iccp_pdf_i
 
-    def _add_image(self, info: dict[str, object]) -> PDFXObject:
+    def _add_image(self, info: RasterImageInfo) -> PDFXObject:
         color_space: Name | PDFArray = Name(info["cs"])
         decode = None
         iccp_i = info.get("iccp_i")
-        if color_space == "Indexed":
+        if info["cs"] == "Indexed":
             color_space = PDFArray(
                 ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]  # type: ignore[arg-type]
             )
         elif iccp_i is not None:
             iccp_pdf_i = self._ensure_iccp(info)
             color_space = PDFArray(["/ICCBased", str(iccp_pdf_i), str("0"), "R"])
-        elif color_space == "DeviceCMYK":
+        elif info["cs"] == "DeviceCMYK":
             if info["inverted"] is True:
                 decode = "[1 0 1 0 1 0 1 0]"
 
         decode_parms = f"<<{info['dp']} /BitsPerComponent {info['bpc']}>>"
         img_obj = PDFXObject(
             subtype="Image",
-            contents=cast(bytes, info["data"]),
-            width=cast(int, info["w"]),
-            height=cast(int, info["h"]),
+            contents=info["data"],
+            width=info["w"],
+            height=info["h"],
             color_space=color_space,
-            bits_per_component=cast(int, info["bpc"]),
-            img_filter=cast(str, info["f"]),
+            bits_per_component=info["bpc"],
+            img_filter=info["f"],
             decode=decode,
             decode_parms=decode_parms,
         )
         info["obj_id"] = self._add_pdf_obj(img_obj, "images")
 
         # Soft mask
-        if self.fpdf.allow_images_transparency and "smask" in info:
+        if self.fpdf.allow_images_transparency and info.get("smask") is not None:
             dp = f"/Predictor 15 /Colors 1 /Columns {info['w']}"
             img_obj.s_mask = self._add_image(
                 {
                     "w": info["w"],
                     "h": info["h"],
+                    "rendered_width": 0.0,
+                    "rendered_height": 0.0,
                     "cs": "DeviceGray",
                     "bpc": 8,
                     "f": info["f"],
                     "dp": dp,
-                    "data": info["smask"],
+                    "data": cast(bytes, info["smask"]),
+                    "dpn": 1,
+                    "inverted": False,
+                    "iccp": None,
+                    "iccp_i": None,
+                    "pal": None,
+                    "smask": None,
+                    "i": 0,
+                    "usages": 0,
+                    "obj_id": None,
                 }
             )
 
@@ -2125,7 +2136,7 @@ def stream_content_for_raster_image(
     pdf_height_to_flip: Optional[float] = None,
 ) -> str:
     if keep_aspect_ratio:
-        x, y, w, h = info.scale_inside_box(x, y, w, h)
+        x, y, w, h = scale_image_to_box(info, x, y, w, h)
     if pdf_height_to_flip:
         stream_h = h
         stream_y = pdf_height_to_flip - h - y

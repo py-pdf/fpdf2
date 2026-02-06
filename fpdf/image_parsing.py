@@ -165,9 +165,9 @@ def preload_image(
         raster_name, img = img_hash.hexdigest(), name
     else:
         raster_name, img = str(name), None
-    info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
+    info = image_cache.images.get(raster_name)
     if info is not None:
-        info["usages"] = info["usages"] + 1  # type: ignore[operator]
+        info["usages"] += 1
     else:
         info = get_img_info(
             raster_name,
@@ -185,10 +185,10 @@ def preload_image(
                 raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info["iccp_i"] = image_cache.icc_profiles[iccp]  # type: ignore[index]
+                info["iccp_i"] = image_cache.icc_profiles[iccp]
             else:
                 iccp_i = len(image_cache.icc_profiles)
-                image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
+                image_cache.icc_profiles[iccp] = iccp_i
                 info["iccp_i"] = iccp_i
             info["iccp"] = None
         image_cache.images[raster_name] = info
@@ -272,7 +272,13 @@ def get_svg_info(
         w = svg.width
     if svg.height:
         h = svg.height
-    info = VectorImageInfo(data=svg, w=w, h=h)
+    info: VectorImageInfo = {
+        "data": svg,
+        "w": w,
+        "h": h,
+        "rendered_width": 0.0,
+        "rendered_height": 0.0,
+    }
     return filename, svg, info
 
 
@@ -341,8 +347,6 @@ def get_img_info(
         img = img.convert("L")
 
     w, h = img.size
-    info = RasterImageInfo()
-
     iccp = None
     if "icc_profile" in img.info:
         if is_iccp_valid(img.info["icc_profile"], filename):
@@ -361,21 +365,26 @@ def get_img_info(
             else:
                 raise ValueError(f"Unsupported image mode: {img.mode}")
             img_raw_data.seek(0)
-            info.update(
-                {
-                    "data": img_raw_data.read(),
-                    "w": w,
-                    "h": h,
-                    "cs": colspace,
-                    "iccp": iccp,
-                    "dpn": dpn,
-                    "bpc": bpc,
-                    "f": image_filter,
-                    "inverted": jpeg_inverted,
-                    "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
-                }
-            )
-            return info
+            return {
+                "data": img_raw_data.read(),
+                "w": w,
+                "h": h,
+                "cs": colspace,
+                "iccp": iccp,
+                "dpn": dpn,
+                "bpc": bpc,
+                "f": image_filter,
+                "inverted": jpeg_inverted,
+                "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
+                "pal": None,
+                "smask": None,
+                "i": 0,
+                "usages": 0,
+                "obj_id": None,
+                "iccp_i": None,
+                "rendered_width": 0.0,
+                "rendered_height": 0.0,
+            }
         # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
         # only contains a single strip
         if (
@@ -409,44 +418,53 @@ def get_img_info(
             else:
                 raise ValueError(f"unsupported FillOrder: {fillorder}")
             dpn, bpc, colspace = 1, 1, "DeviceGray"
-            info.update(
-                {
-                    "data": ccittrawdata,
-                    "w": w,
-                    "h": h,
-                    "iccp": None,
-                    "dpn": dpn,
-                    "cs": colspace,
-                    "bpc": bpc,
-                    "f": image_filter,
-                    "inverted": jpeg_inverted,
-                    "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
-                }
-            )
-            return info
+            return {
+                "data": bytes(ccittrawdata),
+                "w": w,
+                "h": h,
+                "cs": colspace,
+                "iccp": None,
+                "dpn": dpn,
+                "bpc": bpc,
+                "f": image_filter,
+                "inverted": jpeg_inverted,
+                "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
+                "pal": None,
+                "smask": None,
+                "i": 0,
+                "usages": 0,
+                "obj_id": None,
+                "iccp_i": None,
+                "rendered_width": 0.0,
+                "rendered_height": 0.0,
+            }
 
     # garbage collection
     img_raw_data = None
 
+    data: bytes
+    smask: Optional[bytes] = None
+    pal: Optional[bytes] = None
     if img.mode == "1":
         dpn, bpc, colspace = 1, 1, "DeviceGray"
-        info["data"] = _to_data(img, image_filter)
+        data = _to_data(img, image_filter)
     elif img.mode == "L":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
-        info["data"] = _to_data(img, image_filter)
+        data = _to_data(img, image_filter)
     elif img.mode == "LA":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         alpha_channel = slice(1, None, 2)
-        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        data = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
-            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+            smask = _to_data(img, image_filter, select_slice=alpha_channel)
     elif img.mode == "P":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        info["data"] = _to_data(img, image_filter)
-        info["pal"] = img.palette.palette if img.palette is not None else None
+        data = _to_data(img, image_filter)
+        palette = img.palette.palette if img.palette is not None else None
+        pal = bytes(palette) if palette is not None else None
 
         # check if the P image has transparency
         if img.info.get("transparency", None) is not None and image_filter not in (
@@ -454,34 +472,35 @@ def get_img_info(
             "JPXDecode",
         ):
             # convert to RGBA to get the alpha channel for creating the smask
-            info["smask"] = _to_data(
+            smask = _to_data(
                 img.convert("RGBA"), image_filter, select_slice=slice(3, None, 4)
             )
     elif img.mode == "PA":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        info["pal"] = img.palette.palette if img.palette is not None else None
+        palette = img.palette.palette if img.palette is not None else None
+        pal = bytes(palette) if palette is not None else None
         alpha_channel = slice(1, None, 2)
-        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        data = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
-            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+            smask = _to_data(img, image_filter, select_slice=alpha_channel)
     elif img.mode == "CMYK":
         dpn, bpc, colspace = 4, 8, "DeviceCMYK"
-        info["data"] = _to_data(img, image_filter)
+        data = _to_data(img, image_filter)
     elif img.mode == "RGB":
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
-        info["data"] = _to_data(img, image_filter)
+        data = _to_data(img, image_filter)
     else:  # RGBA image
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         alpha_channel = slice(3, None, 4)
-        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        data = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
-            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+            smask = _to_data(img, image_filter, select_slice=alpha_channel)
 
     dp = f"/Predictor 15 /Colors {dpn} /Columns {w}"
 
@@ -494,20 +513,26 @@ def get_img_info(
         else:
             img.close()
 
-    info.update(
-        {
-            "w": w,
-            "h": h,
-            "cs": colspace,
-            "iccp": iccp,
-            "bpc": bpc,
-            "dpn": dpn,
-            "f": image_filter,
-            "inverted": jpeg_inverted,
-            "dp": dp,
-        }
-    )
-    return info
+    return {
+        "data": data,
+        "w": w,
+        "h": h,
+        "cs": colspace,
+        "iccp": iccp,
+        "dpn": dpn,
+        "bpc": bpc,
+        "f": image_filter,
+        "inverted": jpeg_inverted,
+        "dp": dp,
+        "smask": smask,
+        "pal": pal,
+        "i": 0,
+        "usages": 0,
+        "obj_id": None,
+        "iccp_i": None,
+        "rendered_width": 0.0,
+        "rendered_height": 0.0,
+    }
 
 
 class temp_attr:
