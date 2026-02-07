@@ -6,6 +6,7 @@
 *.pdf binary
 *.p12 binary
 *.ods binary
+*.otb binary
 *.otf binary
 *.ttf binary
 *.TTF binary
