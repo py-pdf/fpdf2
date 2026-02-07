@@ -909,17 +909,21 @@ class GraphicsStyle:
         raise TypeError(f"{value} isn't a number or GraphicsStyle.INHERIT")
 
     @property
-    def soft_mask(self) -> Union[InheritType, "PaintSoftMask"]:
+    def soft_mask(self) -> Union[InheritType, "PaintSoftMask", "ImageSoftMask"]:
         paint_soft_mask = getattr(self, PDFStyleKeys.SOFT_MASK.value, self.INHERIT)
         if paint_soft_mask is self.INHERIT:
             return paint_soft_mask
-        return cast(PaintSoftMask, paint_soft_mask)
+        return cast(Union[PaintSoftMask, ImageSoftMask], paint_soft_mask)
 
     @soft_mask.setter
-    def soft_mask(self, value: Union[InheritType, "PaintSoftMask"]) -> None:
-        if value is self.INHERIT or isinstance(value, PaintSoftMask):
+    def soft_mask(
+        self, value: Union[InheritType, "PaintSoftMask", "ImageSoftMask"]
+    ) -> None:
+        if value is self.INHERIT or isinstance(value, (PaintSoftMask, ImageSoftMask)):
             return super().__setattr__(PDFStyleKeys.SOFT_MASK.value, value)
-        raise TypeError(f"{value} isn't a PaintSoftMask or GraphicsStyle.INHERIT")
+        raise TypeError(
+            f"{value} isn't a PaintSoftMask, ImageSoftMask or GraphicsStyle.INHERIT"
+        )
 
     def serialize(self) -> Optional[Raw]:
         """
@@ -3974,6 +3978,7 @@ class PaintSoftMask:
         self,
         gfxstate_objs_per_name: dict[str, PDFObject],
         pattern_objs_per_name: dict[str, PDFObject],
+        _img_objs_per_index: Optional[dict[int, PDFObject]] = None,
     ) -> str:
         """Build the resource dictionary for this soft mask, resolving GS & Pattern ids."""
         resources_registered: dict[str, set[str]] = {}
@@ -4178,6 +4183,61 @@ class PaintSoftMask:
         _ = sm.render(registry)
         sm.object_id = registry.register_soft_mask(sm)
         return sm
+
+
+class ImageSoftMask:
+    """
+    Soft mask backed by a grayscale image XObject.
+
+    The grayscale image is drawn into a transparency group; the group's luminance
+    is used as the mask values.
+    """
+
+    __slots__ = ("image_index", "bbox", "matrix", "object_id")
+
+    def __init__(
+        self,
+        image_index: int,
+        bbox: tuple[float, float, float, float],
+        matrix: Transform,
+    ) -> None:
+        self.image_index = image_index
+        self.bbox = bbox
+        self.matrix = matrix
+        self.object_id = 0
+
+    def serialize(self) -> str:
+        return f"<</S /Luminosity /G {self.object_id} 0 R>>"
+
+    def get_bounding_box(self) -> tuple[float, float, float, float]:
+        return self.bbox
+
+    def render(self, _resource_registry: "ResourceCatalog") -> str:
+        m = self.matrix
+        return (
+            "q "
+            f"{number_to_str(m.a)} {number_to_str(m.b)} "
+            f"{number_to_str(m.c)} {number_to_str(m.d)} "
+            f"{number_to_str(m.e)} {number_to_str(m.f)} cm "
+            f"/I{self.image_index} Do Q"
+        )
+
+    def get_resource_dictionary(
+        self,
+        _gfxstate_objs_per_name: dict[str, PDFObject],
+        _pattern_objs_per_name: dict[str, PDFObject],
+        img_objs_per_index: Optional[dict[int, PDFObject]] = None,
+    ) -> str:
+        if img_objs_per_index is None or self.image_index not in img_objs_per_index:
+            raise RuntimeError("Soft mask image XObject not registered.")
+        img_obj = img_objs_per_index[self.image_index]
+        xobject = (
+            Name("XObject").serialize()
+            + "<<"
+            + f"{Name(f'I{self.image_index}').serialize()} {img_obj.id} 0 R"
+            + ">>"
+        )
+        return "<<" + xobject + ">>"
 
 
 def _iter_nodes(
