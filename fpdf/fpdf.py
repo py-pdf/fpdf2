@@ -2111,7 +2111,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Outputs a circle.
         It can be drawn (border only), filled (with no border) or both.
 
-        WARNING: This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)
+        WARNING: This method changed parameters in [release 2.8.1](https://github.com/py-pdf/fpdf2/releases/tag/2.8.1)
 
         Args:
             x (float): Abscissa of upper-left bounding box.
