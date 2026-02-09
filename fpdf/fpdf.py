@@ -3521,14 +3521,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x = self.x
         if y is None:
             y = self.y
-        angle *= math.pi / 180
-        c, s = math.cos(angle), math.sin(angle)
-        cx, cy = x * self.k, (self.h - y) * self.k
-        with self.local_context():
-            self._out(
-                f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
-            )
+        with self.transform(Transform.rotation_d(-angle).about(x, y)):
             yield
 
     @check_page
@@ -3563,12 +3556,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y = self.y
         ax = max(min(math.tan(ax * (math.pi / 180)), lim_val), -lim_val)
         ay = max(min(math.tan(ay * (math.pi / 180)), lim_val), -lim_val)
-        cx, cy = x * self.k, (self.h - y) * self.k
-        with self.local_context():
-            self._out(
-                f"1 {ay:.5f} {ax:.5f} 1 {cx:.2f} {cy:.2f} cm "
-                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
-            )
+        with self.transform(Transform.shearing(-ax, -ay).about(x, y)):
             yield
 
     @check_page
@@ -3601,14 +3589,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             theta = float(angle)
 
         a = math.cos(math.radians(theta * 2))
-        b = math.sin(math.radians(theta * 2))
-        cx, cy = x * self.k, (self.h - y) * self.k
+        b = -math.sin(math.radians(theta * 2))
 
-        with self.local_context():
-            self._out(
-                f"{a:.5f} {b:.5f} {b:.5f} {a*-1:.5f} {cx:.2f} {cy:.2f} cm "
-                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
-            )
+        with self.transform(Transform(a, b, b, -a, 0, 0).about(x, y)):
             yield
 
     @check_page
