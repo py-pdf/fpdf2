@@ -1,6 +1,11 @@
 # pyright: reportUnknownVariableType=false
 from dataclasses import dataclass, field
-from typing import Any, Literal, NotRequired, TypeAlias, TypeGuard, TypedDict
+from typing import Any, Literal, TypeAlias, TypeGuard, TypedDict
+
+try:
+    from typing import NotRequired
+except ImportError:  # pragma: no cover - py<3.11 fallback
+    from typing_extensions import NotRequired
 
 ImageFilter: TypeAlias = Literal[
     "AUTO",
