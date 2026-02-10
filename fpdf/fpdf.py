@@ -4463,15 +4463,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 text = text[3:]
                 continue
 
-            if self.MARKDOWN_ESCAPE_CHARACTER == tlt[0:1] and \
-               self.MARKDOWN_ESCAPE_CHARACTER == tlt[1:2]:
+            if (
+                self.MARKDOWN_ESCAPE_CHARACTER == tlt[0:1]
+                and self.MARKDOWN_ESCAPE_CHARACTER == tlt[1:2]
+            ):
                 # double-escape, juste produce it
                 txt_frag.append(text[0])
                 txt_frag.append(text[1])
                 yield frag()
                 text = text[2:]
                 continue
-    
 
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
@@ -4527,7 +4528,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         in_underline = not in_underline
                     text = text[2:]
                     continue
-                
+
                 is_link = self.MARKDOWN_LINK_REGEX.match(text)
                 if is_link:
                     link_text, link_dest, text = is_link.groups()

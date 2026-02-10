@@ -15,6 +15,7 @@ GSTATE_U.underline = True
 GSTATE_BI = GSTATE.copy()
 GSTATE_BI.font_style = "BI"
 
+
 def merge_fragments(fragments):
     """
     Helper function for testing the escaping chracters
@@ -72,27 +73,28 @@ def test_markdown_parse_simple_ok_escaped():
     frags = merge_fragments(
         tuple(
             FPDF()._parse_chars(
-                "\\**bold\\**, \\__italics\\__ and \\--underlined\\-- escaped", True)
+                "\\**bold\\**, \\__italics\\__ and \\--underlined\\-- escaped", True
+            )
         )
     )
     expected = (
-          Fragment("**bold**, __italics__ and --underlined-- escaped", GSTATE, k=PDF.k),
+        Fragment("**bold**, __italics__ and --underlined-- escaped", GSTATE, k=PDF.k),
     )
     assert frags == expected
-    frags = merge_fragments (tuple(
-        FPDF()._parse_chars(
-            r"raw \**bold\**, \__italics\__ and \--underlined\-- escaped", True
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                r"raw \**bold\**, \__italics\__ and \--underlined\-- escaped", True
+            )
         )
-    ))
+    )
     expected = (
         Fragment(
             "raw **bold**, __italics__ and --underlined-- escaped", GSTATE, k=PDF.k
         ),
     )
     assert frags == expected
-    frags =(
-        tuple(FPDF()._parse_chars("escape *\\*between marker*\\*", True))
-    )
+    frags = tuple(FPDF()._parse_chars("escape *\\*between marker*\\*", True))
     expected = (Fragment("escape *\\*between marker*\\*", GSTATE, k=PDF.k),)
     assert frags == expected
     frags = merge_fragments(
@@ -103,6 +105,8 @@ def test_markdown_parse_simple_ok_escaped():
         Fragment("\\after marker", GSTATE_B, k=PDF.k),
         Fragment("\\", GSTATE, k=PDF.k),
     )
+
+
 def test_markdown_unrelated_escape():
     frags = merge_fragments(
         tuple(FPDF()._parse_chars("unrelated \\ escape \\**bold\\**", True))
@@ -125,7 +129,7 @@ def test_markdown_parse_multiple_escape():
         Fragment("bold\\\\", GSTATE_B, k=PDF.k),
         Fragment(" double escaped", GSTATE, k=PDF.k),
     )
-    
+
     assert frags == expected
     frags = merge_fragments(
         tuple(FPDF()._parse_chars("\\\\\\**triple bold\\\\\\** escaped", True))
@@ -135,9 +139,7 @@ def test_markdown_parse_multiple_escape():
 
 
 def test_markdown_parse_overlapping():
-    frags = merge_fragments(
-        tuple(FPDF()._parse_chars("**bold __italics__**", True))
-    )
+    frags = merge_fragments(tuple(FPDF()._parse_chars("**bold __italics__**", True)))
     expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("italics", GSTATE_BI, k=PDF.k),
@@ -152,8 +154,11 @@ def test_markdown_parse_overlapping_escaped():
     expected = (Fragment("bold __italics__", GSTATE_B, k=PDF.k),)
     assert frags == expected
 
+
 def test_markdown_parse_crossing_markers():
-    frags = merge_fragments (tuple(FPDF()._parse_chars("**bold __and** italics__", True)))
+    frags = merge_fragments(
+        tuple(FPDF()._parse_chars("**bold __and** italics__", True))
+    )
     expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("and", GSTATE_BI, k=PDF.k),
@@ -163,7 +168,9 @@ def test_markdown_parse_crossing_markers():
 
 
 def test_markdown_parse_crossing_markers_escaped():
-    frags =merge_fragments (tuple(FPDF()._parse_chars("**bold __and\\** italics__", True)))
+    frags = merge_fragments(
+        tuple(FPDF()._parse_chars("**bold __and\\** italics__", True))
+    )
     expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("and** italics", GSTATE_BI, k=PDF.k),
@@ -172,7 +179,7 @@ def test_markdown_parse_crossing_markers_escaped():
 
 
 def test_markdown_parse_unterminated():
-    frags = merge_fragments (tuple(FPDF()._parse_chars("**bold __italics__", True)))
+    frags = merge_fragments(tuple(FPDF()._parse_chars("**bold __italics__", True)))
     expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("italics", GSTATE_BI, k=PDF.k),
@@ -190,10 +197,10 @@ def test_markdown_parse_unterminated_escaped():
 
 
 def test_markdown_parse_line_of_markers():
-    frags = merge_fragments (tuple(FPDF()._parse_chars("*** woops", True)))
+    frags = merge_fragments(tuple(FPDF()._parse_chars("*** woops", True)))
     expected = (Fragment("*** woops", GSTATE, k=PDF.k),)
     assert frags == expected
-    frags = merge_fragments (tuple(FPDF()._parse_chars("----------", True)))
+    frags = merge_fragments(tuple(FPDF()._parse_chars("----------", True)))
     expected = (Fragment("----------", GSTATE, k=PDF.k),)
     assert frags == expected
     frags = tuple(FPDF()._parse_chars("****BOLD**", True))
@@ -202,10 +209,11 @@ def test_markdown_parse_line_of_markers():
     expected = (
         Fragment("**", GSTATE, k=PDF.k),
         Fragment("BOLD", GSTATE_B, k=PDF.k),
-        Fragment("**", GSTATE, k=PDF.k),)
+        Fragment("**", GSTATE, k=PDF.k),
+    )
 
     assert frags == expected
-    frags = merge_fragments (tuple(FPDF()._parse_chars("* **BOLD**", True)))
+    frags = merge_fragments(tuple(FPDF()._parse_chars("* **BOLD**", True)))
     expected = (
         Fragment("* ", GSTATE, k=PDF.k),
         Fragment("BOLD", GSTATE_B, k=PDF.k),
