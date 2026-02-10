@@ -1,5 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "fonttools"]
+requires = [
+  "setuptools>=61.0",
+  "wheel",
+  "fonttools",
+  "typing-extensions>=4.0; python_version < '3.11'",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
