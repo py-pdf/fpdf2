@@ -18,7 +18,7 @@ GSTATE_BI.font_style = "BI"
 
 def merge_fragments(fragments):
     """
-    Helper function for testing the escaping chracters
+    Helper function for testing the escaping characters
     Will merge fragments that have different characters but same fragment.graphics_state
     and same fragment.k and same fragment.link.
     Example Input:
@@ -97,9 +97,7 @@ def test_markdown_parse_simple_ok_escaped():
     frags = tuple(FPDF()._parse_chars("escape *\\*between marker*\\*", True))
     expected = (Fragment("escape *\\*between marker*\\*", GSTATE, k=PDF.k),)
     assert frags == expected
-    frags = merge_fragments(
-        tuple(FPDF()._parse_chars("escape **\\after marker**\\", True))
-    )
+    frags = tuple(FPDF()._parse_chars("escape **\\after marker**\\", True))
     expected = (
         Fragment("escape ", GSTATE, k=PDF.k),
         Fragment("\\after marker", GSTATE_B, k=PDF.k),
@@ -139,7 +137,7 @@ def test_markdown_parse_multiple_escape():
 
 
 def test_markdown_parse_overlapping():
-    frags = merge_fragments(tuple(FPDF()._parse_chars("**bold __italics__**", True)))
+    frags = tuple(FPDF()._parse_chars("**bold __italics__**", True))
     expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("italics", GSTATE_BI, k=PDF.k),
@@ -204,14 +202,14 @@ def test_markdown_parse_line_of_markers():
     expected = (Fragment("----------", GSTATE, k=PDF.k),)
     assert frags == expected
     frags = tuple(FPDF()._parse_chars("****BOLD**", True))
-    expected = (Fragment("**BOLD", GSTATE_B, k=PDF.k),)
+    expected = (Fragment("****BOLD", GSTATE, k=PDF.k),)
+    assert frags == expected
     frags = merge_fragments(tuple(FPDF()._parse_chars("\\****BOLD**\\**", True)))
     expected = (
         Fragment("**", GSTATE, k=PDF.k),
         Fragment("BOLD", GSTATE_B, k=PDF.k),
         Fragment("**", GSTATE, k=PDF.k),
     )
-
     assert frags == expected
     frags = merge_fragments(tuple(FPDF()._parse_chars("* **BOLD**", True)))
     expected = (

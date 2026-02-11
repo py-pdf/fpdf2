@@ -4450,29 +4450,30 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         while text:
             tlt = text[:3]  ## get triples to check for escape character
-            if self.MARKDOWN_ESCAPE_CHARACTER == tlt[0] and tlt[1:] in [
-                "**",
-                "__",
-                "~~",
-                "--",
-            ]:
-                ## remove the escape character
-                txt_frag.append(text[1])
-                txt_frag.append(text[2])
-                yield frag()
-                text = text[3:]
-                continue
+            if markdown:
+                if tlt.startswith(self.MARKDOWN_ESCAPE_CHARACTER) and tlt[1:] in [
+                    self.MARKDOWN_BOLD_MARKER,
+                    self.MARKDOWN_ITALICS_MARKER,
+                    self.MARKDOWN_STRIKETHROUGH_MARKER,
+                    self.MARKDOWN_UNDERLINE_MARKER,
+                ]:
+                    ## remove the escape character
+                    txt_frag.append(text[1])
+                    txt_frag.append(text[2])
+                    yield frag()
+                    text = text[3:]
+                    continue
 
-            if (
-                self.MARKDOWN_ESCAPE_CHARACTER == tlt[0:1]
-                and self.MARKDOWN_ESCAPE_CHARACTER == tlt[1:2]
-            ):
-                # double-escape, juste produce it
-                txt_frag.append(text[0])
-                txt_frag.append(text[1])
-                yield frag()
-                text = text[2:]
-                continue
+                if (
+                    self.MARKDOWN_ESCAPE_CHARACTER == tlt[0:1]
+                    and self.MARKDOWN_ESCAPE_CHARACTER == tlt[1:2]
+                ):
+                    # double-escape, juste produce it
+                    txt_frag.append(text[0])
+                    txt_frag.append(text[1])
+                    yield frag()
+                    text = text[2:]
+                    continue
 
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
