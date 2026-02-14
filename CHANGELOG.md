@@ -31,6 +31,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * a bug when rendering empty tables with `INTERNAL` layout, that caused an extra border to be rendered due to an erroneous use of `list.index()` - _cf._ [issue #1669](https://github.com/py-pdf/fpdf2/issues/1669)
 * edge cases where tiny floating-point drift could trigger incorrect behaviour like [issue #1393](https://github.com/py-pdf/fpdf2/issues/1393)
 * parentheses are now escaped in more places. This fixes embedding a file with a single parenthesis in the filename, but might also have impacts on e.g. section names.
+* parsing markdown sequences with escape character - _cf._ [issue #1236](https://github.com/py-pdf/fpdf2/issues/1236) - thanks @amidou-naba
 ### Changed
 * improved performance when rendering paths, SVGs, and opaque raster images with an alpha channel - _cf._ [PR #1675](https://github.com/py-pdf/fpdf2/pull/1675)
 * typing annotations added across the codebase as part of the strict typing rollout

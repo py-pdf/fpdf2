@@ -4447,15 +4447,45 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_glyphs = self.current_font.cmap  # type: ignore[union-attr]
         else:
             font_glyphs = []
-        num_escape_chars = 0
+
+        escape_next_marker = 0
+        escape_run = 0
 
         while text:
+            if markdown and text[0] == self.MARKDOWN_ESCAPE_CHARACTER:
+                escape_run += 1
+                text = text[1:]
+                continue
+
+            if markdown and escape_run:
+                is_escape_target = text[:2] in (
+                    self.MARKDOWN_BOLD_MARKER,
+                    self.MARKDOWN_ITALICS_MARKER,
+                    self.MARKDOWN_STRIKETHROUGH_MARKER,
+                    self.MARKDOWN_UNDERLINE_MARKER,
+                )
+                if is_escape_target and escape_run % 2 == 1:
+                    for _ in range(escape_run - 1):
+                        txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                    if current_fallback_font:
+                        if txt_frag:
+                            yield frag()
+                        current_fallback_font = None
+                    escape_next_marker = 2
+                    escape_run = 0
+                    continue
+                for _ in range(escape_run):
+                    txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                escape_run = 0
+
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
                 self.MARKDOWN_ITALICS_MARKER,
                 self.MARKDOWN_STRIKETHROUGH_MARKER,
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
+            if markdown and escape_next_marker:
+                is_marker = False
             half_marker = text[0]
             text_script = get_unicode_script(text[0])
             if text_script not in (
@@ -4492,29 +4522,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     and (not txt_frag or txt_frag[-1] != half_marker)
                     and (len(text) < 3 or text[2] != half_marker)
                 ):
-                    txt_frag = (
-                        txt_frag[: -((num_escape_chars + 1) // 2)]
-                        if num_escape_chars > 0
-                        else txt_frag
-                    )
-                    if num_escape_chars % 2 == 0:
-                        if txt_frag:
-                            yield frag()
-                        if text[:2] == self.MARKDOWN_BOLD_MARKER:
-                            in_bold = not in_bold
-                        if text[:2] == self.MARKDOWN_ITALICS_MARKER:
-                            in_italics = not in_italics
-                        if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
-                            in_strikethrough = not in_strikethrough
-                        if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
-                            in_underline = not in_underline
-                        text = text[2:]
-                        continue
-                num_escape_chars = (
-                    num_escape_chars + 1
-                    if text[0] == self.MARKDOWN_ESCAPE_CHARACTER
-                    else 0
-                )
+                    if txt_frag:
+                        yield frag()
+                    if text[:2] == self.MARKDOWN_BOLD_MARKER:
+                        in_bold = not in_bold
+                    if text[:2] == self.MARKDOWN_ITALICS_MARKER:
+                        in_italics = not in_italics
+                    if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
+                        in_strikethrough = not in_strikethrough
+                    if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
+                        in_underline = not in_underline
+                    text = text[2:]
+                    continue
+
                 is_link = self.MARKDOWN_LINK_REGEX.match(text)
                 if is_link:
                     link_text, link_dest, text = is_link.groups()
@@ -4558,6 +4578,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 current_fallback_font = None
             txt_frag.append(text[0])
             text = text[1:]
+            if markdown and escape_next_marker:
+                escape_next_marker -= 1
+                if escape_next_marker == 0:
+                    yield frag()
+        if markdown and escape_run:
+            for _ in range(escape_run):
+                txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+            escape_run = 0
         if txt_frag:
             yield frag()
 
