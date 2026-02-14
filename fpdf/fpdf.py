@@ -4448,32 +4448,35 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         else:
             font_glyphs = []
 
+        escape_next_marker = 0
+        escape_run = 0
+
         while text:
-            tlt = text[:3]  ## get triples to check for escape character
-            if markdown:
-                if tlt.startswith(self.MARKDOWN_ESCAPE_CHARACTER) and tlt[1:] in [
+            if markdown and text[0] == self.MARKDOWN_ESCAPE_CHARACTER:
+                escape_run += 1
+                text = text[1:]
+                continue
+
+            if markdown and escape_run:
+                is_escape_target = text[:2] in (
                     self.MARKDOWN_BOLD_MARKER,
                     self.MARKDOWN_ITALICS_MARKER,
                     self.MARKDOWN_STRIKETHROUGH_MARKER,
                     self.MARKDOWN_UNDERLINE_MARKER,
-                ]:
-                    ## remove the escape character
-                    txt_frag.append(text[1])
-                    txt_frag.append(text[2])
-                    yield frag()
-                    text = text[3:]
+                )
+                if is_escape_target and escape_run % 2 == 1:
+                    for _ in range(escape_run - 1):
+                        txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                    if current_fallback_font:
+                        if txt_frag:
+                            yield frag()
+                        current_fallback_font = None
+                    escape_next_marker = 2
+                    escape_run = 0
                     continue
-
-                if (
-                    self.MARKDOWN_ESCAPE_CHARACTER == tlt[0:1]
-                    and self.MARKDOWN_ESCAPE_CHARACTER == tlt[1:2]
-                ):
-                    # double-escape, juste produce it
-                    txt_frag.append(text[0])
-                    txt_frag.append(text[1])
-                    yield frag()
-                    text = text[2:]
-                    continue
+                for _ in range(escape_run):
+                    txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                escape_run = 0
 
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
@@ -4481,6 +4484,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.MARKDOWN_STRIKETHROUGH_MARKER,
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
+            if markdown and escape_next_marker:
+                is_marker = False
             half_marker = text[0]
             text_script = get_unicode_script(text[0])
             if text_script not in (
@@ -4573,6 +4578,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 current_fallback_font = None
             txt_frag.append(text[0])
             text = text[1:]
+            if markdown and escape_next_marker:
+                escape_next_marker -= 1
+                if escape_next_marker == 0:
+                    yield frag()
+        if markdown and escape_run:
+            for _ in range(escape_run):
+                txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+            escape_run = 0
         if txt_frag:
             yield frag()
 

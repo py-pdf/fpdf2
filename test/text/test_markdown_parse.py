@@ -103,6 +103,13 @@ def test_markdown_parse_simple_ok_escaped():
         Fragment("\\after marker", GSTATE_B, k=PDF.k),
         Fragment("\\", GSTATE, k=PDF.k),
     )
+    assert frags == expected
+
+
+def test_markdown_parse_strikethrough_escaped():
+    frags = merge_fragments(tuple(FPDF()._parse_chars("\\~~strike\\~~", True)))
+    expected = (Fragment("~~strike~~", GSTATE, k=PDF.k),)
+    assert frags == expected
 
 
 def test_markdown_unrelated_escape():
@@ -246,3 +253,99 @@ def test_markdown_parse_newline_after_markdown_link():  # issue 916
         Fragment("\nGo visit it!", GSTATE, k=PDF.k),
     )
     assert frags == expected
+
+
+def test_markdown_parse_trailing_escape():
+    frags = merge_fragments(tuple(FPDF()._parse_chars("trailing \\\\", True)))
+    expected = (Fragment("trailing \\\\", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+
+def test_markdown_parse_escape_non_marker():
+    frags = merge_fragments(tuple(FPDF()._parse_chars(r"\a", True)))
+    expected = (Fragment(r"\a", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+
+def test_markdown_parse_escape_before_marker_odd_even():
+    frags = tuple(FPDF()._parse_chars("\\\\**bold**", True))
+    expected = (
+        Fragment("\\\\", GSTATE, k=PDF.k),
+        Fragment("bold", GSTATE_B, k=PDF.k),
+    )
+    assert frags == expected
+
+    frags = tuple(FPDF()._parse_chars("\\**bold**", True))
+    expected = (
+        Fragment("**", GSTATE, k=PDF.k),
+        Fragment("bold", GSTATE, k=PDF.k),
+    )
+    assert frags == expected
+
+
+def test_markdown_parse_marker_adjacency():
+    frags = merge_fragments(tuple(FPDF()._parse_chars("a***b", True)))
+    expected = (Fragment("a***b", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = tuple(FPDF()._parse_chars("**bold***", True))
+    expected = (Fragment("bold***", GSTATE_B, k=PDF.k),)
+    assert frags == expected
+
+
+def test_markdown_parse_across_newline():
+    frags = tuple(FPDF()._parse_chars("**bold\nstill**", True))
+    expected = (Fragment("bold\nstill", GSTATE_B, k=PDF.k),)
+    assert frags == expected
+
+
+def test_markdown_parse_nested_combinations():
+    frags = tuple(FPDF()._parse_chars("**bold --under--**", True))
+    gstate_bu = GSTATE.copy()
+    gstate_bu.font_style = "B"
+    gstate_bu.underline = True
+    expected = (
+        Fragment("bold ", GSTATE_B, k=PDF.k),
+        Fragment("under", gstate_bu, k=PDF.k),
+    )
+    assert frags == expected
+
+    frags = tuple(FPDF()._parse_chars("~~strike __ital__~~", True))
+    gstate_si = GSTATE_S.copy()
+    gstate_si.font_style = "I"
+    expected = (
+        Fragment("strike ", GSTATE_S, k=PDF.k),
+        Fragment("ital", gstate_si, k=PDF.k),
+    )
+    assert frags == expected
+
+
+def test_markdown_parse_link_variations():
+    frags = tuple(FPDF()._parse_chars("[go](2)", True))
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "go"
+    assert isinstance(frags[0].link, int)
+    assert frags[0].graphics_state.underline is True
+
+    frags = tuple(FPDF()._parse_chars("[**bold**](https://example.com)", True))
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "**bold**"
+    assert frags[0].graphics_state.underline is True
+    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].link == "https://example.com"
+
+    frags = tuple(FPDF()._parse_chars("[x](url)**y**", True))
+    assert len(frags) == 2
+    assert "".join(frags[0].characters) == "x"
+    assert frags[0].graphics_state.underline is True
+    assert frags[0].link == "url"
+    assert "".join(frags[1].characters) == "y"
+    assert frags[1].graphics_state.font_style == "B"
+
+    frags = tuple(FPDF()._parse_chars("\\[x](url)", True))
+    expected = (
+        Fragment("\\", GSTATE, k=PDF.k),
+        Fragment("x", GSTATE_U, k=PDF.k, link="url"),
+    )
+    assert frags == expected
+    assert frags[1].link == "url"
