@@ -61,7 +61,7 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L150-L329" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L150-L329" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LinearizedOutputProducer(OutputProducer):
     def bufferize(self) -&gt; bytearray:
@@ -262,7 +262,7 @@ cf. <a href="https://github.com/py-pdf/fpdf2/issues/62">https://github.com/py-pd
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L151-L329" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L151-L329" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def bufferize(self) -&gt; bytearray:
     fpdf = self.fpdf
@@ -458,7 +458,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L134-L147" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L134-L147" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFHintStream(PDFContentStream):
     def __init__(self, contents: bytes, compress: bool = False) -&gt; None:
@@ -513,7 +513,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L37-L48" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L37-L48" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFLinearization(PDFObject):
     def __init__(self, pages_count: int) -&gt; None:
@@ -565,7 +565,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L51-L131" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L51-L131" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXrefAndTrailer(ContentWithoutID):
     PREV_MAIN_XREF_START_PLACEHOLDER = &#34;0%1*2+3-2/1^&#34;
@@ -670,7 +670,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L66-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L66-L68" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def is_first_xref(self) -&gt; bool:
@@ -683,7 +683,7 @@ def is_first_xref(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L70-L72" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L70-L72" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def is_main_xref(self) -&gt; bool:
@@ -701,7 +701,7 @@ def is_main_xref(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fed58d51b2a3e8fdffe36f43b81b354dd99d7fa7/fpdf/linearization.py#L74-L131" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/663e4a328c97a6283ec5a5e884326d69e5e72abc/fpdf/linearization.py#L74-L131" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self, _security_handler: Optional[&#34;StandardSecurityHandler&#34;] = None
