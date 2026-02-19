@@ -16,9 +16,12 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.6] - Not released yet
+## [2.8.7] - Not released yet
+
+
+## [2.8.6] - 2026-02-18
 ### Added
-* support for `FPDF.transform()` context manager to apply geometric transformations (translation, rotation, scaling, skewing) to the current graphics state.
+* support for `FPDF.transform()` context manager to apply geometric transformations (translation, rotation, scaling, skewing) to the current graphics state - thanks to @RaphaelFLT
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 * mypy and pyright checks in the CI pipeline to enforce strict typing
 * support WOFF and WOFF2 fonts - thanks to @BharathPESU
