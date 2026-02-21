@@ -17,7 +17,11 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.8.7] - Not released yet
-
+### Fixed
+* various type fixes
+    + add annotation to `FPDF.title`, changing its type from `None` to `Optional[str]`
+    + add `PurePath` to the possible types of the `fname` argument to `FPDF.add_font()`
+    + use overloads for `FPDF.output()` to prevent a union output type
 
 ## [2.8.6] - 2026-02-18
 ### Added
