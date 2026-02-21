@@ -18,10 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.7] - Not released yet
 ### Fixed
-* various type fixes
-    + add annotation to `FPDF.title`, changing its type from `None` to `Optional[str]`
-    + add `PurePath` to the possible types of the `fname` argument to `FPDF.add_font()`
-    + use overloads for `FPDF.output()` to prevent a union output type
+* types on  `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
 
 ## [2.8.6] - 2026-02-18
 ### Added
