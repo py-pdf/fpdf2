@@ -23,7 +23,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
 from os.path import splitext
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -41,6 +41,7 @@ from typing import (
     Union,
     ValuesView,
     cast,
+    overload,
 )
 
 try:
@@ -382,7 +383,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._output_intents: dict[Name, OutputIntentDictionary] = {}
 
         self._sign_key = None
-        self.title = None
+        self.title: Optional[str] = None
         self.section_title_styles: dict[int, TextStyle] = {}  # level -> TextStyle
 
         self.core_fonts_encoding = "latin-1"
@@ -2487,7 +2488,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         family: Optional[str] = None,
         style: str = "",
-        fname: Optional[str] = None,
+        fname: Optional[str | PurePath] = None,
         *,
         unicode_range: Optional[str | Sequence[str | int | tuple[int, int]]] = None,
         variations: Optional[dict[str, dict[str, float]] | dict[str, float]] = None,
@@ -6450,10 +6451,26 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         yield table
         table.render()
 
+    @overload
+    def output(  # type: ignore[overload-overlap]
+        self,
+        name: Optional[Literal[""]] = "",
+        *,
+        linearize: bool = False,
+        output_producer_class: Type[OutputProducer] = OutputProducer,
+    ) -> bytearray: ...
+    @overload
+    def output(
+        self,
+        name: str | os.PathLike[str] | BinaryIO,
+        *,
+        linearize: bool = False,
+        output_producer_class: Type[OutputProducer] = OutputProducer,
+    ) -> None: ...
     @deprecated_parameter([("dest", "2.2.0")])
     def output(
         self,
-        name: str | os.PathLike[str] | BinaryIO = "",
+        name: Optional[str | os.PathLike[str] | BinaryIO] = "",
         *,
         linearize: bool = False,
         output_producer_class: Type[OutputProducer] = OutputProducer,
