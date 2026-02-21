@@ -383,7 +383,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._output_intents: dict[Name, OutputIntentDictionary] = {}
 
         self._sign_key = None
-        self.title: str | None = None
+        self.title: Optional[str] = None
         self.section_title_styles: dict[int, TextStyle] = {}  # level -> TextStyle
 
         self.core_fonts_encoding = "latin-1"
