@@ -17,7 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.8.7] - Not released yet
-
+### Fixed
+* types on  `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
 
 ## [2.8.6] - 2026-02-18
 ### Added
