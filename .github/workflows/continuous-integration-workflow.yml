@@ -223,6 +223,13 @@ jobs:
           python -m mkdocs build
           pdoc --html -o public/ fpdf --template-dir docs/pdoc
           scripts/add_pdoc_to_search_index.py
+      - name: Look for broken links
+        uses: JustinBeckwith/linkinator-action@238b8147055854af764d8fe06d01b5daf027906c
+        with:
+          paths: public/
+          concurrency: 1
+          linksToSkip: code.google.com/p/pyfpdf
+          verbosity: DEBUG
       - name: Build contributors map 🗺️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting, we only execute this on master for now
         if: github.ref == 'refs/heads/master'
