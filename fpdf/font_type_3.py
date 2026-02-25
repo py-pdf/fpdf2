@@ -1306,13 +1306,35 @@ class SBIXColorFont(Type3Font):
         glyph.glyph_width = w
 
 
+# pylint: disable=too-many-return-statements
 def get_color_font_object(
     fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0
 ) -> Union[Type3Font, None]:
+    def has_outline_glyphs() -> bool:
+        if base_font.is_cff:
+            return True
+        if "glyf" not in base_font.ttfont:
+            return False
+        glyph_names = set(base_font.cmap.values())
+        if not glyph_names:
+            return False
+        glyf_table = base_font.ttfont["glyf"]
+        return any(
+            glyph_name != ".notdef" and glyph_name in glyf_table
+            for glyph_name in glyph_names
+        )
+
     if "CBDT" in base_font.ttfont:
         LOGGER.debug("Font %s is a CBLC+CBDT color font", base_font.name)
         return CBDTColorFont(fpdf, base_font)
     if "EBDT" in base_font.ttfont:
+        if has_outline_glyphs():
+            # Prefer outlines when a font ships both outlines and bitmap strikes.
+            LOGGER.debug(
+                "Font %s has EBLC+EBDT tables and outline glyphs; preferring outlines",
+                base_font.name,
+            )
+            return None
         LOGGER.debug("Font %s is a EBLC+EBDT color font", base_font.name)
         return EBDTBitmapFont(fpdf, base_font)
     if "COLR" in base_font.ttfont:
