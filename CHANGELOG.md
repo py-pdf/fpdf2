@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.7] - Not released yet
 ### Fixed
 * types on  `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
+* Added missing files to navigation tree in mkdocs.yml
 
 ## [2.8.6] - 2026-02-18
 ### Added

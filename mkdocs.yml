@@ -143,6 +143,7 @@ nav:
   - 'Türkçe Kılavuz':                 'Tutorial-tr.md'
   - '简体中文教程':                     'Tutorial-zh.md'
   - 'Vodnik po uporabi knjižnice':    'Tutorial-sl.md'
+  - 'Підручник українською мовою':    'Tutorial-ua.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
@@ -172,6 +173,7 @@ nav:
   - 'Charts & Graphs':                'Maths.md'
 - 'PDF Features':
   - 'Links':                          'Links.md'
+  - 'Named destinations':             'NamedDestinations.md'
   - 'Metadata':                       'Metadata.md'
   - 'Annotations':                    'Annotations.md'
   - 'Presentation Mode':              'Presentations.md'
@@ -192,6 +194,7 @@ nav:
   - 'Rendering spreadsheets as PDF tables': 'RenderingSpreadsheetsAsPDFTables.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Combine with Rough.js':          'CombineWithRoughJS.md'
+  - 'Database storage with SQLAlchemy': 'DatabaseStorage.md'
 - 'Development':
   - 'Development guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
