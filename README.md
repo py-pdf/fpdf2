@@ -352,6 +352,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/amidou-naba"><img src="https://avatars.githubusercontent.com/u/234197600?v=4?s=100" width="100px;" alt="amidou-naba"/><br /><sub><b>amidou-naba</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=amidou-naba" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://rittau.org/"><img src="https://avatars.githubusercontent.com/u/52799?v=4?s=100" width="100px;" alt="Sebastian Rittau"/><br /><sub><b>Sebastian Rittau</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=srittau" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/paulsuh"><img src="https://avatars.githubusercontent.com/u/297348?v=4?s=100" width="100px;" alt="Paul Suh"/><br /><sub><b>Paul Suh</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=paulsuh" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>

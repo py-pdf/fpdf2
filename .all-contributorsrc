@@ -1690,6 +1690,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "paulsuh",
+      "name": "Paul Suh",
+      "avatar_url": "https://avatars.githubusercontent.com/u/297348?v=4",
+      "profile": "https://github.com/paulsuh",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
