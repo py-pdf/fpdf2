@@ -88,7 +88,7 @@ jobs:
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@57b11c6b7e54c402ccd9cda953f1072ec4f78e33 # v1.43.5
+        uses: crate-ci/typos@631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
   test:
     strategy:
       matrix:
