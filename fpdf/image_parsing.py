@@ -18,7 +18,6 @@ from typing import (
     TypeAlias,
     TypeGuard,
     Union,
-    cast,
     no_type_check,
 )
 from urllib.request import urlopen
@@ -166,9 +165,9 @@ def preload_image(
         raster_name, img = img_hash.hexdigest(), name
     else:
         raster_name, img = str(name), None
-    info = image_cache.images.get(raster_name)
+    info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
     if info is not None:
-        info["usages"] += 1
+        info["usages"] = info["usages"] + 1  # type: ignore[operator]
     else:
         info = get_img_info(
             raster_name,
@@ -186,10 +185,10 @@ def preload_image(
                 raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info["iccp_i"] = image_cache.icc_profiles[iccp]
+                info["iccp_i"] = image_cache.icc_profiles[iccp]  # type: ignore[index]
             else:
                 iccp_i = len(image_cache.icc_profiles)
-                image_cache.icc_profiles[iccp] = iccp_i
+                image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
                 info["iccp_i"] = iccp_i
             info["iccp"] = None
         image_cache.images[raster_name] = info
@@ -342,9 +341,8 @@ def get_img_info(
         img = img.convert("L")
 
     w, h = img.size
-    info: RasterImageInfo = cast(RasterImageInfo, {})
-    info["i"] = 0
-    info["usages"] = 0
+    info = RasterImageInfo()
+
     iccp = None
     if "icc_profile" in img.info:
         if is_iccp_valid(img.info["icc_profile"], filename):
@@ -411,7 +409,6 @@ def get_img_info(
             else:
                 raise ValueError(f"unsupported FillOrder: {fillorder}")
             dpn, bpc, colspace = 1, 1, "DeviceGray"
-            ccittrawdata = bytes(ccittrawdata)
             info.update(
                 {
                     "data": ccittrawdata,
@@ -449,8 +446,7 @@ def get_img_info(
     elif img.mode == "P":
         dpn, bpc, colspace = 1, 8, "Indexed"
         info["data"] = _to_data(img, image_filter)
-        pal = img.palette.palette if img.palette is not None else None
-        info["pal"] = bytes(pal) if pal is not None else None
+        info["pal"] = img.palette.palette if img.palette is not None else None
 
         # check if the P image has transparency
         if img.info.get("transparency", None) is not None and image_filter not in (
@@ -463,8 +459,7 @@ def get_img_info(
             )
     elif img.mode == "PA":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        pal = img.palette.palette if img.palette is not None else None
-        info["pal"] = bytes(pal) if pal is not None else None
+        info["pal"] = img.palette.palette if img.palette is not None else None
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img) and image_filter not in (

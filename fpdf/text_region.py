@@ -18,11 +18,7 @@ from typing import (
 
 from .enums import Align, WrapMode, XPos, YPos
 from .errors import FPDFException
-from .image_datastructures import (
-    is_vector_image_info,
-    RasterImageInfo,
-    VectorImageInfo,
-)
+from .image_datastructures import RasterImageInfo, VectorImageInfo
 from .image_parsing import preload_image
 from .line_break import FORM_FEED, MultiLineBreak
 from .util import get_scale_factor
@@ -311,16 +307,16 @@ class ImageParagraph:
             raise RuntimeError(
                 "ImageParagraph.build_line() must be called before render()."
             )
-        is_svg = is_vector_image_info(self.info)
+        is_svg = isinstance(self.info, VectorImageInfo)
         native_h = h = float(0)
         if self.height:
             h = self.height
         else:
-            native_h = self.info["h"] / self.region.pdf.k
+            native_h = cast(float, self.info["h"]) / self.region.pdf.k
         if self.width:
             w = self.width
         else:
-            native_w: float = self.info["w"] / self.region.pdf.k
+            native_w: float = cast(float, self.info["w"]) / self.region.pdf.k
             if native_w > col_width or self.fill_width:
                 w = col_width
             else:
