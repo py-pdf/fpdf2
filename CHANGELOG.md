@@ -16,12 +16,15 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.7] - Not released yet
+## [2.8.8] - Not released yet
+
+## [2.8.7] - 2026-02-28
 ### Fixed
-* types on  `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
-* added missing files to navigation tree in mkdocs.yml
+* types on `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
+* added missing files to navigation tree in mkdocs.yml - thanks to @paulsuh
 ### Changed
-* Reverted changes to `ImageInfo` that impacted user-facing API
+* reverted changes to `ImageInfo` that impacted user-facing API
+* prefer outline glyphs over bitmap if the font has both
 
 ## [2.8.6] - 2026-02-18
 ### Added
