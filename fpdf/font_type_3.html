@@ -61,7 +61,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1310-L1352" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1306-L1348" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_color_font_object(
     fpdf: &#34;FPDF&#34;, base_font: &#34;TTFFont&#34;, palette_index: int = 0
@@ -122,7 +122,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L979-L1019" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L978-L1017" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CBDTColorFont(Type3Font):
     &#34;&#34;&#34;Support for CBDT+CBLC bitmap color fonts.&#34;&#34;&#34;
@@ -155,7 +155,6 @@ different color font technologies, including:</p>
         bio = BytesIO(glyph_bitmap)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
-        info = cast(RasterImageInfo, info)
         w = round(self.base_font.ttfont[&#34;hmtx&#34;].metrics[glyph.glyph_name][0] + 0.001)
         glyph.glyph = (
             f&#34;{round(w * self.scale)} 0 d0\n&#34;
@@ -163,7 +162,7 @@ different color font technologies, including:</p>
             f&#34;{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n&#34;
             f&#34;/I{info[&#39;i&#39;]} Do\nQ&#34;
         )
-        self.images_used.add(info[&#34;i&#34;])
+        self.images_used.add(info[&#34;i&#34;])  # type: ignore[arg-type]
         glyph.glyph_width = w</code></pre>
 </details>
 <div class="desc"><p>Support for CBDT+CBLC bitmap color fonts.</p></div>
@@ -180,7 +179,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L983-L984" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L982-L983" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     return glyph_name in self.base_font.ttfont[&#34;CBDT&#34;].strikeData[0]</code></pre>
@@ -194,7 +193,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L986-L1019" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L985-L1017" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     ppem = self.base_font.ttfont[&#34;CBLC&#34;].strikes[0].bitmapSizeTable.ppemX
@@ -220,7 +219,6 @@ different color font technologies, including:</p>
     bio = BytesIO(glyph_bitmap)
     bio.seek(0)
     _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
-    info = cast(RasterImageInfo, info)
     w = round(self.base_font.ttfont[&#34;hmtx&#34;].metrics[glyph.glyph_name][0] + 0.001)
     glyph.glyph = (
         f&#34;{round(w * self.scale)} 0 d0\n&#34;
@@ -228,7 +226,7 @@ different color font technologies, including:</p>
         f&#34;{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n&#34;
         f&#34;/I{info[&#39;i&#39;]} Do\nQ&#34;
     )
-    self.images_used.add(info[&#34;i&#34;])
+    self.images_used.add(info[&#34;i&#34;])  # type: ignore[arg-type]
     glyph.glyph_width = w</code></pre>
 </details>
 <div class="desc"></div>
@@ -243,7 +241,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L266-L909" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L265-L908" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class COLRFont(Type3Font):
     &#34;&#34;&#34;
@@ -920,7 +918,7 @@ drawing API to render the glyphs as vector graphics.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L428-L736" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L427-L735" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_colrv1_paint(
     self,
@@ -1243,7 +1241,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L399-L410" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L398-L409" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_glyph_colrv0(self, layers: Sequence[ColrV0Layer]) -&gt; GraphicsContext:
     gc = GraphicsContext()
@@ -1267,7 +1265,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L412-L425" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L411-L424" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_glyph_colrv1(self, glyph_name: str) -&gt; GraphicsContext:
     gc = GraphicsContext()
@@ -1293,7 +1291,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L373-L397" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L372-L396" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_color(self, color_index: int, alpha: float = 1) -&gt; DeviceRGB:
     if self.palette is None:  # should never happen
@@ -1330,7 +1328,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L804-L817" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L803-L816" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_paint_surface(self) -&gt; PaintedPath:
     &#34;&#34;&#34;
@@ -1357,7 +1355,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L354-L355" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L353-L354" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     return glyph_name in self.colrv0_glyphs or glyph_name in self.colrv1_glyphs</code></pre>
@@ -1371,7 +1369,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L357-L371" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L356-L370" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     w = round(self.base_font.ttfont[&#34;hmtx&#34;].metrics[glyph.glyph_name][0] + 0.001)
@@ -1398,7 +1396,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L346-L352" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L345-L351" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def metric_bbox(self) -&gt; BoundingBox:
     return BoundingBox(
@@ -1420,7 +1418,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L257-L259" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L256-L258" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ColrV0Layer(Protocol):
     name: str
@@ -1477,7 +1475,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L262-L263" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L261-L262" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ColrV1Paint(Protocol):
     Paint: Paint</code></pre>
@@ -1529,7 +1527,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1022-L1244" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1020-L1241" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class EBDTBitmapFont(Type3Font):
     &#34;&#34;&#34;Support for EBLC+EBDT bitmap fonts.&#34;&#34;&#34;
@@ -1715,7 +1713,6 @@ Protocol classes can be generic, they are defined as::</p>
         alpha_image.save(bio, format=&#34;PNG&#34;)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
-        info = cast(RasterImageInfo, info)
 
         mask_matrix = Transform(
             a=(x_max - x_min) * self.scale,
@@ -1731,7 +1728,7 @@ Protocol classes can be generic, they are defined as::</p>
             x_max * self.scale,
             y_max * self.scale,
         )
-        soft_mask = ImageSoftMask(info[&#34;i&#34;], bbox, mask_matrix)
+        soft_mask = ImageSoftMask(cast(int, info[&#34;i&#34;]), bbox, mask_matrix)
 
         soft_mask.object_id = self.fpdf._resource_catalog.register_soft_mask(  # pylint: disable=protected-access
             soft_mask
@@ -1769,7 +1766,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1112-L1113" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1110-L1111" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     return self._find_glyph_strike_index(glyph_name) is not None</code></pre>
@@ -1783,7 +1780,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1115-L1244" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1113-L1241" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     if Image is None:
@@ -1876,7 +1873,6 @@ Protocol classes can be generic, they are defined as::</p>
     alpha_image.save(bio, format=&#34;PNG&#34;)
     bio.seek(0)
     _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
-    info = cast(RasterImageInfo, info)
 
     mask_matrix = Transform(
         a=(x_max - x_min) * self.scale,
@@ -1892,7 +1888,7 @@ Protocol classes can be generic, they are defined as::</p>
         x_max * self.scale,
         y_max * self.scale,
     )
-    soft_mask = ImageSoftMask(info[&#34;i&#34;], bbox, mask_matrix)
+    soft_mask = ImageSoftMask(cast(int, info[&#34;i&#34;]), bbox, mask_matrix)
 
     soft_mask.object_id = self.fpdf._resource_catalog.register_soft_mask(  # pylint: disable=protected-access
         soft_mask
@@ -1928,7 +1924,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1247-L1306" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1244-L1302" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SBIXColorFont(Type3Font):
     &#34;&#34;&#34;Support for SBIX bitmap color fonts.&#34;&#34;&#34;
@@ -1973,7 +1969,6 @@ Protocol classes can be generic, they are defined as::</p>
         bio = BytesIO(sbix_glyph.imageData)
         bio.seek(0)
         _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
-        info = cast(RasterImageInfo, info)
         w = round(self.base_font.ttfont[&#34;hmtx&#34;].metrics[glyph.glyph_name][0] + 0.001)
         glyf_metrics = self.base_font.ttfont[&#34;glyf&#34;].get(glyph.glyph_name)
         assert glyf_metrics is not None
@@ -1988,7 +1983,7 @@ Protocol classes can be generic, they are defined as::</p>
             f&#34;{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n&#34;
             f&#34;/I{info[&#39;i&#39;]} Do\nQ&#34;
         )
-        self.images_used.add(info[&#34;i&#34;])
+        self.images_used.add(info[&#34;i&#34;])  # type: ignore[arg-type]
         glyph.glyph_width = w</code></pre>
 </details>
 <div class="desc"><p>Support for SBIX bitmap color fonts.</p></div>
@@ -2005,7 +2000,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1258-L1267" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1255-L1264" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_strike_index(self) -&gt; int:
     target_ppem = self.get_target_ppem(self.base_font.biggest_size_pt)
@@ -2027,7 +2022,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1250-L1256" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1247-L1253" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     glyph = (
@@ -2046,7 +2041,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L1269-L1306" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L1266-L1302" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     ppem = self.get_strike_index()
@@ -2069,7 +2064,6 @@ Protocol classes can be generic, they are defined as::</p>
     bio = BytesIO(sbix_glyph.imageData)
     bio.seek(0)
     _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
-    info = cast(RasterImageInfo, info)
     w = round(self.base_font.ttfont[&#34;hmtx&#34;].metrics[glyph.glyph_name][0] + 0.001)
     glyf_metrics = self.base_font.ttfont[&#34;glyf&#34;].get(glyph.glyph_name)
     assert glyf_metrics is not None
@@ -2084,7 +2078,7 @@ Protocol classes can be generic, they are defined as::</p>
         f&#34;{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n&#34;
         f&#34;/I{info[&#39;i&#39;]} Do\nQ&#34;
     )
-    self.images_used.add(info[&#34;i&#34;])
+    self.images_used.add(info[&#34;i&#34;])  # type: ignore[arg-type]
     glyph.glyph_width = w</code></pre>
 </details>
 <div class="desc"></div>
@@ -2099,7 +2093,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L224-L254" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L223-L253" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGColorFont(Type3Font):
     &#34;&#34;&#34;Support for SVG OpenType vector color fonts.&#34;&#34;&#34;
@@ -2147,7 +2141,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L227-L232" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L226-L231" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     glyph_id = self.base_font.ttfont.getGlyphID(glyph_name)
@@ -2165,7 +2159,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L234-L254" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L233-L253" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     glyph_id = self.base_font.ttfont.getGlyphID(glyph.glyph_name)
@@ -2201,7 +2195,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L125-L221" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L124-L220" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3Font:
 
@@ -2328,7 +2322,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L200-L206" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L199-L205" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_glyph(self, glyph_name: str, char_id: int) -&gt; None:
     g = Type3FontGlyph()
@@ -2347,7 +2341,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L139-L146" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L138-L145" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_notdef_glyph(self, glyph_id: int) -&gt; Type3FontGlyph:
     notdef = Type3FontGlyph()
@@ -2367,7 +2361,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L148-L160" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L147-L159" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_space_glyph(self, glyph_id: int) -&gt; Type3FontGlyph:
     space = Type3FontGlyph()
@@ -2392,7 +2386,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L220-L221" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L219-L220" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     raise NotImplementedError(&#34;Method must be implemented on child class&#34;)</code></pre>
@@ -2406,7 +2400,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L217-L218" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L216-L217" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     raise NotImplementedError(&#34;Method must be implemented on child class&#34;)</code></pre>
@@ -2420,7 +2414,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L162-L198" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L161-L197" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyphs(self) -&gt; None:
     WHITES = {
@@ -2471,7 +2465,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2506,7 +2500,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2540,7 +2534,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2574,7 +2568,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2608,7 +2602,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2642,7 +2636,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2676,7 +2670,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L99-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L98-L121" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -2715,7 +2709,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b59c6d06ac06ddb5c4350cb4d63ae3f7bc4c12ab/fpdf/font_type_3.py#L912-L976" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0d37af8e71c35922928a22696dabc9f83598b759/fpdf/font_type_3.py#L911-L975" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class VarTableWrapper:
     def __init__(
