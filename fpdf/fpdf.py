@@ -132,9 +132,6 @@ from .image_datastructures import (
     ImageInfo,
     RasterImageInfo,
     VectorImageInfo,
-    is_vector_image_info,
-    scale_inside_box,
-    size_in_document_units,
 )
 from .image_parsing import (
     SUPPORTED_IMAGE_FILTERS,
@@ -5250,7 +5247,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
 
         name, img, info = preload_image(self.image_cache, name, dims)
-        if is_vector_image_info(info):
+        if isinstance(info, VectorImageInfo):
             return self._vector_image(
                 name,
                 cast(SVGObject, img),
@@ -5269,7 +5266,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return self._raster_image(
             name,
             img,
-            cast(RasterImageInfo, info),
+            info,
             x,
             y,
             w,
@@ -5300,7 +5297,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_min_pdf_version("1.4")
 
         # Automatic width and height calculation if needed
-        w, h = size_in_document_units(info, w, h, scale=self.k)
+        w, h = info.size_in_document_units(w, h, scale=self.k)
 
         # Flowing mode
         if y is None:
@@ -5315,7 +5312,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if TYPE_CHECKING:
             x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = scale_inside_box(info, x, y, w, h)
+            x, y, w, h = info.scale_inside_box(x, y, w, h)
         if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h, scale=self.k)
 
@@ -5331,7 +5328,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        self._resource_catalog.add(PDFResourceType.X_OBJECT, info["i"], self.page)
+        self._resource_catalog.add(
+            PDFResourceType.X_OBJECT, info["i"], self.page  # type: ignore
+        )
         info["rendered_width"] = w
         info["rendered_height"] = h
         return info
@@ -5345,7 +5344,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         keep_aspect_ratio: bool,
     ) -> float:
         if keep_aspect_ratio:
-            _, _, w, h = scale_inside_box(img_info, 0, 0, w, h)
+            _, _, w, h = img_info.scale_inside_box(0, 0, w, h)
         x = Align.coerce(x)
         if x == Align.C:
             return (self.w - w) / 2
@@ -5420,7 +5419,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
         x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = scale_inside_box(info, x, y, w, h)
+            x, y, w, h = info.scale_inside_box(x, y, w, h)
 
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
@@ -5443,9 +5442,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        info["rendered_width"] = w
-        info["rendered_height"] = h
-        return info
+        return VectorImageInfo(rendered_width=w, rendered_height=h)
 
     def _downscale_image(
         self,
@@ -5459,8 +5456,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         images = self.image_cache.images
         width_in_pt, height_in_pt = w * scale, h * scale
         lowres_name = f"lowres-{name}"
-        w = info["w"]
-        h = info["h"]
+        w = float(info["w"])  # type: ignore[arg-type]
+        h = float(info["h"])  # type: ignore[arg-type]
         assert self.oversized_images is not None
         if (
             w > width_in_pt * self.oversized_images_ratio
@@ -5487,44 +5484,42 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     round(width_in_pt * self.oversized_images_ratio),
                     round(height_in_pt * self.oversized_images_ratio),
                 )
-                info["usages"] -= 1  # no need to embed highres version
+                info["usages"] -= 1  # type: ignore[operator] # no need to embed highres version
                 if info["usages"] == 0:
                     resources_per_page = self._resource_catalog.resources_per_page
                     for (_, rtype), resource in resources_per_page.items():
                         if rtype == PDFResourceType.X_OBJECT and info["i"] in resource:
-                            resource.remove(info["i"])
+                            resource.remove(cast(int, info["i"]))
                 lowres_info = images.get(lowres_name)
                 if lowres_info:  # Great, we've already done the job!
-                    info = lowres_info
-                    lowres_w = info["w"]
-                    lowres_h = info["h"]
+                    info = cast(RasterImageInfo, lowres_info)
+                    lowres_w = float(info["w"])  # type: ignore[arg-type]
+                    lowres_h = float(info["h"])  # type: ignore[arg-type]
                     if lowres_w * lowres_h < dims[0] * dims[1]:
                         # The existing low-res image is too small, we need a bigger low-res image:
-                        cached_i = info["i"]
-                        cached_usages = info["usages"]
                         info.update(
                             get_img_info(
                                 name,
                                 img or load_image(name),
                                 self.image_cache.image_filter,
                                 dims,
-                            ),
+                            )
                         )
-                        info["i"] = cached_i
-                        info["usages"] = cached_usages
                         LOGGER.debug(
                             "OVERSIZED: Updated low-res image with name=%s id=%d to dims=%s",
                             lowres_name,
                             info["i"],
                             dims,
                         )
-                    info["usages"] += 1
+                    info["usages"] += 1  # type: ignore[operator]
                 else:
-                    info = get_img_info(
-                        name,
-                        img or load_image(name),
-                        self.image_cache.image_filter,
-                        dims,
+                    info = RasterImageInfo(
+                        get_img_info(
+                            name,
+                            img or load_image(name),
+                            self.image_cache.image_filter,
+                            dims,
+                        )
                     )
                     info["i"] = len(images) + 1
                     info["usages"] = 1
