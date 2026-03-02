@@ -323,7 +323,6 @@ class Table:
                 return None, None
         return None, None
 
-    def _render_table_row(self, i, row_layout_info, cell_x_positions, **kwargs):
     def _render_table_row(
         self,
         i: int,
