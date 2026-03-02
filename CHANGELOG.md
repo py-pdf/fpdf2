@@ -16,22 +16,38 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.6] - Not released yet
+## [2.8.8] - Not released yet
+
+## [2.8.7] - 2026-02-28
+### Fixed
+* types on `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
+* added missing files to navigation tree in mkdocs.yml - thanks to @paulsuh
+### Changed
+* reverted changes to `ImageInfo` that impacted user-facing API
+* prefer outline glyphs over bitmap if the font has both
+
+## [2.8.6] - 2026-02-18
 ### Added
+* support for `FPDF.transform()` context manager to apply geometric transformations (translation, rotation, scaling, skewing) to the current graphics state - thanks to @RaphaelFLT
 * support for SVG `<linearGradient>` and `<radialGradient>` elements - _cf._ [issue #1580](https://github.com/py-pdf/fpdf2/issues/1580) - thanks to @Ani07-05
 * mypy and pyright checks in the CI pipeline to enforce strict typing
 * support WOFF and WOFF2 fonts - thanks to @BharathPESU
 * TTC/OTC face selection via `collection_font_number` in `add_font()`
 * CID-keyed CFF font embedding support
 * Microsoft Symbol font remapping for non-Unicode cmaps
+* support for EBDT/EBLC bitmap fonts
 ### Fixed
 * the `A5` value that could be specified as page `format` to the `FPDF` constructor was slightly incorrect, and the corresponding page dimensions have been fixed. This could lead to a minor change in your documents dimensions if you used this `A5` page format. - _cf._ [issue #1699](https://github.com/py-pdf/fpdf2/issues/1699)
 * a bug when rendering empty tables with `INTERNAL` layout, that caused an extra border to be rendered due to an erroneous use of `list.index()` - _cf._ [issue #1669](https://github.com/py-pdf/fpdf2/issues/1669)
 * edge cases where tiny floating-point drift could trigger incorrect behaviour like [issue #1393](https://github.com/py-pdf/fpdf2/issues/1393)
+* parentheses are now escaped in more places. This fixes embedding a file with a single parenthesis in the filename, but might also have impacts on e.g. section names.
+* parsing markdown sequences with escape character - _cf._ [issue #1236](https://github.com/py-pdf/fpdf2/issues/1236) - thanks @amidou-naba
 ### Changed
 * improved performance when rendering paths, SVGs, and opaque raster images with an alpha channel - _cf._ [PR #1675](https://github.com/py-pdf/fpdf2/pull/1675)
 * typing annotations added across the codebase as part of the strict typing rollout
-* graphics state snapshots now use a `GraphicsState` dataclass for clearer usage and stronger typing
+* graphics state snapshots now use a [`GraphicsState` dataclass](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html) dataclass for clearer usage and stronger typing
+* `rotation()`, `skew()`, and `mirror()` now delegate to `transform()` for standardized transform application
+* [ImageInfo](https://py-pdf.github.io/fpdf2/fpdf/image_datastructures.html#fpdf.image_datastructures.ImageInfo) now uses typed dictionaries for clearer usage and stronger typing
 
 ## [2.8.5] - 2025-10-29
 ### Added

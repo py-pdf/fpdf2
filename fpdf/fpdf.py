@@ -23,7 +23,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
 from os.path import splitext
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -41,6 +41,7 @@ from typing import (
     Union,
     ValuesView,
     cast,
+    overload,
 )
 
 try:
@@ -189,7 +190,7 @@ if TYPE_CHECKING:
     from .prefs import ViewerPreferences
 
 # Public global variables:
-FPDF_VERSION = "2.8.5"
+FPDF_VERSION = "2.8.7"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),  # 297mm × 420mm
@@ -379,7 +380,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._output_intents: dict[Name, OutputIntentDictionary] = {}
 
         self._sign_key = None
-        self.title = None
+        self.title: Optional[str] = None
         self.section_title_styles: dict[int, TextStyle] = {}  # level -> TextStyle
 
         self.core_fonts_encoding = "latin-1"
@@ -2111,7 +2112,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Outputs a circle.
         It can be drawn (border only), filled (with no border) or both.
 
-        WARNING: This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)
+        WARNING: This method changed parameters in [release 2.8.1](https://github.com/py-pdf/fpdf2/releases/tag/2.8.1)
 
         Args:
             x (float): Abscissa of upper-left bounding box.
@@ -2484,7 +2485,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         family: Optional[str] = None,
         style: str = "",
-        fname: Optional[str] = None,
+        fname: Optional[str | PurePath] = None,
         *,
         unicode_range: Optional[str | Sequence[str | int | tuple[int, int]]] = None,
         variations: Optional[dict[str, dict[str, float]] | dict[str, float]] = None,
@@ -2515,7 +2516,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError('"fname" parameter is required')
 
         ext = splitext(str(fname))[1].lower()
-        if ext not in (".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
+        if ext not in (".otb", ".otf", ".otc", ".ttf", ".ttc", ".woff", ".woff2"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
                 " add_font() used to accept .pkl file as input, but for security reasons"
@@ -3521,14 +3522,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x = self.x
         if y is None:
             y = self.y
-        angle *= math.pi / 180
-        c, s = math.cos(angle), math.sin(angle)
-        cx, cy = x * self.k, (self.h - y) * self.k
-        with self.local_context():
-            self._out(
-                f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
-            )
+        with self.transform(Transform.rotation_d(-angle).about(x, y)):
             yield
 
     @check_page
@@ -3563,12 +3557,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y = self.y
         ax = max(min(math.tan(ax * (math.pi / 180)), lim_val), -lim_val)
         ay = max(min(math.tan(ay * (math.pi / 180)), lim_val), -lim_val)
-        cx, cy = x * self.k, (self.h - y) * self.k
-        with self.local_context():
-            self._out(
-                f"1 {ay:.5f} {ax:.5f} 1 {cx:.2f} {cy:.2f} cm "
-                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
-            )
+        with self.transform(Transform.shearing(-ax, -ay).about(x, y)):
             yield
 
     @check_page
@@ -3601,14 +3590,31 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             theta = float(angle)
 
         a = math.cos(math.radians(theta * 2))
-        b = math.sin(math.radians(theta * 2))
-        cx, cy = x * self.k, (self.h - y) * self.k
+        b = -math.sin(math.radians(theta * 2))
 
+        with self.transform(Transform(a, b, b, -a, 0, 0).about(x, y)):
+            yield
+
+    @check_page
+    @contextmanager
+    def transform(self, transform: Transform) -> Iterator[None]:
+        """
+        Apply a transformation matrix to the current graphics state.
+        This context manager isolates the transformation so it doesn't affect
+        rendering outside the 'with' block.
+
+        It automatically handles the conversion from FPDF's User Units (usually mm, top-left origin)
+        to PDF Device Units (points, bottom-left origin).
+
+        Args:
+            transform (fpdf.drawing_primitives.Transform): The transformation matrix to apply.
+        """
         with self.local_context():
-            self._out(
-                f"{a:.5f} {b:.5f} {b:.5f} {a*-1:.5f} {cx:.2f} {cy:.2f} cm "
-                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
-            )
+            user_to_pdf = Transform.scaling(self.k, -self.k).translate(0, self.h_pt)
+            adjusted_transform = user_to_pdf.inverse() @ transform @ user_to_pdf
+
+            command, _ = adjusted_transform.render(None)  # type: ignore
+            self._out(command)
             yield
 
     @check_page
@@ -4442,15 +4448,45 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_glyphs = self.current_font.cmap  # type: ignore[union-attr]
         else:
             font_glyphs = []
-        num_escape_chars = 0
+
+        escape_next_marker = 0
+        escape_run = 0
 
         while text:
+            if markdown and text[0] == self.MARKDOWN_ESCAPE_CHARACTER:
+                escape_run += 1
+                text = text[1:]
+                continue
+
+            if markdown and escape_run:
+                is_escape_target = text[:2] in (
+                    self.MARKDOWN_BOLD_MARKER,
+                    self.MARKDOWN_ITALICS_MARKER,
+                    self.MARKDOWN_STRIKETHROUGH_MARKER,
+                    self.MARKDOWN_UNDERLINE_MARKER,
+                )
+                if is_escape_target and escape_run % 2 == 1:
+                    for _ in range(escape_run - 1):
+                        txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                    if current_fallback_font:
+                        if txt_frag:
+                            yield frag()
+                        current_fallback_font = None
+                    escape_next_marker = 2
+                    escape_run = 0
+                    continue
+                for _ in range(escape_run):
+                    txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                escape_run = 0
+
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
                 self.MARKDOWN_ITALICS_MARKER,
                 self.MARKDOWN_STRIKETHROUGH_MARKER,
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
+            if markdown and escape_next_marker:
+                is_marker = False
             half_marker = text[0]
             text_script = get_unicode_script(text[0])
             if text_script not in (
@@ -4487,29 +4523,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     and (not txt_frag or txt_frag[-1] != half_marker)
                     and (len(text) < 3 or text[2] != half_marker)
                 ):
-                    txt_frag = (
-                        txt_frag[: -((num_escape_chars + 1) // 2)]
-                        if num_escape_chars > 0
-                        else txt_frag
-                    )
-                    if num_escape_chars % 2 == 0:
-                        if txt_frag:
-                            yield frag()
-                        if text[:2] == self.MARKDOWN_BOLD_MARKER:
-                            in_bold = not in_bold
-                        if text[:2] == self.MARKDOWN_ITALICS_MARKER:
-                            in_italics = not in_italics
-                        if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
-                            in_strikethrough = not in_strikethrough
-                        if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
-                            in_underline = not in_underline
-                        text = text[2:]
-                        continue
-                num_escape_chars = (
-                    num_escape_chars + 1
-                    if text[0] == self.MARKDOWN_ESCAPE_CHARACTER
-                    else 0
-                )
+                    if txt_frag:
+                        yield frag()
+                    if text[:2] == self.MARKDOWN_BOLD_MARKER:
+                        in_bold = not in_bold
+                    if text[:2] == self.MARKDOWN_ITALICS_MARKER:
+                        in_italics = not in_italics
+                    if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
+                        in_strikethrough = not in_strikethrough
+                    if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
+                        in_underline = not in_underline
+                    text = text[2:]
+                    continue
+
                 is_link = self.MARKDOWN_LINK_REGEX.match(text)
                 if is_link:
                     link_text, link_dest, text = is_link.groups()
@@ -4553,6 +4579,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 current_fallback_font = None
             txt_frag.append(text[0])
             text = text[1:]
+            if markdown and escape_next_marker:
+                escape_next_marker -= 1
+                if escape_next_marker == 0:
+                    yield frag()
+        if markdown and escape_run:
+            for _ in range(escape_run):
+                txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
+            escape_run = 0
         if txt_frag:
             yield frag()
 
@@ -6412,10 +6446,26 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         yield table
         table.render()
 
+    @overload
+    def output(  # type: ignore[overload-overlap]
+        self,
+        name: Optional[Literal[""]] = "",
+        *,
+        linearize: bool = False,
+        output_producer_class: Type[OutputProducer] = OutputProducer,
+    ) -> bytearray: ...
+    @overload
+    def output(
+        self,
+        name: str | os.PathLike[str] | BinaryIO,
+        *,
+        linearize: bool = False,
+        output_producer_class: Type[OutputProducer] = OutputProducer,
+    ) -> None: ...
     @deprecated_parameter([("dest", "2.2.0")])
     def output(
         self,
-        name: str | os.PathLike[str] | BinaryIO = "",
+        name: Optional[str | os.PathLike[str] | BinaryIO] = "",
         *,
         linearize: bool = False,
         output_producer_class: Type[OutputProducer] = OutputProducer,

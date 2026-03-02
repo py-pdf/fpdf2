@@ -27,3 +27,8 @@ extend-exclude = [
     "*.pdf",
     "docs/Tutorial-*.md",
 ]
+
+[type.md]
+extend-ignore-words-re = [
+    "Suh",
+]
