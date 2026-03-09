@@ -4089,6 +4089,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
+            if (
+                not prevent_font_change
+                and not self.current_font_is_set_on_page
+                and self.current_font is not None
+                and fragments[0].font.fontkey in self._fallback_font_ids
+                and self.current_font.fontkey not in self._fallback_font_ids
+            ):
+                # The first fragment uses a fallback font. Establish the current font for
+                # the page in this text object to avoid promoting the fallback font.
+                sl.append(
+                    self._set_font_for_page(
+                        self.current_font,
+                        self.font_size_pt,
+                        wrap_in_text_object=False,
+                    )
+                )
             underlines: list[tuple[float, float, CoreFont | TTFFont, float]] = []
             strikethroughs: list[tuple[float, float, CoreFont | TTFFont, float]] = []
             for i, frag in enumerate(fragments):
