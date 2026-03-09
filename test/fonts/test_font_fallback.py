@@ -226,3 +226,33 @@ def test_fallback_font_with_non_alpha_on_fontkey(tmp_path):
         HERE / "fallback_font_with_non_alpha_on_fontkey.pdf",
         tmp_path,
     )
+
+
+def test_fallback_font_first_text_on_page(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.add_font(family="TwitterEmoji", fname=HERE / "TwitterEmoji.ttf")
+    pdf.set_font("Roboto", size=12)
+    pdf.set_fallback_fonts(["TwitterEmoji"])
+
+    pdf.multi_cell(
+        0,
+        text="😊xxx",
+        border=1,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.multi_cell(
+        0,
+        text="xxx",
+        border=1,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "fallback_font_first_text_on_page.pdf",
+        tmp_path,
+    )
