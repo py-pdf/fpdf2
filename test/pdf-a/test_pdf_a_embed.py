@@ -1,13 +1,12 @@
 import logging
 import pytest
-import sys
 
 from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import DocumentCompliance
 from fpdf.errors import PDFAComplianceError
-from test.conftest import EPOCH, assert_pdf_equal
+from test.conftest import EPOCH, USING_ZLIB_NG, assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 DUMMY_TXT_FILE = b"fpdf2"
@@ -33,8 +32,8 @@ def test_pdfa1_forbids_embed(dc):
 
 
 @pytest.mark.skipif(
-    sys.platform in ("cygwin", "win32") and sys.version_info[:2] == (3, 14),
-    reason="Skipped on Windows with Python 3.14 due to zlib compressed data differences",
+    USING_ZLIB_NG,
+    reason="Skipped when Python uses zlib-ng because compressed data differs",
 )
 @pytest.mark.parametrize(
     "dc",
