@@ -274,3 +274,18 @@ def test_bidi_get_string_width(tmp_path):
         pdf.ln()
     pdf.ln()
     assert_pdf_equal(pdf, HERE / "bidi_get_string_width.pdf", tmp_path)
+
+
+def test_bidi_preserves_bn_chars():
+    paragraph = BidiParagraph(
+        text="This is an in\u00adter\U000e007ana\u00adtion\u00adal",
+        base_direction=TextDirection.LTR,
+        preserve_bn_chars=True,
+    )
+
+    assert paragraph.get_bidi_fragments() == (
+        ("This is an in\u00adter\U000e007ana\u00adtion\u00adal", TextDirection.LTR),
+    )
+    characters = [char.character for char in paragraph.get_characters()]
+    assert characters.count("\u00ad") == 3
+    assert characters.count("\U000e007a") == 1

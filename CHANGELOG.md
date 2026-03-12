@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.8] - Not released yet
 ### Fixed
 * text rendering when the first text on a page starts with a fallback glyph
+* preserve boundary-neutral formatting during bidirectional text preprocessing
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 

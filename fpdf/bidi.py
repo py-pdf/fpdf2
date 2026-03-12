@@ -539,6 +539,7 @@ class BidiParagraph:
         "text",
         "base_direction",
         "debug",
+        "preserve_bn_chars",
         "base_embedding_level",
         "characters",
     )
@@ -548,6 +549,7 @@ class BidiParagraph:
         text: str,
         base_direction: Optional[TextDirection] = None,
         debug: bool = False,
+        preserve_bn_chars: bool = False,
     ) -> None:
         self.text = text
         self.base_direction = (
@@ -556,6 +558,7 @@ class BidiParagraph:
             else base_direction
         )
         self.debug = debug
+        self.preserve_bn_chars = preserve_bn_chars
         self.base_embedding_level = (
             0 if self.base_direction == TextDirection.LTR else 1
         )  # base level
@@ -701,13 +704,17 @@ class BidiParagraph:
 
             if new_bidi_class:
                 bidi_char.bidi_class = new_bidi_class
-            if bidi_char.bidi_class not in (
-                "RLE",
-                "LRE",
-                "RLO",
-                "LRO",
-                "PDF",
-                "BN",
+            if (
+                bidi_char.bidi_class
+                not in (
+                    "RLE",
+                    "LRE",
+                    "RLO",
+                    "LRO",
+                    "PDF",
+                    "BN",
+                )
+                or self.preserve_bn_chars
             ):  # X9
                 if bidi_char.bidi_class == "B":
                     bidi_char.embedding_level = self.base_embedding_level
