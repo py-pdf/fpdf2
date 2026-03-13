@@ -4332,7 +4332,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             else auto_detect_base_direction(text)
         )
 
-        paragraph = BidiParagraph(text=text, base_direction=paragraph_direction)
+        paragraph = BidiParagraph(
+            text=text,
+            base_direction=paragraph_direction,
+            preserve_bn_chars=True,
+        )
         directional_segments = paragraph.get_bidi_fragments()
         self.text_shaping["paragraph_direction"] = paragraph.base_direction
 
