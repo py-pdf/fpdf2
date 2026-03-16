@@ -1086,7 +1086,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def add_page(
         self,
         orientation: str = "",
-        format: str = "",
+        format: str | tuple[float, float] = "",
         same: bool = False,
         duration: float = 0,
         transition: Optional[Transition] = None,
