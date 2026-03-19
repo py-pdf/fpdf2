@@ -1125,6 +1125,9 @@ class HTML2FPDF(HTMLParser):
             if not self.table or not self.table_row:
                 raise FPDFException(f"Invalid HTML: <{tag}> used outside any <tr>")
             self.td_th = {k.lower(): v for k, v in attrs_dict.items()}
+            for dimension in ("width", "height"):
+            if dimension in self.td_th and self.td_th[dimension] is not None:
+                self.td_th[dimension] = self.td_th[dimension].replace("px", "").strip()
             self.td_th["tag"] = tag
             if tag == "th":
                 if "align" not in self.td_th:
