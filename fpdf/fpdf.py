@@ -162,7 +162,7 @@ from .pattern import Gradient
 from .recorder import FPDFRecorder
 from .sign import Signature
 from .structure_tree import StructElem, StructureTreeBuilder
-from .svg import Percent, SVGObject
+from .svg import Percent, SVGObject, apply_svg_transform_to_user_space_gradients
 from .syntax import DestinationXYZ, Name, PDFArray, PDFDate, PDFString
 from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
@@ -5446,6 +5446,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         assert path.transform is not None
         path.transform = path.transform @ Transform.translation(x, y)
+        apply_svg_transform_to_user_space_gradients(path)
 
         old_x, old_y = self.x, self.y
         try:

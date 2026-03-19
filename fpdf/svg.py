@@ -399,6 +399,48 @@ def apply_styles(
         stylable.transform = convert_transforms(tfstr)
 
 
+@force_nodocument
+def _clone_gradient_paint(paint: GradientPaint) -> GradientPaint:
+    cloned = GradientPaint(
+        gradient=paint.gradient,
+        units=paint.units,
+        gradient_transform=paint.gradient_transform,
+        apply_page_ctm=paint.apply_page_ctm,
+        spread_method=paint.spread_method,
+    )
+    cloned.skip_alpha = paint.skip_alpha
+    return cloned
+
+
+@force_nodocument
+def apply_svg_transform_to_user_space_gradients(
+    node: GraphicsContext | PaintedPath,
+    inherited_transform: Optional[Transform] = None,
+) -> None:
+    current_transform = inherited_transform or Transform.identity()
+
+    if isinstance(node, PaintedPath):
+        apply_svg_transform_to_user_space_gradients(
+            node.get_graphics_context(), current_transform
+        )
+        return
+
+    if node.transform is not None:
+        current_transform = current_transform @ node.transform
+
+    for paint_attr in ("fill_color", "stroke_color"):
+        paint = getattr(node.style, paint_attr)
+        if (
+            isinstance(paint, GradientPaint)
+            and paint.units == GradientUnits.USER_SPACE_ON_USE
+        ):
+            paint.gradient_transform = paint.gradient_transform @ current_transform
+
+    for item in node.path_items:
+        if isinstance(item, (GraphicsContext, PaintedPath)):
+            apply_svg_transform_to_user_space_gradients(item, current_transform)
+
+
 def _preserve_ws(style_map: dict[str, Any], tag: "Element") -> bool:
     # CSS ‘white-space’ wins; otherwise XML’s xml:space
     ws = (style_map.get("white-space") or "").strip()
@@ -1183,14 +1225,18 @@ class SVGObject:
         if fill_value:
             grad_id = self._extract_gradient_id(fill_value)
             if grad_id and grad_id in self.gradient_definitions:
-                stylable.style.fill_color = self.gradient_definitions[grad_id]
+                stylable.style.fill_color = _clone_gradient_paint(
+                    self.gradient_definitions[grad_id]
+                )
                 LOGGER.debug("Applied gradient %s to fill", grad_id)
 
         stroke_value = _get_attr_or_style(svg_element, "stroke", style_map)
         if stroke_value:
             grad_id = self._extract_gradient_id(stroke_value)
             if grad_id and grad_id in self.gradient_definitions:
-                stylable.style.stroke_color = self.gradient_definitions[grad_id]
+                stylable.style.stroke_color = _clone_gradient_paint(
+                    self.gradient_definitions[grad_id]
+                )
                 LOGGER.debug("Applied gradient %s to stroke", grad_id)
 
     @force_nodocument
@@ -1396,6 +1442,7 @@ class SVGObject:
                 assert path.transform is not None
                 path.transform = path.transform @ Transform.translation(x, y)
 
+            apply_svg_transform_to_user_space_gradients(path)
             pdf.draw_path(path, debug_stream)
 
         finally:

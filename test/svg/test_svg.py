@@ -1,4 +1,5 @@
 # pylint: disable=no-self-use, protected-access
+from io import BytesIO
 from pathlib import Path
 
 import fpdf
@@ -339,3 +340,30 @@ class TestSVGObject:
             GENERATED_PDF_DIR / "ocanada.pdf",
             tmp_path,
         )
+
+
+def test_user_space_gradient_tracks_svg_image_transform(tmp_path):
+    svg_data = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+            <defs>
+            <linearGradient id="g" x1="5" y1="5" x2="45" y2="45" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#ff0000" />
+                <stop offset="1" stop-color="#0000ff" />
+            </linearGradient>
+            </defs>
+            <rect width="50" height="50" fill="url(#g)" />
+        </svg>
+        """
+    pdf = fpdf.FPDF(unit="mm", format=(180, 70))
+    pdf.set_margin(0)
+    pdf.add_page()
+
+    pdf.image(BytesIO(svg_data.encode()), x=10, y=10)
+
+    pdf.image(BytesIO(svg_data.encode()), x=95, y=10)
+
+    assert_pdf_equal(
+        pdf,
+        GENERATED_PDF_DIR / "gradient_user_space_tracks_svg_transform.pdf",
+        tmp_path,
+    )
