@@ -56,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L362-L399" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L362-L399" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def apply_styles(
@@ -99,6 +99,45 @@ def apply_styles(
 </details>
 <div class="desc"><p>Apply the known styles from <code>svg_element</code> to the pdf path/group <code>stylable</code>.</p></div>
 </dd>
+<dt id="fpdf.svg.apply_svg_transform_to_user_space_gradients"><code class="name flex">
+<span>def <span class="ident">apply_svg_transform_to_user_space_gradients</span></span>(<span>node: <a title="fpdf.drawing.PaintedPath" href="drawing.html#fpdf.drawing.PaintedPath">PaintedPath</a> | <a title="fpdf.drawing.GraphicsContext" href="drawing.html#fpdf.drawing.GraphicsContext">GraphicsContext</a>,<br>inherited_transform: <a title="fpdf.drawing_primitives.Transform" href="drawing_primitives.html#fpdf.drawing_primitives.Transform">Transform</a> | None = None) ‑> None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L415-L441" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_nodocument
+def apply_svg_transform_to_user_space_gradients(
+    node: GraphicsContext | PaintedPath,
+    inherited_transform: Optional[Transform] = None,
+) -&gt; None:
+    current_transform = inherited_transform or Transform.identity()
+
+    if isinstance(node, PaintedPath):
+        apply_svg_transform_to_user_space_gradients(
+            node.get_graphics_context(), current_transform
+        )
+        return
+
+    if node.transform is not None:
+        current_transform = current_transform @ node.transform
+
+    for paint_attr in (&#34;fill_color&#34;, &#34;stroke_color&#34;):
+        paint = getattr(node.style, paint_attr)
+        if (
+            isinstance(paint, GradientPaint)
+            and paint.units == GradientUnits.USER_SPACE_ON_USE
+        ):
+            paint.gradient_transform = paint.gradient_transform @ current_transform
+
+    for item in node.path_items:
+        if isinstance(item, (GraphicsContext, PaintedPath)):
+            apply_svg_transform_to_user_space_gradients(item, current_transform)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.svg.clamp_float"><code class="name flex">
 <span>def <span class="ident">clamp_float</span></span>(<span>min_val: float, max_val: float) ‑> Callable[[str], float]</span>
 </code></dt>
@@ -106,7 +145,7 @@ def apply_styles(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L262-L272" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L262-L272" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def clamp_float(min_val: float, max_val: float) -&gt; Callable[[str], float]:
@@ -129,7 +168,7 @@ def clamp_float(min_val: float, max_val: float) -&gt; Callable[[str], float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L254-L259" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L254-L259" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def convert_miterlimit(incoming: str) -&gt; float:
@@ -147,7 +186,7 @@ def convert_miterlimit(incoming: str) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L244-L251" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L244-L251" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def convert_stroke_width(incoming: str) -&gt; Optional[float]:
@@ -167,7 +206,7 @@ def convert_stroke_width(incoming: str) -&gt; Optional[float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L723-L820" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L765-L862" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def convert_transforms(tfstr: str) -&gt; Transform:
@@ -277,7 +316,7 @@ def convert_transforms(tfstr: str) -&gt; Transform:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L275-L281" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L275-L281" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def inheritable(
@@ -296,7 +335,7 @@ def inheritable(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L284-L295" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L284-L295" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def optional(
@@ -320,7 +359,7 @@ def optional(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L173-L188" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L173-L188" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def resolve_angle(angle_str: str, default_unit: str = &#34;deg&#34;) -&gt; float:
@@ -348,7 +387,7 @@ def resolve_angle(angle_str: str, default_unit: str = &#34;deg&#34;) -&gt; float
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L152-L170" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L152-L170" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def resolve_length(length_str: str, default_unit: str = &#34;pt&#34;) -&gt; float:
@@ -379,7 +418,7 @@ def resolve_length(length_str: str, default_unit: str = &#34;pt&#34;) -&gt; floa
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L823-L828" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L865-L870" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -&gt; None:
@@ -397,7 +436,7 @@ def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -&gt; None:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L228-L241" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L228-L241" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def svgcolor(colorstr: str) -&gt; DeviceRGB | DeviceGray:
@@ -423,7 +462,7 @@ def svgcolor(colorstr: str) -&gt; DeviceRGB | DeviceGray:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L214-L220" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L214-L220" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def without_ns(qualified_tag: str) -&gt; str:
@@ -442,7 +481,7 @@ def without_ns(qualified_tag: str) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L191-L199" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L191-L199" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def xmlns(space: str, name: str) -&gt; str:
@@ -463,7 +502,7 @@ def xmlns(space: str, name: str) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L202-L211" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L202-L211" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def xmlns_lookup(space: str, *names: str) -&gt; dict[str, str]:
@@ -491,7 +530,7 @@ def xmlns_lookup(space: str, *names: str) -&gt; dict[str, str]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L99-L101" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L99-L101" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 class Percent(float):
@@ -511,7 +550,7 @@ class Percent(float):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -601,7 +640,7 @@ class Percent(float):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1891-L1893" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1938-L1940" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def end_point(self) -&gt; Point:
@@ -614,7 +653,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -699,7 +738,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -784,7 +823,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -869,7 +908,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -954,7 +993,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -1039,7 +1078,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1836-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1883-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -1129,7 +1168,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1896-L1910" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1943-L1957" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def bounding_box(self, start: Point) -&gt; tuple[BoundingBox, Point]:
     x0 = self.x
@@ -1156,7 +1195,7 @@ def end_point(self) -&gt; Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1856-L1889" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1903-L1936" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def render(
@@ -1205,7 +1244,7 @@ def render(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L831-L1833" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L873-L1880" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGObject:
     &#34;&#34;&#34;
@@ -1562,14 +1601,18 @@ def render(
         if fill_value:
             grad_id = self._extract_gradient_id(fill_value)
             if grad_id and grad_id in self.gradient_definitions:
-                stylable.style.fill_color = self.gradient_definitions[grad_id]
+                stylable.style.fill_color = _clone_gradient_paint(
+                    self.gradient_definitions[grad_id]
+                )
                 LOGGER.debug(&#34;Applied gradient %s to fill&#34;, grad_id)
 
         stroke_value = _get_attr_or_style(svg_element, &#34;stroke&#34;, style_map)
         if stroke_value:
             grad_id = self._extract_gradient_id(stroke_value)
             if grad_id and grad_id in self.gradient_definitions:
-                stylable.style.stroke_color = self.gradient_definitions[grad_id]
+                stylable.style.stroke_color = _clone_gradient_paint(
+                    self.gradient_definitions[grad_id]
+                )
                 LOGGER.debug(&#34;Applied gradient %s to stroke&#34;, grad_id)
 
     @force_nodocument
@@ -1775,6 +1818,7 @@ def render(
                 assert path.transform is not None
                 path.transform = path.transform @ Transform.translation(x, y)
 
+            apply_svg_transform_to_user_space_gradients(path)
             pdf.draw_path(path, debug_stream)
 
         finally:
@@ -2243,7 +2287,7 @@ def render(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1587-L1602" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1634-L1649" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def apply_clipping_path(
@@ -2271,7 +2315,7 @@ def apply_clipping_path(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1564-L1585" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1611-L1632" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_clipping_path(self, shape: &#34;Element&#34;, clip_id: Optional[str]) -&gt; None:
@@ -2305,7 +2349,7 @@ def build_clipping_path(self, shape: &#34;Element&#34;, clip_id: Optional[str]) 
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1479-L1535" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1526-L1582" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_group(
@@ -2374,7 +2418,7 @@ def build_group(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1604-L1637" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1651-L1684" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_image(self, image: &#34;Element&#34;) -&gt; &#34;SVGImage&#34;:
@@ -2420,7 +2464,7 @@ def build_image(self, image: &#34;Element&#34;) -&gt; &#34;SVGImage&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1537-L1549" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1584-L1596" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_path(self, path: &#34;Element&#34;) -&gt; PaintedPath:
@@ -2445,7 +2489,7 @@ def build_path(self, path: &#34;Element&#34;) -&gt; PaintedPath:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1551-L1562" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1598-L1609" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_shape(self, shape: &#34;Element&#34;) -&gt; PaintedPath:
@@ -2469,7 +2513,7 @@ def build_shape(self, shape: &#34;Element&#34;) -&gt; PaintedPath:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1639-L1833" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1686-L1880" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_text(
@@ -2679,7 +2723,7 @@ def build_text(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1447-L1477" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1494-L1524" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def build_xref(self, xref: &#34;Element&#34;) -&gt; GraphicsContext:
@@ -2722,7 +2766,7 @@ def build_xref(self, xref: &#34;Element&#34;) -&gt; GraphicsContext:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1236-L1246" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1282-L1292" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def convert_graphics(self, root_tag: &#34;Element&#34;) -&gt; None:
@@ -2745,7 +2789,7 @@ def convert_graphics(self, root_tag: &#34;Element&#34;) -&gt; None:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1370-L1402" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1416-L1449" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_to_page(
     self,
@@ -2776,6 +2820,7 @@ def convert_graphics(self, root_tag: &#34;Element&#34;) -&gt; None:
             assert path.transform is not None
             path.transform = path.transform @ Transform.translation(x, y)
 
+        apply_svg_transform_to_user_space_gradients(path)
         pdf.draw_path(path, debug_stream)
 
     finally:
@@ -2803,7 +2848,7 @@ written.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1196-L1234" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1242-L1280" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def extract_shape_info(self, root_tag: &#34;Element&#34;) -&gt; None:
@@ -2854,7 +2899,7 @@ def extract_shape_info(self, root_tag: &#34;Element&#34;) -&gt; None:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1406-L1443" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1453-L1490" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def handle_defs(self, defs: &#34;Element&#34;) -&gt; None:
@@ -2904,7 +2949,7 @@ def handle_defs(self, defs: &#34;Element&#34;) -&gt; None:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1248-L1270" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1294-L1316" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_page_viewport(
     self, pdf: &#34;FPDF&#34;, align_viewbox: bool = True
@@ -2954,7 +2999,7 @@ viewbox aspect ratio does not match that of the viewport.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L1272-L1368" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L1318-L1414" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_rect_viewport(
     self,
@@ -3089,7 +3134,7 @@ converted from the SVG, scaled to the given viewport size.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L880-L884" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L922-L926" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 def update_xref(self, key: Optional[str], referenced: Any) -&gt; None:
@@ -3108,7 +3153,7 @@ def update_xref(self, key: Optional[str], referenced: Any) -&gt; None:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L592-L720" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L634-L762" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_nodocument
 class ShapeBuilder:
@@ -3268,7 +3313,7 @@ class ShapeBuilder:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/64dd70355b2bb69389e7bbe0cc849dcd9f2e55a4/fpdf/svg.py#L596-L603" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b3f1b19fd53db598f267b2d5c28fead0a38ea63e/fpdf/svg.py#L638-L645" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@staticmethod
 def new_path(tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedPath:
@@ -3317,6 +3362,7 @@ def new_path(tag: &#34;Element&#34;, clipping_path: bool = False) -&gt; PaintedP
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="fpdf.svg.apply_styles" href="#fpdf.svg.apply_styles">apply_styles</a></code></li>
+<li><code><a title="fpdf.svg.apply_svg_transform_to_user_space_gradients" href="#fpdf.svg.apply_svg_transform_to_user_space_gradients">apply_svg_transform_to_user_space_gradients</a></code></li>
 <li><code><a title="fpdf.svg.clamp_float" href="#fpdf.svg.clamp_float">clamp_float</a></code></li>
 <li><code><a title="fpdf.svg.convert_miterlimit" href="#fpdf.svg.convert_miterlimit">convert_miterlimit</a></code></li>
 <li><code><a title="fpdf.svg.convert_stroke_width" href="#fpdf.svg.convert_stroke_width">convert_stroke_width</a></code></li>
