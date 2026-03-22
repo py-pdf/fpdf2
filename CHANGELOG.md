@@ -18,8 +18,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.8] - Not released yet
 ### Fixed
-* text rendering when the first text on a page starts with a fallback glyph
-* preserve boundary-neutral formatting during bidirectional text preprocessing
+* text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
+* preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)
+* transform application on user space gradients - _cf._ [issue #1784](https://github.com/py-pdf/fpdf2/issues/1784)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
