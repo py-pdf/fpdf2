@@ -72,8 +72,8 @@ docs = [
 ]
 test = [
   "brotli",
-  "camelot-py[base]",
-  "endesive[full]",
+  "camelot-py",
+  "endesive",
   "pytest",
   "pytest-cov",
   "qrcode",
