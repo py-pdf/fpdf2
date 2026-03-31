@@ -1,6 +1,7 @@
 import io
 import logging
 import sys
+import tempfile
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -234,6 +235,17 @@ def test_insert_bytesio(tmp_path):
     pdf.image(img_bytes, x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
     assert not img_bytes.closed  # cf. issue #881
+
+
+def test_insert_tempfile(tmp_path):
+    """Compare unnamed temporary file vs the same reference files as test_insert_bytesio"""
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with tempfile.TemporaryFile() as img_file:
+        img_file.write((HERE / "insert_images_insert_png.png").read_bytes())
+        img_file.seek(0)
+        pdf.image(img_file, x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
 
 
 def test_insert_bytes(tmp_path):
