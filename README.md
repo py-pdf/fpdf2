@@ -354,6 +354,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://rittau.org/"><img src="https://avatars.githubusercontent.com/u/52799?v=4?s=100" width="100px;" alt="Sebastian Rittau"/><br /><sub><b>Sebastian Rittau</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=srittau" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/paulsuh"><img src="https://avatars.githubusercontent.com/u/297348?v=4?s=100" width="100px;" alt="Paul Suh"/><br /><sub><b>Paul Suh</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=paulsuh" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/CoLa5"><img src="https://avatars.githubusercontent.com/u/61389643?v=4?s=100" width="100px;" alt="CoLa"/><br /><sub><b>CoLa</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3ACoLa5" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/makapuf"><img src="https://avatars.githubusercontent.com/u/610577?v=4?s=100" width="100px;" alt="makapuf"/><br /><sub><b>makapuf</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Amakapuf" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
