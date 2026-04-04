@@ -222,6 +222,17 @@ class Paragraph:
         ]
         fragment.graphics_state.font_size_pt = h * fragment.k
         self._text_fragments.append(fragment)
+        # Append a newline fragment at the original font size to reset
+        # the line height for the next paragraph content. Without this,
+        # the inflated font_size_pt bleeds into the next line's height
+        # calculation, producing a double line break (fixes #1786).
+        reset_fragment = self.pdf._preload_font_styles(  # pyright: ignore[reportPrivateUsage]
+            "\n", markdown=False
+        )[  # pyright: ignore[reportPrivateUsage]
+            0
+        ]
+        # Keep the original font_size_pt (do not inflate it)
+        self._text_fragments.append(reset_fragment)
 
     def build_lines(self, print_sh: bool) -> list[LineWrapper]:
         text_lines: list[LineWrapper] = []
