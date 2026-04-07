@@ -2038,7 +2038,7 @@ class OutputProducer:
         if fpdf.zoom_mode in ZOOM_CONFIGS:
             zoom_config = [
                 pdf_ref(first_page_obj.id),
-                *ZOOM_CONFIGS[fpdf.zoom_mode],  # type: ignore[index]
+                *ZOOM_CONFIGS[fpdf.zoom_mode],
             ]
         else:  # zoom_mode is a number, not one of the allowed strings:
             zoom_config = [

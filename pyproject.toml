@@ -146,14 +146,6 @@ ignore_missing_imports = true
 module = "uharfbuzz"
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = "pymemtrace.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "pympler.*"
-ignore_missing_imports = true
-
 [tool.pyright]
 include = ["fpdf"]
 typeCheckingMode = "strict"
