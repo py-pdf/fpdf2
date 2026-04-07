@@ -28,6 +28,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * types on `FPDF.title`, `FPDF.add_font()` and `FPDF.output()`
 * added missing files to navigation tree in mkdocs.yml - thanks to @paulsuh
+* dependency extras for camelot-py and endesive on pyproject.toml - _cf._ [issue #1792](https://github.com/py-pdf/fpdf2/issues/1792)
 ### Changed
 * reverted changes to `ImageInfo` that impacted user-facing API
 * prefer outline glyphs over bitmap if the font has both
