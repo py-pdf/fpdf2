@@ -187,7 +187,9 @@ def preload_image(
                 raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info["iccp_i"] = image_cache.icc_profiles[iccp]  # type: ignore[index]
+                info["iccp_i"] = image_cache.icc_profiles[
+                    iccp
+                ]  # pyright: ignore[reportArgumentType]
             else:
                 iccp_i = len(image_cache.icc_profiles)
                 image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
