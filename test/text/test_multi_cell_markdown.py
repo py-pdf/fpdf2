@@ -147,3 +147,29 @@ def test_multi_cell_markdown_link(tmp_path):
         markdown=True,
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_consecutive_links(tmp_path):
+    link1 = "[One Page Dungeon Context](https://www.dungeoncontest.com/)"
+    link2 = "[One Page Dungeon Context About](https://www.dungeoncontest.com/about)"
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    pdf.multi_cell(
+        pdf.epw,
+        text=f"**Start** {link1:s} {link2:s} __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[pdf.page].annots) == 2
+    pdf.multi_cell(
+        pdf.epw,
+        text=f"**Start** {link1:s}{link2:s} __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[pdf.page].annots) == 4
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_consecutive_links.pdf", tmp_path)
