@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import fpdf
@@ -147,3 +148,40 @@ def test_multi_cell_markdown_link(tmp_path):
         markdown=True,
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_styled_link(tmp_path):
+    styles = (
+        ("Bold", "**"),
+        ("Italics", "__"),
+        ("Strikethrough", "~~"),
+        ("Underline", "--"),
+    )
+    style_combinations = []
+    for i in range(1, len(styles) + 1):
+        for combo in itertools.combinations(styles, i):
+            style = "-".join(c[0] for c in combo)
+            marker = "".join(c[1] for c in combo)
+            style_combinations.append((style, marker))
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    for link_color, link_underline in itertools.product(
+        (None, "#0000ff"),
+        (False, True),
+    ):
+        pdf.MARKDOWN_LINK_COLOR = link_color
+        pdf.MARKDOWN_LINK_UNDERLINE = link_underline
+        for style, marker in style_combinations:
+            pdf.multi_cell(
+                pdf.epw,
+                text=f"**Start** {marker:s}[{style:s} One Page Dungeon Context](https://www.dungeoncontest.com/){marker:s} __End__",
+                markdown=True,
+                new_x="left",
+                new_y="next",
+            )
+        pdf.ln()
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_styled_link.pdf", tmp_path)

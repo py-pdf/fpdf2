@@ -4105,8 +4105,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         wrap_in_text_object=False,
                     )
                 )
-            underlines: list[tuple[float, float, CoreFont | TTFFont, float]] = []
-            strikethroughs: list[tuple[float, float, CoreFont | TTFFont, float]] = []
+            underlines: list[
+                tuple[
+                    float,
+                    float,
+                    CoreFont | TTFFont,
+                    float,
+                    DeviceRGB | DeviceGray | DeviceCMYK | None,
+                ]
+            ] = []
+            strikethroughs: list[
+                tuple[
+                    float,
+                    float,
+                    CoreFont | TTFFont,
+                    float,
+                    DeviceRGB | DeviceGray | DeviceCMYK | None,
+                ]
+            ] = []
             for i, frag in enumerate(fragments):
                 if isinstance(frag, TotalPagesSubstitutionFragment):
                     self.pages[self.page].add_text_substitution(frag)
@@ -4199,11 +4215,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 ) + word_spacing * frag.characters.count(" ")
                 if frag.underline:
                     underlines.append(
-                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
+                        (
+                            self.x + dx + s_width,
+                            frag_width,
+                            frag.font,
+                            frag.font_size,
+                            frag.text_color,
+                        )
                     )
                 if frag.strikethrough:
                     strikethroughs.append(
-                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
+                        (
+                            self.x + dx + s_width,
+                            frag_width,
+                            frag.font,
+                            frag.font_size,
+                            frag.text_color,
+                        )
                     )
                 if frag.link:
                     self.link(
@@ -4222,14 +4250,26 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # Underlines & strikethrough must be rendred OUTSIDE BT/ET contexts,
             # cf. https://github.com/py-pdf/fpdf2/issues/1456
             if underlines:
-                for start_x, width, font, font_size in underlines:
+                for start_x, width, font, font_size, text_color in underlines:
+                    # Change color of the underlines
+                    if text_color != last_used_color:
+                        last_used_color = text_color
+                        assert last_used_color is not None
+                        sl.append(last_used_color.serialize().lower())
+                        fill_color_changed = True
                     sl.append(
                         self._do_underline(
                             start_x, self.y + (0.5 * h) + (0.3 * font_size), width, font
                         )
                     )
             if strikethroughs:
-                for start_x, width, font, font_size in strikethroughs:
+                for start_x, width, font, font_size, text_color in strikethroughs:
+                    # Change color of the strikethroughs
+                    if text_color != last_used_color:
+                        last_used_color = text_color
+                        assert last_used_color is not None
+                        sl.append(last_used_color.serialize().lower())
+                        fill_color_changed = True
                     sl.append(
                         self._do_strikethrough(
                             start_x, self.y + (0.5 * h) + (0.3 * font_size), width, font
@@ -4562,7 +4602,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     if txt_frag:
                         yield frag()
                     gstate = self._get_current_graphics_state()
-                    gstate.underline = self.MARKDOWN_LINK_UNDERLINE
+                    gstate.font_style = ("B" if in_bold else "") + (
+                        "I" if in_italics else ""
+                    )
+                    gstate.strikethrough = in_strikethrough
+                    gstate.underline = self.MARKDOWN_LINK_UNDERLINE or in_underline
                     if self.MARKDOWN_LINK_COLOR:
                         gstate.text_color = convert_to_device_color(
                             self.MARKDOWN_LINK_COLOR
