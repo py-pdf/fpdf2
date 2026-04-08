@@ -160,6 +160,8 @@ def test_multi_cell_markdown_link_dry_run(tmp_path):
         text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
         dry_run=True,
         markdown=True,
+        new_x="left",
+        new_y="next",
     )
     assert len(pdf.pages[1].annots) == 0
 
@@ -167,6 +169,8 @@ def test_multi_cell_markdown_link_dry_run(tmp_path):
         pdf.epw,
         text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
         markdown=True,
+        new_x="left",
+        new_y="next",
     )
     assert len(pdf.pages[1].annots) == 1
 
@@ -175,6 +179,8 @@ def test_multi_cell_markdown_link_dry_run(tmp_path):
         text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
         dry_run=True,
         markdown=True,
+        new_x="left",
+        new_y="next",
     )
     assert len(pdf.pages[1].annots) == 1
 
@@ -182,6 +188,8 @@ def test_multi_cell_markdown_link_dry_run(tmp_path):
         pdf.epw,
         text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
         markdown=True,
+        new_x="left",
+        new_y="next",
     )
     assert len(pdf.pages[1].annots) == 2
 
