@@ -163,6 +163,8 @@ def preload_image(
         img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
         raster_name, img = img_hash.hexdigest(), name
+    elif _is_binary_stream(name):
+        raster_name, img = str(name), name
     else:
         raster_name, img = str(name), None
     info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
@@ -185,7 +187,9 @@ def preload_image(
                 raster_name,
             )
             if iccp in image_cache.icc_profiles:
-                info["iccp_i"] = image_cache.icc_profiles[iccp]  # type: ignore[index]
+                info["iccp_i"] = image_cache.icc_profiles[
+                    iccp
+                ]  # pyright: ignore[reportArgumentType]
             else:
                 iccp_i = len(image_cache.icc_profiles)
                 image_cache.icc_profiles[iccp] = iccp_i  # type: ignore[index]
@@ -203,6 +207,10 @@ def _is_pil_image(obj: Any) -> TypeGuard[PILImage]:
     return Image is not None and isinstance(obj, Image.Image)
 
 
+def _is_binary_stream(obj: Any) -> TypeGuard[BinaryIO]:
+    return hasattr(obj, "read") and not isinstance(obj, (str, Path))
+
+
 def load_image(filename: str | Path | BinaryIO) -> BinaryIO:
     """
     This method is used to load external resources, such as images.
@@ -212,7 +220,7 @@ def load_image(filename: str | Path | BinaryIO) -> BinaryIO:
     # if a file-like object is passed in, use it directly or copy it into a BytesIO buffer
     if isinstance(filename, (BytesIO, io.BufferedIOBase, BinaryIO)):
         return filename
-    if hasattr(filename, "read") and not isinstance(filename, (str, Path)):
+    if _is_binary_stream(filename):
         # Copy other file-like objects into a BytesIO so downstream code can seek/read freely
         return BytesIO(filename.read())
     if isinstance(filename, Path):

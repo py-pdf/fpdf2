@@ -88,7 +88,7 @@ jobs:
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
+        uses: crate-ci/typos@02ea592e44b3a53c302f697cddca7641cd051c3d # v1.45.0
   test:
     strategy:
       matrix:
@@ -180,7 +180,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
         with:
           egress-policy: block
           allowed-endpoints:
@@ -254,7 +254,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
         with:
           egress-policy: block
           allowed-endpoints:
@@ -284,7 +284,7 @@ jobs:
           if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$VERSION\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python -m build; twine check dist/*; fi
       - name: Publish package distributions to PyPI 🚀
         if: steps.build.outputs.publish == 'yes'
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         # Doc: https://github.com/marketplace/actions/pypi-publish
         with:
           print-hash: true
