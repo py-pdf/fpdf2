@@ -147,3 +147,50 @@ def test_multi_cell_markdown_link(tmp_path):
         markdown=True,
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_link_dry_run(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    assert len(pdf.pages[1].annots) == 0
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 0
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 1
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 1
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 2
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link_dry_run.pdf", tmp_path)

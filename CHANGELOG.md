@@ -24,6 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)
 * transform application on user space gradients - _cf._ [issue #1784](https://github.com/py-pdf/fpdf2/issues/1784)
 * dependency extras for camelot-py and endesive on pyproject.toml - _cf._ [issue #1792](https://github.com/py-pdf/fpdf2/issues/1792)
+* preserve link annotations during dry-run of pdf.multi_cell - _cf._ [issue #1807](https://github.com/py-pdf/fpdf2/issues/1807)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
