@@ -756,3 +756,46 @@ def test_footer_leaking_style_on_toc(tmp_path):
             pdf.add_page()
         pdf.start_section(f"Section {i}")
     assert_pdf_equal(pdf, HERE / "footer_leaking_style_on_toc.pdf", tmp_path)
+
+
+def test_multi_cell_dry_run_not_increasing_toc_inserted_pages(tmp_path):
+    def render_toc_dry_run(pdf, outline):
+        pdf.y += 50
+        pdf.set_font("Helvetica", size=16)
+        pdf.underline = True
+        p(pdf, "Table of contents:")
+        pdf.underline = False
+        pdf.y += 150
+        pdf.set_font("Courier", size=12)
+        for section in outline:
+            link = pdf.add_link(page=section.page_number)
+            # Dry run to calculate height (in reality to put e.g. heading and its subheading to same page)
+            p(
+                pdf,
+                f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
+                align="C",
+                dry_run=True,
+                link=link,
+            )
+            # Normal run
+            p(
+                pdf,
+                f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
+                align="C",
+                link=link,
+            )
+
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    pdf.set_y(50)
+    pdf.set_font(size=40)
+    p(pdf, "Doc Title", align="C")
+    pdf.set_font(size=12)
+    pdf.insert_toc_placeholder(render_toc_dry_run, allow_extra_pages=True)
+    insert_test_content(pdf)
+    assert_pdf_equal(
+        pdf,
+        HERE / "multi_cell_dry_run_not_increasing_toc_inserted_pages.pdf",
+        tmp_path,
+    )
