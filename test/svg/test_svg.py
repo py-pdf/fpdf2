@@ -250,11 +250,15 @@ class TestSVGObject:
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
             'xmlns:xlink="http://www.w3.org/1999/xlink">'
+            "<defs>"
             '<symbol id="rond" width="10" height="10" viewBox="0 0 2 2"><circle cx="1" cy="1" r="1" fill="red"/></symbol>'
+            "</defs>"
             '<use href="#rond" x="10" y="10" width="40" height="40"/>'
+            "</svg>"
         )
-        with pytest.raises(ValueError):
-            fpdf.svg.SVGObject(svg_data)
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg is not None
+        assert "#rond" in svg.cross_references
 
     def test_svg_conversion_no_transparency(self, tmp_path):
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))

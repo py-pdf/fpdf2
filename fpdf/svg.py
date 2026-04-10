@@ -1456,6 +1456,8 @@ class SVGObject:
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
+            elif child.tag in xmlns_lookup("svg", "symbol"):
+                self.build_symbol(child)
             elif child.tag in xmlns_lookup("svg", "a"):
                 # <a> tags aren't supported but we need to recurse into them to
                 # render nested elements.
@@ -1488,6 +1490,11 @@ class SVGObject:
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
                     without_ns(child.tag),
                 )
+
+    @force_nodocument
+    def build_symbol(self, symbol: "Element") -> GraphicsContext:
+        """Parse <symbol> as reusable content, not rendered directly."""
+        return self.build_group(symbol)
 
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
@@ -1550,6 +1557,8 @@ class SVGObject:
             elif child.tag in xmlns_lookup("svg", "style"):
                 # Stylesheets already parsed globally.
                 continue
+            elif child.tag in xmlns_lookup("svg", "symbol"):
+                self.build_symbol(child)
             elif child.tag in xmlns_lookup("svg", "g"):
                 pdf_group.add_item(self.build_group(child, None, merged_style), False)
             elif child.tag in xmlns_lookup("svg", "a"):
