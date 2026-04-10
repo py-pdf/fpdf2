@@ -143,7 +143,7 @@ def test_multi_cell_markdown_link(tmp_path):
     pdf.add_page()
     pdf.multi_cell(
         pdf.epw,
-        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        text="**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2) __End__",
         markdown=True,
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)
