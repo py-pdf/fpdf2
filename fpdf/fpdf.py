@@ -4686,7 +4686,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.x,
             self.y,
         )
-        annots = self.pages[self.page].annots or PDFArray()
+        annots = PDFArray(self.pages[self.page].annots or [])
         self._push_local_stack()
         try:
             yield
