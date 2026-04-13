@@ -294,6 +294,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
     MARKDOWN_LINK_COLOR = None
     MARKDOWN_LINK_UNDERLINE = True
+    MARKDOWN_BULLET_INDENT = 10  # in mm
+    MARKDOWN_BULLET_REGEX = re.compile(r"^[ \t]*[*\-+] ", re.MULTILINE)
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -4910,6 +4912,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Calculate text length
         text = self.normalize_text(text)
         normalized_string = text.replace("\r", "")
+
+        if markdown and self.MARKDOWN_BULLET_REGEX.search(normalized_string):
+            return self._render_markdown_list(
+                normalized_string,
+                w=maximum_allowed_width,
+                h=h,
+                align=align,
+                fill=fill,
+                link=link,
+                new_x=new_x,
+                new_y=new_y,
+                max_line_height=max_line_height,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+                output=output,
+                center=center,
+                padding=padding,
+            )
+
         styled_text_fragments = (
             self._preload_bidirectional_text(normalized_string, markdown)
             if self.text_shaping
@@ -5049,6 +5070,105 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if len(return_value) == 1:
             return return_value[0]
         return return_value  # type: ignore[return-value]
+
+    def _render_markdown_list(
+        self,
+        normalized_string: str,
+        w: float,
+        h: float,
+        align: Align,
+        fill: bool,
+        link: Optional[int | str],
+        new_x: XPos,
+        new_y: YPos,
+        max_line_height: Optional[float],
+        print_sh: bool,
+        wrapmode: WrapMode,
+        output: str | MethodReturnValue,
+        center: bool,
+        padding: Padding,
+    ) -> "MultiCellResult":
+        output_enum = MethodReturnValue.coerce(output)
+        if output_enum & MethodReturnValue.LINES:
+            raise NotImplementedError(
+                "output=LINES is not supported for markdown unordered lists"
+            )
+        bullet_char = "\u2022" if self.is_ttf_font else "-"
+        indent = self.MARKDOWN_BULLET_INDENT
+        lines = normalized_string.split("\n")
+        page_break_triggered = False
+        total_height = 0.0
+
+        for i, line in enumerate(lines):
+            is_last = i == len(lines) - 1
+            cur_new_x = new_x if is_last else XPos.LEFT
+            cur_new_y = new_y if is_last else YPos.NEXT
+            m = self.MARKDOWN_BULLET_REGEX.match(line)
+            if m:
+                item_text = line[m.end():]
+                # Render bullet prefix
+                bullet_x = self.x
+                self.cell(w=indent, h=h, text=f" {bullet_char} ", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                # Render item text indented, with markdown support
+                result = self.multi_cell(
+                    w=w - indent,
+                    h=h,
+                    text=item_text,
+                    align=align,
+                    fill=fill,
+                    link=link,
+                    markdown=True,
+                    print_sh=print_sh,
+                    new_x=cur_new_x,
+                    new_y=cur_new_y,
+                    max_line_height=max_line_height,
+                    wrapmode=wrapmode,
+                    output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+                    center=center,
+                    padding=padding,
+                )
+                pb, ht = result
+                if pb:
+                    page_break_triggered = True
+                total_height += ht
+                if not is_last:
+                    self.x = bullet_x
+            else:
+                if line:
+                    result = self.multi_cell(
+                        w=w,
+                        h=h,
+                        text=line,
+                        align=align,
+                        fill=fill,
+                        link=link,
+                        markdown=True,
+                        print_sh=print_sh,
+                        new_x=cur_new_x,
+                        new_y=cur_new_y,
+                        max_line_height=max_line_height,
+                        wrapmode=wrapmode,
+                        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+                        center=center,
+                        padding=padding,
+                    )
+                    pb, ht = result
+                    if pb:
+                        page_break_triggered = True
+                    total_height += ht
+                else:
+                    # Empty line - just move down
+                    self.ln(h)
+                    total_height += h
+
+        return_value = ()
+        if output_enum & MethodReturnValue.PAGE_BREAK:
+            return_value += (page_break_triggered,)
+        if output_enum & MethodReturnValue.HEIGHT:
+            return_value += (total_height,)
+        if len(return_value) == 1:
+            return return_value[0]
+        return return_value
 
     @check_page
     @support_deprecated_txt_arg

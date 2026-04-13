@@ -196,6 +196,43 @@ def test_multi_cell_markdown_link_dry_run(tmp_path):
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link_dry_run.pdf", tmp_path)
 
 
+def test_multi_cell_markdown_unordered_list(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    text = (
+        "Shopping list:\n"
+        "* Apples\n"
+        "- **Bananas**\n"
+        "+ __Cherries__\n"
+        "\n"
+        "End of list."
+    )
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_unordered_list.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_unordered_list_ttf(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", FONTS_DIR / "Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", FONTS_DIR / "Roboto-Italic.ttf")
+    pdf.set_font("Roboto", size=12)
+    text = (
+        "Shopping list:\n"
+        "* Apples\n"
+        "- **Bananas**\n"
+        "+ __Cherries__\n"
+        "\n"
+        "End of list."
+    )
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True)
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_unordered_list_ttf.pdf", tmp_path
+    )
+
+
 def test_multi_cell_markdown_consecutive_links(tmp_path):
     link1 = "[fpdf2 github](https://github.com/py-pdf/fpdf2)"
     link2 = "[fpdf2 github Releases](https://github.com/py-pdf/fpdf2/releases)"
