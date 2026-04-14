@@ -222,6 +222,22 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
 
     assert_pdf_equal(pdf, HERE / "table_with_rowspan_and_pgbreak.pdf", tmp_path)
 
+#rowspan multiple pages threshold(30)
+def test_table_with_rowspan_break_over_page_jump(tmp_path):
+    pdf = FPDF()
+    pdf.auto_page_break = True
+    pdf.set_font("Helvetica", size=12)
+    pdf.add_page()
+    data = [
+        ["Header 1", "Header 2", "Header 3"],
+        ["Data 1", "Data 2", "Data 3"],
+    ] + [[TableSpan.ROW, "Data 5", "Data 6"] for _ in range(30)]
+
+    with pytest.raises(ValueError, match="too high"):
+        with pdf.table(data):
+            pass
+
+
 
 def test_table_with_rowspan_images(tmp_path):
     # Verify that the rowspans interact correctly with pagebreaks
