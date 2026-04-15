@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.8] - Not released yet
 ### Added
 * Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
+* basic support for SVG `<symbol>` elements in the SVG parser
 ### Fixed
 * text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)
