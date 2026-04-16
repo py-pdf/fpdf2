@@ -276,6 +276,23 @@ def test_table_rowspan_across_pages_merged_cell_long_text(tmp_path):
         pdf, HERE / "table_rowspan_across_pages_merged_cell_long_text.pdf", tmp_path
     )
 
+def test_table_rowspan_issue_1460_merged_cell_long_text_no_header(tmp_path):
+    # Same as multipage case, but no header
+    long_text = (LOREM_IPSUM + "\n\n") * 2
+    data = [
+        ["Text", "Header 2", "Header 3"],
+        [long_text, "Col B", "Col C"],
+    ] + [[TableSpan.ROW, f"R{i}", f"R{i}"] for i in range(35)]
+    pdf = FPDF()
+    pdf.auto_page_break = True
+    pdf.set_font("Helvetica", size=12)
+    pdf.add_page()
+    with pdf.table(data, first_row_as_headings=False):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_rowspan_issue_1460_merged_cell_long_text_no_header.pdf", tmp_path
+    )
+
 
 def test_table_with_rowspan_images(tmp_path):
     # Verify that the rowspans interact correctly with pagebreaks

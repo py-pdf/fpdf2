@@ -200,11 +200,33 @@ class Table:
 
     @staticmethod
     def _pagebreak_space_before_row(
-        row_info: "RowLayoutInfo", full_page_usable: float
+        row_info: "RowLayoutInfo",
+        full_page_usable: float,
+        merged_rowspan_anchor: bool,
     ) -> float:
-        """Height passed to _perform_page_break_if_need_be before drawing a row (issue #1460)."""
+        """Height passed to _perform_page_break_if_need_be before drawing a row (issue #1460).
+
+        For a rowspan drawn in one pass (merged), use the full span height when it fits in
+        a page. Otherwise use the physical row strip height whenever the logical rowspan
+        block is taller than one row — otherwise the pre-page-break sum can exceed the
+        space under the headings and force a spurious blank first page (issue #1460).
+        """
         ph = row_info.pagebreak_height
-        return row_info.height if ph > full_page_usable else ph
+        if merged_rowspan_anchor:
+            return row_info.height if ph > full_page_usable else ph
+        if ph > full_page_usable:
+            return row_info.height
+        if ph > row_info.height + 1e-3:
+            return row_info.height
+        return ph
+
+    def _row_has_merged_rowspan_anchor(self, ri: int) -> bool:
+        "True if this row starts a cell rendered as a single-pass merged rowspan."
+        row = self.rows[ri]
+        for j, c in enumerate(row.cells):
+            if isinstance(c, Cell) and c.rowspan > 1 and (ri, j) in self._rowspan_merged_single_pass:
+                return True
+        return False
 
     def render(self) -> None:
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
@@ -271,15 +293,23 @@ class Table:
         rows_info = list(self._compute_rows_info())
 
         full_page_usable = self._fpdf.page_break_trigger - self._fpdf.t_margin
+        heading_heights_sum = sum(
+            rows_info[h].height
+            for h in range(min(self._num_heading_rows, len(rows_info)))
+        )
         self._rowspan_merged_single_pass = set()
         for ri, row in enumerate(self.rows):
             for j, c in enumerate(row.cells):
                 if not isinstance(c, Cell):
                     continue
-                if (
-                    c.rowspan > 1
-                    and rows_info[ri].pagebreak_height <= full_page_usable
-                ):
+                if c.rowspan <= 1:
+                    continue
+                ph = rows_info[ri].pagebreak_height
+                if ph > full_page_usable:
+                    continue
+                # Span must fit with heading rows on the same page as the anchor (#1460).
+                extra = heading_heights_sum if ri == self._num_heading_rows else 0
+                if ph + extra <= full_page_usable:
                     self._rowspan_merged_single_pass.add((ri, j))
 
         # actually render the cells
@@ -292,7 +322,11 @@ class Table:
             # pylint: disable=protected-access
             self._fpdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
                 sum(
-                    self._pagebreak_space_before_row(rows_info[i], full_page_usable)
+                    self._pagebreak_space_before_row(
+                        rows_info[i],
+                        full_page_usable,
+                        self._row_has_merged_rowspan_anchor(i),
+                    )
                     for i in range(self._num_heading_rows + 1)
                 )
             )
@@ -302,7 +336,11 @@ class Table:
             # Rowspans taller than one page are split row-by-row (issue #1460); otherwise
             # keep accumulated height so we break before a span that fits on a page but
             # not in the remaining space (rowspan + pagebreak tests).
-            ph = self._pagebreak_space_before_row(rows_info[i], full_page_usable)
+            ph = self._pagebreak_space_before_row(
+                rows_info[i],
+                full_page_usable,
+                self._row_has_merged_rowspan_anchor(i),
+            )
             # pylint: disable=protected-access
             page_break = self._fpdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
                 ph
