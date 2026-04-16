@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from fpdf import FPDF, FontFace
-from fpdf.enums import TableSpan
+from fpdf.enums import TableHeadingsDisplay, TableSpan
 
-from test.conftest import assert_pdf_equal
+from test.conftest import LOREM_IPSUM, assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 IMG_DIR = HERE.parent / "image"
@@ -222,21 +222,59 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
 
     assert_pdf_equal(pdf, HERE / "table_with_rowspan_and_pgbreak.pdf", tmp_path)
 
-#rowspan multiple pages threshold(30)
-def test_table_with_rowspan_break_over_page_jump(tmp_path):
+
+#helper function for issue #1460 data
+def _issue_1460_table_data(span_extra_rows: int = 30):
+    """Minimal data from issue #1460 (rowspan via TableSpan.ROW)."""
+    return [
+        ["Header 1", "Header 2", "Header 3"],
+        ["Data 1", "Data 2", "Data 3"],
+    ] + [[TableSpan.ROW, "Data 5", "Data 6"] for _ in range(span_extra_rows)]
+
+
+def test_table_rowspan_issue_1460_multipage(tmp_path):
+    # Issue #1460: rowspan taller than one page must render across multiple pages.
     pdf = FPDF()
     pdf.auto_page_break = True
     pdf.set_font("Helvetica", size=12)
     pdf.add_page()
+    with pdf.table(_issue_1460_table_data(30)):
+        pass
+    assert_pdf_equal(pdf, HERE / "table_rowspan_issue_1460_multipage.pdf", tmp_path)
+
+
+def test_table_rowspan_issue_1460_repeat_headings(tmp_path):
+    # Same as multipage case, but headings must repeat after each page break.
+    pdf = FPDF()
+    pdf.auto_page_break = True
+    pdf.set_font("Helvetica", size=12)
+    pdf.add_page()
+    with pdf.table(
+        _issue_1460_table_data(30),
+        repeat_headings=TableHeadingsDisplay.ON_TOP_OF_EVERY_PAGE,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_rowspan_issue_1460_repeat_headings.pdf", tmp_path
+    )
+
+
+def test_table_rowspan_across_pages_merged_cell_long_text(tmp_path):
+    # Rowspan anchor cell contains enough text to overflow; span crosses page breaks.
+    long_text = (LOREM_IPSUM + "\n\n") * 2
     data = [
         ["Header 1", "Header 2", "Header 3"],
-        ["Data 1", "Data 2", "Data 3"],
-    ] + [[TableSpan.ROW, "Data 5", "Data 6"] for _ in range(30)]
-
-    with pytest.raises(ValueError, match="too high"):
-        with pdf.table(data):
-            pass
-
+        [long_text, "Col B", "Col C"],
+    ] + [[TableSpan.ROW, f"R{i}", f"R{i}"] for i in range(35)]
+    pdf = FPDF()
+    pdf.auto_page_break = True
+    pdf.set_font("Helvetica", size=12)
+    pdf.add_page()
+    with pdf.table(data):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_rowspan_across_pages_merged_cell_long_text.pdf", tmp_path
+    )
 
 
 def test_table_with_rowspan_images(tmp_path):

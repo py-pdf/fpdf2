@@ -22,7 +22,9 @@ from .enums import (
     CellBordersLayout,
     MethodReturnValue,
     TableBordersLayout,
+    TableBorderStyle,
     TableCellFillMode,
+    TableCellStyle,
     TableHeadingsDisplay,
     TableSpan,
     VAlign,
@@ -132,6 +134,7 @@ class Table:
         self._min_row_height = min_row_height
         self._initial_style: Optional[FontFace] = None
         self.rows: List[Row] = []
+        self._rowspan_merged_single_pass: set[tuple[int, int]] = set()
 
         if padding is None:
             self._padding = Padding.new(0)
@@ -194,6 +197,14 @@ class Table:
             else:
                 row.cell(cell)
         return row
+
+    @staticmethod
+    def _pagebreak_space_before_row(
+        row_info: "RowLayoutInfo", full_page_usable: float
+    ) -> float:
+        """Height passed to _perform_page_break_if_need_be before drawing a row (issue #1460)."""
+        ph = row_info.pagebreak_height
+        return row_info.height if ph > full_page_usable else ph
 
     def render(self) -> None:
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
@@ -259,6 +270,18 @@ class Table:
         # Process any rowspans
         rows_info = list(self._compute_rows_info())
 
+        full_page_usable = self._fpdf.page_break_trigger - self._fpdf.t_margin
+        self._rowspan_merged_single_pass = set()
+        for ri, row in enumerate(self.rows):
+            for j, c in enumerate(row.cells):
+                if not isinstance(c, Cell):
+                    continue
+                if (
+                    c.rowspan > 1
+                    and rows_info[ri].pagebreak_height <= full_page_usable
+                ):
+                    self._rowspan_merged_single_pass.add((ri, j))
+
         # actually render the cells
         repeat_headings = (
             self._repeat_headings is TableHeadingsDisplay.ON_TOP_OF_EVERY_PAGE
@@ -269,21 +292,26 @@ class Table:
             # pylint: disable=protected-access
             self._fpdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
                 sum(
-                    rows_info[i].pagebreak_height
+                    self._pagebreak_space_before_row(rows_info[i], full_page_usable)
                     for i in range(self._num_heading_rows + 1)
                 )
             )
+
         for i in range(len(self.rows)):
             pagebreak_height = rows_info[i].pagebreak_height
+            # Rowspans taller than one page are split row-by-row (issue #1460); otherwise
+            # keep accumulated height so we break before a span that fits on a page but
+            # not in the remaining space (rowspan + pagebreak tests).
+            ph = self._pagebreak_space_before_row(rows_info[i], full_page_usable)
             # pylint: disable=protected-access
             page_break = self._fpdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
-                pagebreak_height
+                ph
             )
             if (
                 page_break
-                and self._fpdf.y + pagebreak_height > self._fpdf.page_break_trigger
+                and self._fpdf.y + ph > self._fpdf.page_break_trigger
+                and ph > full_page_usable
             ):
-                # Restoring original position on page:
                 self._fpdf.x = prev_x
                 self._fpdf.y = prev_y
                 self._fpdf.l_margin = prev_l_margin
@@ -317,6 +345,32 @@ class Table:
         row = self.rows[i]
         y = self._fpdf.y  # remember current y position, reset after each cell
 
+        # Continuation slices of rowspans first (same stacking as one tall cell drawn on anchor row)
+        for j in range(self._cols_count):
+            cov = self._rowspan_cell_covering(i, j)
+            if cov is None:
+                continue
+            anchor_cell, anchor_k, start_col = cov
+            if anchor_k == i:
+                continue
+            anchor_j = next(
+                jj
+                for jj, rc in enumerate(self.rows[anchor_k].cells)
+                if rc is anchor_cell
+            )
+            if (anchor_k, anchor_j) in self._rowspan_merged_single_pass:
+                continue
+            if j != start_col:
+                continue
+            self._paint_rowspan_row_slice(
+                i,
+                anchor_k,
+                start_col,
+                anchor_cell,
+                row_layout_info,
+                cell_x_positions,
+            )
+
         for j, cell in enumerate(row.cells):
             if not isinstance(cell, Cell):
                 continue
@@ -332,6 +386,129 @@ class Table:
             self._fpdf.set_y(y)  # restore y position after each cell
 
         self._fpdf.ln(row_layout_info.height)
+
+    def _rowspan_slice_draw_height(
+        self, row_idx: int, anchor_row: int, cell: "Cell", row_height: float
+    ) -> float:
+        """Extend slice through gutter below so vertical borders match a one-shot rowspan."""
+        if row_idx < anchor_row + cell.rowspan - 1:
+            return row_height + self._gutter_height
+        return row_height
+
+    @staticmethod
+    def _rowspan_slice_border_style(
+        base: TableCellStyle, is_first: bool, is_last: bool
+    ) -> TableCellStyle:
+        """Borders for one horizontal slice of a rowspan (no interior horizontals)."""
+
+        def _edge(e: bool | TableBorderStyle, keep: bool) -> bool | TableBorderStyle:
+            return e if keep else False
+
+        return TableCellStyle(
+            left=_edge(base.left, True),
+            right=_edge(base.right, True),
+            top=_edge(base.top, is_first),
+            bottom=_edge(base.bottom, is_last),
+        )
+
+    def _rowspan_cell_covering(
+        self, row_idx: int, col_idx: int
+    ) -> Optional[Tuple["Cell", int, int]]:
+        "If (row_idx, col_idx) lies inside a rowspan, return (anchor_cell, anchor_row, start_col)."
+        for k in range(row_idx, -1, -1):
+            row = self.rows[k]
+            start_col = 0
+            for c in row.cells:
+                if c is None:
+                    start_col += 1
+                    continue
+                if not isinstance(c, Cell):
+                    continue
+                w = c.colspan
+                if (
+                    c.rowspan > 1
+                    and k <= row_idx < k + c.rowspan
+                    and col_idx >= start_col
+                    and col_idx < start_col + w
+                ):
+                    return c, k, start_col
+                start_col += w
+        return None
+
+    def _paint_rowspan_row_slice(
+        self,
+        row_idx: int,
+        anchor_row: int,
+        start_col: int,
+        cell: "Cell",
+        row_layout_info: "RowLayoutInfo",
+        cell_x_positions: Sequence[float],
+    ) -> None:
+        """Draw borders (and outer table border) for one horizontal slice of a rowspan."""
+        h = self._rowspan_slice_draw_height(
+            row_idx, anchor_row, cell, row_layout_info.height
+        )
+        x1 = cell_x_positions[start_col]
+        col_width = self._get_col_width(row_idx, start_col, cell.colspan)
+        x2 = x1 + col_width
+        y1 = self._fpdf.y
+        y2 = y1 + h
+
+        row = self.rows[anchor_row]
+        cell_idx = next(
+            idx for idx, row_cell in enumerate(row.cells) if row_cell is cell
+        )
+        style = self._initial_style
+        assert style is not None
+        cell_mode_fill = self._cell_fill_mode.should_fill_cell(anchor_row, start_col)
+        if cell_mode_fill and self._cell_fill_color:
+            style = style.replace(fill_color=self._cell_fill_color)
+        if anchor_row < self._num_heading_rows:
+            style = FontFace.combine(style, self._headings_style)
+        style = FontFace.combine(style, row.style)
+        style = FontFace.combine(style, cell.style)
+
+        base_cell_style = self._borders_layout.cell_style_getter(
+            row_idx=anchor_row,
+            col_idx=sum(1 for c in row.cells[:cell_idx] if c is not None),
+            col_pos=start_col,
+            num_heading_rows=self._num_heading_rows,
+            num_rows=len(self.rows),
+            num_col_idx=sum(1 for c in row.cells if c is not None),
+            num_col_pos=row.cols_count,
+        ).override_cell_border(cell.border)
+        is_first = row_idx == anchor_row
+        is_last = row_idx == anchor_row + cell.rowspan - 1
+        slice_style = self._rowspan_slice_border_style(
+            base_cell_style, is_first=is_first, is_last=is_last
+        )
+        slice_style.draw_cell_border(
+            self._fpdf,
+            x1,
+            y1,
+            x2,
+            y2,
+            fill_color=style.fill_color if style else None,
+        )
+
+        if self._outer_border_width is not None:
+            assert self._width is not None
+            _remember_linewidth = self._fpdf.line_width
+            self._fpdf.set_line_width(float(self._outer_border_width))
+            ox1 = self._fpdf.l_margin
+            ox2 = ox1 + float(self._width)
+            oy1 = y1 - self._outer_border_margin[1]
+            oy2 = y2 + self._outer_border_margin[1]
+            if start_col == 0:
+                self._fpdf.line(ox1, oy1, ox1, oy2)
+            if start_col + cell.colspan == self._cols_count:
+                self._fpdf.line(ox2, oy1, ox2, oy2)
+                if anchor_row == 0:
+                    self._fpdf.line(ox1, oy1, ox2, oy1)
+                last_span_row = anchor_row + cell.rowspan - 1
+                if last_span_row == len(self.rows) - 1 and row_idx == last_span_row:
+                    self._fpdf.line(ox1, oy2, ox2, oy2)
+            self._fpdf.set_line_width(_remember_linewidth)
 
     def _render_table_cell(
         self,
@@ -352,12 +529,18 @@ class Table:
         #
         # So this function is first called without cell_height_info to figure out the heights of all cells in a row
         # and then called again with cell_height to actually render the cells
+        row = self.rows[i]
+        rowspan_merged = False
         cell_height: Optional[float]
         if cell_height_info is None:
             cell_height = None
             height_query_only = True
         elif cell.rowspan > 1:
-            cell_height = cell_height_info.merged_heights[cell.rowspan]
+            rowspan_merged = (i, j) in self._rowspan_merged_single_pass
+            if rowspan_merged:
+                cell_height = cell_height_info.merged_heights[cell.rowspan]
+            else:
+                cell_height = cell_height_info.height
             height_query_only = False
         else:
             cell_height = cell_height_info.height
@@ -368,7 +551,6 @@ class Table:
 
         # Get style and cell content:
 
-        row = self.rows[i]
         col_width = self._get_col_width(i, j, cell.colspan)
         img_height: float = 0
 
@@ -422,30 +604,39 @@ class Table:
             x2 = (
                 x1 + col_width
             )  # already includes gutter for cells spanning multiple columns
-            y2 = y1 + cell_height
+            if cell.rowspan > 1 and not rowspan_merged:
+                border_bottom = self._rowspan_slice_draw_height(i, i, cell, cell_height)
+            else:
+                border_bottom = cell_height
+            y2 = y1 + border_bottom
 
             cell_idx = next(
-                i for i, row_cell in enumerate(row.cells) if row_cell is cell
+                idx for idx, row_cell in enumerate(row.cells) if row_cell is cell
             )
-            (
-                self._borders_layout.cell_style_getter(
-                    row_idx=i,
-                    col_idx=sum(1 for cell in row.cells[:cell_idx] if cell is not None),
-                    col_pos=j,
-                    num_heading_rows=self._num_heading_rows,
-                    num_rows=len(self.rows),
-                    num_col_idx=sum(1 for cell in row.cells if cell is not None),
-                    num_col_pos=row.cols_count,
+            base_cell_style = self._borders_layout.cell_style_getter(
+                row_idx=i,
+                col_idx=sum(1 for c in row.cells[:cell_idx] if c is not None),
+                col_pos=j,
+                num_heading_rows=self._num_heading_rows,
+                num_rows=len(self.rows),
+                num_col_idx=sum(1 for c in row.cells if c is not None),
+                num_col_pos=row.cols_count,
+            ).override_cell_border(cell.border)
+            if cell.rowspan > 1 and not rowspan_merged:
+                border_style = self._rowspan_slice_border_style(
+                    base_cell_style,
+                    is_first=True,
+                    is_last=(cell.rowspan == 1),
                 )
-                .override_cell_border(cell.border)
-                .draw_cell_border(
-                    self._fpdf,
-                    x1,
-                    y1,
-                    x2,
-                    y2,
-                    fill_color=style.fill_color if style else None,
-                )
+            else:
+                border_style = base_cell_style
+            border_style.draw_cell_border(
+                self._fpdf,
+                x1,
+                y1,
+                x2,
+                y2,
+                fill_color=style.fill_color if style else None,
             )
 
             # draw outer box if needed:
@@ -471,8 +662,9 @@ class Table:
                     # continuous top line border
                     if i == 0:
                         self._fpdf.line(x1, y1, x2, y1)
-                    # continuous bottom line border
-                    if i + cell.rowspan == len(self.rows):
+                    if i + cell.rowspan == len(self.rows) and not (
+                        cell.rowspan > 1 and not rowspan_merged
+                    ):
                         self._fpdf.line(x1, y2, x2, y2)
 
                 self._fpdf.set_line_width(_remember_linewidth)
@@ -726,6 +918,7 @@ class Table:
             # Pagebreak should not occur within ANY rowspan, so validate ACCUMULATED rowspans
             # This gets complicated because of overlapping rowspans (see `test_table_with_rowspan_and_pgbreak()`)
             # Eventually, this should be refactored to rearrange cells to permit breaks within spans
+            
             pagebreak_height = row_height
             pagebreak_row = i + row_span_max[i]
             j = i + 1
@@ -738,6 +931,8 @@ class Table:
                     + row_span_padding[j]
                 )
                 j += 1
+            
+            #pagebreak_height = row_height
 
             yield RowLayoutInfo(
                 merged_sizes[1], pagebreak_height, rendered_heights[i], merged_sizes
