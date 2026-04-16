@@ -4486,7 +4486,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     self.MARKDOWN_UNDERLINE_MARKER,
                 )
                 if is_escape_target and escape_run % 2 == 1:
-                    for _ in range(escape_run - 1):
+                    for _ in range(escape_run // 2):
                         txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
                     if current_fallback_font:
                         if txt_frag:
@@ -4495,7 +4495,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     escape_next_marker = 2
                     escape_run = 0
                     continue
-                for _ in range(escape_run):
+                for _ in range((escape_run + 1) // 2):
                     txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
                 escape_run = 0
 

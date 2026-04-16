@@ -118,10 +118,39 @@ def test_markdown_unrelated_escape():
     )
     expected = (Fragment("unrelated \\ escape **bold**", GSTATE, k=PDF.k),)
     assert frags == expected
+
     frags = merge_fragments(
         tuple(FPDF()._parse_chars("unrelated \\\\ double escape \\**bold\\**", True))
     )
-    expected = (Fragment("unrelated \\\\ double escape **bold**", GSTATE, k=PDF.k),)
+    expected = (Fragment("unrelated \\ double escape **bold**", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(FPDF()._parse_chars("unrelated \\\\\\ triple escape \\**bold\\**", True))
+    )
+    expected = (Fragment("unrelated \\\\ triple escape **bold**", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                "unrelated \\\\\\\\ quadruple escape \\**bold\\**", True
+            )
+        )
+    )
+    expected = (Fragment("unrelated \\\\ quadruple escape **bold**", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                "unrelated \\\\\\\\\\ quintuple escape \\**bold\\**", True
+            )
+        )
+    )
+    expected = (
+        Fragment("unrelated \\\\\\ quintuple escape **bold**", GSTATE, k=PDF.k),
+    )
     assert frags == expected
 
 
@@ -130,16 +159,48 @@ def test_markdown_parse_multiple_escape():
         tuple(FPDF()._parse_chars("\\\\**bold\\\\** double escaped", True))
     )
     expected = (
-        Fragment("\\\\", GSTATE, k=PDF.k),
-        Fragment("bold\\\\", GSTATE_B, k=PDF.k),
+        Fragment("\\", GSTATE, k=PDF.k),
+        Fragment("bold\\", GSTATE_B, k=PDF.k),
         Fragment(" double escaped", GSTATE, k=PDF.k),
     )
-
     assert frags == expected
+
     frags = merge_fragments(
         tuple(FPDF()._parse_chars("\\\\\\**triple bold\\\\\\** escaped", True))
     )
-    expected = (Fragment("\\\\**triple bold\\\\** escaped", GSTATE, k=PDF.k),)
+    expected = (Fragment("\\**triple bold\\** escaped", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(FPDF()._parse_chars("\\\\\\\\**quadruple bold\\\\\\\\** escaped", True))
+    )
+    expected = (
+        Fragment("\\\\", GSTATE, k=PDF.k),
+        Fragment("quadruple bold\\\\", GSTATE_B, k=PDF.k),
+        Fragment(" escaped", GSTATE, k=PDF.k),
+    )
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars("\\\\\\\\\\**quintuple bold\\\\\\\\\\** escaped", True)
+        )
+    )
+    expected = (Fragment("\\\\**quintuple bold\\\\** escaped", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                "\\\\\\\\\\\\**sextuple bold\\\\\\\\\\\\** escaped", True
+            )
+        )
+    )
+    expected = (
+        Fragment("\\\\\\", GSTATE, k=PDF.k),
+        Fragment("sextuple bold\\\\\\", GSTATE_B, k=PDF.k),
+        Fragment(" escaped", GSTATE, k=PDF.k),
+    )
     assert frags == expected
 
 
@@ -270,7 +331,7 @@ def test_markdown_parse_escape_non_marker():
 def test_markdown_parse_escape_before_marker_odd_even():
     frags = tuple(FPDF()._parse_chars("\\\\**bold**", True))
     expected = (
-        Fragment("\\\\", GSTATE, k=PDF.k),
+        Fragment("\\", GSTATE, k=PDF.k),
         Fragment("bold", GSTATE_B, k=PDF.k),
     )
     assert frags == expected
