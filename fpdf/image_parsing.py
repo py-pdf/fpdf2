@@ -2,8 +2,10 @@
 # mypy: disable-error-code=no-untyped-call
 import base64
 import hashlib
+import ipaddress
 import io
 import logging
+import socket
 import zlib
 from dataclasses import dataclass
 from io import BytesIO
@@ -20,9 +22,11 @@ from typing import (
     Union,
     no_type_check,
 )
-from urllib.request import urlopen
+from urllib.parse import urlsplit
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from .errors import FPDFException
+from .enums import ResourceAccessPolicy
+from .errors import FPDFException, FPDFResourceAccessError
 from .image_datastructures import (
     ImageCache,
     ImageFilter,
@@ -63,11 +67,108 @@ except ImportError:
 class ImageSettings:
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
     compression_level: int = -1
+    # Applied to remote HTTP(S) image fetches. Set to None to use the Python default.
+    network_timeout: float | None = 10.0
 
 
 LOGGER = logging.getLogger(__name__)
 SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode", "JPXDecode", "LZWDecode")
 SETTINGS = ImageSettings()
+
+
+def _resource_scope_for_ip(
+    address: ipaddress.IPv4Address | ipaddress.IPv6Address,
+) -> tuple[ResourceAccessPolicy, str]:
+    if address.is_global:
+        return ResourceAccessPolicy.REMOTE_PUBLIC, "public"
+    return ResourceAccessPolicy.REMOTE_PRIVATE, "private"
+
+
+def _resolve_hostname(
+    hostname: str,
+) -> tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]:
+    try:
+        addr_info = socket.getaddrinfo(hostname, None, type=socket.SOCK_STREAM)
+    except socket.gaierror as error:
+        raise FPDFResourceAccessError(
+            f"Could not resolve remote resource hostname: {hostname!r}"
+        ) from error
+    addresses: list[ipaddress.IPv4Address | ipaddress.IPv6Address] = []
+    seen: set[str] = set()
+    for addr in addr_info:
+        sockaddr = addr[4]
+        address_value = sockaddr[0]
+        if not isinstance(address_value, str):
+            continue
+        address = address_value.split("%", 1)[0]
+        if address in seen:
+            continue
+        seen.add(address)
+        addresses.append(ipaddress.ip_address(address))
+    if not addresses:
+        raise FPDFResourceAccessError(
+            f"Could not resolve any IP address for remote resource hostname: {hostname!r}"
+        )
+    return tuple(addresses)
+
+
+def _validate_remote_url_access(
+    url: str,
+    resource_access_policy: ResourceAccessPolicy,
+) -> None:
+    parsed_url = urlsplit(url)
+    if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
+        raise FPDFResourceAccessError(f"Unsupported remote resource URL: {url!r}")
+    if not resource_access_policy & ResourceAccessPolicy.REMOTE_ALL:
+        raise FPDFResourceAccessError(
+            f"Remote resource access is disabled by resource_access_policy: {url!r}"
+        )
+
+    for address in _resolve_hostname(parsed_url.hostname):
+        required_policy, scope = _resource_scope_for_ip(address)
+        if resource_access_policy & required_policy:
+            continue
+        raise FPDFResourceAccessError(
+            "Remote resource access is blocked by resource_access_policy: "
+            f"{url!r} resolves to {scope} address {address}"
+        )
+
+
+def _validate_resource_access(
+    filename: Any,
+    resource_access_policy: ResourceAccessPolicy,
+) -> None:
+    if isinstance(filename, Path):
+        filename = str(filename)
+    if not isinstance(filename, str):
+        return
+    if filename.startswith("data:"):
+        return
+    if filename.startswith(("http://", "https://")):
+        _validate_remote_url_access(filename, resource_access_policy)
+        return
+    if not resource_access_policy & ResourceAccessPolicy.LOCAL_FILES:
+        raise FPDFResourceAccessError(
+            f"Local file access is disabled by resource_access_policy: {filename!r}"
+        )
+
+
+class _ResourceAccessPolicyRedirectHandler(HTTPRedirectHandler):
+    def __init__(self, resource_access_policy: ResourceAccessPolicy) -> None:
+        super().__init__()
+        self.resource_access_policy = resource_access_policy
+
+    def redirect_request(
+        self,
+        req: Any,
+        fp: Any,
+        code: Any,
+        msg: Any,
+        headers: Any,
+        newurl: str,
+    ) -> Optional[Request]:
+        _validate_remote_url_access(newurl, self.resource_access_policy)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 # fmt: off
@@ -111,6 +212,7 @@ def preload_image(
     image_cache: ImageCache,
     name: ImageType,
     dims: Optional[tuple[float, float]] = None,
+    resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
 ) -> tuple[
     str,
     Union[SVGObject, "PILImage", bytes, BinaryIO, Path, None],
@@ -134,18 +236,33 @@ def preload_image(
     Returns: A tuple, consisting of 3 values: the name, the image data,
         and an instance of a subclass of `ImageInfo`.
     """
+    _validate_resource_access(name, resource_access_policy)
+
     # Identify and load SVG data:
     if isinstance(name, (str, Path)) and str(name).endswith(".svg"):
         try:
             return get_svg_info(
-                str(name), load_image(str(name)), image_cache=image_cache
+                str(name),
+                load_image(str(name), resource_access_policy=resource_access_policy),
+                image_cache=image_cache,
+                resource_access_policy=resource_access_policy,
             )
         except Exception as error:
             raise ValueError(f"Could not parse file: {name}") from error
     if isinstance(name, bytes) and _is_svg(name.strip()):
-        return get_svg_info("vector_image", io.BytesIO(name), image_cache=image_cache)
+        return get_svg_info(
+            "vector_image",
+            io.BytesIO(name),
+            image_cache=image_cache,
+            resource_access_policy=resource_access_policy,
+        )
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
-        return get_svg_info("vector_image", name, image_cache=image_cache)
+        return get_svg_info(
+            "vector_image",
+            name,
+            image_cache=image_cache,
+            resource_access_policy=resource_access_policy,
+        )
 
     # Load raster data.
     img: Union["PILImage", bytes, BinaryIO, Path, None]
@@ -176,6 +293,7 @@ def preload_image(
             img,
             image_cache.image_filter,
             dims,
+            resource_access_policy=resource_access_policy,
         )
         info["i"] = len(image_cache.images) + 1
         info["usages"] = 1
@@ -211,7 +329,10 @@ def _is_binary_stream(obj: Any) -> TypeGuard[BinaryIO]:
     return hasattr(obj, "read") and not isinstance(obj, (str, Path))
 
 
-def load_image(filename: str | Path | BinaryIO) -> BinaryIO:
+def load_image(
+    filename: str | Path | BinaryIO,
+    resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
+) -> BinaryIO:
     """
     This method is used to load external resources, such as images.
     It is automatically called when resource added to document by `fpdf.fpdf.FPDF.image()`.
@@ -225,11 +346,17 @@ def load_image(filename: str | Path | BinaryIO) -> BinaryIO:
         return BytesIO(filename.read())
     if isinstance(filename, Path):
         filename = str(filename)
-    # by default loading from network is allowed for all images
+    _validate_resource_access(filename, resource_access_policy)
+    # Resource access is governed by the active resource_access_policy.
     if filename.startswith(("http://", "https://")):
+        opener = build_opener(
+            _ResourceAccessPolicyRedirectHandler(resource_access_policy)
+        )
         # disabling bandit & semgrep rules as permitted schemes are whitelisted:
         # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
-        with urlopen(filename) as url_file:  # nosec B310
+        with opener.open(
+            filename, timeout=SETTINGS.network_timeout
+        ) as url_file:  # nosec B310
             return BytesIO(url_file.read())
     elif filename.startswith("data:"):
         return _decode_base64_image(filename)
@@ -267,11 +394,18 @@ def is_iccp_valid(iccp: bytes, filename: str | Path) -> bool:
 
 
 def get_svg_info(
-    filename: str, img: BinaryIO, image_cache: ImageCache
+    filename: str,
+    img: BinaryIO,
+    image_cache: ImageCache,
+    resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
 ) -> tuple[str, SVGObject, VectorImageInfo]:
     img.seek(0)
     svg_data = img.read()
-    svg = SVGObject(svg_data, image_cache=image_cache)
+    svg = SVGObject(
+        svg_data,
+        image_cache=image_cache,
+        resource_access_policy=resource_access_policy,
+    )
     if svg.viewbox:
         _, _, w, h = svg.viewbox
     else:
@@ -289,6 +423,7 @@ def get_img_info(
     img: Union["PILImage", bytes, BinaryIO, Path, str, None] = None,
     image_filter: ImageFilter = "AUTO",
     dims: Optional[tuple[float, float]] = None,
+    resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
 ) -> RasterImageInfo:
     """
     Args:
@@ -306,7 +441,9 @@ def get_img_info(
     jpeg_inverted = False
     img_raw_data: Optional[BinaryIO] = None
     if not img or isinstance(img, (Path, str)):
-        img_raw_data = load_image(filename)
+        img_raw_data = load_image(
+            filename, resource_access_policy=resource_access_policy
+        )
         img = Image.open(img_raw_data)
         is_pil_img = False
     elif not _is_pil_image(img):

@@ -22,7 +22,13 @@ from fontTools.svgLib.path import (
     parse_path,  # pyright: ignore[reportUnknownVariableType]
 )
 
-from .enums import GradientSpreadMethod, GradientUnits, PathPaintRule, StrokeCapStyle
+from .enums import (
+    GradientSpreadMethod,
+    GradientUnits,
+    PathPaintRule,
+    ResourceAccessPolicy,
+    StrokeCapStyle,
+)
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -899,9 +905,13 @@ class SVGObject:
             return cls(svgfile.read(), *args, **kwargs)
 
     def __init__(
-        self, svg_text: str | bytes, image_cache: Optional[ImageCache] = None
+        self,
+        svg_text: str | bytes,
+        image_cache: Optional[ImageCache] = None,
+        resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
     ) -> None:
         self.image_cache = image_cache  # Needed to render images
+        self.resource_access_policy = resource_access_policy
         self.cross_references: dict[str, Any] = {}
         self.css_class_styles: dict[str, dict[str, Any]] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
@@ -1918,7 +1928,11 @@ class SVGImage(NamedTuple):
         # pylint: disable=cyclic-import,import-outside-toplevel
         from .image_parsing import preload_image
 
-        _, _, info = preload_image(image_cache, self.href)
+        _, _, info = preload_image(
+            image_cache,
+            self.href,
+            resource_access_policy=self.svg_obj.resource_access_policy,
+        )
         if isinstance(info, VectorImageInfo):
             LOGGER.warning(
                 "Inserting .svg vector graphics in <image> tags is currently not supported (contributions are welcome to add support for it)"
