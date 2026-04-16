@@ -719,6 +719,10 @@ class Table:
                     dy = (cell_height - actual_text_height) / 2
                 elif v_align == VAlign.B:
                     dy = cell_height - actual_text_height
+                # When natural text height exceeds the drawn cell height (e.g. rowspan
+                # split into row slices), do not apply a negative offset — it would draw
+                # above the cell and overlap prior rows (issue #1460).
+                dy = max(0.0, dy)
 
             self._fpdf.y += dy
             assert style is not None
