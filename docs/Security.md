@@ -42,7 +42,7 @@ pdf = FPDF()
 pdf.resource_access_policy = (
     ResourceAccessPolicy.LOCAL_FILES | ResourceAccessPolicy.REMOTE_PUBLIC
 )
-````
+```
 
 The policy applies globally to the `FPDF` instance and affects all resource loading performed through that document, including nested resources referenced from HTML or SVG.
 

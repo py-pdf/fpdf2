@@ -247,6 +247,8 @@ def preload_image(
                 image_cache=image_cache,
                 resource_access_policy=resource_access_policy,
             )
+        except FPDFResourceAccessError:
+            raise
         except Exception as error:
             raise ValueError(f"Could not parse file: {name}") from error
     if isinstance(name, bytes) and _is_svg(name.strip()):

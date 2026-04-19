@@ -371,6 +371,7 @@ class ImageParagraph:
                 alt_text=self.alt_text,
                 dims=None,
                 keep_aspect_ratio=self.keep_aspect_ratio,
+                resource_access_policy=self.region.pdf.resource_access_policy,
             )
         )
         return return_info
