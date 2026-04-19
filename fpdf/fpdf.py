@@ -5090,8 +5090,30 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     ) -> "MultiCellResult":
         output_enum = MethodReturnValue.coerce(output)
         if output_enum & MethodReturnValue.LINES:
-            raise NotImplementedError(
-                "output=LINES is not supported for markdown unordered lists"
+            # Fallback: strip bullet prefixes and render as plain text
+            plain_lines = []
+            for line in normalized_string.split("\n"):
+                m = self.MARKDOWN_BULLET_REGEX.match(line)
+                if m:
+                    plain_lines.append(line[m.end() :])
+                else:
+                    plain_lines.append(line)
+            return self.multi_cell(
+                w=w,
+                h=h,
+                text="\n".join(plain_lines),
+                align=align,
+                fill=fill,
+                link=link,
+                markdown=True,
+                print_sh=print_sh,
+                new_x=new_x,
+                new_y=new_y,
+                max_line_height=max_line_height,
+                wrapmode=wrapmode,
+                output=output,
+                center=center,
+                padding=0,  # padding already applied by outer multi_cell
             )
         bullet_char = "\u2022" if self.is_ttf_font else "-"
         indent = self.MARKDOWN_BULLET_INDENT
@@ -5105,10 +5127,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             cur_new_y = new_y if is_last else YPos.NEXT
             m = self.MARKDOWN_BULLET_REGEX.match(line)
             if m:
-                item_text = line[m.end():]
+                item_text = line[m.end() :]
                 # Render bullet prefix
                 bullet_x = self.x
-                self.cell(w=indent, h=h, text=f" {bullet_char} ", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                self.cell(
+                    w=indent,
+                    h=h,
+                    text=f" {bullet_char} ",
+                    new_x=XPos.RIGHT,
+                    new_y=YPos.TOP,
+                )
                 # Render item text indented, with markdown support
                 result = self.multi_cell(
                     w=w - indent,

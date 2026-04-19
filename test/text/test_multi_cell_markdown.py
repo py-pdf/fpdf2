@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import fpdf
+from fpdf.enums import MethodReturnValue
 from test.conftest import assert_pdf_equal
 
 import pytest
@@ -228,9 +229,7 @@ def test_multi_cell_markdown_unordered_list_ttf(tmp_path):
         "End of list."
     )
     pdf.multi_cell(w=pdf.epw, text=text, markdown=True)
-    assert_pdf_equal(
-        pdf, HERE / "multi_cell_markdown_unordered_list_ttf.pdf", tmp_path
-    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_unordered_list_ttf.pdf", tmp_path)
 
 
 def test_multi_cell_markdown_consecutive_links(tmp_path):
@@ -257,3 +256,76 @@ def test_multi_cell_markdown_consecutive_links(tmp_path):
     )
     assert len(pdf.pages[pdf.page].annots) == 4
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_consecutive_links.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_unordered_list_border(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    text = "* Apples\n- **Bananas**\n+ __Cherries__"
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, border=1)
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_unordered_list_border.pdf", tmp_path
+    )
+
+
+def test_multi_cell_markdown_unordered_list_fill(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.set_fill_color(200, 220, 255)
+    text = "* Apples\n- **Bananas**\n+ __Cherries__"
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, fill=True)
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_unordered_list_fill.pdf", tmp_path
+    )
+
+
+def test_multi_cell_markdown_unordered_list_padding(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    text = "* Apples\n- **Bananas**\n+ __Cherries__"
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, padding=5)
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_unordered_list_padding.pdf", tmp_path
+    )
+
+
+def test_multi_cell_markdown_unordered_list_output_lines():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    text = "* Apples\n- **Bananas**\n+ __Cherries__"
+    lines = pdf.multi_cell(
+        w=pdf.epw, text=text, markdown=True, output=MethodReturnValue.LINES
+    )
+    assert isinstance(lines, list)
+    assert len(lines) == 3
+    assert "Apples" in lines[0]
+    assert "Bananas" in lines[1]
+    assert "Cherries" in lines[2]
+    for line in lines:
+        stripped = line.lstrip()
+        assert not stripped.startswith("*")
+        assert not stripped.startswith("-")
+        assert not stripped.startswith("+")
+
+
+def test_multi_cell_markdown_unordered_list_output_lines_padding():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    text = "* Apples\n- **Bananas**\n+ __Cherries__"
+    lines = pdf.multi_cell(
+        w=pdf.epw,
+        text=text,
+        markdown=True,
+        output=MethodReturnValue.LINES,
+        padding=5,
+    )
+    assert isinstance(lines, list)
+    assert len(lines) == 3
+    assert "Apples" in lines[0]
+    assert "Bananas" in lines[1]
+    assert "Cherries" in lines[2]
