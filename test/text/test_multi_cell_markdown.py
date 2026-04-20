@@ -307,7 +307,7 @@ def test_multi_cell_markdown_unordered_list_output_lines():
     assert "Cherries" in lines[2]
     for line in lines:
         assert isinstance(line, str)
-        stripped = line.lstrip()
+        stripped = line.lstrip()  # pylint: disable=no-member
         assert not stripped.startswith("*")
         assert not stripped.startswith("-")
         assert not stripped.startswith("+")
