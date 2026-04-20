@@ -119,14 +119,17 @@ def _validate_remote_url_access(
     parsed_url = urlsplit(url)
     if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
         raise FPDFResourceAccessError(f"Unsupported remote resource URL: {url!r}")
-    if not resource_access_policy & ResourceAccessPolicy.REMOTE_ALL:
+    if (
+        ResourceAccessPolicy.REMOTE_PUBLIC not in resource_access_policy
+        and ResourceAccessPolicy.REMOTE_PRIVATE not in resource_access_policy
+    ):
         raise FPDFResourceAccessError(
             f"Remote resource access is disabled by resource_access_policy: {url!r}"
         )
 
     for address in _resolve_hostname(parsed_url.hostname):
         required_policy, scope = _resource_scope_for_ip(address)
-        if resource_access_policy & required_policy:
+        if required_policy in resource_access_policy:
             continue
         raise FPDFResourceAccessError(
             "Remote resource access is blocked by resource_access_policy: "
@@ -139,7 +142,12 @@ def _validate_resource_access(
     resource_access_policy: ResourceAccessPolicy,
 ) -> None:
     if isinstance(filename, Path):
-        filename = str(filename)
+        if ResourceAccessPolicy.LOCAL_FILES not in resource_access_policy:
+            raise FPDFResourceAccessError(
+                "Local file access is disabled by resource_access_policy: "
+                f"{filename!r}"
+            )
+        return
     if not isinstance(filename, str):
         return
     if filename.startswith("data:"):
@@ -147,7 +155,7 @@ def _validate_resource_access(
     if filename.startswith(("http://", "https://")):
         _validate_remote_url_access(filename, resource_access_policy)
         return
-    if not resource_access_policy & ResourceAccessPolicy.LOCAL_FILES:
+    if ResourceAccessPolicy.LOCAL_FILES not in resource_access_policy:
         raise FPDFResourceAccessError(
             f"Local file access is disabled by resource_access_policy: {filename!r}"
         )
@@ -236,14 +244,26 @@ def preload_image(
     Returns: A tuple, consisting of 3 values: the name, the image data,
         and an instance of a subclass of `ImageInfo`.
     """
-    _validate_resource_access(name, resource_access_policy)
+    if isinstance(name, Path):
+        if ResourceAccessPolicy.LOCAL_FILES not in resource_access_policy:
+            raise FPDFResourceAccessError(
+                "Local file access is disabled by resource_access_policy: " f"{name!r}"
+            )
+        name = str(name)
+        if not name.endswith(".svg"):
+            info = image_cache.images.get(name)
+            if info is not None:
+                info["usages"] = info["usages"] + 1  # type: ignore[operator]
+                return name, None, info
+    else:
+        _validate_resource_access(name, resource_access_policy)
 
     # Identify and load SVG data:
-    if isinstance(name, (str, Path)) and str(name).endswith(".svg"):
+    if isinstance(name, str) and name.endswith(".svg"):
         try:
             return get_svg_info(
-                str(name),
-                load_image(str(name), resource_access_policy=resource_access_policy),
+                name,
+                load_image(name, resource_access_policy=resource_access_policy),
                 image_cache=image_cache,
                 resource_access_policy=resource_access_policy,
             )
@@ -286,7 +306,7 @@ def preload_image(
         raster_name, img = str(name), name
     else:
         raster_name, img = str(name), None
-    info: RasterImageInfo | VectorImageInfo | None = image_cache.images.get(raster_name)
+    info = image_cache.images.get(raster_name)
     if info is not None:
         info["usages"] = info["usages"] + 1  # type: ignore[operator]
     else:
