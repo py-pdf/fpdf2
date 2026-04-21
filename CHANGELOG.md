@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.8] - Not released yet
 ### Added
 * Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
+* support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 ### Fixed
 * text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)
