@@ -1494,7 +1494,14 @@ class SVGObject:
     @force_nodocument
     def build_symbol(self, symbol: "Element") -> GraphicsContext:
         """Parse <symbol> as reusable content, not rendered directly."""
-        return self.build_group(symbol)
+        group = self.build_group(symbol)
+        viewbox = symbol.attrib.get("viewBox")
+        if viewbox:
+            parts = viewbox.replace(",", " ").split()
+            if len(parts) >= 4:
+                setattr(group, "_vw", float(parts[2]))
+                setattr(group, "_vh", float(parts[3]))
+        return group
 
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
@@ -1515,7 +1522,8 @@ class SVGObject:
             raise ValueError(f"use {xref} doesn't contain known xref attribute")
 
         try:
-            pdf_group.add_item(self.cross_references[ref])
+            target = self.cross_references[ref]
+            pdf_group.add_item(target)
         except KeyError:
             raise ValueError(
                 f"use {xref} references nonexistent ref id {ref}"
@@ -1527,6 +1535,24 @@ class SVGObject:
             x, y = float(xref.attrib.get("x", 0)), float(xref.attrib.get("y", 0))
             pdf_group.transform = Transform.translation(x=x, y=y)
         # Note that we currently do not support "width" & "height" in <use>
+
+        if "width" in xref.attrib or "height" in xref.attrib:
+            w = float(xref.attrib.get("width", 1))
+            h = float(xref.attrib.get("height", 1))
+
+            target = self.cross_references.get(ref)
+            vw = getattr(target, "_vw", w)
+            vh = getattr(target, "_vh", h)
+
+            scale_x = w / vw if vw else 1
+            scale_y = h / vh if vh else 1
+
+            if pdf_group.transform is None:
+                pdf_group.transform = Transform.scaling(x=scale_x, y=scale_y)
+            else:
+                pdf_group.transform = pdf_group.transform @ Transform.scaling(
+                    x=scale_x, y=scale_y
+                )
 
         return pdf_group
 
