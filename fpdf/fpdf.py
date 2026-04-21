@@ -29,6 +29,7 @@ from typing import (
     Any,
     BinaryIO,
     Callable,
+    cast,
     Iterator,
     Literal,
     NamedTuple,
@@ -5155,7 +5156,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     center=center,
                     padding=padding,
                 )
-                pb, ht = result
+                pb, ht = cast("tuple[bool, float]", result)
                 if pb:
                     page_break_triggered = True
                 total_height += ht
@@ -5180,7 +5181,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         center=center,
                         padding=padding,
                     )
-                    pb, ht = result
+                    pb, ht = cast("tuple[bool, float]", result)
                     if pb:
                         page_break_triggered = True
                     total_height += ht
@@ -5191,12 +5192,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         return_value = ()
         if output_enum & MethodReturnValue.PAGE_BREAK:
-            return_value += (page_break_triggered,)
+            return_value += (page_break_triggered,)  # type: ignore[assignment]
         if output_enum & MethodReturnValue.HEIGHT:
-            return_value += (total_height,)
+            return_value += (total_height,)  # type: ignore[assignment]
         if len(return_value) == 1:
             return return_value[0]
-        return return_value
+        return return_value  # type: ignore[return-value]
 
     @check_page
     @support_deprecated_txt_arg
