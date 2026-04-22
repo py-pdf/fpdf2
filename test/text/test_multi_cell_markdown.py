@@ -250,7 +250,7 @@ def test_multi_cell_markdown_styled_link(tmp_path):
         for style, marker in style_combinations:
             pdf.multi_cell(
                 pdf.epw,
-                text=f"**Start** {marker:s}[{style:s} One Page Dungeon Context](https://www.dungeoncontest.com/){marker:s} __End__",
+                text=f"**Start** {marker:s}[{style:s} Link](https://github.com/py-pdf/fpdf2){marker:s} __End__",
                 markdown=True,
                 new_x="left",
                 new_y="next",
