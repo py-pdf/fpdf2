@@ -579,9 +579,10 @@ class CurrentLine:
         # character attributes. If the last existing fragment doesn't match
         # the properties of the pending character -> add a new fragment.
         elif isinstance(original_fragment, Fragment):
-            if isinstance(
-                self.fragments[-1], Fragment
-            ) and not original_fragment.has_same_style(self.fragments[-1]):
+            if isinstance(self.fragments[-1], Fragment) and not (
+                original_fragment.has_same_style(self.fragments[-1])
+                and url == self.fragments[-1].link
+            ):
                 self.fragments.append(
                     original_fragment.__class__(
                         characters="",
