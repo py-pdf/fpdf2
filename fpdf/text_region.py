@@ -296,7 +296,9 @@ class ImageParagraph:
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
         self.name, self.img, self.info = preload_image(
-            self.region.pdf.image_cache, self.name
+            self.region.pdf.image_cache,
+            self.name,
+            resource_access_policy=self.region.pdf.resource_access_policy,
         )
         return self
 
@@ -369,6 +371,7 @@ class ImageParagraph:
                 alt_text=self.alt_text,
                 dims=None,
                 keep_aspect_ratio=self.keep_aspect_ratio,
+                resource_access_policy=self.region.pdf.resource_access_policy,
             )
         )
         return return_info
