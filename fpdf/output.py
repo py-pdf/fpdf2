@@ -58,6 +58,7 @@ except ImportError:
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generator,
     ItemsView,
     Iterator,
     Literal,
@@ -2113,7 +2114,7 @@ class OutputProducer:
             )
 
     @contextmanager
-    def _trace_size(self, label: str) -> Iterator[None]:
+    def _trace_size(self, label: str) -> Generator[None]:
         prev_size = len(self.buffer)
         yield
         self.sections_size_per_trace_label[label] += len(self.buffer) - prev_size

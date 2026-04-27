@@ -2896,7 +2896,7 @@ class PaintedPath:
     @contextmanager
     def _new_graphics_context(
         self, _attach: bool = True
-    ) -> Iterator["GraphicsContext"]:
+    ) -> Generator["GraphicsContext"]:
         old_graphics_context = self._graphics_context
         new_graphics_context = GraphicsContext()
         self._graphics_context = new_graphics_context
@@ -2908,7 +2908,7 @@ class PaintedPath:
             self._graphics_context = old_graphics_context
 
     @contextmanager
-    def transform_group(self, transform: Transform) -> Iterator["PaintedPath"]:
+    def transform_group(self, transform: Transform) -> Generator["PaintedPath"]:
         """
         Apply the provided `Transform` to all points added within this context.
         """

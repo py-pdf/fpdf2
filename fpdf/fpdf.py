@@ -29,6 +29,7 @@ from typing import (
     Any,
     BinaryIO,
     Callable,
+    Generator,
     Iterator,
     Literal,
     NamedTuple,
@@ -1475,7 +1476,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @check_page
     def drawing_context(
         self, debug_stream: Optional[bool] = None  # pylint: disable=unused-argument
-    ) -> Iterator[DrawingContext]:
+    ) -> Generator[DrawingContext]:
         """
         Create a context for drawing paths on the current page.
 
@@ -1517,7 +1518,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @contextmanager
     @check_page
-    def use_pattern(self, shading: Gradient) -> Iterator[None]:
+    def use_pattern(self, shading: Gradient) -> Generator[None]:
         """
         Create a context for using a shading pattern on the current page.
         """
@@ -1566,7 +1567,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y: float = 0,
         paint_rule: PathPaintRule = PathPaintRule.AUTO,
         debug_stream: Optional[bool] = None,  # pylint: disable=unused-argument
-    ) -> Iterator[PaintedPath]:
+    ) -> Generator[PaintedPath]:
         """
         Create a path for appending lines and curves to.
 
@@ -1644,7 +1645,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._out(dstr)
 
     @contextmanager
-    def glyph_drawing_context(self) -> Iterator[DrawingContext]:
+    def glyph_drawing_context(self) -> Generator[DrawingContext]:
         """
         Create a context for drawing paths for type 3 font glyphs, without writing on the current page.
         """
@@ -3268,7 +3269,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         color: tuple[float, float, float] = (1, 1, 0),
         modification_time: Optional[datetime] = None,
         **kwargs: Any,
-    ) -> Iterator[None]:
+    ) -> Generator[None]:
         """
         Context manager that adds a single highlight annotation based on the text lines inserted
         inside its indented block.
@@ -3300,7 +3301,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._record_text_quad_points = False
 
     @contextmanager
-    def add_highlight(self, *args: Any, **kwargs: Any) -> Iterator[None]:
+    def add_highlight(self, *args: Any, **kwargs: Any) -> Generator[None]:
         warnings.warn(
             "add_highlight() has been renamed to highlight() in v2.5.5.",
             DeprecationWarning,
@@ -3495,7 +3496,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @contextmanager
     def rotation(
         self, angle: float, x: Optional[float] = None, y: Optional[float] = None
-    ) -> Iterator[None]:
+    ) -> Generator[None]:
         """
         Method to perform a rotation around a given center.
         It must be used as a context-manager using `with`:
@@ -3535,7 +3536,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         ay: float = 0,
         x: Optional[float] = None,
         y: Optional[float] = None,
-    ) -> Iterator[None]:
+    ) -> Generator[None]:
         """
         Method to perform a skew transformation originating from a given center.
         It must be used as a context-manager using `with`:
@@ -3566,7 +3567,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @contextmanager
     def mirror(
         self, origin: tuple[float, float], angle: Angle | str | float
-    ) -> Iterator[None]:
+    ) -> Generator[None]:
         """
         Method to perform a reflection transformation over a given mirror line.
         It must be used as a context-manager using `with`:
@@ -3599,7 +3600,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def transform(self, transform: Transform) -> Iterator[None]:
+    def transform(self, transform: Transform) -> Generator[None]:
         """
         Apply a transformation matrix to the current graphics state.
         This context manager isolates the transformation so it doesn't affect
@@ -3621,7 +3622,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def local_context(self, **kwargs: Any) -> Iterator[None]:
+    def local_context(self, **kwargs: Any) -> Generator[None]:
         """
         Creates a local graphics state, which won't affect the surrounding code.
         This method must be used as a context manager using `with`:
@@ -4675,7 +4676,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return self.pages_count > self.page
 
     @contextmanager
-    def _disable_writing(self) -> Iterator[None]:
+    def _disable_writing(self) -> Generator[None]:
         if not isinstance(self._out, types.MethodType):
             # This mean that self._out has already been redefined.
             # This is the case of a nested call to this method: we do nothing
@@ -5636,7 +5637,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @contextmanager
-    def _marked_sequence(self, **kwargs: Any) -> Iterator[StructElem]:
+    def _marked_sequence(self, **kwargs: Any) -> Generator[StructElem]:
         """
         Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
         of the PDF spec: iD, a, c, r, lang, e, actualText
@@ -6135,7 +6136,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def rect_clip(self, x: float, y: float, w: float, h: float) -> Iterator[None]:
+    def rect_clip(self, x: float, y: float, w: float, h: float) -> Generator[None]:
         """
         Context manager that defines a rectangular crop zone,
         useful to render only part of an image.
@@ -6157,7 +6158,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def elliptic_clip(self, x: float, y: float, w: float, h: float) -> Iterator[None]:
+    def elliptic_clip(self, x: float, y: float, w: float, h: float) -> Generator[None]:
         """
         Context manager that defines an elliptic crop zone,
         useful to render only part of an image.
@@ -6175,7 +6176,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def round_clip(self, x: float, y: float, r: float) -> Iterator[None]:
+    def round_clip(self, x: float, y: float, r: float) -> Generator[None]:
         """
         Context manager that defines a circular crop zone,
         useful to render only part of an image.
@@ -6189,7 +6190,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield
 
     @contextmanager
-    def unbreakable(self) -> Iterator[FPDFRecorder]:
+    def unbreakable(self) -> Generator[FPDFRecorder]:
         """
         Ensures that all rendering performed in this context appear on a single page
         by performing page break beforehand if need be.
@@ -6221,7 +6222,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         LOGGER.debug("Ending unbreakable block")
 
     @contextmanager
-    def offset_rendering(self) -> Iterator[FPDFRecorder]:
+    def offset_rendering(self) -> Generator[FPDFRecorder]:
         """
         All rendering performed in this context is made on a dummy FPDF object.
         This allows to test the results of some operations on the global layout
@@ -6396,7 +6397,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @contextmanager
-    def use_text_style(self, text_style: TextStyle) -> Iterator[None]:
+    def use_text_style(self, text_style: TextStyle) -> Generator[None]:
         prev_l_margin = None
         if text_style:
             if text_style.t_margin:
@@ -6420,7 +6421,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.x = self.l_margin
 
     @contextmanager
-    def use_font_face(self, font_face: FontFace) -> Iterator[None]:
+    def use_font_face(self, font_face: FontFace) -> Generator[None]:
         """
         Sets the provided `fpdf.fonts.FontFace` in a local context,
         then restore font settings back to they were initially.
@@ -6461,7 +6462,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def table(self, *args: Any, **kwargs: Any) -> Iterator[Table]:
+    def table(self, *args: Any, **kwargs: Any) -> Generator[Table]:
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
