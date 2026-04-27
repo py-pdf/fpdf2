@@ -2114,7 +2114,7 @@ class OutputProducer:
             )
 
     @contextmanager
-    def _trace_size(self, label: str) -> Generator[None]:
+    def _trace_size(self, label: str) -> Generator[None, None, None]:
         prev_size = len(self.buffer)
         yield
         self.sections_size_per_trace_label[label] += len(self.buffer) - prev_size
