@@ -108,6 +108,7 @@ from .enums import (
     PageOrientation,
     PathPaintRule,
     PDFResourceType,
+    ResourceAccessPolicy,
     RenderStyle,
     TextDirection,
     TextEmphasis,
@@ -352,6 +353,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )  # map names to Destination objects
         self.embedded_files: list[PDFEmbeddedFile] = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
+        self.resource_access_policy = ResourceAccessPolicy.DEFAULT
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
@@ -5203,6 +5205,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         alt_text: Optional[str] = None,
         dims: Optional[tuple[float, float]] = None,
         keep_aspect_ratio: bool = False,
+        resource_access_policy: Optional[ResourceAccessPolicy] = None,
     ) -> RasterImageInfo | VectorImageInfo:
         """
         Put an image on the page.
@@ -5248,6 +5251,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             keep_aspect_ratio (bool): ensure the image fits in the rectangle defined by `x`, `y`, `w` & `h`
                 while preserving its original aspect ratio. Defaults to False.
                 Only meaningful if both `w` & `h` are provided.
+            resource_access_policy (fpdf.enums.ResourceAccessPolicy, optional): override
+                the document-level policy used to load local or remote image resources
+                for this call, including nested raster images referenced by SVG files.
 
         If `y` is provided, this method will not trigger any page break;
         otherwise, auto page break detection will be performed.
@@ -5266,7 +5272,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
 
-        name, img, info = preload_image(self.image_cache, name, dims)
+        if resource_access_policy is None:
+            resource_access_policy = self.resource_access_policy
+
+        name, img, info = preload_image(
+            self.image_cache,
+            name,
+            dims,
+            resource_access_policy=resource_access_policy,
+        )
         if isinstance(info, VectorImageInfo):
             return self._vector_image(
                 name,
@@ -5296,6 +5310,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             alt_text,
             dims,
             keep_aspect_ratio,
+            resource_access_policy,
         )
 
     def _raster_image(
@@ -5312,6 +5327,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         alt_text: Optional[str] = None,
         dims: Optional[tuple[float, float]] = None,
         keep_aspect_ratio: bool = False,
+        resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.ALL,
     ) -> RasterImageInfo:
         if "smask" in info:
             self._set_min_pdf_version("1.4")
@@ -5334,7 +5350,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if keep_aspect_ratio:
             x, y, w, h = info.scale_inside_box(x, y, w, h)
         if self.oversized_images and info["usages"] == 1 and not dims:
-            info = self._downscale_image(name, img, info, w, h, scale=self.k)
+            info = self._downscale_image(
+                name,
+                img,
+                info,
+                w,
+                h,
+                scale=self.k,
+                resource_access_policy=resource_access_policy,
+            )
 
         stream_content = stream_content_for_raster_image(
             info, x, y, w, h, keep_aspect_ratio, scale=self.k, pdf_height_to_flip=self.h
@@ -5473,6 +5497,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         w: float,
         h: float,
         scale: float,
+        resource_access_policy: ResourceAccessPolicy,
     ) -> RasterImageInfo:
         images = self.image_cache.images
         width_in_pt, height_in_pt = w * scale, h * scale
@@ -5521,9 +5546,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         info.update(
                             get_img_info(
                                 name,
-                                img or load_image(name),
+                                img
+                                or load_image(
+                                    name,
+                                    resource_access_policy=resource_access_policy,
+                                ),
                                 self.image_cache.image_filter,
                                 dims,
+                                resource_access_policy=resource_access_policy,
                             )
                         )
                         LOGGER.debug(
@@ -5537,9 +5567,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     info = RasterImageInfo(
                         get_img_info(
                             name,
-                            img or load_image(name),
+                            img
+                            or load_image(
+                                name,
+                                resource_access_policy=resource_access_policy,
+                            ),
                             self.image_cache.image_filter,
                             dims,
+                            resource_access_policy=resource_access_policy,
                         )
                     )
                     info["i"] = len(images) + 1
@@ -5585,6 +5620,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.image_cache,
             name,  # pyright: ignore[reportArgumentType, reportReturnType]
             dims,
+            resource_access_policy=self.resource_access_policy,
         )
 
     def preload_glyph_image(self, glyph_image_bytes: bytes | BinaryIO) -> tuple[
@@ -5596,6 +5632,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             image_cache=self.image_cache,
             name=glyph_image_bytes,
             dims=None,  # pyright: ignore[reportArgumentType, reportReturnType]
+            resource_access_policy=self.resource_access_policy,
         )
 
     @contextmanager
