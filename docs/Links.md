@@ -36,7 +36,22 @@ pdf.multi_cell(
 pdf.output("hyperlink.pdf")
 ```
 
-Links defined this way in Markdown can be styled by setting `FPDF` class attributes `MARKDOWN_LINK_COLOR` (default: `None`) & `MARKDOWN_LINK_UNDERLINE` (default: `True`).
+Links defined this way in Markdown can be styled by setting `FPDF` class attributes `MARKDOWN_LINK_COLOR` (default: `None`) & `MARKDOWN_LINK_UNDERLINE` (default: `True`).  
+Links can also be styled by embedding them in markdown style markers (`**bold**, __italics__, --underlined--, ~~strikethrough~~`):
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.set_font("helvetica", size=24)
+pdf.add_page()
+pdf.multi_cell(
+    pdf.epw,
+    text="**Website:** __[fpdf2](https://py-pdf.github.io/fpdf2/)__, Go visit it!",
+    markdown=True,
+)
+pdf.output("hyperlink.pdf")
+```
 
 `link="https://...your-url"` can also be used to make the whole cell clickable.
 
