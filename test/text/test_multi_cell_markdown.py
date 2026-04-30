@@ -3,6 +3,7 @@ from pathlib import Path
 
 import fpdf
 from test.conftest import assert_pdf_equal
+from test.conftest import LOREM_IPSUM
 
 import pytest
 
@@ -258,3 +259,91 @@ def test_multi_cell_markdown_styled_link(tmp_path):
         pdf.ln()
 
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_styled_link.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__",
+        LOREM_IPSUM
+        + "\n**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__",
+        LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
+        + " **\nStart** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__ "
+        + LOREM_IPSUM[len(LOREM_IPSUM) // 2 :],
+    ],
+)
+def test_multi_cell_markdown_dry_run_lines_output(text):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+
+    # The parts of the special markdown text must be in the lines list, but not
+    # in the same line
+    assert any("**Start**" in line for line in lines)
+    assert any(
+        "[fpdf2 github](https://github.com/py-pdf/fpdf2)" in line for line in lines
+    )
+    assert any("__End__" in line for line in lines)
+    start_line = next(i for i, line in enumerate(lines) if "**Start**" in line)
+    end_line = next(i for i, line in enumerate(lines) if "__End__" in line)
+    assert start_line + 1 == end_line
+
+    parsed_text = "\n".join(lines)
+    assert (
+        "**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__"
+        in parsed_text
+    )
+
+
+def test_multi_cell_markdown_dry_run_lines_output_print(tmp_path):
+    text = (
+        LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
+        + "\n**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__ "
+        + LOREM_IPSUM[len(LOREM_IPSUM) // 2 :]
+    )
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    # Normal text
+    pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    pdf.ln()
+
+    # Join text after dry run by `"\n"`
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+    pdf.multi_cell(
+        pdf.epw,
+        text="\n".join(lines),
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_dry_run_lines_output.pdf", tmp_path
+    )
