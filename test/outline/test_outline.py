@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, TextStyle, TitleStyle, errors
-from fpdf.enums import Align
+from fpdf.enums import Align, MethodReturnValue
 from fpdf.outline import TableOfContents
 
 from test.conftest import LOREM_IPSUM, assert_pdf_equal
@@ -322,7 +322,7 @@ def test_toc_with_right_aligned_page_numbers(tmp_path):
 
 def p(pdf, text, **kwargs):
     "Inserts a paragraph"
-    pdf.multi_cell(
+    return pdf.multi_cell(
         w=pdf.epw,
         h=pdf.font_size,
         text=text,
@@ -765,18 +765,21 @@ def test_multi_cell_dry_run_not_increasing_toc_inserted_pages(tmp_path):
         pdf.underline = True
         p(pdf, "Table of contents:")
         pdf.underline = False
-        pdf.y += 150
+        pdf.y = pdf.page_break_trigger - (16 + 12) / pdf.k  # Provoke a page break
         pdf.set_font("Courier", size=12)
         for section in outline:
             link = pdf.add_link(page=section.page_number)
-            # Dry run to calculate height (in reality to put e.g. heading and its subheading to same page)
-            p(
+            # Dry run to calculate height (to put e.g. a multiline heading to same page)
+            h = p(
                 pdf,
                 f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
                 align="C",
                 dry_run=True,
                 link=link,
+                output=MethodReturnValue.HEIGHT,
             )
+            if pdf.y + h > pdf.page_break_trigger:
+                pdf.add_page()
             # Normal run
             p(
                 pdf,
@@ -787,15 +790,17 @@ def test_multi_cell_dry_run_not_increasing_toc_inserted_pages(tmp_path):
 
     pdf = FPDF()
     pdf.set_font("Helvetica")
+
     pdf.add_page()
     pdf.set_y(50)
     pdf.set_font(size=40)
     p(pdf, "Doc Title", align="C")
+
     pdf.set_font(size=12)
+    pdf.add_page()
     pdf.insert_toc_placeholder(render_toc_dry_run, allow_extra_pages=True)
+
     insert_test_content(pdf)
     assert_pdf_equal(
-        pdf,
-        HERE / "multi_cell_dry_run_not_increasing_toc_inserted_pages.pdf",
-        tmp_path,
+        pdf, HERE / "multi_cell_dry_run_not_increasing_toc_inserted_pages.pdf", tmp_path
     )
