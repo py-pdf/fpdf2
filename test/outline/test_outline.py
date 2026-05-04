@@ -756,3 +756,28 @@ def test_footer_leaking_style_on_toc(tmp_path):
             pdf.add_page()
         pdf.start_section(f"Section {i}")
     assert_pdf_equal(pdf, HERE / "footer_leaking_style_on_toc.pdf", tmp_path)
+
+
+def test_last_gstate_leaking_into_toc(tmp_path):
+    def render_toc_simple(pdf, outline):
+        for section in outline:
+            link = pdf.add_link(page=section.page_number)
+            pdf.multi_cell(
+                w=pdf.epw,
+                text=f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
+                link=link,
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+
+    pdf.add_page()
+    p(pdf, "Doc Title", align="C")
+
+    pdf.add_page()
+    pdf.insert_toc_placeholder(render_toc_simple, allow_extra_pages=True)
+
+    insert_test_content(pdf)
+    assert_pdf_equal(pdf, HERE / "last_gstate_leaking_into_toc.pdf", tmp_path)
