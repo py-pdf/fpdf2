@@ -4753,53 +4753,59 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text_lines: list[TextLine],
         markdown: bool = False,
     ) -> list[str]:
-        emphasis_marker: dict[TextEmphasis, str] = {
-            TextEmphasis.NONE: "",
-            TextEmphasis.B: self.MARKDOWN_BOLD_MARKER,
-            TextEmphasis.I: self.MARKDOWN_ITALICS_MARKER,
-            TextEmphasis.U: self.MARKDOWN_UNDERLINE_MARKER,
-            TextEmphasis.S: self.MARKDOWN_STRIKETHROUGH_MARKER,
-        }
         output_lines: list[str] = []
-
-        for text_line in text_lines:
-            characters: list[str] = []
-            last_emphasis = TextEmphasis.NONE
-            for frag in text_line.fragments:
-                if markdown:
-                    next_emphasis = TextEmphasis.coerce(
-                        frag.font_style
-                        + (
-                            "U"
-                            if not self.MARKDOWN_LINK_UNDERLINE and frag.underline
-                            else ""
+        if not markdown:
+            for text_line in text_lines:
+                characters: list[str] = []
+                for frag in text_line.fragments:
+                    characters.extend(frag.characters)
+                output_lines.append("".join(characters))
+        else:
+            emphasis_marker: dict[TextEmphasis, str] = {
+                TextEmphasis.NONE: "",
+                TextEmphasis.B: self.MARKDOWN_BOLD_MARKER,
+                TextEmphasis.I: self.MARKDOWN_ITALICS_MARKER,
+                TextEmphasis.U: self.MARKDOWN_UNDERLINE_MARKER,
+                TextEmphasis.S: self.MARKDOWN_STRIKETHROUGH_MARKER,
+            }
+            for text_line in text_lines:
+                characters = []
+                last_emphasis: TextEmphasis = TextEmphasis.NONE
+                for frag in text_line.fragments:
+                    if markdown:
+                        next_emphasis = TextEmphasis.coerce(
+                            frag.font_style
+                            + (
+                                "U"
+                                if not self.MARKDOWN_LINK_UNDERLINE and frag.underline
+                                else ""
+                            )
+                            + ("S" if frag.strikethrough else "")
                         )
-                        + ("S" if frag.strikethrough else "")
-                    )
-                    removed_emphasis = last_emphasis & ~next_emphasis
-                    for te in reversed(TextEmphasis):
-                        if removed_emphasis & te:
-                            characters.extend(emphasis_marker[te].split())
-                    added_emphasis = next_emphasis & ~last_emphasis
-                    for te in TextEmphasis:
-                        if added_emphasis & te:
-                            characters.extend(emphasis_marker[te].split())
-                    last_emphasis = next_emphasis
-                if not markdown or not frag.link:
-                    characters.extend(frag.characters)
-                else:
-                    characters.append("[")
-                    characters.extend(frag.characters)
-                    characters.extend(("]", "("))
-                    characters.extend(str(frag.link).split())
-                    characters.append(")")
-            if markdown:
+                        removed_emphasis = last_emphasis & ~next_emphasis
+                        for te in reversed(TextEmphasis):
+                            if removed_emphasis & te:
+                                characters.extend(emphasis_marker[te].split())
+                        added_emphasis = next_emphasis & ~last_emphasis
+                        for te in TextEmphasis:
+                            if added_emphasis & te:
+                                characters.extend(emphasis_marker[te].split())
+                        last_emphasis = next_emphasis
+                    if not frag.link:
+                        characters.extend(frag.characters)
+                    else:
+                        characters.append("[")
+                        characters.extend(frag.characters)
+                        characters.extend(("]", "("))
+                        characters.extend(str(frag.link).split())
+                        characters.append(")")
+
                 next_emphasis = TextEmphasis.NONE
                 removed_emphasis = last_emphasis & ~next_emphasis
                 for te in reversed(TextEmphasis):
                     if removed_emphasis & te:
                         characters.extend(emphasis_marker[te].split())
-            output_lines.append("".join(characters))
+                output_lines.append("".join(characters))
         return output_lines
 
     # multi_cell has dynamic results depending on the `output` parameter
