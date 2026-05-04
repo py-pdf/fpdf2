@@ -1516,8 +1516,10 @@ class SVGObject:
         if viewbox:
             parts = viewbox.replace(",", " ").split()
             if len(parts) >= 4:
-                setattr(group, "_vw", float(parts[2]))
-                setattr(group, "_vh", float(parts[3]))
+                vx, vy, vw, vh = (float(p) for p in parts[:4])
+                group.transform = Transform.scaling(
+                    x=1 / vw, y=1 / vh
+                ) @ Transform.translation(x=-vx, y=-vy)
         return group
 
     # this assumes xrefs only reference already-defined ids.
@@ -1551,25 +1553,20 @@ class SVGObject:
             # > The x and y properties define an additional transformation translate(x,y)
             x, y = float(xref.attrib.get("x", 0)), float(xref.attrib.get("y", 0))
             pdf_group.transform = Transform.translation(x=x, y=y)
-        # Note that we currently do not support "width" & "height" in <use>
+        # Note that we currently do not support "width" & "height" with % in <use>
 
         if "width" in xref.attrib or "height" in xref.attrib:
-            w = float(xref.attrib.get("width", 1))
-            h = float(xref.attrib.get("height", 1))
-
-            target = self.cross_references.get(ref)
-            vw = getattr(target, "_vw", w)
-            vh = getattr(target, "_vh", h)
-
-            scale_x = w / vw if vw else 1
-            scale_y = h / vh if vh else 1
-
-            if pdf_group.transform is None:
-                pdf_group.transform = Transform.scaling(x=scale_x, y=scale_y)
-            else:
-                pdf_group.transform = pdf_group.transform @ Transform.scaling(
-                    x=scale_x, y=scale_y
-                )
+            w_str = xref.attrib.get("width", "")
+            h_str = xref.attrib.get("height", "")
+            if "%" not in w_str and "%" not in h_str:
+                w = float(w_str) if w_str else 1
+                h = float(h_str) if h_str else 1
+                if pdf_group.transform is None:
+                    pdf_group.transform = Transform.scaling(x=w, y=h)
+                else:
+                    pdf_group.transform = (
+                        Transform.scaling(x=w, y=h) @ pdf_group.transform
+                    )
 
         return pdf_group
 
