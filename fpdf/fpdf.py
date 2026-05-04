@@ -377,6 +377,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # flag set true while rendering the table of contents
         self.in_toc_rendering = False
         # allow page insertion when writing the table of contents
+        self._toc_gstate: Optional[StateStackType] = None
         self._toc_allow_page_insertion = False
         self._toc_inserted_pages = 0  # number of pages inserted
         # dict of Output Intents, with keys beings their subtypes:
@@ -5910,7 +5911,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # flag rendering ToC for page breaking function
         self.in_toc_rendering = True
         self._set_orientation(tocp.page_orientation, self.dw_pt, self.dh_pt)
-        tocp.render_function(self, self._outline)
+        assert self._toc_gstate is not None
+        with self.local_context(**self._toc_gstate.as_kwargs()):
+            tocp.render_function(self, self._outline)
         self.in_toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
         if self.page != expected_final_page and not self._toc_allow_page_insertion:
@@ -6333,6 +6336,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             reset_page_indices,
         )
         self._toc_allow_page_insertion = allow_extra_pages
+        self._toc_gstate = self._get_current_graphics_state()
         for _ in range(pages):
             self._perform_page_break()
 
