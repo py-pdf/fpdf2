@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import fpdf
@@ -143,7 +144,117 @@ def test_multi_cell_markdown_link(tmp_path):
     pdf.add_page()
     pdf.multi_cell(
         pdf.epw,
-        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        text="**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2) __End__",
         markdown=True,
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_link_dry_run(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    assert len(pdf.pages[1].annots) == 0
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2) __End__",
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 0
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2) __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 1
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2) __End__",
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 1
+
+    pdf.multi_cell(
+        pdf.epw,
+        text="**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2) __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[1].annots) == 2
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link_dry_run.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_consecutive_links(tmp_path):
+    link1 = "[fpdf2 github](https://github.com/py-pdf/fpdf2)"
+    link2 = "[fpdf2 github Releases](https://github.com/py-pdf/fpdf2/releases)"
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    pdf.multi_cell(
+        pdf.epw,
+        text=f"**Start** {link1:s} {link2:s} __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[pdf.page].annots) == 2
+    pdf.multi_cell(
+        pdf.epw,
+        text=f"**Start** {link1:s}{link2:s} __End__",
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    assert len(pdf.pages[pdf.page].annots) == 4
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_consecutive_links.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_styled_link(tmp_path):
+    styles = (
+        ("Bold", "**"),
+        ("Italics", "__"),
+        ("Strikethrough", "~~"),
+        ("Underline", "--"),
+    )
+    style_combinations = []
+    for i in range(1, len(styles) + 1):
+        for combo in itertools.combinations(styles, i):
+            style = "-".join(c[0] for c in combo)
+            marker = "".join(c[1] for c in combo)
+            style_combinations.append((style, marker))
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    for link_color, link_underline in itertools.product(
+        (None, "#0000ff"),
+        (False, True),
+    ):
+        pdf.MARKDOWN_LINK_COLOR = link_color
+        pdf.MARKDOWN_LINK_UNDERLINE = link_underline
+        for style, marker in style_combinations:
+            pdf.multi_cell(
+                pdf.epw,
+                text=f"**Start** {marker:s}[{style:s} Link](https://github.com/py-pdf/fpdf2){marker:s} __End__",
+                markdown=True,
+                new_x="left",
+                new_y="next",
+            )
+        pdf.ln()
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_styled_link.pdf", tmp_path)
