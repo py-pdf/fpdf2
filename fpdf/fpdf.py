@@ -5089,10 +5089,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if output & MethodReturnValue.LINES:
             output_lines: list[str] = []
             for text_line in text_lines:
-                characters: list[str] = []
+                line_content = ""
                 for frag in text_line.fragments:
-                    characters.extend(frag.characters)
-                output_lines.append("".join(characters))
+                    frag_text = "".join(frag.characters)
+                    if markdown:
+                        if "B" in frag.font_style and "I" in frag.font_style:
+                            frag_text = f"***{frag_text}***"
+                        elif "B" in frag.font_style:
+                            frag_text = f"**{frag_text}**"
+                        elif "I" in frag.font_style:
+                            frag_text = f"_{frag_text}_"
+                    line_content += frag_text
+                output_lines.append(line_content)
             return_value += (output_lines,)  # type: ignore[assignment]
         if output & MethodReturnValue.HEIGHT:
             return_value += (total_height + padding.top + padding.bottom,)  # type: ignore[assignment]
