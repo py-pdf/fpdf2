@@ -1872,11 +1872,18 @@ class Arc(NamedTuple):
 
         theta = Point(1, 0).angle(arcstart)
         deltatheta = arcstart.angle(arcend)
+        if deltatheta == 0:
+            deltatheta = math.atan2(
+                (arcstart.x * arcend.y) - (arcstart.y * arcend.x),
+                arcstart.dot(arcend),
+            )
 
         if (self.sweep is False) and (deltatheta > 0):
             deltatheta -= math.tau
         elif (self.sweep is True) and (deltatheta < 0):
             deltatheta += math.tau
+        if deltatheta == 0:
+            return []
 
         sweep_sign = (deltatheta >= 0) - (deltatheta < 0)
         final_tf = (

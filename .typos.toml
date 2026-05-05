@@ -25,6 +25,7 @@ otTables = "otTables"
 [files]
 extend-exclude = [
     "*.pdf",
+    "*.svg",
     "docs/Tutorial-*.md",
 ]
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, TextStyle, TitleStyle, errors
-from fpdf.enums import Align
+from fpdf.enums import Align, MethodReturnValue
 from fpdf.outline import TableOfContents
 
 from test.conftest import LOREM_IPSUM, assert_pdf_equal
@@ -36,7 +36,7 @@ def render_toc(pdf, outline):
         link = pdf.add_link(page=section.page_number)
         p(
             pdf,
-            f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}',
+            f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
             align="C",
             link=link,
         )
@@ -305,7 +305,7 @@ def test_toc_with_right_aligned_page_numbers(tmp_path):
         for section in outline:
             link = pdf.add_link(page=section.page_number)
             pdf.cell(
-                text=f'{" " * section.level * 2} {section.name}',
+                text=f"{' ' * section.level * 2} {section.name}",
                 link=link,
                 new_x="LEFT",
             )
@@ -322,7 +322,7 @@ def test_toc_with_right_aligned_page_numbers(tmp_path):
 
 def p(pdf, text, **kwargs):
     "Inserts a paragraph"
-    pdf.multi_cell(
+    return pdf.multi_cell(
         w=pdf.epw,
         h=pdf.font_size,
         text=text,
@@ -756,6 +756,54 @@ def test_footer_leaking_style_on_toc(tmp_path):
             pdf.add_page()
         pdf.start_section(f"Section {i}")
     assert_pdf_equal(pdf, HERE / "footer_leaking_style_on_toc.pdf", tmp_path)
+
+
+def test_multi_cell_dry_run_not_increasing_toc_inserted_pages(tmp_path):
+    def render_toc_dry_run(pdf, outline):
+        pdf.y += 50
+        pdf.set_font("Helvetica", size=16)
+        pdf.underline = True
+        p(pdf, "Table of contents:")
+        pdf.underline = False
+        pdf.y = pdf.page_break_trigger - (16 + 12) / pdf.k  # Provoke a page break
+        pdf.set_font("Courier", size=12)
+        for section in outline:
+            link = pdf.add_link(page=section.page_number)
+            # Dry run to calculate height (to put e.g. a multiline heading to same page)
+            h = p(
+                pdf,
+                f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
+                align="C",
+                dry_run=True,
+                link=link,
+                output=MethodReturnValue.HEIGHT,
+            )
+            if pdf.y + h > pdf.page_break_trigger:
+                pdf.add_page()
+            # Normal run
+            p(
+                pdf,
+                f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
+                align="C",
+                link=link,
+            )
+
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+
+    pdf.add_page()
+    pdf.set_y(50)
+    pdf.set_font(size=40)
+    p(pdf, "Doc Title", align="C")
+
+    pdf.set_font(size=12)
+    pdf.add_page()
+    pdf.insert_toc_placeholder(render_toc_dry_run, allow_extra_pages=True)
+
+    insert_test_content(pdf)
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_dry_run_not_increasing_toc_inserted_pages.pdf", tmp_path
+    )
 
 
 def test_last_gstate_leaking_into_toc(tmp_path):
