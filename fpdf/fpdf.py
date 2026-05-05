@@ -5089,18 +5089,30 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if output & MethodReturnValue.LINES:
             output_lines: list[str] = []
             for text_line in text_lines:
-                line_content = ""
+                line_fragments: list[str] = []  # Performans için liste kullanıyoruz
                 for frag in text_line.fragments:
                     frag_text = "".join(frag.characters)
                     if markdown:
+                        # 1. Font stilleri (Bold/Italic)
                         if "B" in frag.font_style and "I" in frag.font_style:
                             frag_text = f"***{frag_text}***"
                         elif "B" in frag.font_style:
                             frag_text = f"**{frag_text}**"
                         elif "I" in frag.font_style:
                             frag_text = f"_{frag_text}_"
-                    line_content += frag_text
-                output_lines.append(line_content)
+                        
+                        # 2. Altı çizili ve Üstü çizili (Copilot'un önerisi)
+                        if frag.underline:
+                            frag_text = f"--{frag_text}--"
+                        if frag.strikethrough:
+                            frag_text = f"~~{frag_text}~~"
+                        
+                        # 3. Linkler (Copilot'un önerisi)
+                        if frag.link:
+                            frag_text = f"[{frag_text}]({frag.link})"
+                            
+                    line_fragments.append(frag_text)
+                output_lines.append("".join(line_fragments))
             return_value += (output_lines,)  # type: ignore[assignment]
         if output & MethodReturnValue.HEIGHT:
             return_value += (total_height + padding.top + padding.bottom,)  # type: ignore[assignment]
