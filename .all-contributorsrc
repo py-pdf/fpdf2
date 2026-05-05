@@ -1727,6 +1727,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "HippolyteCediey",
+      "name": "HippolyteCediey",
+      "avatar_url": "https://avatars.githubusercontent.com/u/175031994?v=4",
+      "profile": "https://github.com/HippolyteCediey",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
