@@ -29,6 +29,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * preserve two consecutive markdown links (without space inbetween) - _cf._ [issue #1814](https://github.com/py-pdf/fpdf2/issues/1814)
 * support markdown style around markdown links - _cf._ [issue #1826](https://github.com/py-pdf/fpdf2/issues/1826)
 * fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836)
+* rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
