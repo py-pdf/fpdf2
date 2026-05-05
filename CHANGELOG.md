@@ -25,10 +25,12 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)
 * transform application on user space gradients - _cf._ [issue #1784](https://github.com/py-pdf/fpdf2/issues/1784)
 * dependency extras for camelot-py and endesive on pyproject.toml - _cf._ [issue #1792](https://github.com/py-pdf/fpdf2/issues/1792)
-* preserve link annotations during dry-run of pdf.multi_cell - _cf._ [issue #1807](https://github.com/py-pdf/fpdf2/issues/1807)
+* preserve link annotations during dry-run of `FPDF.multi_cell` - _cf._ [issue #1807](https://github.com/py-pdf/fpdf2/issues/1807)
 * preserve two consecutive markdown links (without space inbetween) - _cf._ [issue #1814](https://github.com/py-pdf/fpdf2/issues/1814)
 * support markdown style around markdown links - _cf._ [issue #1826](https://github.com/py-pdf/fpdf2/issues/1826)
 * preserve markdown format in `FPDF.multi_cell` in dry-run - _cf._ [issue #1840](https://github.com/py-pdf/fpdf2/issues/1840)
+* fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836)
+* rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 

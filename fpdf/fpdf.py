@@ -4727,11 +4727,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield
             return
         self._out = lambda *args, **kwargs: None  # type: ignore[method-assign]
-        prev_page, prev_pages_count, prev_x, prev_y = (
+        prev_page, prev_pages_count, prev_x, prev_y, prev_toc_inserted_pages = (
             self.page,
             self.pages_count,
             self.x,
             self.y,
+            self._toc_inserted_pages,
         )
         annots = PDFArray(self.pages[self.page].annots or [])
         self._push_local_stack()
@@ -4745,6 +4746,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.page = prev_page
             self.pages[self.page].annots = annots
             self.set_xy(prev_x, prev_y)
+            # restore inserted pages in toc
+            self._toc_inserted_pages = prev_toc_inserted_pages
             # restore writing function:
             del self._out
 
