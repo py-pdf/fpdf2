@@ -544,6 +544,7 @@ def test_toc_extra_pages_with_labels(tmp_path, test_number):
         if pdf.page == 1:
             return
         pdf.set_y(pdf.h - 10)
+        pdf.set_font("helvetica", "", 12)
         pdf.cell(text=pdf.get_page_label(), center=True)
 
     pdf = FPDF()
