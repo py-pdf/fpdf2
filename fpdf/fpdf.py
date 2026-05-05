@@ -5911,12 +5911,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         assert tocp is not None
         prev_page, prev_y = self.page, self.y
         self.page, self.y = tocp.start_page, tocp.y
+        # Set gstate to toc page
+        assert self._toc_gstate is not None
+        assert not self._is_current_graphics_state_nested()
+        cur_gstate = self._pop_local_stack()
+        self._push_local_stack(new=self._toc_gstate)
         # flag rendering ToC for page breaking function
         self.in_toc_rendering = True
         self._set_orientation(tocp.page_orientation, self.dw_pt, self.dh_pt)
-        assert self._toc_gstate is not None
-        with self.local_context(**self._toc_gstate.as_kwargs()):
-            tocp.render_function(self, self._outline)
+        tocp.render_function(self, self._outline)
         self.in_toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
         if self.page != expected_final_page and not self._toc_allow_page_insertion:
@@ -5973,6 +5976,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 key = (indices_remap.get(page_number, page_number), resource_type)
                 new_resources_per_page[key] = resource
             self._resource_catalog.resources_per_page = new_resources_per_page
+        # Reset gstate (after rendering of footer)
+        while self._is_current_graphics_state_nested():
+            self._pop_local_stack()
+        self._pop_local_stack()
+        self._push_local_stack(cur_gstate)
+        # Reset page and y
         self.page, self.y = prev_page, prev_y
 
     def file_id(self) -> Optional[str | Literal[-1]]:  # pylint: disable=no-self-use
