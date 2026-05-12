@@ -792,6 +792,8 @@ test_svg_sources = (
     pytest.param(svgfile("gradient_multiple.svg"), id="Multiple gradients"),
     pytest.param(svgfile("gradient_opacity.svg"), id="Gradient with opacity"),
     pytest.param(svgfile("gradient_spread_methods.svg"), id="Gradient spread methods"),
+    # issue 1831
+    pytest.param(svgfile("sunburst.svg"), id="small arc round to zero"),
 )
 
 svg_path_edge_cases = (
