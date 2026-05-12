@@ -306,6 +306,7 @@ def test_multi_cell_markdown_dry_run_lines_output(text):
 
 
 def test_multi_cell_markdown_dry_run_lines_output_print(tmp_path):
+    # Test that output="LINES" keeps markdown format
     text = (
         LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
         + "\n**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__ "
@@ -346,4 +347,49 @@ def test_multi_cell_markdown_dry_run_lines_output_print(tmp_path):
 
     assert_pdf_equal(
         pdf, HERE / "multi_cell_markdown_dry_run_lines_output.pdf", tmp_path
+    )
+
+
+def test_multi_cell_markdown_dry_run_lines_output_escape(tmp_path):
+    # Test that escaped markdown markers stay escaped
+    text = (
+        LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
+        + "\n**Start** \\** [fpdf2 github](https://github.com/py-pdf/fpdf2) \\__ \\~~ \\-- \n__End__ "
+        + LOREM_IPSUM[len(LOREM_IPSUM) // 2 :]
+    )
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    # Normal text
+    pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    pdf.ln()
+
+    # Join text after dry run by `"\n"`
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+    pdf.multi_cell(
+        pdf.epw,
+        text="\n".join(lines),
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_dry_run_lines_output_escape.pdf", tmp_path
     )
