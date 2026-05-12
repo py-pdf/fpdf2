@@ -4806,9 +4806,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             if added_emphasis & te:
                                 text_parts.append(emphasis_markers[te])
                         last_emphasis = next_emphasis
-                    text = escape("".join(frag.characters))
+                    text = "".join(frag.characters)
+                    # NOTE: Currently, markdown format inside of links is not handled
+                    #       so only escape markdown markers outside of links
                     text_parts.append(
-                        f"[{text:s}]({frag.link!s:s})" if frag.link else text
+                        f"[{text:s}]({frag.link!s:s})" if frag.link else escape(text)
                     )
                 next_emphasis = TextEmphasis.NONE
                 removed_emphasis = last_emphasis & ~next_emphasis
