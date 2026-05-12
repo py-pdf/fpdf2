@@ -4790,13 +4790,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     if markdown:
                         next_emphasis = TextEmphasis.coerce(
                             frag.font_style
-                            + (
-                                "U"
-                                if not self.MARKDOWN_LINK_UNDERLINE and frag.underline
-                                else ""
-                            )
+                            + ("U" if frag.underline else "")
                             + ("S" if frag.strikethrough else "")
                         )
+                        # If fragment has a link and link underline is true,
+                        # the underline marker must not be added
+                        if frag.link and self.MARKDOWN_LINK_UNDERLINE:
+                            next_emphasis &= ~TextEmphasis.U
                         removed_emphasis = last_emphasis & ~next_emphasis
                         for te in reversed(TextEmphasis):
                             if removed_emphasis & te:
