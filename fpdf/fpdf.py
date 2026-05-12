@@ -4764,15 +4764,27 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     characters.extend(frag.characters)
                 output_lines.append("".join(characters))
         else:
-            emphasis_marker: dict[TextEmphasis, str] = {
+            emphasis_markers: dict[TextEmphasis, str] = {
                 TextEmphasis.NONE: "",
                 TextEmphasis.B: self.MARKDOWN_BOLD_MARKER,
                 TextEmphasis.I: self.MARKDOWN_ITALICS_MARKER,
                 TextEmphasis.U: self.MARKDOWN_UNDERLINE_MARKER,
                 TextEmphasis.S: self.MARKDOWN_STRIKETHROUGH_MARKER,
             }
+            marker_pattern: str = "|".join(
+                re.escape(m)
+                for te, m in emphasis_markers.items()
+                if te != TextEmphasis.NONE
+            )
+            escape_pattern: re.Pattern[str] = re.compile(rf"({marker_pattern:s})")
+
+            def escape(text: str) -> str:
+                return escape_pattern.sub(
+                    rf"{self.MARKDOWN_ESCAPE_CHARACTER:s}\\1", text
+                )
+
             for text_line in text_lines:
-                characters = []
+                text_parts: list[str] = []
                 last_emphasis: TextEmphasis = TextEmphasis.NONE
                 for frag in text_line.fragments:
                     if markdown:
@@ -4788,27 +4800,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         removed_emphasis = last_emphasis & ~next_emphasis
                         for te in reversed(TextEmphasis):
                             if removed_emphasis & te:
-                                characters.extend(emphasis_marker[te].split())
+                                text_parts.append(emphasis_markers[te])
                         added_emphasis = next_emphasis & ~last_emphasis
                         for te in TextEmphasis:
                             if added_emphasis & te:
-                                characters.extend(emphasis_marker[te].split())
+                                text_parts.append(emphasis_markers[te])
                         last_emphasis = next_emphasis
-                    if not frag.link:
-                        characters.extend(frag.characters)
-                    else:
-                        characters.append("[")
-                        characters.extend(frag.characters)
-                        characters.extend(("]", "("))
-                        characters.extend(str(frag.link).split())
-                        characters.append(")")
-
+                    text = escape("".join(frag.characters))
+                    text_parts.append(
+                        f"[{text:s}]({frag.link!s:s})" if frag.link else text
+                    )
                 next_emphasis = TextEmphasis.NONE
                 removed_emphasis = last_emphasis & ~next_emphasis
                 for te in reversed(TextEmphasis):
                     if removed_emphasis & te:
-                        characters.extend(emphasis_marker[te].split())
-                output_lines.append("".join(characters))
+                        text_parts.append(emphasis_markers[te])
+                output_lines.append("".join(text_parts))
         return output_lines
 
     # multi_cell has dynamic results depending on the `output` parameter
