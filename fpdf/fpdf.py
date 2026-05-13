@@ -4751,6 +4751,75 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # restore writing function:
             del self._out
 
+    def _join_text_lines(
+        self,
+        text_lines: list[TextLine],
+        markdown: bool = False,
+    ) -> list[str]:
+        output_lines: list[str] = []
+        if not markdown:
+            for text_line in text_lines:
+                characters: list[str] = []
+                for frag in text_line.fragments:
+                    characters.extend(frag.characters)
+                output_lines.append("".join(characters))
+        else:
+            emphasis_markers: dict[TextEmphasis, str] = {
+                TextEmphasis.NONE: "",
+                TextEmphasis.B: self.MARKDOWN_BOLD_MARKER,
+                TextEmphasis.I: self.MARKDOWN_ITALICS_MARKER,
+                TextEmphasis.U: self.MARKDOWN_UNDERLINE_MARKER,
+                TextEmphasis.S: self.MARKDOWN_STRIKETHROUGH_MARKER,
+            }
+            marker_pattern: str = "|".join(
+                re.escape(m)
+                for te, m in emphasis_markers.items()
+                if te != TextEmphasis.NONE
+            )
+            escape_pattern: re.Pattern[str] = re.compile(rf"({marker_pattern:s})")
+
+            def escape(text: str) -> str:
+                return escape_pattern.sub(
+                    rf"{self.MARKDOWN_ESCAPE_CHARACTER:s}\\1", text
+                )
+
+            for text_line in text_lines:
+                text_parts: list[str] = []
+                last_emphasis: TextEmphasis = TextEmphasis.NONE
+                for frag in text_line.fragments:
+                    if markdown:
+                        next_emphasis = TextEmphasis.coerce(
+                            frag.font_style
+                            + ("U" if frag.underline else "")
+                            + ("S" if frag.strikethrough else "")
+                        )
+                        # If fragment has a link and link underline is true,
+                        # the underline marker must not be added
+                        if frag.link and self.MARKDOWN_LINK_UNDERLINE:
+                            next_emphasis &= ~TextEmphasis.U
+                        removed_emphasis = last_emphasis & ~next_emphasis
+                        for te in reversed(TextEmphasis):
+                            if removed_emphasis & te:
+                                text_parts.append(emphasis_markers[te])
+                        added_emphasis = next_emphasis & ~last_emphasis
+                        for te in TextEmphasis:
+                            if added_emphasis & te:
+                                text_parts.append(emphasis_markers[te])
+                        last_emphasis = next_emphasis
+                    text = "".join(frag.characters)
+                    # NOTE: Currently, markdown format inside of links is not handled
+                    #       so only escape markdown markers outside of links
+                    text_parts.append(
+                        f"[{text:s}]({frag.link!s:s})" if frag.link else escape(text)
+                    )
+                next_emphasis = TextEmphasis.NONE
+                removed_emphasis = last_emphasis & ~next_emphasis
+                for te in reversed(TextEmphasis):
+                    if removed_emphasis & te:
+                        text_parts.append(emphasis_markers[te])
+                output_lines.append("".join(text_parts))
+        return output_lines
+
     # multi_cell has dynamic results depending on the `output` parameter
     MultiCellPageBreakResult: TypeAlias = bool
     MultiCellLinesResult: TypeAlias = list[str]
@@ -5087,12 +5156,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if output & MethodReturnValue.PAGE_BREAK:
             return_value += (page_break_triggered,)  # type: ignore[assignment]
         if output & MethodReturnValue.LINES:
-            output_lines: list[str] = []
-            for text_line in text_lines:
-                characters: list[str] = []
-                for frag in text_line.fragments:
-                    characters.extend(frag.characters)
-                output_lines.append("".join(characters))
+            output_lines = self._join_text_lines(text_lines, markdown=markdown)
             return_value += (output_lines,)  # type: ignore[assignment]
         if output & MethodReturnValue.HEIGHT:
             return_value += (total_height + padding.top + padding.bottom,)  # type: ignore[assignment]
