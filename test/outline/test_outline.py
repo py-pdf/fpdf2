@@ -36,7 +36,7 @@ def render_toc(pdf, outline):
         link = pdf.add_link(page=section.page_number)
         p(
             pdf,
-            f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}',
+            f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
             align="C",
             link=link,
         )
@@ -305,7 +305,7 @@ def test_toc_with_right_aligned_page_numbers(tmp_path):
         for section in outline:
             link = pdf.add_link(page=section.page_number)
             pdf.cell(
-                text=f'{" " * section.level * 2} {section.name}',
+                text=f"{' ' * section.level * 2} {section.name}",
                 link=link,
                 new_x="LEFT",
             )
@@ -544,6 +544,7 @@ def test_toc_extra_pages_with_labels(tmp_path, test_number):
         if pdf.page == 1:
             return
         pdf.set_y(pdf.h - 10)
+        pdf.set_font("helvetica", "", 12)
         pdf.cell(text=pdf.get_page_label(), center=True)
 
     pdf = FPDF()
@@ -804,3 +805,28 @@ def test_multi_cell_dry_run_not_increasing_toc_inserted_pages(tmp_path):
     assert_pdf_equal(
         pdf, HERE / "multi_cell_dry_run_not_increasing_toc_inserted_pages.pdf", tmp_path
     )
+
+
+def test_last_gstate_leaking_into_toc(tmp_path):
+    def render_toc_simple(pdf, outline):
+        for section in outline:
+            link = pdf.add_link(page=section.page_number)
+            pdf.multi_cell(
+                w=pdf.epw,
+                text=f"{' ' * section.level * 2} {section.name} {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}",
+                link=link,
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+
+    pdf.add_page()
+    p(pdf, "Doc Title", align="C")
+
+    pdf.add_page()
+    pdf.insert_toc_placeholder(render_toc_simple, allow_extra_pages=True)
+
+    insert_test_content(pdf)
+    assert_pdf_equal(pdf, HERE / "last_gstate_leaking_into_toc.pdf", tmp_path)
