@@ -377,6 +377,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # flag set true while rendering the table of contents
         self.in_toc_rendering = False
         # allow page insertion when writing the table of contents
+        self._toc_gstate: Optional[StateStackType] = None
         self._toc_allow_page_insertion = False
         self._toc_inserted_pages = 0  # number of pages inserted
         # dict of Output Intents, with keys beings their subtypes:
@@ -5974,6 +5975,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         assert tocp is not None
         prev_page, prev_y = self.page, self.y
         self.page, self.y = tocp.start_page, tocp.y
+        # Set gstate to toc page
+        assert self._toc_gstate is not None
+        assert not self._is_current_graphics_state_nested()
+        cur_gstate = self._pop_local_stack()
+        self._push_local_stack(new=self._toc_gstate)
         # flag rendering ToC for page breaking function
         self.in_toc_rendering = True
         self._set_orientation(tocp.page_orientation, self.dw_pt, self.dh_pt)
@@ -6034,6 +6040,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 key = (indices_remap.get(page_number, page_number), resource_type)
                 new_resources_per_page[key] = resource
             self._resource_catalog.resources_per_page = new_resources_per_page
+        # Reset gstate (after rendering of footer)
+        while self._is_current_graphics_state_nested():
+            self._pop_local_stack()
+        self._pop_local_stack()
+        self._push_local_stack(cur_gstate)
+        # Reset page and y
         self.page, self.y = prev_page, prev_y
 
     def file_id(self) -> Optional[str | Literal[-1]]:  # pylint: disable=no-self-use
@@ -6400,6 +6412,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             reset_page_indices,
         )
         self._toc_allow_page_insertion = allow_extra_pages
+        self._toc_gstate = self._get_current_graphics_state()
         for _ in range(pages):
             self._perform_page_break()
 
