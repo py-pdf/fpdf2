@@ -56,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L301-L312" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L301-L312" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def color_as_decimal(
     color: Optional[str] = &#34;#000000&#34;,
@@ -81,7 +81,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1404-L1415" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1411-L1422" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ol_prefix(ol_type: str, index: int) -&gt; int | str:
     if ol_type == &#34;1&#34;:
@@ -105,7 +105,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L315-L325" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L315-L325" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_css_style(style_attr: str) -&gt; dict[str, str]:
     &#34;&#34;&#34;Parse `style=&#34;...&#34;` HTML attributes, and return a dict of key-value&#34;&#34;&#34;
@@ -128,7 +128,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1394-L1401" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1401-L1408" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ul_prefix(ul_type: str, is_ttf_font: bool) -&gt; str:
     if ul_type == &#34;disc&#34;:
@@ -154,7 +154,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L328-L1370" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L328-L1377" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTML2FPDF(HTMLParser):
     &#34;Render basic HTML to FPDF&#34;
@@ -1019,6 +1019,13 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             )
         if tag == &#34;toc&#34;:
             self._end_paragraph()
+            self.pdf.set_font(
+                family=self.font_family,
+                size=self.font_size_pt,
+                style=self.font_emphasis.style,
+            )
+            if self.font_color != self.pdf.text_color and self.font_color is not None:
+                self.pdf.set_text_color(self.font_color)
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs_dict.get(&#34;pages&#34;) or &#34;1&#34;)
             )
@@ -1185,8 +1192,8 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         pdf.ln()
         for section in outline:
             link = pdf.add_link(page=section.page_number)
-            text = f&#39;{&#34; &#34; * section.level * 2} {section.name}&#39;
-            text += f&#39; {&#34;.&#34; * (60 - section.level*2 - len(section.name))} {section.page_number}&#39;
+            text = f&#34;{&#39; &#39; * section.level * 2} {section.name}&#34;
+            text += f&#34; {&#39;.&#39; * (60 - section.level * 2 - len(section.name))} {section.page_number}&#34;
             pdf.multi_cell(
                 w=pdf.epw,
                 h=pdf.font_size,
@@ -1265,7 +1272,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1369-L1370" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1376-L1377" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def error(self, message: str) -&gt; None:
     raise RuntimeError(message)</code></pre>
@@ -1279,7 +1286,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1321-L1327" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1328-L1334" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def feed(self, data: str) -&gt; None:
     super().feed(data)
@@ -1300,7 +1307,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L639-L727" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L639-L727" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_data(self, data: str) -&gt; None:
     if self._in_title:
@@ -1401,7 +1408,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1208-L1319" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1215-L1326" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_endtag(self, tag: str) -&gt; None:
     while (
@@ -1525,7 +1532,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L742-L1206" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L742-L1213" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
     self._pre_started = False
@@ -1976,6 +1983,13 @@ as you want (may include '\n').</p></div>
         )
     if tag == &#34;toc&#34;:
         self._end_paragraph()
+        self.pdf.set_font(
+            family=self.font_family,
+            size=self.font_size_pt,
+            style=self.font_emphasis.style,
+        )
+        if self.font_color != self.pdf.text_color and self.font_color is not None:
+            self.pdf.set_text_color(self.font_color)
         self.pdf.insert_toc_placeholder(
             self.render_toc, pages=int(attrs_dict.get(&#34;pages&#34;) or &#34;1&#34;)
         )
@@ -2002,7 +2016,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1329-L1349" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1336-L1356" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def put_link(self, text: str) -&gt; None:
     &#34;Insert a hyperlink&#34;
@@ -2035,15 +2049,15 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1352-L1366" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1359-L1373" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_toc(self, pdf: &#34;FPDF&#34;, outline: list[OutlineSection]) -&gt; None:
     &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
     pdf.ln()
     for section in outline:
         link = pdf.add_link(page=section.page_number)
-        text = f&#39;{&#34; &#34; * section.level * 2} {section.name}&#39;
-        text += f&#39; {&#34;.&#34; * (60 - section.level*2 - len(section.name))} {section.page_number}&#39;
+        text = f&#34;{&#39; &#39; * section.level * 2} {section.name}&#34;
+        text += f&#34; {&#39;.&#39; * (60 - section.level * 2 - len(section.name))} {section.page_number}&#34;
         pdf.multi_cell(
             w=pdf.epw,
             h=pdf.font_size,
@@ -2065,7 +2079,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e2111aa8e1f41f6a5579c8d8a281fd63b7f6e14d/fpdf/html.py#L1418-L1433" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/67dcd72240713d267ee2192009669980e2541efb/fpdf/html.py#L1425-L1440" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTMLMixin:
     &#34;&#34;&#34;
