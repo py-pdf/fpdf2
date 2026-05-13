@@ -391,3 +391,18 @@ def test_text_columns_with_shorter_2nd_column(tmp_path):  # issue 1442
     pdf.write(text="More text after columns.")
     pdf.ln()
     assert_pdf_equal(pdf, HERE / "text_columns_with_shorter_2nd_column.pdf", tmp_path)
+
+
+def test_text_columns_does_not_leak_font_state():  # issue 1804
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    cols = pdf.text_columns()
+    with cols:
+        pdf.set_font("Helvetica", size=24)
+        with cols.paragraph() as par:
+            par.write("Large heading")
+        pdf.set_font("Helvetica", size=10)
+        with cols.paragraph() as par:
+            par.write("Small body text")
+    assert pdf.font_size_pt == 12
