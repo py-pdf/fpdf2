@@ -432,7 +432,33 @@ class ParagraphCollectorMixin(ABC):
         self.pdf.clear_text_region()
         self.pdf.page = self._page
         self.pdf._pop_local_stack()  # pyright: ignore[reportPrivateUsage]
-        self.render()
+        # Preserve font state across `render()`. Internally, rendering each
+        # paragraph temporarily adjusts font_size_pt / font_family /
+        # font_style / current_font, but those mutations must not leak back
+        # onto the calling FPDF instance because the caller did not ask to
+        # change fonts. Cursor position and other render-produced state are
+        # intentionally left alone, since subsequent draws rely on them.
+        # Fixes GH issue #1804.
+        saved_font_family = self.pdf.font_family
+        saved_font_style = self.pdf.font_style
+        saved_font_size_pt = self.pdf.font_size_pt
+        saved_current_font = self.pdf.current_font
+        try:
+            self.render()
+        finally:
+            self.pdf.font_family = saved_font_family
+            self.pdf.font_style = saved_font_style
+            self.pdf.font_size_pt = saved_font_size_pt
+            self.pdf.current_font = saved_current_font
+            # `render()` may have emitted `Tf` operators to the page for
+            # paragraph-level fonts. After restoring the Python-side font
+            # attributes, also invalidate `current_font_is_set_on_page` so
+            # the next text operation re-emits a `Tf` for the restored
+            # (outer) font instead of inheriting whatever the last
+            # paragraph wrote to the page. Without this, `pdf.cell()`
+            # after the context silently renders at the inner paragraph's
+            # font size even though `pdf.font_size_pt` reads correctly.
+            self.pdf.current_font_is_set_on_page = False
 
     def _check_paragraph(self) -> None:
         if self._active_paragraph == "EXPLICIT":
