@@ -32,6 +32,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * preserve markdown format in `FPDF.multi_cell` in dry-run - _cf._ [issue #1840](https://github.com/py-pdf/fpdf2/issues/1840)
 * fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836)
 * rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
+* prevent font state leaking out of `FPDF.text_columns()` rendering - _cf._ [issue #1804](https://github.com/py-pdf/fpdf2/issues/1804)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 

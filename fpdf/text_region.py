@@ -825,17 +825,26 @@ class TextColumns(TextRegion, TextColumnarMixin):
             return
         page_bottom = self.pdf.h - self.pdf.b_margin
         first_page_top = max(self.pdf.t_margin, self.pdf.y)
-        self._render_page_lines(text_lines, first_page_top, page_bottom)
-        # Note: text_lines is progressively emptied by ._render_column_lines()
-        while text_lines:
-            page_break = self.pdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
-                self.pdf.h
-            )
-            if not page_break:
-                # Can happen when rendering a footer in the wrong place - cf. issue #1222
-                break
-            self._cur_column = 0
-            self._render_page_lines(text_lines, self.pdf.y, page_bottom)
+        # Snapshot font state so internal rendering does not leak out.
+        saved_font = self.pdf.current_font
+        saved_font_size_pt = self.pdf.font_size_pt
+        saved_font_style = self.pdf.font_style
+        try:
+            self._render_page_lines(text_lines, first_page_top, page_bottom)
+            # Note: text_lines is progressively emptied by ._render_column_lines()
+            while text_lines:
+                page_break = self.pdf._perform_page_break_if_need_be(  # pyright: ignore[reportPrivateUsage]
+                    self.pdf.h
+                )
+                if not page_break:
+                    # Can happen when rendering a footer in the wrong place - cf. issue #1222
+                    break
+                self._cur_column = 0
+                self._render_page_lines(text_lines, self.pdf.y, page_bottom)
+        finally:
+            self.pdf.current_font = saved_font
+            self.pdf.font_size_pt = saved_font_size_pt
+            self.pdf.font_style = saved_font_style
 
     def current_x_extents(self, y: float, height: float) -> tuple[float, float]:
         left, right = self._cols[self._cur_column]
