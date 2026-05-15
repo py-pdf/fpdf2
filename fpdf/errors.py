@@ -2,6 +2,10 @@ class FPDFException(Exception):
     pass
 
 
+class FPDFResourceAccessError(FPDFException):
+    """Raised when loading a resource violates the active resource access policy."""
+
+
 class FPDFPageFormatException(FPDFException):
     """Error is thrown when a bad page format is given"""
 

@@ -1872,11 +1872,18 @@ class Arc(NamedTuple):
 
         theta = Point(1, 0).angle(arcstart)
         deltatheta = arcstart.angle(arcend)
+        if deltatheta == 0:
+            deltatheta = math.atan2(
+                (arcstart.x * arcend.y) - (arcstart.y * arcend.x),
+                arcstart.dot(arcend),
+            )
 
         if (self.sweep is False) and (deltatheta > 0):
             deltatheta -= math.tau
         elif (self.sweep is True) and (deltatheta < 0):
             deltatheta += math.tau
+        if deltatheta == 0:
+            return []
 
         sweep_sign = (deltatheta >= 0) - (deltatheta < 0)
         final_tf = (
@@ -2896,7 +2903,7 @@ class PaintedPath:
     @contextmanager
     def _new_graphics_context(
         self, _attach: bool = True
-    ) -> Iterator["GraphicsContext"]:
+    ) -> Generator["GraphicsContext", None, None]:
         old_graphics_context = self._graphics_context
         new_graphics_context = GraphicsContext()
         self._graphics_context = new_graphics_context
@@ -2908,7 +2915,9 @@ class PaintedPath:
             self._graphics_context = old_graphics_context
 
     @contextmanager
-    def transform_group(self, transform: Transform) -> Iterator["PaintedPath"]:
+    def transform_group(
+        self, transform: Transform
+    ) -> Generator["PaintedPath", None, None]:
         """
         Apply the provided `Transform` to all points added within this context.
         """

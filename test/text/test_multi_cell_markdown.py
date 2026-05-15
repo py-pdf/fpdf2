@@ -1,7 +1,9 @@
+import itertools
 from pathlib import Path
 
 import fpdf
 from test.conftest import assert_pdf_equal
+from test.conftest import LOREM_IPSUM
 
 import pytest
 
@@ -220,3 +222,177 @@ def test_multi_cell_markdown_consecutive_links(tmp_path):
     )
     assert len(pdf.pages[pdf.page].annots) == 4
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_consecutive_links.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_styled_link(tmp_path):
+    styles = (
+        ("Bold", "**"),
+        ("Italics", "__"),
+        ("Strikethrough", "~~"),
+        ("Underline", "--"),
+    )
+    style_combinations = []
+    for i in range(1, len(styles) + 1):
+        for combo in itertools.combinations(styles, i):
+            style = "-".join(c[0] for c in combo)
+            marker = "".join(c[1] for c in combo)
+            style_combinations.append((style, marker))
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    for link_color, link_underline in itertools.product(
+        (None, "#0000ff"),
+        (False, True),
+    ):
+        pdf.MARKDOWN_LINK_COLOR = link_color
+        pdf.MARKDOWN_LINK_UNDERLINE = link_underline
+        for style, marker in style_combinations:
+            pdf.multi_cell(
+                pdf.epw,
+                text=f"**Start** {marker:s}[{style:s} Link](https://github.com/py-pdf/fpdf2){marker:s} __End__",
+                markdown=True,
+                new_x="left",
+                new_y="next",
+            )
+        pdf.ln()
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_styled_link.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__",
+        LOREM_IPSUM
+        + "\n**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__",
+        LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
+        + " **\nStart** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__ "
+        + LOREM_IPSUM[len(LOREM_IPSUM) // 2 :],
+    ],
+)
+def test_multi_cell_markdown_dry_run_lines_output(text):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+
+    # The parts of the special markdown text must be in the lines list, but not
+    # in the same line
+    assert any("**Start**" in line for line in lines)
+    assert any(
+        "[fpdf2 github](https://github.com/py-pdf/fpdf2)" in line for line in lines
+    )
+    assert any("__End__" in line for line in lines)
+    start_line = next(i for i, line in enumerate(lines) if "**Start**" in line)
+    end_line = next(i for i, line in enumerate(lines) if "__End__" in line)
+    assert start_line + 1 == end_line
+
+    parsed_text = "\n".join(lines)
+    assert (
+        "**Start** [fpdf2 github](https://github.com/py-pdf/fpdf2)\n__End__"
+        in parsed_text
+    )
+
+
+def test_multi_cell_markdown_dry_run_lines_output_print(tmp_path):
+    # Test that output="LINES" keeps markdown format
+    text = (
+        LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
+        + "\n**Start** ~~test~~ "
+        + "[fpdf2 github](https://github.com/py-pdf/fpdf2) "
+        + "--test--\n__End__ "
+        + LOREM_IPSUM[len(LOREM_IPSUM) // 2 :]
+    )
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    # Normal text
+    pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    pdf.ln()
+
+    # Join text after dry run by `"\n"`
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+    pdf.multi_cell(
+        pdf.epw,
+        text="\n".join(lines),
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_dry_run_lines_output.pdf", tmp_path
+    )
+
+
+def test_multi_cell_markdown_dry_run_lines_output_escape(tmp_path):
+    # Test that escaped markdown markers stay escaped
+    text = (
+        LOREM_IPSUM[: len(LOREM_IPSUM) // 2]
+        + "\n**Start** \\** [fpdf2 **github**](https://github.com/py-pdf/fpdf2) "
+        + "\\__ \\~~ \\--\n__End__ "  # Important test underline after link
+        + LOREM_IPSUM[len(LOREM_IPSUM) // 2 :]
+    )
+
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    # Normal text
+    pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+    pdf.ln()
+
+    # Join text after dry run by `"\n"`
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+    pdf.multi_cell(
+        pdf.epw,
+        text="\n".join(lines),
+        markdown=True,
+        new_x="left",
+        new_y="next",
+    )
+
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_dry_run_lines_output_escape.pdf", tmp_path
+    )
