@@ -358,6 +358,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://pawansingh3889.github.io"><img src="https://avatars.githubusercontent.com/u/42340841?v=4?s=100" width="100px;" alt="Pawan Singh Kapkoti"/><br /><sub><b>Pawan Singh Kapkoti</b></sub></a><br /><a href="#translation-Pawansingh3889" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/HippolyteCediey"><img src="https://avatars.githubusercontent.com/u/175031994?v=4?s=100" width="100px;" alt="HippolyteCediey"/><br /><sub><b>HippolyteCediey</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3AHippolyteCediey" title="Bug reports">🐛</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://theo-massenya.fr"><img src="https://avatars.githubusercontent.com/u/81651096?v=4?s=100" width="100px;" alt="theo"/><br /><sub><b>theo</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Theo1335" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
