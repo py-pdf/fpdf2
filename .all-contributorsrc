@@ -1736,6 +1736,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "Theo1335",
+      "name": "theo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/81651096?v=4",
+      "profile": "https://theo-massenya.fr",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
