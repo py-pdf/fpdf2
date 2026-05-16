@@ -150,6 +150,34 @@ angle_units = {
 }
 
 
+class SymbolInfo(NamedTuple):
+    """Reusable SVG <symbol> sizing metadata."""
+
+    viewbox: tuple[float, float, float, float]
+    width: Optional[float]
+    height: Optional[float]
+
+
+@force_nodocument
+def resolve_optional_length(length_str: Optional[str]) -> Optional[float]:
+    """Resolve an optional absolute SVG length, ignoring unsupported percentages."""
+    if not length_str or "%" in length_str:
+        return None
+    return resolve_length(length_str)
+
+
+@force_nodocument
+def parse_viewbox(viewbox: str) -> tuple[float, float, float, float]:
+    """Parse an SVG viewBox into min-x, min-y, width, and height values."""
+    parts = [float(num) for num in NUMBER_SPLIT.split(viewbox.strip()) if num]
+    if len(parts) != 4:
+        raise ValueError(f"invalid viewBox {viewbox}")
+    vx, vy, vw, vh = parts
+    if (vw < 0) or (vh < 0):
+        raise ValueError(f"invalid negative width/height in viewBox {viewbox}")
+    return vx, vy, vw, vh
+
+
 # in CSS the default length unit is px, but as far as I can tell, for SVG interpreting
 # unitless numbers as being expressed in pt is more appropriate. Particularly, the
 # scaling we do using viewBox attempts to scale so that 1 svg user unit = 1 pdf pt
@@ -913,6 +941,7 @@ class SVGObject:
         self.image_cache = image_cache  # Needed to render images
         self.resource_access_policy = resource_access_policy
         self.cross_references: dict[str, Any] = {}
+        self.symbol_info: dict[str, SymbolInfo] = {}
         self.css_class_styles: dict[str, dict[str, Any]] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
             {}
@@ -1514,12 +1543,23 @@ class SVGObject:
         group = self.build_group(symbol)
         viewbox = symbol.attrib.get("viewBox")
         if viewbox:
-            parts = viewbox.replace(",", " ").split()
-            if len(parts) >= 4:
-                vx, vy, vw, vh = (float(p) for p in parts[:4])
-                group.transform = Transform.scaling(
-                    x=1 / vw, y=1 / vh
-                ) @ Transform.translation(x=-vx, y=-vy)
+            vx, vy, vw, vh = parse_viewbox(viewbox)
+            if vw == 0 or vh == 0:
+                group = GraphicsContext()
+            else:
+                group.transform = Transform.translation(
+                    x=-vx, y=-vy
+                ) @ Transform.scaling(x=1 / vw, y=1 / vh)
+            symbol_id = symbol.attrib.get("id")
+            if symbol_id:
+                symbol_key = (
+                    "#" + symbol_id if not symbol_id.startswith("#") else symbol_id
+                )
+                self.symbol_info[symbol_key] = SymbolInfo(
+                    viewbox=(vx, vy, vw, vh),
+                    width=resolve_optional_length(symbol.attrib.get("width")),
+                    height=resolve_optional_length(symbol.attrib.get("height")),
+                )
         return group
 
     # this assumes xrefs only reference already-defined ids.
@@ -1541,32 +1581,42 @@ class SVGObject:
             raise ValueError(f"use {xref} doesn't contain known xref attribute")
 
         try:
-            target = self.cross_references[ref]
-            pdf_group.add_item(target)
+            pdf_group.add_item(self.cross_references[ref])
         except KeyError:
             raise ValueError(
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
 
+        placement_transform = None
         if "x" in xref.attrib or "y" in xref.attrib:
             # Quoting the SVG spec - 5.6.2. Layout of re-used graphics:
             # > The x and y properties define an additional transformation translate(x,y)
             x, y = float(xref.attrib.get("x", 0)), float(xref.attrib.get("y", 0))
-            pdf_group.transform = Transform.translation(x=x, y=y)
+            placement_transform = Transform.translation(x=x, y=y)
         # Note that we currently do not support "width" & "height" with % in <use>
-
-        if "width" in xref.attrib or "height" in xref.attrib:
-            w_str = xref.attrib.get("width", "")
-            h_str = xref.attrib.get("height", "")
-            if "%" not in w_str and "%" not in h_str:
-                w = float(w_str) if w_str else 1
-                h = float(h_str) if h_str else 1
-                if pdf_group.transform is None:
-                    pdf_group.transform = Transform.scaling(x=w, y=h)
-                else:
-                    pdf_group.transform = (
-                        Transform.scaling(x=w, y=h) @ pdf_group.transform
-                    )
+        symbol_info = self.symbol_info.get(ref)
+        if symbol_info:
+            _, _, vw, vh = symbol_info.viewbox
+            width = (
+                resolve_optional_length(xref.attrib.get("width"))
+                or symbol_info.width
+                or vw
+            )
+            height = (
+                resolve_optional_length(xref.attrib.get("height"))
+                or symbol_info.height
+                or vh
+            )
+            symbol_transform = Transform.scaling(x=width, y=height)
+            if placement_transform is None:
+                placement_transform = symbol_transform
+            else:
+                placement_transform = symbol_transform @ placement_transform
+        if placement_transform:
+            if pdf_group.transform:
+                pdf_group.transform = placement_transform @ pdf_group.transform
+            else:
+                pdf_group.transform = placement_transform
 
         return pdf_group
 
