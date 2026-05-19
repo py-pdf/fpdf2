@@ -432,7 +432,16 @@ class ParagraphCollectorMixin(ABC):
         self.pdf.clear_text_region()
         self.pdf.page = self._page
         self.pdf._pop_local_stack()  # pyright: ignore[reportPrivateUsage]
-        self.render()
+        # Rendering mutates the font state per fragment; restore it afterwards (issue #1804).
+        saved_font = self.pdf.current_font
+        saved_font_size_pt = self.pdf.font_size_pt
+        saved_font_style = self.pdf.font_style
+        try:
+            self.render()
+        finally:
+            self.pdf.current_font = saved_font
+            self.pdf.font_size_pt = saved_font_size_pt
+            self.pdf.font_style = saved_font_style
 
     def _check_paragraph(self) -> None:
         if self._active_paragraph == "EXPLICIT":

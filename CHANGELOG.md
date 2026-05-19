@@ -34,6 +34,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836)
 * rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
 * number of surviving escape characters - __cf.__ [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215)
+* restore font state after a `text_columns()` / `text_region()` context exits - _cf._ [issue #1804](https://github.com/py-pdf/fpdf2/issues/1804)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
