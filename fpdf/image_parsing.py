@@ -2,6 +2,7 @@
 # mypy: disable-error-code=no-untyped-call
 import base64
 import hashlib
+import http.client
 import ipaddress
 import io
 import logging
@@ -23,7 +24,14 @@ from typing import (
     no_type_check,
 )
 from urllib.parse import urlsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener
+from urllib.request import (
+    HTTPHandler,
+    HTTPRedirectHandler,
+    HTTPSHandler,
+    ProxyHandler,
+    Request,
+    build_opener,
+)
 
 from .enums import ResourceAccessPolicy
 from .errors import FPDFException, FPDFResourceAccessError
@@ -115,7 +123,7 @@ def _resolve_hostname(
 def _validate_remote_url_access(
     url: str,
     resource_access_policy: ResourceAccessPolicy,
-) -> None:
+) -> tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]:
     parsed_url = urlsplit(url)
     if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
         raise FPDFResourceAccessError(f"Unsupported remote resource URL: {url!r}")
@@ -127,7 +135,8 @@ def _validate_remote_url_access(
             f"Remote resource access is disabled by resource_access_policy: {url!r}"
         )
 
-    for address in _resolve_hostname(parsed_url.hostname):
+    addresses = _resolve_hostname(parsed_url.hostname)
+    for address in addresses:
         required_policy, scope = _resource_scope_for_ip(address)
         if required_policy in resource_access_policy:
             continue
@@ -135,6 +144,7 @@ def _validate_remote_url_access(
             "Remote resource access is blocked by resource_access_policy: "
             f"{url!r} resolves to {scope} address {address}"
         )
+    return addresses
 
 
 def _validate_resource_access(
@@ -162,9 +172,16 @@ def _validate_resource_access(
 
 
 class _ResourceAccessPolicyRedirectHandler(HTTPRedirectHandler):
-    def __init__(self, resource_access_policy: ResourceAccessPolicy) -> None:
+    def __init__(
+        self,
+        resource_access_policy: ResourceAccessPolicy,
+        pinned_addresses_by_url: dict[
+            str, tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]
+        ],
+    ) -> None:
         super().__init__()
         self.resource_access_policy = resource_access_policy
+        self.pinned_addresses_by_url = pinned_addresses_by_url
 
     def redirect_request(
         self,
@@ -175,8 +192,124 @@ class _ResourceAccessPolicyRedirectHandler(HTTPRedirectHandler):
         headers: Any,
         newurl: str,
     ) -> Optional[Request]:
-        _validate_remote_url_access(newurl, self.resource_access_policy)
+        self.pinned_addresses_by_url[newurl] = _validate_remote_url_access(
+            newurl, self.resource_access_policy
+        )
         return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+class _PinnedRemoteHTTPConnection(http.client.HTTPConnection):
+    def __init__(
+        self,
+        *args: Any,
+        pinned_addresses: tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...],
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._pinned_addresses = pinned_addresses
+        self._create_connection = self._create_pinned_connection
+
+    def _create_pinned_connection(
+        self,
+        address: tuple[str, int],
+        timeout: Any = None,
+        source_address: tuple[str, int] | None = None,
+    ) -> socket.socket:
+        _hostname, port = address
+        last_error: OSError | None = None
+        for pinned_address in self._pinned_addresses:
+            try:
+                return socket.create_connection(
+                    (str(pinned_address), port), timeout, source_address
+                )
+            except OSError as error:
+                last_error = error
+        if last_error is not None:
+            raise last_error
+        raise OSError("No pinned address available for remote resource")
+
+
+class _PinnedRemoteHTTPSConnection(
+    _PinnedRemoteHTTPConnection, http.client.HTTPSConnection
+):
+    pass
+
+
+class _ResourceAccessPolicyHTTPHandler(HTTPHandler):
+    def __init__(
+        self,
+        resource_access_policy: ResourceAccessPolicy,
+        pinned_addresses_by_url: dict[
+            str, tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]
+        ],
+    ) -> None:
+        super().__init__()
+        self.resource_access_policy = resource_access_policy
+        self.pinned_addresses_by_url = pinned_addresses_by_url
+
+    def http_open(self, req: Request) -> Any:
+        pinned_addresses = self.pinned_addresses_by_url.pop(
+            req.get_full_url(), None
+        ) or _validate_remote_url_access(
+            req.get_full_url(), self.resource_access_policy
+        )
+
+        def pinned_connection(*args: Any, **kwargs: Any) -> _PinnedRemoteHTTPConnection:
+            return _PinnedRemoteHTTPConnection(
+                *args, pinned_addresses=pinned_addresses, **kwargs
+            )
+
+        return self.do_open(pinned_connection, req)
+
+
+class _ResourceAccessPolicyHTTPSHandler(HTTPSHandler):
+    def __init__(
+        self,
+        resource_access_policy: ResourceAccessPolicy,
+        pinned_addresses_by_url: dict[
+            str, tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]
+        ],
+    ) -> None:
+        super().__init__()
+        self.resource_access_policy = resource_access_policy
+        self.pinned_addresses_by_url = pinned_addresses_by_url
+
+    def https_open(self, req: Request) -> Any:
+        pinned_addresses = self.pinned_addresses_by_url.pop(
+            req.get_full_url(), None
+        ) or _validate_remote_url_access(
+            req.get_full_url(), self.resource_access_policy
+        )
+
+        def pinned_connection(
+            *args: Any, **kwargs: Any
+        ) -> _PinnedRemoteHTTPSConnection:
+            return _PinnedRemoteHTTPSConnection(
+                *args, pinned_addresses=pinned_addresses, **kwargs
+            )
+
+        return self.do_open(pinned_connection, req)
+
+
+def _build_remote_resource_opener(
+    resource_access_policy: ResourceAccessPolicy,
+    pinned_addresses_by_url: dict[
+        str, tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]
+    ],
+) -> Any:
+    return build_opener(
+        # Proxying would make the validated origin address ambiguous.
+        ProxyHandler({}),
+        _ResourceAccessPolicyRedirectHandler(
+            resource_access_policy, pinned_addresses_by_url
+        ),
+        _ResourceAccessPolicyHTTPHandler(
+            resource_access_policy, pinned_addresses_by_url
+        ),
+        _ResourceAccessPolicyHTTPSHandler(
+            resource_access_policy, pinned_addresses_by_url
+        ),
+    )
 
 
 # fmt: off
@@ -368,11 +501,13 @@ def load_image(
         return BytesIO(filename.read())
     if isinstance(filename, Path):
         filename = str(filename)
-    _validate_resource_access(filename, resource_access_policy)
     # Resource access is governed by the active resource_access_policy.
     if filename.startswith(("http://", "https://")):
-        opener = build_opener(
-            _ResourceAccessPolicyRedirectHandler(resource_access_policy)
+        pinned_addresses_by_url = {
+            filename: _validate_remote_url_access(filename, resource_access_policy)
+        }
+        opener = _build_remote_resource_opener(
+            resource_access_policy, pinned_addresses_by_url
         )
         # disabling bandit & semgrep rules as permitted schemes are whitelisted:
         # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
@@ -382,6 +517,7 @@ def load_image(
             return BytesIO(url_file.read())
     elif filename.startswith("data:"):
         return _decode_base64_image(filename)
+    _validate_resource_access(filename, resource_access_policy)
     with open(filename, "rb") as local_file:
         return BytesIO(local_file.read())
 
