@@ -1,10 +1,12 @@
 import binascii
 import socket
+import ssl
+import urllib.error
 from glob import glob
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
-from urllib.request import Request
+from urllib.request import HTTPRedirectHandler, Request
 
 import pytest
 
@@ -59,6 +61,12 @@ def _mock_addrinfo_for(*addresses: str):
         sockaddr = (address, 0, 0, 0) if family == socket.AF_INET6 else (address, 0)
         addrinfo.append((family, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", sockaddr))
     return addrinfo
+
+
+def _redirect_handler_from(handlers):
+    return next(
+        handler for handler in handlers if isinstance(handler, HTTPRedirectHandler)
+    )
 
 
 def test_load_text_file():
@@ -136,7 +144,9 @@ def test_load_image_allows_public_remote_by_default():
         ),
         patch(
             "fpdf.image_parsing.build_opener",
-            side_effect=lambda handler: setattr(opener, "redirect_handler", handler)
+            side_effect=lambda *handlers: setattr(
+                opener, "redirect_handler", _redirect_handler_from(handlers)
+            )
             or opener,
         ),
     ):
@@ -165,14 +175,114 @@ def test_load_image_blocks_private_redirect_by_default():
     with patch("fpdf.image_parsing.socket.getaddrinfo", side_effect=fake_getaddrinfo):
         with patch(
             "fpdf.image_parsing.build_opener",
-            side_effect=lambda handler: MockOpener(
+            side_effect=lambda *handlers: MockOpener(
                 PNG_BYTES,
-                redirect_handler=handler,
+                redirect_handler=_redirect_handler_from(handlers),
                 redirect_to="http://private.example/image.png",
             ),
         ):
             with pytest.raises(fpdf.FPDFResourceAccessError):
                 fpdf.image_parsing.load_image("https://public.example/image.png")
+
+
+def test_load_image_ignores_dns_rebinding_after_validation():
+    resolution_count = {"count": 0}
+    create_connection_calls = []
+
+    def fake_getaddrinfo(host, *_args, **_kwargs):
+        assert host == "attacker.example"
+        resolution_count["count"] += 1
+        if resolution_count["count"] == 1:
+            return _mock_addrinfo_for("93.184.216.34")
+        return _mock_addrinfo_for("127.0.0.1")
+
+    def fake_create_connection(address, *_args, **_kwargs):
+        create_connection_calls.append(address)
+        raise OSError("stop before network")
+
+    with (
+        patch("fpdf.image_parsing.socket.getaddrinfo", side_effect=fake_getaddrinfo),
+        patch(
+            "fpdf.image_parsing.socket.create_connection",
+            side_effect=fake_create_connection,
+        ),
+    ):
+        with pytest.raises(urllib.error.URLError):
+            fpdf.image_parsing.load_image(
+                "http://attacker.example/image.png",
+                resource_access_policy=fpdf.ResourceAccessPolicy.REMOTE_PUBLIC,
+            )
+
+    assert resolution_count["count"] == 1
+    assert create_connection_calls == [("93.184.216.34", 80)]
+
+
+def test_load_image_pins_validated_address_for_connection():
+    create_connection_calls = []
+
+    def fake_create_connection(address, *_args, **_kwargs):
+        create_connection_calls.append(address)
+        raise OSError("stop before network")
+
+    with (
+        patch(
+            "fpdf.image_parsing.socket.getaddrinfo",
+            return_value=_mock_addrinfo_for("93.184.216.34"),
+        ),
+        patch(
+            "fpdf.image_parsing.socket.create_connection",
+            side_effect=fake_create_connection,
+        ),
+    ):
+        with pytest.raises(urllib.error.URLError):
+            fpdf.image_parsing.load_image(
+                "http://public.example/image.png",
+                resource_access_policy=fpdf.ResourceAccessPolicy.REMOTE_PUBLIC,
+            )
+
+    assert create_connection_calls == [("93.184.216.34", 80)]
+
+
+def test_load_image_https_pinning_preserves_sni_hostname():
+    create_connection_calls = []
+    server_hostnames = []
+
+    class FakeSocket:
+        @staticmethod
+        def setsockopt(*_args, **_kwargs):
+            return None
+
+        @staticmethod
+        def close():
+            return None
+
+    def fake_create_connection(address, *_args, **_kwargs):
+        create_connection_calls.append(address)
+        return FakeSocket()
+
+    def fake_wrap_socket(_self, _sock, *_args, server_hostname=None, **_kwargs):
+        server_hostnames.append(server_hostname)
+        raise OSError("stop before network")
+
+    with (
+        patch(
+            "fpdf.image_parsing.socket.getaddrinfo",
+            return_value=_mock_addrinfo_for("93.184.216.34"),
+        ),
+        patch(
+            "fpdf.image_parsing.socket.create_connection",
+            side_effect=fake_create_connection,
+        ),
+        patch.object(ssl.SSLContext, "wrap_socket", fake_wrap_socket),
+    ):
+        with pytest.raises(urllib.error.URLError):
+            fpdf.image_parsing.load_image(
+                "https://public.example/image.png",
+                resource_access_policy=fpdf.ResourceAccessPolicy.REMOTE_PUBLIC,
+            )
+
+    assert create_connection_calls == [("93.184.216.34", 443)]
+    assert server_hostnames == ["public.example"]
 
 
 def test_svg_preload_preserves_resource_access_error_for_blocked_redirect():
@@ -187,9 +297,9 @@ def test_svg_preload_preserves_resource_access_error_for_blocked_redirect():
         patch("fpdf.image_parsing.socket.getaddrinfo", side_effect=fake_getaddrinfo),
         patch(
             "fpdf.image_parsing.build_opener",
-            side_effect=lambda handler: MockOpener(
+            side_effect=lambda *handlers: MockOpener(
                 b'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>',
-                redirect_handler=handler,
+                redirect_handler=_redirect_handler_from(handlers),
                 redirect_to="http://private.example/image.svg",
             ),
         ),
@@ -211,7 +321,9 @@ def test_image_per_call_policy_override_allows_private_remote():
         ),
         patch(
             "fpdf.image_parsing.build_opener",
-            side_effect=lambda handler: MockOpener(PNG_BYTES, redirect_handler=handler),
+            side_effect=lambda *handlers: MockOpener(
+                PNG_BYTES, redirect_handler=_redirect_handler_from(handlers)
+            ),
         ),
     ):
         pdf.image(
@@ -243,7 +355,9 @@ def test_svg_image_per_call_policy_override_applies_to_nested_resources(tmp_path
         ),
         patch(
             "fpdf.image_parsing.build_opener",
-            side_effect=lambda handler: MockOpener(PNG_BYTES, redirect_handler=handler),
+            side_effect=lambda *handlers: MockOpener(
+                PNG_BYTES, redirect_handler=_redirect_handler_from(handlers)
+            ),
         ),
     ):
         pdf.image(
@@ -266,7 +380,9 @@ def test_svg_object_draw_to_page_uses_document_resource_access_policy():
         ),
         patch(
             "fpdf.image_parsing.build_opener",
-            side_effect=lambda handler: MockOpener(PNG_BYTES, redirect_handler=handler),
+            side_effect=lambda *handlers: MockOpener(
+                PNG_BYTES, redirect_handler=_redirect_handler_from(handlers)
+            ),
         ),
     ):
         with pytest.raises(fpdf.FPDFResourceAccessError):
@@ -318,8 +434,8 @@ def test_text_columns_downscale_reload_uses_document_resource_access_policy():
     open_count = {"count": 0}
 
     class RedirectOnSecondOpen:
-        def __init__(self, redirect_handler) -> None:
-            self.redirect_handler = redirect_handler
+        def __init__(self, *handlers) -> None:
+            self.redirect_handler = _redirect_handler_from(handlers)
 
         def open(self, url: str, timeout=None):  # pylint: disable=unused-argument
             open_count["count"] += 1
