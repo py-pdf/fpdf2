@@ -527,6 +527,20 @@ and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
     assert_pdf_equal(pdf, HERE / "html_whitespace_handling.pdf", tmp_path)
 
 
+def test_html_pre_code_leading_spaces(tmp_path):  # issue 1063
+    """Leading spaces on new lines inside <pre><code> must be preserved."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("""
+<pre><code>
+Testing pre-code blocks
+    that span multiple lines
+and have tabs    and    spaces.
+</code></pre>
+""")
+    assert_pdf_equal(pdf, HERE / "html_pre_code_leading_spaces.pdf", tmp_path)
+
+
 def test_html_custom_line_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()

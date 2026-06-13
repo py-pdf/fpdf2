@@ -102,7 +102,7 @@ class Paragraph:
         indent: float = 0,
         bullet_r_margin: Optional[float] = None,
         bullet_string: str = "",
-        skip_leading_spaces: bool = False,
+        skip_leading_spaces: Optional[bool] = None,
         wrapmode: Optional[WrapMode] = None,
         first_line_indent: float = 0,
     ):
@@ -123,7 +123,12 @@ class Paragraph:
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
         self.indent = indent
-        self.skip_leading_spaces = skip_leading_spaces
+        # An explicit True/False always wins; None means "inherit from the region".
+        self.skip_leading_spaces = (
+            self._region.skip_leading_spaces
+            if skip_leading_spaces is None
+            else skip_leading_spaces
+        )
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
         else:
@@ -204,8 +209,7 @@ class Paragraph:
             align=self.text_align or self._region.text_align or Align.L,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
-            skip_leading_spaces=self.skip_leading_spaces
-            or self._region.skip_leading_spaces,
+            skip_leading_spaces=self.skip_leading_spaces,
         )
         bullet_text_line = bullet_line_break.get_line()
         return bullet_fragments, bullet_text_line
@@ -234,8 +238,7 @@ class Paragraph:
             print_sh=print_sh,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
-            skip_leading_spaces=self.skip_leading_spaces
-            or self._region.skip_leading_spaces,
+            skip_leading_spaces=self.skip_leading_spaces,
         )
         self._text_fragments = []
         text_line = multi_line_break.get_line()
@@ -466,7 +469,7 @@ class ParagraphCollectorMixin(ABC):
         self,
         text_align: Optional[Align] = None,
         line_height: Optional[float] = None,
-        skip_leading_spaces: bool = False,
+        skip_leading_spaces: Optional[bool] = None,
         top_margin: Optional[float] = 0,
         bottom_margin: Optional[float] = 0,
         indent: Optional[float] = 0,
@@ -487,7 +490,8 @@ class ParagraphCollectorMixin(ABC):
             indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
             bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
             bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
-            skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
+            skip_leading_spaces (bool, optional): removes all space characters at the beginning of each line.
+                (Default: None, which inherits the value set on the text region)
             wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
             first_line_indent (float, optional): left spacing before first line of text in paragraph.
         """
@@ -497,7 +501,7 @@ class ParagraphCollectorMixin(ABC):
             region=self,
             text_align=text_align or self.text_align,
             line_height=line_height,
-            skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
+            skip_leading_spaces=skip_leading_spaces,
             wrapmode=wrapmode,
             top_margin=top_margin or 0,
             bottom_margin=bottom_margin or 0,
