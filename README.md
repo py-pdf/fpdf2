@@ -360,6 +360,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://theo-massenya.fr"><img src="https://avatars.githubusercontent.com/u/81651096?v=4?s=100" width="100px;" alt="theo"/><br /><sub><b>theo</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Theo1335" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/eugen-goebel"><img src="https://avatars.githubusercontent.com/u/271369117?v=4?s=100" width="100px;" alt="Eugen Goebel"/><br /><sub><b>Eugen Goebel</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=eugen-goebel" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
