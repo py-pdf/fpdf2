@@ -581,7 +581,7 @@ class HTML2FPDF(HTMLParser):
         self._paragraph = self._column.paragraph(
             text_align=self.align if isinstance(self.align, Align) else None,
             line_height=line_height,
-            skip_leading_spaces=True,
+            skip_leading_spaces=not self._pre_formatted,
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
