@@ -181,6 +181,7 @@ nav:
   - 'Presentation Mode':              'Presentations.md'
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
   - 'Page Labels':                    'PageLabels.md'
+  - 'Optional content (layers)':      'OptionalContent.md'
   - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
