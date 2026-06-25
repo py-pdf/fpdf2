@@ -5771,6 +5771,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             on_print (bool): whether the content is included when printing. (Default: True)
             label (str): name shown for this group in a PDF viewer's layers panel.
         """
+        if (
+            self._compliance
+            and self._compliance.profile == "PDFA"
+            and self._compliance.part == 1
+        ):
+            raise PDFAComplianceError(
+                f"Optional content is not allowed for documents compliant with {self._compliance.label}"
+            )
         self._set_min_pdf_version("1.5")
         name = self._resource_catalog.add_optional_content_group(
             on_view, on_print, label, self.page

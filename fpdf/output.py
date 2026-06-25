@@ -309,7 +309,6 @@ class PDFCatalog(PDFObject):
         self.struct_tree_root: Optional[PDFObject] = None
         self.a_f: Optional[str] = None
         self.page_labels: Optional[str] = None
-        # snake_case "o_c_properties" serializes to "/OCProperties" (cf. a_f -> /AF):
         self.o_c_properties: Optional[str] = None
 
 
