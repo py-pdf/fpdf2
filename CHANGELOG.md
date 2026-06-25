@@ -35,6 +35,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
 * number of surviving escape characters - __cf.__ [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215)
 * leading spaces on new lines inside `<pre>` and `<pre><code>` blocks are no longer dropped - _cf._ [issue #1063](https://github.com/py-pdf/fpdf2/issues/1063)
+* `FPDF.set_font()` can restore `current_font` when the selected font state diverged - _cf._ [PR #1872](https://github.com/py-pdf/fpdf2/pull/1872)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
