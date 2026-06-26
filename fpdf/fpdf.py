@@ -2664,15 +2664,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             size = self.font_size_pt
 
         # Test if font is already selected
+        fontkey = family + style
         if (
             self.font_family == family
             and self.font_style == style
             and FloatTolerance.equal(self.font_size_pt, size)
+            and (self.current_font is None or self.current_font.fontkey == fontkey)
         ):
             return
 
         # Test if used for the first time
-        fontkey = family + style
         if fontkey not in self.fonts:
             if fontkey not in CORE_FONTS:
                 raise FPDFException(

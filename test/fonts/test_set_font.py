@@ -176,3 +176,36 @@ def test_set_font_zapfdingbats_symbol_with_style():
 
                 # Test if underline is set correctly
                 assert pdf.underline == int("U" in style)
+
+
+def test_set_font_restores_current_font_after_state_divergence():
+    """
+    Regression test for gh-1488: set_font() must not early-return when font_family
+    matches the requested family but current_font has diverged (e.g. after fallback
+    font rendering sets self.current_font to the fallback font object while leaving
+    self.font_family pointing to the primary font).
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    # Register Times so it can be used below.
+    pdf.set_font("Times", size=12)
+    times_font = pdf.current_font
+
+    # Simulate the divergent state: font_family says 'helvetica' but
+    # current_font is the Times object (as happens when a fallback font
+    # was the last font written to the page content stream).
+    pdf.font_family = "helvetica"
+    pdf.font_style = ""
+    pdf.font_size_pt = 12
+    pdf.current_font = times_font
+
+    assert pdf.font_family == "helvetica"
+    assert pdf.current_font.fontkey == "times"
+
+    # set_font("Helvetica") must restore current_font to helvetica, not return early.
+    pdf.set_font("Helvetica", size=12)
+    assert pdf.current_font.fontkey == "helvetica", (
+        f"set_font() returned early due to matching font_family, "
+        f"but current_font was not restored (got {pdf.current_font.fontkey!r})"
+    )
