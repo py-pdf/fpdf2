@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
 * basic support for SVG `<symbol>` elements in the SVG parser
 * `resource_access_policy` and [Security considerations](https://py-pdf.github.io/fpdf2/Security.html) documentation
+* [`FPDF.optional_content()`](https://py-pdf.github.io/fpdf2/OptionalContent.html) context manager to mark content as visible on screen only or in print only, using PDF Optional Content Groups - _cf._ [issue #441](https://github.com/py-pdf/fpdf2/issues/441), based on a recipe by @digidigital
 ### Fixed
 * text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)

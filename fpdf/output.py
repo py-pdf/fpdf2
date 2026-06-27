@@ -309,6 +309,7 @@ class PDFCatalog(PDFObject):
         self.struct_tree_root: Optional[PDFObject] = None
         self.a_f: Optional[str] = None
         self.page_labels: Optional[str] = None
+        self.o_c_properties: Optional[str] = None
 
 
 class PDFResources(PDFObject):
@@ -320,6 +321,7 @@ class PDFResources(PDFObject):
         ext_g_state: Optional[str],
         shading: Optional[str],
         pattern: Optional[str],
+        properties: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.proc_set = proc_set
@@ -328,6 +330,24 @@ class PDFResources(PDFObject):
         self.ext_g_state = ext_g_state
         self.shading = shading
         self.pattern = pattern
+        self.properties = properties
+
+
+class PDFOptionalContentGroup(PDFObject):
+    "An Optional Content Group, used to show/hide content on screen or in print."
+
+    def __init__(self, name: str, on_view: bool, on_print: bool) -> None:
+        super().__init__()
+        self.type = Name("OCG")
+        self.name = PDFString(name)
+        # The /Usage entry is applied automatically by the viewer through the
+        # /AS usage-application array declared in the catalog's /OCProperties:
+        view_state = "ON" if on_view else "OFF"
+        print_state = "ON" if on_print else "OFF"
+        self.usage = Raw(
+            f"<< /View << /ViewState /{view_state} >>"
+            f" /Print << /PrintState /{print_state} >> >>"
+        )
 
 
 class PDFFontStream(PDFContentStream):
@@ -755,6 +775,11 @@ class ResourceCatalog:
         self.last_reserved_object_id: int = 0
         self.font_registry: dict[str, CoreFont | TTFFont] = {}
         self.next_xobject_index: int = 1
+        # Optional Content Groups, keyed by resource name (e.g. "OC1"):
+        self.optional_content_groups: "OrderedDict[str, dict[str, object]]" = (
+            OrderedDict()
+        )
+        self._ocg_names_by_state: dict[tuple[bool, bool], str] = {}
 
     def add(
         self,
@@ -804,6 +829,27 @@ class ResourceCatalog:
             self.graphics_styles[style_str] = name
 
         return self.graphics_styles[style_str]
+
+    def add_optional_content_group(
+        self, on_view: bool, on_print: bool, label: str, page_number: int
+    ) -> str:
+        """
+        Register an Optional Content Group for the given visibility and associate
+        it with a page. Groups sharing the same visibility are reused.
+        Returns the resource name (e.g. "OC1") to reference in a /OC marked sequence.
+        """
+        state = (on_view, on_print)
+        name = self._ocg_names_by_state.get(state)
+        if name is None:
+            name = f"OC{len(self.optional_content_groups) + 1}"
+            self.optional_content_groups[name] = {
+                "on_view": on_view,
+                "on_print": on_print,
+                "label": label,
+            }
+            self._ocg_names_by_state[state] = name
+        self.resources_per_page[(page_number, PDFResourceType.PROPERTIES)].add(name)
+        return name
 
     def register_soft_mask(self, soft_mask: PaintSoftMask | ImageSoftMask) -> int:
         """Register a soft mask xobject and return its object id"""
@@ -1010,6 +1056,7 @@ class OutputProducer:
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
             self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
+        self._add_optional_content_groups(catalog_obj)
         self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
@@ -1622,6 +1669,40 @@ class OutputProducer:
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
 
+    def _add_optional_content_groups(self, catalog_obj: PDFCatalog) -> None:
+        "Create the OCG objects and the catalog's /OCProperties configuration."
+        resource_catalog = self.fpdf._resource_catalog
+        self._ocg_objs_per_name: "OrderedDict[str, PDFOptionalContentGroup]" = (
+            OrderedDict()
+        )
+        for name, spec in resource_catalog.optional_content_groups.items():
+            ocg_obj = PDFOptionalContentGroup(
+                name=str(spec["label"]),
+                on_view=bool(spec["on_view"]),
+                on_print=bool(spec["on_print"]),
+            )
+            self._add_pdf_obj(ocg_obj, "optional_content_groups")
+            self._ocg_objs_per_name[name] = ocg_obj
+        if not self._ocg_objs_per_name:
+            return
+        all_refs = " ".join(obj.ref for obj in self._ocg_objs_per_name.values())
+        on_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        off_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if not resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        catalog_obj.o_c_properties = Raw(
+            f"<< /OCGs [{all_refs}]"
+            f" /D << /ON [{on_refs}] /OFF [{off_refs}]"
+            f" /AS [ << /Event /View /OCGs [{all_refs}] /Category [/View] >>"
+            f" << /Event /Print /OCGs [{all_refs}] /Category [/Print] >> ] >> >>"
+        )
+
     def _add_soft_masks(
         self,
         gfxstate_objs_per_name: dict[str, PDFExtGState],
@@ -1723,6 +1804,7 @@ class OutputProducer:
                 gfxstate_objs_per_name,
                 shading_objs_per_name,
                 pattern_objs_per_name,
+                self._ocg_objs_per_name,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
@@ -1760,6 +1842,12 @@ class OutputProducer:
                         page_number, PDFResourceType.PATTERN
                     )
                 }
+                page_properties_objs_per_name = {
+                    str(ocg_name): self._ocg_objs_per_name[str(ocg_name)]
+                    for ocg_name in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.PROPERTIES
+                    )
+                }
 
                 page_obj.resources = self._add_resources_dict(
                     page_font_objs_per_index,
@@ -1767,6 +1855,7 @@ class OutputProducer:
                     page_gfxstate_objs_per_name,
                     page_shading_objs_per_name,
                     page_pattern_objs_per_name,
+                    page_properties_objs_per_name,
                 )
 
     def _add_resources_dict(
@@ -1776,6 +1865,7 @@ class OutputProducer:
         gfxstate_objs_per_name: dict[str, PDFExtGState],
         shading_objs_per_name: dict[str, Shading | MeshShading],
         pattern_objs_per_name: dict[str, Pattern],
+        properties_objs_per_name: Optional[dict[str, "PDFOptionalContentGroup"]] = None,
     ) -> PDFResources:
         # From section 10.1, "Procedure sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -1824,6 +1914,15 @@ class OutputProducer:
                 }
             )
 
+        properties = None
+        if properties_objs_per_name:
+            properties = pdf_dict(
+                {
+                    f"/{name}": pdf_ref(ocg_obj.id)
+                    for name, ocg_obj in sorted(properties_objs_per_name.items())
+                }
+            )
+
         resources_obj = PDFResources(
             proc_set=proc_set,
             font=font,
@@ -1831,6 +1930,7 @@ class OutputProducer:
             ext_g_state=ext_g_state,
             shading=shading,
             pattern=pattern,
+            properties=properties,
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj

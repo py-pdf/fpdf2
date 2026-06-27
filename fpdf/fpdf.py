@@ -5749,6 +5749,48 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             resource_access_policy=self.resource_access_policy,
         )
 
+    @check_page
+    @contextmanager
+    def optional_content(
+        self,
+        on_view: bool = True,
+        on_print: bool = True,
+        label: str = "Optional content",
+    ) -> Generator[None, None, None]:
+        """
+        Context manager wrapping content in an Optional Content Group, a PDF
+        "layer" whose visibility can differ between screen display and printing.
+
+        For example, to add a background image that is visible on screen but does
+        not get printed::
+
+            with pdf.optional_content(on_print=False):
+                pdf.image("background.png", x=0, y=0, w=pdf.epw)
+
+        Args:
+            on_view (bool): whether the content is visible on screen. (Default: True)
+            on_print (bool): whether the content is included when printing. (Default: True)
+            label (str): name shown for this group in a PDF viewer's layers panel.
+        """
+        if (
+            self._compliance
+            and self._compliance.profile == "PDFA"
+            and self._compliance.part == 1
+        ):
+            raise PDFAComplianceError(
+                f"Optional content is not allowed for documents compliant with {self._compliance.label}"
+            )
+        self._set_min_pdf_version("1.5")
+        name = self._resource_catalog.add_optional_content_group(
+            on_view, on_print, label, self.page
+        )
+        start_page = self.page
+        self._out(f"/OC /{name} BDC")
+        yield
+        if self.page != start_page:
+            raise FPDFException("A page jump occurred inside an optional content group")
+        self._out("EMC")
+
     @contextmanager
     def _marked_sequence(self, **kwargs: Any) -> Generator[StructElem, None, None]:
         """
