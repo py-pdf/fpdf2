@@ -1391,6 +1391,8 @@ class OutputProducer:
 
                 # A CIDFont whose glyph descriptions are based on TrueType or CFF technology
                 is_cff_cid = font.is_cff and font.is_cid_keyed
+                if is_cff_cid and "CFF " in font.ttfont:
+                    ttfontstream = font.ttfont["CFF "].compile(font.ttfont)
                 code_to_cid: Optional[dict[int, int]] = None
                 cid_widths: Optional[dict[int, int]] = None
                 if is_cff_cid:
