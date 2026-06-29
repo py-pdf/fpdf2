@@ -38,7 +38,7 @@ Similarly, an `orientation` parameter can be provided to the [`add_page`](https:
 
 ## Page layout & zoom level ##
 
-[`set_display_mode()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_display_mode) allows to set the **zoom level**:
+[`set_display_mode()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_display_mode) allows to set the **zoom level**:
 pages can be displayed entirely on screen, occupy the full width of the window, use the real size,
 be scaled by a specific zooming factor or use the viewer default (configured in its _Preferences_ menu).
 
