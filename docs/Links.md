@@ -36,7 +36,7 @@ pdf.multi_cell(
 pdf.output("hyperlink.pdf")
 ```
 
-Links defined this way in Markdown can be styled by setting `FPDF` class attributes `MARKDOWN_LINK_COLOR` (default: `None`) & `MARKDOWN_LINK_UNDERLINE` (default: `True`).  
+Links defined this way in Markdown can be styled by setting `FPDF` class attributes `MARKDOWN_LINK_COLOR` (default: `None`) & `MARKDOWN_LINK_UNDERLINE` (default: `True`).
 Links can also be styled by embedding them in markdown style markers (`**bold**, __italics__, --underlined--, ~~strikethrough~~`):
 
 ```python
@@ -79,7 +79,7 @@ pdf.output("hyperlink.pdf")
 
 ## Hyperlink with write_html ##
 
-An alternative method using [`FPDF.write_html`](HTML.md):
+An alternative method using [`FPDF.write_html`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html):
 
 ```python
 from fpdf import FPDF
@@ -117,7 +117,7 @@ There are some situations where a user wants to create
 an internal link to another page in the PDF document, but
 the page number is not known at the time of link creation.
 In this case, the link can be created using `pdf.add_link()`
-as before, and then later re-reference to a specific page using 
+as before, and then later re-reference to a specific page using
 `pdf.set_link()`. In this example our goal is to link to a
 page that occurs after a section with a variable
 amount of text, potentially occupying multiple pages:
@@ -161,7 +161,7 @@ Other methods can also insert internal links:
 
 * [FPDF.multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](page number)`
 * [FPDF.link](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
-* [FPDF.write_html](HTML.md) using anchor tags: `<a href="page number">link text</a>`
+* [FPDF.write_html](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) using anchor tags: `<a href="page number">link text</a>`
 
 The unit tests `test_internal_links()` in [test_links.py](https://github.com/py-pdf/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
 
@@ -184,7 +184,7 @@ Other methods can also insert internal links:
 
 * [FPDF.multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](other_doc.pdf)`
 * [FPDF.link](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
-* [FPDF.write_html](HTML.md) using anchor tags: `<a href="other_doc.pdf">link text</a>`
+* [FPDF.write_html](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) using anchor tags: `<a href="other_doc.pdf">link text</a>`
 
 The unit test `test_link_to_other_document()` in [test_links.py](https://github.com/py-pdf/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
 
