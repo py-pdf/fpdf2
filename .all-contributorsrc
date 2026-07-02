@@ -1763,6 +1763,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "iamfazakb",
+      "name": "Fazal Akbar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/261377750?v=4",
+      "profile": "https://github.com/iamfazakb",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
