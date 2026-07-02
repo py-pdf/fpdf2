@@ -391,3 +391,55 @@ def test_text_columns_with_shorter_2nd_column(tmp_path):  # issue 1442
     pdf.write(text="More text after columns.")
     pdf.ln()
     assert_pdf_equal(pdf, HERE / "text_columns_with_shorter_2nd_column.pdf", tmp_path)
+
+
+def test_tcols_font_size_does_not_leak():
+    """Regression test for issue #1804.
+
+    When a text_columns() block is the first text rendered on a page and
+    the paragraphs inside it change the font size, the caller's
+    font_size_pt should be unchanged after the context manager exits.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    size_before = pdf.font_size_pt
+
+    cols = pdf.text_columns()
+    with cols:
+        pdf.set_font("Helvetica", size=24)
+        with cols.paragraph() as p:
+            p.write("Large heading")
+        pdf.set_font("Helvetica", size=10)
+        with cols.paragraph() as p:
+            p.write("Small body text")
+
+    assert pdf.font_size_pt == size_before
+
+
+def test_text_columns_restore_page_font_after_context(tmp_path):
+    """Second-layer regression test for issue #1804.
+
+    Even with the Python-side font_size_pt restored, the PDF content stream
+    must also re-emit a `Tf` operator for the restored font on the next
+    text operation. Otherwise the page state still carries the last
+    paragraph's font selection and a following `pdf.cell()` silently
+    renders at the wrong size. This test exercises the full render path
+    rather than just the attribute, so the assertion is on the output PDF.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+
+    with pdf.text_columns() as cols:
+        pdf.set_font("Helvetica", size=24)
+        cols.write("Large heading")
+        pdf.set_font("Helvetica", size=10)
+        cols.write("Small body text")
+
+    pdf.cell(text="after columns")
+    assert_pdf_equal(
+        pdf,
+        HERE / "text_columns_restore_page_font_after_context.pdf",
+        tmp_path,
+    )
