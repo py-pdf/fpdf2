@@ -14,10 +14,10 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 
 ## Flowable Text Regions
 
-Text regions allow to insert flowing text into a predefined region on the page. It is possible to change the formatting and even the font within paragraphs, which will still be aligned as one text block. 
-The currently implemented type of text regions is [text_columns()](TextColumns.md), which defines one or several columns that can be filled sequentially or height-balanced.
+Text regions allow to insert flowing text into a predefined region on the page. It is possible to change the formatting and even the font within paragraphs, which will still be aligned as one text block.
+The currently implemented type of text regions is [text_columns()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns), which defines one or several columns that can be filled sequentially or height-balanced.
 
-## Typography and Language Specific Concepts 
+## Typography and Language Specific Concepts
 ### Supported Features
 With supporting Unicode fonts, `fpdf2` should handle the following text shaping features correctly. More details can be found in [TextShaping](TextShaping.md).
 
