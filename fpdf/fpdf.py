@@ -4458,6 +4458,48 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
+    def _markdown_unescape_link_text(self, text: str) -> str:
+        """
+        Collapse markdown escape sequences (backslashes) inside the display
+        text of a markdown link, using the same rules as `_parse_chars`.
+
+        Markdown markers themselves are *not* interpreted inside a link (this
+        is intentional, see `_parse_chars`), but a preceding escape backslash
+        must still be consumed, exactly as it is outside of a link. This
+        prevents escape characters from leaking into the rendered output, and
+        keeps the LINES re-serialization round-trip stable.
+        """
+        markers = (
+            self.MARKDOWN_BOLD_MARKER,
+            self.MARKDOWN_ITALICS_MARKER,
+            self.MARKDOWN_STRIKETHROUGH_MARKER,
+            self.MARKDOWN_UNDERLINE_MARKER,
+        )
+        result: list[str] = []
+        escape_run = 0
+        while text:
+            if text[0] == self.MARKDOWN_ESCAPE_CHARACTER:
+                escape_run += 1
+                text = text[1:]
+                continue
+            if escape_run:
+                is_escape_target = text[:2] in markers
+                if is_escape_target and escape_run % 2 == 1:
+                    # An odd number of backslashes escapes the marker:
+                    # keep the paired backslashes plus the literal marker.
+                    result.append(self.MARKDOWN_ESCAPE_CHARACTER * (escape_run // 2))
+                    result.append(text[:2])
+                    text = text[2:]
+                    escape_run = 0
+                    continue
+                result.append(self.MARKDOWN_ESCAPE_CHARACTER * ((escape_run + 1) // 2))
+                escape_run = 0
+            result.append(text[0])
+            text = text[1:]
+        if escape_run:
+            result.append(self.MARKDOWN_ESCAPE_CHARACTER * escape_run)
+        return "".join(result)
+
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
@@ -4622,7 +4664,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     except ValueError:
                         pass
                     yield Fragment(
-                        list(link_text),
+                        list(self._markdown_unescape_link_text(link_text)),
                         gstate,
                         self.k,
                         link=link_dest,
@@ -4809,10 +4851,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                 text_parts.append(emphasis_markers[te])
                         last_emphasis = next_emphasis
                     text = "".join(frag.characters)
-                    # NOTE: Currently, markdown format inside of links is not handled
-                    #       so only escape markdown markers outside of links
+                    # Markdown markers are not interpreted inside of links, but the
+                    # display text must still be escaped so that markers it contains
+                    # are re-parsed as literal characters rather than emphasis, and
+                    # so the LINES re-serialization round-trip stays stable.
                     text_parts.append(
-                        f"[{text:s}]({frag.link!s:s})" if frag.link else escape(text)
+                        f"[{escape(text):s}]({frag.link!s:s})"
+                        if frag.link
+                        else escape(text)
                     )
                 next_emphasis = TextEmphasis.NONE
                 removed_emphasis = last_emphasis & ~next_emphasis
