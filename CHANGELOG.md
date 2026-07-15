@@ -35,6 +35,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * preserve markdown format in `FPDF.multi_cell` in dry-run - _cf._ [issue #1840](https://github.com/py-pdf/fpdf2/issues/1840)
 * fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836)
 * rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
+* spurious "Not enough horizontal space to render a single character" error when text without break opportunities is split into many small fragments, e.g. by a fallback font alternating with the main font - _cf._ [issue #1250](https://github.com/py-pdf/fpdf2/issues/1250)
 * number of surviving escape characters - __cf.__ [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215)
 * leading spaces on new lines inside `<pre>` and `<pre><code>` blocks are no longer dropped - _cf._ [issue #1063](https://github.com/py-pdf/fpdf2/issues/1063)
 * `FPDF.set_font()` can restore `current_font` when the selected font state diverged - _cf._ [PR #1872](https://github.com/py-pdf/fpdf2/pull/1872)
