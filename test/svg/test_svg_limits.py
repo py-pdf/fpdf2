@@ -1,7 +1,21 @@
+from pathlib import Path
+
 import pytest
 
 import fpdf
-from fpdf.svg import SVGLimits
+from fpdf.errors import FPDFSvgLimitExceeded
+from fpdf.svg import SVGObject, SVGLimits
+
+
+def _nested_use_svg(level: int, fanout: int = 2) -> bytes:
+    groups = ['<g id="g0"><rect width="1" height="1"/></g>']
+    for current_level in range(1, level + 1):
+        uses = f'<use href="#g{current_level - 1}"/>' * fanout
+        groups.append(f'<g id="g{current_level}">{uses}</g>')
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">'
+        "<defs>" + "".join(groups) + f'</defs><use href="#g{level}"/></svg>'
+    ).encode()
 
 
 def test_fpdf_has_default_svg_limits() -> None:
@@ -42,3 +56,52 @@ def test_svg_limits_accept_disabled_limits() -> None:
 
     assert limits.max_use_depth is None
     assert limits.max_resolved_elements is None
+
+
+def test_svg_limits_reject_use_cycles() -> None:
+    svg = b"""
+    <svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">
+      <defs>
+        <g id="a"><use href="#b"/></g>
+        <g id="b"><use href="#a"/></g>
+      </defs>
+      <use href="#a"/>
+    </svg>
+    """
+
+    with pytest.raises(fpdf.FPDFException, match="cycle"):
+        SVGObject(svg)
+
+
+def test_svg_limits_reject_excessive_use_depth() -> None:
+    with pytest.raises(FPDFSvgLimitExceeded, match="max_use_depth"):
+        SVGObject(_nested_use_svg(level=2), svg_limits=SVGLimits(max_use_depth=1))
+
+
+def test_fpdf_image_uses_svg_resolved_element_limit() -> None:
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.svg_limits = SVGLimits(max_resolved_elements=20)
+
+    with pytest.raises(fpdf.FPDFException, match="max_resolved_elements"):
+        pdf.image(_nested_use_svg(level=2, fanout=4), w=10)
+
+
+def test_fpdf_image_svg_file_preserves_limit_exception(tmp_path: Path) -> None:
+    svg_file = tmp_path / "heavy.svg"
+    svg_file.write_bytes(_nested_use_svg(level=2, fanout=4))
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.svg_limits = SVGLimits(max_resolved_elements=20)
+
+    with pytest.raises(fpdf.FPDFException, match="max_resolved_elements"):
+        pdf.image(svg_file, w=10)
+
+
+def test_svg_limits_can_disable_complexity_limits() -> None:
+    svg = SVGObject(
+        _nested_use_svg(level=3, fanout=4),
+        svg_limits=SVGLimits(max_use_depth=None, max_resolved_elements=None),
+    )
+
+    assert svg.base_group is not None

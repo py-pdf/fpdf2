@@ -5400,6 +5400,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name,
             dims,
             resource_access_policy=resource_access_policy,
+            svg_limits=self.svg_limits,
         )
         if isinstance(info, VectorImageInfo):
             return self._vector_image(
@@ -5741,6 +5742,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name,  # pyright: ignore[reportArgumentType, reportReturnType]
             dims,
             resource_access_policy=self.resource_access_policy,
+            svg_limits=self.svg_limits,
         )
 
     def preload_glyph_image(self, glyph_image_bytes: bytes | BinaryIO) -> tuple[
@@ -5753,6 +5755,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name=glyph_image_bytes,
             dims=None,  # pyright: ignore[reportArgumentType, reportReturnType]
             resource_access_policy=self.resource_access_policy,
+            svg_limits=self.svg_limits,
         )
 
     @check_page
