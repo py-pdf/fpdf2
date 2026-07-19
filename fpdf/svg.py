@@ -15,6 +15,7 @@ import math
 import re
 import warnings
 from copy import deepcopy
+from dataclasses import dataclass
 from os import PathLike
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
 
@@ -105,6 +106,31 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
 @force_nodocument
 class Percent(float):
     """class to represent percentage values"""
+
+
+@dataclass(frozen=True)
+class SVGLimits:
+    """
+    Configurable limits for SVG processing.
+
+    A limit set to None disables that specific check. Disabling or raising limits
+    should only be done for SVG input from trusted sources.
+    """
+
+    max_use_depth: int | None = 32
+    "Maximum depth allowed while resolving nested SVG <use> references."
+
+    max_resolved_elements: int | None = 100_000
+    "Maximum number of elements allowed after resolving SVG <use> references."
+
+    def __post_init__(self) -> None:
+        self._validate_limit("max_use_depth", self.max_use_depth)
+        self._validate_limit("max_resolved_elements", self.max_resolved_elements)
+
+    @staticmethod
+    def _validate_limit(name: str, value: int | None) -> None:
+        if value is not None and value <= 0:
+            raise ValueError(f"{name} must be a positive integer or None")
 
 
 unit_splitter = re.compile(r"\s*(?P<value>[-+]?[\d\.]+)\s*(?P<unit>%|[a-zA-Z]*)")
