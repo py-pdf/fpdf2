@@ -363,6 +363,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/eugen-goebel"><img src="https://avatars.githubusercontent.com/u/271369117?v=4?s=100" width="100px;" alt="Eugen Goebel"/><br /><sub><b>Eugen Goebel</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=eugen-goebel" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/gaoflow"><img src="https://avatars.githubusercontent.com/u/3355843?v=4?s=100" width="100px;" alt="Vincent Gao"/><br /><sub><b>Vincent Gao</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=gaoflow" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/iamfazakb"><img src="https://avatars.githubusercontent.com/u/261377750?v=4?s=100" width="100px;" alt="Fazal Akbar"/><br /><sub><b>Fazal Akbar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=iamfazakb" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/uttam12331"><img src="https://avatars.githubusercontent.com/u/159913047?v=4?s=100" width="100px;" alt="uttam12331"/><br /><sub><b>uttam12331</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=uttam12331" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
