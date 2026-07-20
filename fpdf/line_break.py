@@ -745,7 +745,11 @@ class MultiLineBreak:
         self.skip_leading_spaces = skip_leading_spaces
         self.fragment_index: int = 0
         self.character_index: int = 0
-        self.idx_last_forced_break: Optional[int] = None
+        # (fragment_index, character_index) of the last forced break. Both
+        # indices are needed: with heavily fragmented text (e.g. a fallback
+        # font alternating with the main font), consecutive lines can break at
+        # the same character index within *different* fragments (issue #1250).
+        self.idx_last_forced_break: Optional[Tuple[int, int]] = None
         self.first_line_indent = first_line_indent
         self._is_first_line = True
 
@@ -848,11 +852,17 @@ class MultiLineBreak:
                     ) = current_line.automatic_break(self.align)
                     self.character_index += 1
                     return line
-                if idx_last_forced_break == self.character_index:
+                if idx_last_forced_break == (
+                    self.fragment_index,
+                    self.character_index,
+                ):
                     raise FPDFException(
                         "Not enough horizontal space to render a single character"
                     )
-                self.idx_last_forced_break = self.character_index
+                self.idx_last_forced_break = (
+                    self.fragment_index,
+                    self.character_index,
+                )
                 return current_line.manual_break(
                     Align.L if self.align == Align.J else self.align,
                 )
