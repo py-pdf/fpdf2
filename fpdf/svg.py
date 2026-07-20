@@ -1020,8 +1020,6 @@ class SVGObject:
             for element in root_tag.iter()
             if (element_id := element.attrib.get("id"))
         }
-        memo: dict[int, int] = {}
-        active_refs: set[str] = set()
 
         def use_ref(use_tag: "Element") -> Optional[str]:
             for candidate in xmlns_lookup("xlink", "href", "id"):
@@ -1029,9 +1027,22 @@ class SVGObject:
                     return use_tag.attrib[candidate]
             return None
 
-        def max_nested_use_depth(element: "Element") -> int:
+        max_use_depth = self.svg_limits.max_use_depth
+        memo: dict[int, int] = {}
+        active_refs: set[str] = set()
+
+        def check_use_depth(depth: int) -> None:
+            if max_use_depth is not None and depth > max_use_depth:
+                raise FPDFSvgLimitExceeded(
+                    "SVG complexity exceeds the configured "
+                    f"max_use_depth limit ({max_use_depth})"
+                )
+
+        def max_nested_use_depth(element: "Element", current_depth: int = 0) -> int:
+            check_use_depth(current_depth)
             element_id = id(element)
             if element_id in memo:
+                check_use_depth(current_depth + memo[element_id])
                 return memo[element_id]
             depth = 0
             for child in element.iter():
@@ -1048,25 +1059,20 @@ class SVGObject:
                         f"SVG <use> reference cycle detected for {ref!r}"
                     )
                 active_refs.add(ref)
-                depth = max(depth, 1 + max_nested_use_depth(referenced))
-                active_refs.remove(ref)
+                try:
+                    depth = max(
+                        depth,
+                        1 + max_nested_use_depth(referenced, current_depth + 1),
+                    )
+                finally:
+                    active_refs.remove(ref)
+                check_use_depth(current_depth + depth)
             memo[element_id] = depth
             return depth
 
-        max_use_depth = self.svg_limits.max_use_depth
         for referenced_element in elements_by_id.values():
-            depth = max_nested_use_depth(referenced_element)
-            if max_use_depth is not None and depth > max_use_depth:
-                raise FPDFSvgLimitExceeded(
-                    "SVG complexity exceeds the configured "
-                    f"max_use_depth limit ({max_use_depth})"
-                )
-        root_depth = max_nested_use_depth(root_tag)
-        if max_use_depth is not None and root_depth > max_use_depth:
-            raise FPDFSvgLimitExceeded(
-                "SVG complexity exceeds the configured "
-                f"max_use_depth limit ({max_use_depth})"
-            )
+            max_nested_use_depth(referenced_element)
+        max_nested_use_depth(root_tag)
 
         max_resolved_elements = self.svg_limits.max_resolved_elements
         if max_resolved_elements is None:
