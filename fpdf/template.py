@@ -99,6 +99,7 @@ class FlexTemplate:
             "rotate": (int, float),
             "wrapmode": (str, type(None)),
             "dash_pattern": (dict, type(None)),
+            "keep_aspect_ratio": (int, type(None)),
         }
 
         self.elements: Sequence[dict[str, Any]] = elements
@@ -250,6 +251,7 @@ class FlexTemplate:
             ("multiline", self._parse_multiline, False),
             ("rotate", _varsep_float, False),
             ("wrapmode", str, False),
+            ("keep_aspect_ratio", int, False),
         )
         self.elements = []
         if encoding is None:
@@ -570,10 +572,19 @@ class FlexTemplate:
         x2: float = 0,
         y2: float = 0,
         text: str = "",
+        keep_aspect_ratio: bool = False,
         **__: Any,
     ) -> None:
         if text:
-            self.pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link="")
+            self.pdf.image(
+                text,
+                x1,
+                y1,
+                w=x2 - x1,
+                h=y2 - y1,
+                link="",
+                keep_aspect_ratio=keep_aspect_ratio,
+            )
 
     def _barcode(
         self,
