@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `resource_access_policy` and [Security considerations](https://py-pdf.github.io/fpdf2/Security.html) documentation
 * [`FPDF.optional_content()`](https://py-pdf.github.io/fpdf2/OptionalContent.html) context manager to mark content as visible on screen only or in print only, using PDF Optional Content Groups - _cf._ [issue #441](https://github.com/py-pdf/fpdf2/issues/441), based on a recipe by @digidigital
 ### Fixed
+* visual gap in rendering subsequent text after `{nb}` page alias when text shaping is enabled - _cf._ [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)
 * font state (family, style, size, current font, and the page-level "font is set" flag) no longer leaks back onto the `FPDF` instance after a `text_columns()` / `text_region()` context exits, so a subsequent `pdf.cell()` / `pdf.write()` renders at the caller's font instead of the last paragraph's - _cf._ [issue #1804](https://github.com/py-pdf/fpdf2/issues/1804)
 * text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)

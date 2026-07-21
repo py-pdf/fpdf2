@@ -4460,23 +4460,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
-        if not markdown and not self.text_shaping and not self._fallback_font_ids:
-            if self.str_alias_nb_pages:
-                for seq, fragment_text in enumerate(
-                    text.split(self.str_alias_nb_pages)
-                ):
-                    if seq > 0:
-                        yield TotalPagesSubstitutionFragment(
-                            self.str_alias_nb_pages,
-                            self._get_current_graphics_state(),
-                            self.k,
-                        )
-                    if fragment_text:
-                        yield Fragment(
-                            fragment_text, self._get_current_graphics_state(), self.k
-                        )
-                return
+        if self.str_alias_nb_pages and self.str_alias_nb_pages in text:
+            for seq, fragment_text in enumerate(text.split(self.str_alias_nb_pages)):
+                if seq > 0:
+                    yield TotalPagesSubstitutionFragment(
+                        self.str_alias_nb_pages,
+                        self._get_current_graphics_state(),
+                        self.k,
+                        dummy_width_string=(
+                            str(self.page_no())
+                            if self.text_shaping
+                            else self.str_alias_nb_pages
+                        ),
+                    )
+                if fragment_text:
+                    yield from self._parse_chars(fragment_text, markdown)
+            return
 
+        if not markdown and not self.text_shaping and not self._fallback_font_ids:
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag: list[str] = []
@@ -4577,6 +4578,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         self.str_alias_nb_pages,
                         gstate,
                         self.k,
+                        dummy_width_string=(
+                            str(self.page_no())
+                            if self.text_shaping
+                            else self.str_alias_nb_pages
+                        ),
                     )
                     text = text[len(self.str_alias_nb_pages) :]
                     continue
