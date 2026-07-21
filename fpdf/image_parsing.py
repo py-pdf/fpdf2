@@ -41,7 +41,7 @@ from .image_datastructures import (
     RasterImageInfo,
     VectorImageInfo,
 )
-from .svg import SVGObject
+from .svg import SVGObject, SVGLimits
 from .util import ImageType
 
 try:
@@ -354,6 +354,7 @@ def preload_image(
     name: ImageType,
     dims: Optional[tuple[float, float]] = None,
     resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
+    svg_limits: Optional[SVGLimits] = None,
 ) -> tuple[
     str,
     Union[SVGObject, "PILImage", bytes, BinaryIO, Path, None],
@@ -399,8 +400,11 @@ def preload_image(
                 load_image(name, resource_access_policy=resource_access_policy),
                 image_cache=image_cache,
                 resource_access_policy=resource_access_policy,
+                svg_limits=svg_limits,
             )
         except FPDFResourceAccessError:
+            raise
+        except FPDFException:
             raise
         except Exception as error:
             raise ValueError(f"Could not parse file: {name}") from error
@@ -410,6 +414,7 @@ def preload_image(
             io.BytesIO(name),
             image_cache=image_cache,
             resource_access_policy=resource_access_policy,
+            svg_limits=svg_limits,
         )
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
         return get_svg_info(
@@ -417,6 +422,7 @@ def preload_image(
             name,
             image_cache=image_cache,
             resource_access_policy=resource_access_policy,
+            svg_limits=svg_limits,
         )
 
     # Load raster data.
@@ -556,6 +562,7 @@ def get_svg_info(
     img: BinaryIO,
     image_cache: ImageCache,
     resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
+    svg_limits: Optional[SVGLimits] = None,
 ) -> tuple[str, SVGObject, VectorImageInfo]:
     img.seek(0)
     svg_data = img.read()
@@ -563,6 +570,7 @@ def get_svg_info(
         svg_data,
         image_cache=image_cache,
         resource_access_policy=resource_access_policy,
+        svg_limits=svg_limits,
     )
     if svg.viewbox:
         _, _, w, h = svg.viewbox

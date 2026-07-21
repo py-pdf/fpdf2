@@ -20,6 +20,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
 * basic support for SVG `<symbol>` elements in the SVG parser
+* `FPDF.svg_limits` and `SVGLimits` to configure SVG complexity limits while rendering SVG images
 * `resource_access_policy` and [Security considerations](https://py-pdf.github.io/fpdf2/Security.html) documentation
 * [`FPDF.optional_content()`](https://py-pdf.github.io/fpdf2/OptionalContent.html) context manager to mark content as visible on screen only or in print only, using PDF Optional Content Groups - _cf._ [issue #441](https://github.com/py-pdf/fpdf2/issues/441), based on a recipe by @digidigital
 ### Fixed
@@ -41,6 +42,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.set_font()` can restore `current_font` when the selected font state diverged - _cf._ [PR #1872](https://github.com/py-pdf/fpdf2/pull/1872)
 * embed CID-keyed CFF fonts as raw CFF programs so browser PDF viewers render them correctly - _cf._ [issue #1874](https://github.com/py-pdf/fpdf2/issues/1874)
 * fixed broken links on documentation not directly leading to the API reference - _cf._ [issue #1876](https://github.com/py-pdf/fpdf2/issues/1876)
+* reject SVG `<use>` cycles and excessive nested expansion to prevent resource exhaustion in `FPDF.image()`
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
