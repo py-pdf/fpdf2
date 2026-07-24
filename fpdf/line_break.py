@@ -423,9 +423,16 @@ class TotalPagesSubstitutionFragment(Fragment):
     output is being produced.
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, dummy_width_string: str = "1", **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.uuid = uuid4()
+        self.dummy_width_string = dummy_width_string
+        # Use dummy_width_string for layout phase width calculation if characters are not empty (non-cloned)
+        # and text shaping is active.
+        if self.characters and self.graphics_state.text_shaping:
+            self.characters = list(dummy_width_string)
 
     def get_placeholder_string(self) -> str:
         """
