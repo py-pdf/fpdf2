@@ -250,9 +250,10 @@ logging.getLogger("fpdf.svg").propagate = False
 - basic shapes (`<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, `<polygon>`)
 - basic `<image>` elements
 - basic cross-references, with `defs` tags anywhere in the SVG code
+- basic `<switch>` elements, selecting the first child without conditional processing attributes
 - stroke & fill coloring and opacity
 - basic stroke styling
-- inline CSS styling via `style="..."` attributes
+- basic CSS styling via `style="..."` attributes and class rules in `<style>` tags
 - clipping paths
 - gradients: `<linearGradient>` and `<radialGradient>` elements with stops, opacity, transforms, and spread methods
 
@@ -268,13 +269,12 @@ rendering as a completely blank PDF.
 
 There are some common SVG features that are currently **unsupported**, but that `fpdf2` could end up supporting with the help of contributors :
 
-- `<tspan>` / `<textPath>` / `<text>` (-> there is a starting [draft PR](https://github.com/py-pdf/fpdf2/pull/1029))
-- `<symbol>`
 - `<marker>`
 - `<pattern>`
 - embedded non-image content (including nested SVGs)
+- `<textPath>`
 - many standard attributes
-- CSS styling via `<style>` tags or external *.css files.
+- complex CSS selectors or external *.css files.
 
 {==
 

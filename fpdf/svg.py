@@ -1680,6 +1680,8 @@ class SVGObject:
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
+            elif child.tag in xmlns_lookup("svg", "switch"):
+                self.build_switch(child)
             elif child.tag in xmlns_lookup("svg", "symbol"):
                 self.build_symbol(child)
             elif child.tag in xmlns_lookup("svg", "a"):
@@ -1824,42 +1826,87 @@ class SVGObject:
             self.handle_defs(child)
 
         for child in group:
-            if child.tag in xmlns_lookup("svg", "defs"):
-                self.handle_defs(child)
-            elif child.tag in xmlns_lookup("svg", "style"):
-                # Stylesheets already parsed globally.
-                continue
-            elif child.tag in xmlns_lookup("svg", "symbol"):
-                self.build_symbol(child)
-            elif child.tag in xmlns_lookup("svg", "g"):
-                pdf_group.add_item(self.build_group(child, None, merged_style), False)
-            elif child.tag in xmlns_lookup("svg", "a"):
-                # <a> tags aren't supported but we need to recurse into them to
-                # render nested elements.
-                LOGGER.warning(
-                    "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
-                )
-                pdf_group.add_item(self.build_group(child, None, merged_style), False)
-            elif child.tag in xmlns_lookup("svg", "path"):
-                pdf_group.add_item(self.build_path(child), False)
-            elif child.tag in shape_tags:
-                pdf_group.add_item(self.build_shape(child), False)
-            elif child.tag in xmlns_lookup("svg", "use"):
-                pdf_group.add_item(self.build_xref(child), False)
-            elif child.tag in xmlns_lookup("svg", "image"):
-                pdf_group.add_item(self.build_image(child), False)
-            elif child.tag in xmlns_lookup("svg", "text"):
-                text_path = self.build_text(child, merged_style)
-                if text_path:
-                    pdf_group.add_item(text_path, False)
-            else:
-                LOGGER.warning(
-                    "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
-                    without_ns(child.tag),
-                )
+            self._build_group_child(pdf_group, child, merged_style)
 
         self.update_xref(group.attrib.get("id"), pdf_group)
 
+        return pdf_group
+
+    @force_nodocument
+    def _build_group_child(
+        self,
+        pdf_group: GraphicsContext,
+        child: "Element",
+        inherited_style: dict[str, Any],
+    ) -> None:
+        """Convert one graphics child while preserving its parent's style."""
+        if child.tag in xmlns_lookup("svg", "defs"):
+            self.handle_defs(child)
+        elif child.tag in xmlns_lookup("svg", "style"):
+            # Stylesheets already parsed globally.
+            return
+        elif child.tag in xmlns_lookup("svg", "symbol"):
+            self.build_symbol(child)
+        elif child.tag in xmlns_lookup("svg", "g"):
+            pdf_group.add_item(self.build_group(child, None, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "switch"):
+            pdf_group.add_item(self.build_switch(child, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "a"):
+            # <a> tags aren't supported but we need to recurse into them to
+            # render nested elements.
+            LOGGER.warning(
+                "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
+            )
+            pdf_group.add_item(self.build_group(child, None, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "path"):
+            pdf_group.add_item(self.build_path(child), False)
+        elif child.tag in shape_tags:
+            pdf_group.add_item(self.build_shape(child), False)
+        elif child.tag in xmlns_lookup("svg", "use"):
+            pdf_group.add_item(self.build_xref(child), False)
+        elif child.tag in xmlns_lookup("svg", "image"):
+            pdf_group.add_item(self.build_image(child), False)
+        elif child.tag in xmlns_lookup("svg", "text"):
+            text_path = self.build_text(child, inherited_style)
+            if text_path:
+                pdf_group.add_item(text_path, False)
+        else:
+            LOGGER.warning(
+                "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
+                without_ns(child.tag),
+            )
+
+    @force_nodocument
+    def build_switch(
+        self, switch: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> GraphicsContext:
+        """Render the first ``<switch>`` child that needs no environment support.
+
+        Conditional SVG processing attributes need browser capabilities or user locale
+        preferences that fpdf2 does not expose. Children that use them are therefore
+        skipped, which allows a following unconditional fallback to be rendered.
+        """
+        local_style = self._style_map_for(switch)
+        merged_style = dict(inherited_style or {})
+        merged_style.update(local_style)
+        pdf_group = GraphicsContext()
+        apply_styles(pdf_group, switch, merged_style)
+
+        conditional_attributes = (
+            "requiredFeatures",
+            "requiredExtensions",
+            "systemLanguage",
+        )
+        for child in switch:
+            if any(attribute in child.attrib for attribute in conditional_attributes):
+                LOGGER.debug(
+                    "Skipping conditional <switch> child <%s>", without_ns(child.tag)
+                )
+                continue
+            self._build_group_child(pdf_group, child, merged_style)
+            break
+
+        self.update_xref(switch.attrib.get("id"), pdf_group)
         return pdf_group
 
     @force_nodocument
