@@ -1799,6 +1799,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "prateek-dagar",
+      "name": "prateek-dagar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/107306613?v=4",
+      "profile": "https://github.com/prateek-dagar",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
