@@ -15,6 +15,7 @@ import math
 import re
 import warnings
 from copy import deepcopy
+from dataclasses import dataclass
 from os import PathLike
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
 
@@ -29,6 +30,7 @@ from .enums import (
     ResourceAccessPolicy,
     StrokeCapStyle,
 )
+from .errors import FPDFSvgLimitExceeded
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -90,6 +92,12 @@ TRANSFORM_GETTER = re.compile(
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
 
+SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
+    "requiredFeatures",
+    "requiredExtensions",
+    "systemLanguage",
+)
+
 
 def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     if value is None:
@@ -102,9 +110,46 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     return value
 
 
+def _has_switch_conditional_attrs(tag: "Element") -> bool:
+    return any(
+        attribute in tag.attrib for attribute in SVG_SWITCH_CONDITIONAL_ATTRIBUTES
+    )
+
+
 @force_nodocument
 class Percent(float):
     """class to represent percentage values"""
+
+
+@dataclass(frozen=True)
+class SVGLimits:
+    """
+    Configurable limits for SVG processing.
+
+    A limit set to None disables that specific check. Disabling or raising limits
+    should only be done for SVG input from trusted sources.
+    """
+
+    max_use_depth: int | None = 32
+    "Maximum depth allowed while resolving nested SVG <use> references."
+
+    max_resolved_elements: int | None = 100_000
+    "Maximum number of elements allowed after resolving SVG control flow."
+
+    def __post_init__(self) -> None:
+        self._validate_limit("max_use_depth", self.max_use_depth)
+        self._validate_limit("max_resolved_elements", self.max_resolved_elements)
+
+    @staticmethod
+    def _validate_limit(name: str, value: int | None) -> None:
+        if value is not None and value <= 0:
+            raise ValueError(f"{name} must be a positive integer or None")
+
+
+def _resolved_element_cost(item: Any) -> int:
+    if isinstance(item, GraphicsContext):
+        return 1 + sum(_resolved_element_cost(child) for child in item.path_items)
+    return 1
 
 
 unit_splitter = re.compile(r"\s*(?P<value>[-+]?[\d\.]+)\s*(?P<unit>%|[a-zA-Z]*)")
@@ -937,10 +982,14 @@ class SVGObject:
         svg_text: str | bytes,
         image_cache: Optional[ImageCache] = None,
         resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
+        svg_limits: Optional[SVGLimits] = None,
     ) -> None:
         self.image_cache = image_cache  # Needed to render images
         self.resource_access_policy = resource_access_policy
+        self.svg_limits = svg_limits or SVGLimits()
+        self._resolved_element_count = 0
         self.cross_references: dict[str, Any] = {}
+        self._cross_reference_costs: dict[str, int] = {}
         self.symbol_info: dict[str, SymbolInfo] = {}
         self.css_class_styles: dict[str, dict[str, Any]] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
@@ -956,6 +1005,7 @@ class SVGObject:
 
         self._collect_css_styles(svg_tree)
         self.extract_shape_info(svg_tree)
+        self._check_svg_limits(svg_tree)
         self.convert_graphics(svg_tree)
 
     @force_nodocument
@@ -963,6 +1013,154 @@ class SVGObject:
         if key:
             key = "#" + key if not key.startswith("#") else key
             self.cross_references[key] = referenced
+            self._cross_reference_costs[key] = _resolved_element_cost(referenced)
+
+    def _record_resolved_elements(self, count: int) -> None:
+        max_resolved_elements = self.svg_limits.max_resolved_elements
+        if max_resolved_elements is None:
+            return
+        if self._resolved_element_count + count > max_resolved_elements:
+            raise FPDFSvgLimitExceeded(
+                "SVG complexity exceeds the configured "
+                f"max_resolved_elements limit ({max_resolved_elements})"
+            )
+        self._resolved_element_count += count
+
+    def _check_svg_limits(self, root_tag: "Element") -> None:
+        elements_by_id = {
+            f"#{element_id}": element
+            for element in root_tag.iter()
+            if (element_id := element.attrib.get("id"))
+        }
+
+        def use_ref(use_tag: "Element") -> Optional[str]:
+            for candidate in xmlns_lookup("xlink", "href", "id"):
+                if candidate in use_tag.attrib:
+                    return use_tag.attrib[candidate]
+            return None
+
+        max_use_depth = self.svg_limits.max_use_depth
+        memo: dict[int, int] = {}
+        active_refs: set[str] = set()
+
+        def check_use_depth(depth: int) -> None:
+            if max_use_depth is not None and depth > max_use_depth:
+                raise FPDFSvgLimitExceeded(
+                    "SVG complexity exceeds the configured "
+                    f"max_use_depth limit ({max_use_depth})"
+                )
+
+        def max_nested_use_depth(element: "Element", current_depth: int = 0) -> int:
+            check_use_depth(current_depth)
+            element_id = id(element)
+            if element_id in memo:
+                check_use_depth(current_depth + memo[element_id])
+                return memo[element_id]
+            depth = 0
+            for child in element.iter():
+                if child.tag not in xmlns_lookup("svg", "use"):
+                    continue
+                ref = use_ref(child)
+                if not ref:
+                    continue
+                referenced = elements_by_id.get(ref)
+                if referenced is None:
+                    continue
+                if ref in active_refs:
+                    raise FPDFSvgLimitExceeded(
+                        f"SVG <use> reference cycle detected for {ref!r}"
+                    )
+                active_refs.add(ref)
+                try:
+                    depth = max(
+                        depth,
+                        1 + max_nested_use_depth(referenced, current_depth + 1),
+                    )
+                finally:
+                    active_refs.remove(ref)
+                check_use_depth(current_depth + depth)
+            memo[element_id] = depth
+            return depth
+
+        for referenced_element in elements_by_id.values():
+            max_nested_use_depth(referenced_element)
+        max_nested_use_depth(root_tag)
+
+        max_resolved_elements = self.svg_limits.max_resolved_elements
+        if max_resolved_elements is None:
+            return
+
+        graphic_container_tags = xmlns_lookup("svg", "svg", "symbol", "g", "a")
+        graphic_leaf_tags = xmlns_lookup("svg", "path", "image", "text") | shape_tags
+        defs_tags = xmlns_lookup("svg", "defs")
+        clip_path_tags = xmlns_lookup("svg", "clipPath")
+        style_tags = xmlns_lookup("svg", "style")
+        gradient_tags = xmlns_lookup("svg", "linearGradient", "radialGradient")
+        use_tags = xmlns_lookup("svg", "use")
+        switch_tags = xmlns_lookup("svg", "switch")
+        projected_cost_memo: dict[int, int] = {}
+        active_projected_refs: set[str] = set()
+
+        def check_projected_limit(cost: int) -> int:
+            if cost > max_resolved_elements:
+                raise FPDFSvgLimitExceeded(
+                    "SVG complexity exceeds the configured "
+                    f"max_resolved_elements limit ({max_resolved_elements})"
+                )
+            return cost
+
+        def projected_cost(element: "Element") -> int:
+            element_id = id(element)
+            if element_id in projected_cost_memo:
+                return projected_cost_memo[element_id]
+
+            if element.tag in use_tags:
+                ref = use_ref(element)
+                if ref is None:
+                    return 1
+                referenced = elements_by_id.get(ref)
+                if referenced is None:
+                    return 1
+                if ref in active_projected_refs:
+                    raise FPDFSvgLimitExceeded(
+                        f"SVG <use> reference cycle detected for {ref!r}"
+                    )
+                active_projected_refs.add(ref)
+                cost = 1 + projected_cost(referenced)
+                active_projected_refs.remove(ref)
+            elif element.tag in switch_tags:
+                cost = 1
+                for child in element:
+                    if _has_switch_conditional_attrs(child):
+                        continue
+                    cost += projected_cost(child)
+                    break
+            elif element.tag in graphic_container_tags:
+                cost = 1
+                defs_cost = sum(
+                    projected_cost(child) for child in element if child.tag in defs_tags
+                )
+                # build_group() currently handles <defs> before normal children, then
+                # encounters the same <defs> again while iterating over children.
+                cost += defs_cost
+                for child in element:
+                    cost += projected_cost(child)
+                    check_projected_limit(cost)
+            elif element.tag in defs_tags:
+                cost = sum(projected_cost(child) for child in element)
+            elif element.tag in clip_path_tags:
+                cost = sum(projected_cost(child) for child in element)
+            elif element.tag in graphic_leaf_tags:
+                cost = 1
+            elif element.tag in style_tags or element.tag in gradient_tags:
+                cost = 0
+            else:
+                cost = 0
+
+            projected_cost_memo[element_id] = check_projected_limit(cost)
+            return cost
+
+        projected_cost(root_tag)
 
     def _collect_css_styles(self, root_tag: "Element") -> None:
         for node in root_tag.iter():
@@ -1502,6 +1700,8 @@ class SVGObject:
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
+            elif child.tag in xmlns_lookup("svg", "switch"):
+                self.build_switch(child)
             elif child.tag in xmlns_lookup("svg", "symbol"):
                 self.build_symbol(child)
             elif child.tag in xmlns_lookup("svg", "a"):
@@ -1581,11 +1781,14 @@ class SVGObject:
             raise ValueError(f"use {xref} doesn't contain known xref attribute")
 
         try:
-            pdf_group.add_item(self.cross_references[ref])
+            referenced = self.cross_references[ref]
+            referenced_cost = self._cross_reference_costs[ref]
         except KeyError:
             raise ValueError(
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
+        self._record_resolved_elements(1 + referenced_cost)
+        pdf_group.add_item(referenced)
 
         placement_transform = None
         if "x" in xref.attrib or "y" in xref.attrib:
@@ -1633,6 +1836,7 @@ class SVGObject:
         merged_style.update(local_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
+        self._record_resolved_elements(1)
         apply_styles(pdf_group, group, merged_style)
 
         # handle defs before anything else
@@ -1642,47 +1846,89 @@ class SVGObject:
             self.handle_defs(child)
 
         for child in group:
-            if child.tag in xmlns_lookup("svg", "defs"):
-                self.handle_defs(child)
-            elif child.tag in xmlns_lookup("svg", "style"):
-                # Stylesheets already parsed globally.
-                continue
-            elif child.tag in xmlns_lookup("svg", "symbol"):
-                self.build_symbol(child)
-            elif child.tag in xmlns_lookup("svg", "g"):
-                pdf_group.add_item(self.build_group(child, None, merged_style), False)
-            elif child.tag in xmlns_lookup("svg", "a"):
-                # <a> tags aren't supported but we need to recurse into them to
-                # render nested elements.
-                LOGGER.warning(
-                    "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
-                )
-                pdf_group.add_item(self.build_group(child, None, merged_style), False)
-            elif child.tag in xmlns_lookup("svg", "path"):
-                pdf_group.add_item(self.build_path(child), False)
-            elif child.tag in shape_tags:
-                pdf_group.add_item(self.build_shape(child), False)
-            elif child.tag in xmlns_lookup("svg", "use"):
-                pdf_group.add_item(self.build_xref(child), False)
-            elif child.tag in xmlns_lookup("svg", "image"):
-                pdf_group.add_item(self.build_image(child), False)
-            elif child.tag in xmlns_lookup("svg", "text"):
-                text_path = self.build_text(child, merged_style)
-                if text_path:
-                    pdf_group.add_item(text_path, False)
-            else:
-                LOGGER.warning(
-                    "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
-                    without_ns(child.tag),
-                )
+            self._build_group_child(pdf_group, child, merged_style)
 
         self.update_xref(group.attrib.get("id"), pdf_group)
 
         return pdf_group
 
     @force_nodocument
+    def _build_group_child(
+        self,
+        pdf_group: GraphicsContext,
+        child: "Element",
+        inherited_style: dict[str, Any],
+    ) -> None:
+        """Convert one graphics child while preserving its parent's style."""
+        if child.tag in xmlns_lookup("svg", "defs"):
+            self.handle_defs(child)
+        elif child.tag in xmlns_lookup("svg", "style"):
+            # Stylesheets already parsed globally.
+            return
+        elif child.tag in xmlns_lookup("svg", "symbol"):
+            self.build_symbol(child)
+        elif child.tag in xmlns_lookup("svg", "g"):
+            pdf_group.add_item(self.build_group(child, None, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "switch"):
+            pdf_group.add_item(self.build_switch(child, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "a"):
+            # <a> tags aren't supported but we need to recurse into them to
+            # render nested elements.
+            LOGGER.warning(
+                "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
+            )
+            pdf_group.add_item(self.build_group(child, None, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "path"):
+            pdf_group.add_item(self.build_path(child), False)
+        elif child.tag in shape_tags:
+            pdf_group.add_item(self.build_shape(child), False)
+        elif child.tag in xmlns_lookup("svg", "use"):
+            pdf_group.add_item(self.build_xref(child), False)
+        elif child.tag in xmlns_lookup("svg", "image"):
+            pdf_group.add_item(self.build_image(child), False)
+        elif child.tag in xmlns_lookup("svg", "text"):
+            text_path = self.build_text(child, inherited_style)
+            if text_path:
+                pdf_group.add_item(text_path, False)
+        else:
+            LOGGER.warning(
+                "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
+                without_ns(child.tag),
+            )
+
+    @force_nodocument
+    def build_switch(
+        self, switch: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> GraphicsContext:
+        """Render the first ``<switch>`` child that needs no environment support.
+
+        Conditional SVG processing attributes need browser capabilities or user locale
+        preferences that fpdf2 does not expose. Children that use them are therefore
+        skipped, which allows a following unconditional fallback to be rendered.
+        """
+        local_style = self._style_map_for(switch)
+        merged_style = dict(inherited_style or {})
+        merged_style.update(local_style)
+        pdf_group = GraphicsContext()
+        self._record_resolved_elements(1)
+        apply_styles(pdf_group, switch, merged_style)
+
+        for child in switch:
+            if _has_switch_conditional_attrs(child):
+                LOGGER.debug(
+                    "Skipping conditional <switch> child <%s>", without_ns(child.tag)
+                )
+                continue
+            self._build_group_child(pdf_group, child, merged_style)
+            break
+
+        self.update_xref(switch.attrib.get("id"), pdf_group)
+        return pdf_group
+
+    @force_nodocument
     def build_path(self, path: "Element") -> PaintedPath:
         """Convert an SVG <path> tag into a PDF path object."""
+        self._record_resolved_elements(1)
         style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
         apply_styles(pdf_path, path, style_map)
@@ -1697,6 +1943,7 @@ class SVGObject:
     @force_nodocument
     def build_shape(self, shape: "Element") -> PaintedPath:
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
+        self._record_resolved_elements(1)
         style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
@@ -1710,11 +1957,13 @@ class SVGObject:
     @force_nodocument
     def build_clipping_path(self, shape: "Element", clip_id: Optional[str]) -> None:
         if shape.tag in shape_tags:
+            self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
             clipping_path_shape = shape_builder(shape, True)
             apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
+            self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
             clipping_path_shape = PaintedPath()
             apply_styles(clipping_path_shape, shape, style_map)
@@ -1749,6 +1998,7 @@ class SVGObject:
 
     @force_nodocument
     def build_image(self, image: "Element") -> "SVGImage":
+        self._record_resolved_elements(1)
         href = None
         for key in xmlns_lookup("xlink", "href"):
             if key in image.attrib:
@@ -1792,6 +2042,7 @@ class SVGObject:
         - Honors x/y and dx/dy on <text> and direct child <tspan>
         - Flattens nested tspans; advanced per-character positioning is not implemented
         """
+        self._record_resolved_elements(1)
         local_style = self._style_map_for(text_tag)
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
@@ -2021,6 +2272,7 @@ class SVGImage(NamedTuple):
             image_cache,
             self.href,
             resource_access_policy=self.svg_obj.resource_access_policy,
+            svg_limits=self.svg_obj.svg_limits,
         )
         if isinstance(info, VectorImageInfo):
             LOGGER.warning(

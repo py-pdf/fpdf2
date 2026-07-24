@@ -1772,6 +1772,33 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "uttam12331",
+      "name": "uttam12331",
+      "avatar_url": "https://avatars.githubusercontent.com/u/159913047?v=4",
+      "profile": "https://github.com/uttam12331",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "dannymaaz",
+      "name": "Danny Maaz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61290346?v=4",
+      "profile": "https://dannymaaz.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hvbtup",
+      "name": "Henning von Bargen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7644776?v=4",
+      "profile": "https://github.com/hvbtup",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

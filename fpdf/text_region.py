@@ -302,6 +302,7 @@ class ImageParagraph:
             self.region.pdf.image_cache,
             self.name,
             resource_access_policy=self.region.pdf.resource_access_policy,
+            svg_limits=self.region.pdf.svg_limits,
         )
         return self
 

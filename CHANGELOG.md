@@ -19,9 +19,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.8] - Not released yet
 ### Added
 * Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
-* basic support for SVG `<symbol>` elements in the SVG parser
+* `FPDF.svg_limits` and `SVGLimits` to configure SVG complexity limits while rendering SVG images
 * `resource_access_policy` and [Security considerations](https://py-pdf.github.io/fpdf2/Security.html) documentation
 * [`FPDF.optional_content()`](https://py-pdf.github.io/fpdf2/OptionalContent.html) context manager to mark content as visible on screen only or in print only, using PDF Optional Content Groups - _cf._ [issue #441](https://github.com/py-pdf/fpdf2/issues/441), based on a recipe by @digidigital
+* basic support for SVG `<symbol>` elements in the SVG parser
+* basic support for SVG `<switch>` elements in the SVG parser - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537)
 * support for keeping aspect ratio for images in templates - _cf._ [issue #1118](https://github.com/py-pdf/fpdf2/issues/1118)
 ### Fixed
 * font state (family, style, size, current font, and the page-level "font is set" flag) no longer leaks back onto the `FPDF` instance after a `text_columns()` / `text_region()` context exits, so a subsequent `pdf.cell()` / `pdf.write()` renders at the caller's font instead of the last paragraph's - _cf._ [issue #1804](https://github.com/py-pdf/fpdf2/issues/1804)
@@ -36,11 +38,15 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * preserve markdown format in `FPDF.multi_cell` in dry-run - _cf._ [issue #1840](https://github.com/py-pdf/fpdf2/issues/1840)
 * fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836)
 * rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
+* spurious "Not enough horizontal space to render a single character" error when text without break opportunities is split into many small fragments, e.g. by a fallback font alternating with the main font - _cf._ [issue #1250](https://github.com/py-pdf/fpdf2/issues/1250)
 * number of surviving escape characters - __cf.__ [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215)
 * leading spaces on new lines inside `<pre>` and `<pre><code>` blocks are no longer dropped - _cf._ [issue #1063](https://github.com/py-pdf/fpdf2/issues/1063)
 * `FPDF.set_font()` can restore `current_font` when the selected font state diverged - _cf._ [PR #1872](https://github.com/py-pdf/fpdf2/pull/1872)
 * embed CID-keyed CFF fonts as raw CFF programs so browser PDF viewers render them correctly - _cf._ [issue #1874](https://github.com/py-pdf/fpdf2/issues/1874)
 * fixed broken links on documentation not directly leading to the API reference - _cf._ [issue #1876](https://github.com/py-pdf/fpdf2/issues/1876)
+* reject SVG `<use>` cycles and excessive nested expansion to prevent resource exhaustion in `FPDF.image()`
+* count SVG `<switch>` elements in SVG complexity limits
+* declare the default base state and display order for Optional Content Groups so PDF viewers can list layers correctly - _cf._ [issue #1895](https://github.com/py-pdf/fpdf2/issues/1895)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 
