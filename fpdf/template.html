@@ -56,7 +56,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L35-L723" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L35-L734" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -125,6 +125,7 @@ el.replaceWith(d);
             &#34;rotate&#34;: (int, float),
             &#34;wrapmode&#34;: (str, type(None)),
             &#34;dash_pattern&#34;: (dict, type(None)),
+            &#34;keep_aspect_ratio&#34;: (int, type(None)),
         }
 
         self.elements: Sequence[dict[str, Any]] = elements
@@ -276,6 +277,7 @@ el.replaceWith(d);
             (&#34;multiline&#34;, self._parse_multiline, False),
             (&#34;rotate&#34;, _varsep_float, False),
             (&#34;wrapmode&#34;, str, False),
+            (&#34;keep_aspect_ratio&#34;, int, False),
         )
         self.elements = []
         if encoding is None:
@@ -596,10 +598,19 @@ el.replaceWith(d);
         x2: float = 0,
         y2: float = 0,
         text: str = &#34;&#34;,
+        keep_aspect_ratio: bool = False,
         **__: Any,
     ) -&gt; None:
         if text:
-            self.pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link=&#34;&#34;)
+            self.pdf.image(
+                text,
+                x1,
+                y1,
+                w=x2 - x1,
+                h=y2 - y1,
+                link=&#34;&#34;,
+                keep_aspect_ratio=keep_aspect_ratio,
+            )
 
     def _barcode(
         self,
@@ -774,7 +785,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L73-L156" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L73-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_elements(self, elements: Sequence[dict[str, Any]]) -&gt; None:
     &#34;&#34;&#34;
@@ -805,6 +816,7 @@ or parse_csv() before doing anything else.</dd>
         &#34;rotate&#34;: (int, float),
         &#34;wrapmode&#34;: (str, type(None)),
         &#34;dash_pattern&#34;: (dict, type(None)),
+        &#34;keep_aspect_ratio&#34;: (int, type(None)),
     }
 
     self.elements: Sequence[dict[str, Any]] = elements
@@ -875,7 +887,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L207-L280" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L208-L282" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_csv(
     self,
@@ -923,6 +935,7 @@ or parse_csv() before doing anything else.</dd>
         (&#34;multiline&#34;, self._parse_multiline, False),
         (&#34;rotate&#34;, _varsep_float, False),
         (&#34;wrapmode&#34;, str, False),
+        (&#34;keep_aspect_ratio&#34;, int, False),
     )
     self.elements = []
     if encoding is None:
@@ -975,7 +988,7 @@ Default is the system default encoding.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L176-L205" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L177-L206" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_json(self, infile: os.PathLike[str], encoding: str = &#34;utf-8&#34;) -&gt; None:
     &#34;&#34;&#34;
@@ -1026,7 +1039,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L677-L723" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L688-L734" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(
     self,
@@ -1093,7 +1106,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L282-L289" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L284-L291" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def __setitem__(self, name: str, value: Any) -&gt; None:
     assert isinstance(
@@ -1113,7 +1126,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L315-L353" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L317-L355" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def split_multicell(self, text: str, element_name: str) -&gt; list[str]:
     &#34;&#34;&#34;
@@ -1178,7 +1191,7 @@ when rendered in the element font style and size.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L726-L819" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L737-L830" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
@@ -1316,7 +1329,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L793-L797" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L804-L808" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_page(self) -&gt; None:
     &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
@@ -1365,7 +1378,7 @@ equivalent to what …</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/0fb0c7b127420b50795542ff15e0f7c0659d5d7d/fpdf/template.py#L800-L819" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L811-L830" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, outfile: Optional[str] = None, dest: Optional[str] = None) -&gt; None:  # type: ignore[override]
     &#34;&#34;&#34;
