@@ -1781,6 +1781,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "dannymaaz",
+      "name": "Danny Maaz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61290346?v=4",
+      "profile": "https://dannymaaz.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
