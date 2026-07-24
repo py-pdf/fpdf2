@@ -365,6 +365,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/iamfazakb"><img src="https://avatars.githubusercontent.com/u/261377750?v=4?s=100" width="100px;" alt="Fazal Akbar"/><br /><sub><b>Fazal Akbar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=iamfazakb" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/uttam12331"><img src="https://avatars.githubusercontent.com/u/159913047?v=4?s=100" width="100px;" alt="uttam12331"/><br /><sub><b>uttam12331</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=uttam12331" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://dannymaaz.com"><img src="https://avatars.githubusercontent.com/u/61290346?v=4?s=100" width="100px;" alt="Danny Maaz"/><br /><sub><b>Danny Maaz</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=dannymaaz" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hvbtup"><img src="https://avatars.githubusercontent.com/u/7644776?v=4?s=100" width="100px;" alt="Henning von Bargen"/><br /><sub><b>Henning von Bargen</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Ahvbtup" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
