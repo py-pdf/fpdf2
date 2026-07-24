@@ -92,6 +92,12 @@ TRANSFORM_GETTER = re.compile(
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
 
+SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
+    "requiredFeatures",
+    "requiredExtensions",
+    "systemLanguage",
+)
+
 
 def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     if value is None:
@@ -102,6 +108,12 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
             return None
         return stripped
     return value
+
+
+def _has_switch_conditional_attrs(tag: "Element") -> bool:
+    return any(
+        attribute in tag.attrib for attribute in SVG_SWITCH_CONDITIONAL_ATTRIBUTES
+    )
 
 
 @force_nodocument
@@ -122,7 +134,7 @@ class SVGLimits:
     "Maximum depth allowed while resolving nested SVG <use> references."
 
     max_resolved_elements: int | None = 100_000
-    "Maximum number of elements allowed after resolving SVG <use> references."
+    "Maximum number of elements allowed after resolving SVG control flow."
 
     def __post_init__(self) -> None:
         self._validate_limit("max_use_depth", self.max_use_depth)
@@ -1085,6 +1097,7 @@ class SVGObject:
         style_tags = xmlns_lookup("svg", "style")
         gradient_tags = xmlns_lookup("svg", "linearGradient", "radialGradient")
         use_tags = xmlns_lookup("svg", "use")
+        switch_tags = xmlns_lookup("svg", "switch")
         projected_cost_memo: dict[int, int] = {}
         active_projected_refs: set[str] = set()
 
@@ -1115,6 +1128,13 @@ class SVGObject:
                 active_projected_refs.add(ref)
                 cost = 1 + projected_cost(referenced)
                 active_projected_refs.remove(ref)
+            elif element.tag in switch_tags:
+                cost = 1
+                for child in element:
+                    if _has_switch_conditional_attrs(child):
+                        continue
+                    cost += projected_cost(child)
+                    break
             elif element.tag in graphic_container_tags:
                 cost = 1
                 defs_cost = sum(
@@ -1890,15 +1910,11 @@ class SVGObject:
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
         pdf_group = GraphicsContext()
+        self._record_resolved_elements(1)
         apply_styles(pdf_group, switch, merged_style)
 
-        conditional_attributes = (
-            "requiredFeatures",
-            "requiredExtensions",
-            "systemLanguage",
-        )
         for child in switch:
-            if any(attribute in child.attrib for attribute in conditional_attributes):
+            if _has_switch_conditional_attrs(child):
                 LOGGER.debug(
                     "Skipping conditional <switch> child <%s>", without_ns(child.tag)
                 )
