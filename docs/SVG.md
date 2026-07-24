@@ -29,7 +29,7 @@ or some dimensions must be provided to `.image()` through its `w=` and/or `h=` p
 `fpdf2` applies configurable SVG complexity limits while converting SVG content
 to PDF drawing paths. These limits are intended to prevent small, malicious SVG
 files from consuming excessive CPU or memory through deeply nested or repeated
-`<use>` references.
+`<use>` references or SVG control-flow elements.
 
 The limits are configured on the `FPDF` instance:
 

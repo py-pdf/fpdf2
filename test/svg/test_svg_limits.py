@@ -108,6 +108,36 @@ def test_image_preserves_limit_exception(tmp_path: Path) -> None:
         pdf.image(svg_file, w=10)
 
 
+def test_svg_limits_count_switch_elements() -> None:
+    svg = b"""
+    <svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">
+      <switch>
+        <rect width="1" height="1"/>
+      </switch>
+    </svg>
+    """
+
+    with pytest.raises(FPDFSvgLimitExceeded, match="max_resolved_elements"):
+        SVGObject(svg, svg_limits=SVGLimits(max_resolved_elements=2))
+
+
+def test_svg_limits_ignore_skipped_switch_children() -> None:
+    svg = b"""
+    <svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">
+      <switch>
+        <g requiredFeatures="http://example.invalid/feature">
+          <rect width="1" height="1"/>
+          <rect width="1" height="1"/>
+          <rect width="1" height="1"/>
+        </g>
+        <circle cx="0.5" cy="0.5" r="0.5"/>
+      </switch>
+    </svg>
+    """
+
+    assert SVGObject(svg, svg_limits=SVGLimits(max_resolved_elements=3))
+
+
 def test_disable_complexity_limits() -> None:
     svg = SVGObject(
         _nested_use_svg(level=3, fanout=4),
