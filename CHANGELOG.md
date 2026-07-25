@@ -47,6 +47,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * reject SVG `<use>` cycles and excessive nested expansion to prevent resource exhaustion in `FPDF.image()`
 * count SVG `<switch>` elements in SVG complexity limits
 * declare the default base state and display order for Optional Content Groups so PDF viewers can list layers correctly - _cf._ [issue #1895](https://github.com/py-pdf/fpdf2/issues/1895)
+* `Paragraph.ln(h)` in a text region no longer adds an extra line break after the first line that follows it - _cf._ [issue #1786](https://github.com/py-pdf/fpdf2/issues/1786)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 

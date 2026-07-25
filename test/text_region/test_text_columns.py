@@ -443,3 +443,23 @@ def test_text_columns_restore_page_font_after_context(tmp_path):
         HERE / "text_columns_restore_page_font_after_context.pdf",
         tmp_path,
     )
+
+
+def test_text_columns_ln_with_height_no_double_break():  # issue 1786
+    """`Paragraph.ln(h)` must not inflate the height of the following line.
+
+    The vertical gap is carried by a newline fragment whose font size is set
+    to `h`; once that fragment is consumed it must no longer contribute to the
+    height of the next line.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=16)
+
+    with pdf.text_columns() as cols:
+        cols.write("A1\nA2")
+        cols.ln(16)
+        cols.write("B1\nB2")
+        heights = [lw.line.height for lw in cols._paragraphs[0].build_lines(False)]
+
+    assert heights[0] == heights[1] == heights[2] == heights[3]

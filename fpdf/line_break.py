@@ -798,6 +798,11 @@ class MultiLineBreak:
         while self.fragment_index < len(self.fragments):
             current_fragment = self.fragments[self.fragment_index]
 
+            if self.character_index >= len(current_fragment.characters):
+                self.character_index = 0
+                self.fragment_index += 1
+                continue
+
             if FloatTolerance.greater_than(
                 current_fragment.font_size, current_font_height
             ):
@@ -808,11 +813,6 @@ class MultiLineBreak:
                     max_width -= float(margin)
                 if self._is_first_line:
                     max_width -= self.first_line_indent
-
-            if self.character_index >= len(current_fragment.characters):
-                self.character_index = 0
-                self.fragment_index += 1
-                continue
 
             character = current_fragment.characters[self.character_index]
             character_width = current_fragment.get_character_width(
