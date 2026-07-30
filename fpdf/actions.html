@@ -54,7 +54,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L12-L38" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L12-L38" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Action(ABC):
     def __init__(self, next_action: Optional[&#34;Action&#34;] = None) -&gt; None:
@@ -86,8 +86,9 @@ el.replaceWith(d);
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>next</code></strong> :&ensp;<code>PDFObject | str</code></dt>
 <dd>optional reference to another Action to trigger after this one</dd>
 </dl></div>
@@ -112,7 +113,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L20-L25" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L20-L25" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -133,7 +134,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L77-L95" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L77-L95" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GoToAction(Action):
     def __init__(
@@ -157,8 +158,9 @@ inheritance.</p>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>next</code></strong> :&ensp;<code>PDFObject | str</code></dt>
 <dd>optional reference to another Action to trigger after this one</dd>
 </dl></div>
@@ -176,7 +178,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L86-L95" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L86-L95" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -201,7 +203,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L98-L115" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L98-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GoToRemoteAction(Action):
     def __init__(
@@ -224,8 +226,9 @@ inheritance.</p>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>next</code></strong> :&ensp;<code>PDFObject | str</code></dt>
 <dd>optional reference to another Action to trigger after this one</dd>
 </dl></div>
@@ -243,7 +246,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L106-L115" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L106-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -268,7 +271,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L118-L134" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L118-L134" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LaunchAction(Action):
     &#34;As of 2022, this does not seem honored by neither Adobe Acrobat nor Sumatra readers.&#34;
@@ -289,8 +292,9 @@ inheritance.</p>
         )</code></pre>
 </details>
 <div class="desc"><p>As of 2022, this does not seem honored by neither Adobe Acrobat nor Sumatra readers.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>next</code></strong> :&ensp;<code>PDFObject | str</code></dt>
 <dd>optional reference to another Action to trigger after this one</dd>
 </dl></div>
@@ -308,7 +312,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L125-L134" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L125-L134" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -333,7 +337,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L58-L74" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L58-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class NamedAction(Action):
     def __init__(self, action_name: str, next_action: Optional[Action] = None) -&gt; None:
@@ -355,8 +359,9 @@ inheritance.</p>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>next</code></strong> :&ensp;<code>PDFObject | str</code></dt>
 <dd>optional reference to another Action to trigger after this one</dd>
 </dl></div>
@@ -374,7 +379,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L65-L74" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L65-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -399,7 +404,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L41-L55" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L41-L55" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class URIAction(Action):
     def __init__(self, uri: str, next_action: Optional[Action] = None) -&gt; None:
@@ -419,8 +424,9 @@ inheritance.</p>
 </details>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>next</code></strong> :&ensp;<code>PDFObject | str</code></dt>
 <dd>optional reference to another Action to trigger after this one</dd>
 </dl></div>
@@ -438,7 +444,7 @@ inheritance.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/actions.py#L46-L55" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/actions.py#L46-L55" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,

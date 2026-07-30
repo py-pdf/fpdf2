@@ -56,7 +56,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L35-L734" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L35-L734" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -763,8 +763,9 @@ el.replaceWith(d);
 <p>Allows to apply one or several template definitions to any page of
 a document in any combination.</p>
 <p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/Templates.html">https://py-pdf.github.io/fpdf2/Templates.html</a></p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>pdf</code></strong> :&ensp;<code><a title="fpdf.fpdf.FPDF" href="fpdf.html#fpdf.fpdf.FPDF">FPDF</a></code></dt>
 <dd>All content will be added to this <code>FPDF</code> instance.</dd>
 <dt><strong><code>elements</code></strong> :&ensp;<code>list[dict]</code></dt>
@@ -785,7 +786,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L73-L157" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L73-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_elements(self, elements: Sequence[dict[str, Any]]) -&gt; None:
     &#34;&#34;&#34;
@@ -874,8 +875,9 @@ or parse_csv() before doing anything else.</dd>
         self.keys.append(e[&#34;name&#34;].lower())</code></pre>
 </details>
 <div class="desc"><p>Load a template definition.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>elements</code></strong> :&ensp;<code>list</code> of <code>dicts</code></dt>
 <dd>A template definition in a list of dicts</dd>
 </dl></div>
@@ -887,7 +889,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L208-L282" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L208-L282" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_csv(
     self,
@@ -966,8 +968,9 @@ or parse_csv() before doing anything else.</dd>
     self.keys = [val[&#34;name&#34;].lower() for val in self.elements]</code></pre>
 </details>
 <div class="desc"><p>Load the template definition from a CSV file.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>infile</code></strong> :&ensp;<code>str, path-like object</code></dt>
 <dd>The filepath of the CSV file.</dd>
 <dt><strong><code>delimiter</code></strong> :&ensp;<code>str</code></dt>
@@ -988,7 +991,7 @@ Default is the system default encoding.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L177-L206" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L177-L206" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_json(self, infile: os.PathLike[str], encoding: str = &#34;utf-8&#34;) -&gt; None:
     &#34;&#34;&#34;
@@ -1024,8 +1027,9 @@ Default is the system default encoding.</dd>
 <div class="desc"><p>Load the template definition from a JSON file.
 The data must be structured as an array of objects, with names and values exactly
 equivalent to what would get supplied to load_elements(),</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>infile</code></strong> :&ensp;<code>str, path-like object</code></dt>
 <dd>The filepath of the JSON file.</dd>
 <dt><strong><code>encoding</code></strong> :&ensp;<code>str</code></dt>
@@ -1039,7 +1043,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L688-L734" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L688-L734" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(
     self,
@@ -1090,8 +1094,9 @@ equivalent to what would get supplied to load_elements(),</p>
     self.texts = {}  # reset modified entries for the next page</code></pre>
 </details>
 <div class="desc"><p>Add the contents of the template to the PDF document.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt>offsetx, offsety (float): Place the template to move its origin to the given coordinates.</dt>
 <dt><strong><code>rotate</code></strong> :&ensp;<code>float</code></dt>
 <dd>Rotate the inserted template around its (offset) origin.</dd>
@@ -1106,7 +1111,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L284-L291" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L284-L291" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def __setitem__(self, name: str, value: Any) -&gt; None:
     assert isinstance(
@@ -1126,7 +1131,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L317-L355" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L317-L355" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def split_multicell(self, text: str, element_name: str) -&gt; list[str]:
     &#34;&#34;&#34;
@@ -1170,15 +1175,17 @@ equivalent to what would get supplied to load_elements(),</p>
 </details>
 <div class="desc"><p>Split a string between words, for the parts to fit into a given element
 width. Additional splits will be made replacing any '\n' characters.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>text</code></strong> :&ensp;<code>str</code></dt>
 <dd>The input text string.</dd>
 <dt><strong><code>element_name</code></strong> :&ensp;<code>str</code></dt>
 <dd>The name of the template element to fit the text inside.</dd>
 </dl>
-<h2 id="returns">Returns</h2>
-<p>A list of substrings, each of which will fit into the element width
+<p>Returns
+-----=
+A list of substrings, each of which will fit into the element width
 when rendered in the element font style and size.</p></div>
 </dd>
 </dl>
@@ -1191,7 +1198,7 @@ when rendered in the element font style and size.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L737-L830" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L737-L830" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
@@ -1291,8 +1298,9 @@ when rendered in the element font style and size.</p></div>
 <div class="desc"><p>A simple templating class.</p>
 <p>Allows to apply a single template definition to all pages of a document.</p>
 <p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/Templates.html">https://py-pdf.github.io/fpdf2/Templates.html</a></p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>infile</code></strong> :&ensp;<code>str</code></dt>
 <dd>[<strong>DEPRECATED since 2.2.0</strong>] unused, will be removed in a later version</dd>
 <dt><strong><code>elements</code></strong> :&ensp;<code>list[dict]</code></dt>
@@ -1329,7 +1337,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L804-L808" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L804-L808" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_page(self) -&gt; None:
     &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
@@ -1378,7 +1386,7 @@ equivalent to what …</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/template.py#L811-L830" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/template.py#L811-L830" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, outfile: Optional[str] = None, dest: Optional[str] = None) -&gt; None:  # type: ignore[override]
     &#34;&#34;&#34;
@@ -1402,8 +1410,9 @@ equivalent to what …</p></div>
         self.pdf.output(outfile)</code></pre>
 </details>
 <div class="desc"><p>Finish the document and process all pending data.</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>outfile</code></strong> :&ensp;<code>str</code></dt>
 <dd>If given, the PDF file will be written to this file name.
 Alternatively, the <code>.pdf.output()</code> method can be manually called.</dd>

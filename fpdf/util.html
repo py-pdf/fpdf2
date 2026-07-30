@@ -55,7 +55,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L80-L85" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L80-L85" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def buffer_subst(buffer: bytearray, placeholder: str, value: str) -&gt; bytearray:
     buffer_size = len(buffer)
@@ -73,7 +73,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L212-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L212-L214" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def builtin_srgb2014_bytes() -&gt; bytes:
     pkg = &#34;fpdf.data.color_profiles&#34;
@@ -88,7 +88,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L138-L158" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L138-L158" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def convert_unit(
     to_convert: Number | Iterable[Any],
@@ -119,8 +119,9 @@ So 72 would mean 1 inch.</p>
 to_convert (float, int, Iterable): The number / list of numbers, or points, to convert
 old_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" href="fpdf.html#fpdf.fpdf.FPDF">FPDF</a></code> or a number
 new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" href="fpdf.html#fpdf.fpdf.FPDF">FPDF</a></code> or a number</p>
-<h2 id="returns">Returns</h2>
-<p>(float, tuple): to_convert converted from old_unit to new_unit or a tuple of the same</p></div>
+<p>Returns
+-----=
+(float, tuple): to_convert converted from old_unit to new_unit or a tuple of the same</p></div>
 </dd>
 <dt id="fpdf.util.escape_parens"><code class="name flex">
 <span>def <span class="ident">escape_parens</span></span>(<span>s: ~_StrBytes) ‑> ~_StrBytes</span>
@@ -129,7 +130,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L96-L110" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L96-L110" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def escape_parens(s: _StrBytes) -&gt; _StrBytes:
     &#34;&#34;&#34;Add a backslash character before , ( and )&#34;&#34;&#34;
@@ -156,7 +157,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L217-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L217-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def format_number(x: float, digits: int = 8) -&gt; str:
     # snap tiny values to zero to avoid &#34;-0&#34; and scientific notation
@@ -182,7 +183,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L233-L304" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L233-L304" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_parsed_unicode_range(
     unicode_range: str | Sequence[str | int | tuple[int, int]],
@@ -275,7 +276,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L113-L135" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L113-L135" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_scale_factor(unit: Union[str, Number]) -&gt; float:
     &#34;&#34;&#34;
@@ -302,18 +303,19 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
     raise ValueError(f&#34;Incorrect unit: {unit}&#34;)</code></pre>
 </details>
 <div class="desc"><p>Get how many pts are in a unit. (k)</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>unit</code></strong> :&ensp;<code>str, float, int</code></dt>
 <dd>Any of "pt", "mm", "cm", "in", or a number.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
+<dt>Returns</dt>
+<dt>-----=</dt>
 <dt><code>float</code></dt>
 <dd>The number of points in that unit (assuming 72dpi)</dd>
 </dl>
-<h2 id="raises">Raises</h2>
-<p>ValueError</p></div>
+<p>Raises
+-----=
+ValueError</p></div>
 </dd>
 <dt id="fpdf.util.int2roman"><code class="name flex">
 <span>def <span class="ident">int2roman</span></span>(<span>n: int) ‑> str</span>
@@ -322,7 +324,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L193-L202" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L193-L202" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int2roman(n: int) -&gt; str:
     &#34;Convert an integer to Roman numeral&#34;
@@ -344,7 +346,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L205-L209" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L205-L209" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int_to_letters(n: int) -&gt; str:
     &#34;Convert an integer to a letter value (A to Z for the first 26, then AA to ZZ, and so on)&#34;
@@ -361,7 +363,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L161-L173" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L161-L173" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def number_to_str(number: Number) -&gt; str:
     &#34;&#34;&#34;
@@ -378,13 +380,15 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
     return f&#34;{number:.4f}&#34;.rstrip(&#34;0&#34;).rstrip(&#34;.&#34;)</code></pre>
 </details>
 <div class="desc"><p>Convert a decimal number to a minimal string representation (no trailing 0 or .).</p>
-<h2 id="args">Args</h2>
 <dl>
+<dt>Args</dt>
+<dt>-----=</dt>
 <dt><strong><code>number</code></strong> :&ensp;<code>Number</code></dt>
 <dd>the number to be converted to a string.</dd>
 </dl>
-<h2 id="returns">Returns</h2>
-<p>The number's string representation.</p></div>
+<p>Returns
+-----=
+The number's string representation.</p></div>
 </dd>
 </dl>
 </section>
@@ -398,7 +402,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L307-L345" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L307-L345" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FloatTolerance:
     &#34;&#34;&#34;Utility class for floating point math with a defined tolerance.&#34;&#34;&#34;
@@ -502,7 +506,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -564,7 +568,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -612,7 +616,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -660,7 +664,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -708,7 +712,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c03aefc61938249629830f0e253c24feae9186f6/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/fe9d8f52643c5dcb88370813f51c29410463e299/fpdf/util.py#L40-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
