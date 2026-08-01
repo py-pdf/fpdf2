@@ -131,3 +131,15 @@ def test_alias_with_shaping(tmp_path):
     pdf.write_html("<h1>{nb}</h1>")
     pdf.multi_cell(w=pdf.epw, text="Number of pages: {nb}\nAgain:{nb}")
     assert_pdf_equal(pdf, HERE / "alias_with_text_shaping.pdf", tmp_path)
+
+
+def test_alias_in_middle_with_shaping(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.add_page()
+    pdf.set_font("Quicksand", size=24)
+    pdf.set_text_shaping(True)
+    pdf.write(text="Pages {nb} with shaping")
+    pdf.ln()
+    pdf.write(text="Pages {nb} with {nb} shaping")
+    assert_pdf_equal(pdf, HERE / "alias_in_middle_with_shaping.pdf", tmp_path)
