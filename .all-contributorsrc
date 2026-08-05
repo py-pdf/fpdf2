@@ -1808,6 +1808,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "stumpylog",
+      "name": "Trenton H",
+      "avatar_url": "https://avatars.githubusercontent.com/u/797416?v=4",
+      "profile": "https://github.com/stumpylog",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
