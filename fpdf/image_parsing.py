@@ -67,7 +67,7 @@ else:
 
 try:
     import numpy
-except ImportError:
+except (ImportError, RuntimeError):
     numpy = None  # type: ignore[assignment]
 
 

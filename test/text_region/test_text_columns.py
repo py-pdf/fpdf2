@@ -461,6 +461,7 @@ def test_tcols_ln_with_custom_height():
         cols.write(text="A\nA")
         cols.ln(16)
         cols.write(text="B\nB")
+        # pylint: disable=protected-access
         heights = [w.line.height for w in cols._paragraphs[-1].build_lines(False)]
 
     # The 16pt gap belongs to the line the ln() terminates (the 2nd "A"),
