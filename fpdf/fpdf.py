@@ -4464,16 +4464,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
-    def _markdown_unescape_link_text(self, text: str) -> str:
+    def _markdown_escape_unbalanced_link_markers(self, text: str) -> str:
         """
-        Collapse markdown escape sequences (backslashes) inside the display
-        text of a markdown link, using the same rules as `_parse_chars`.
+        Escape marker kinds that do not form complete pairs inside a link label.
 
-        Markdown markers themselves are *not* interpreted inside a link (this
-        is intentional, see `_parse_chars`), but a preceding escape backslash
-        must still be consumed, exactly as it is outside of a link. This
-        prevents escape characters from leaking into the rendered output, and
-        keeps the LINES re-serialization round-trip stable.
+        This lets balanced emphasis be parsed within the label while preventing
+        an opening marker from spanning the link boundary. Existing escapes are
+        preserved and taken into account when counting markers.
         """
         markers = (
             self.MARKDOWN_BOLD_MARKER,
@@ -4481,32 +4478,56 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.MARKDOWN_STRIKETHROUGH_MARKER,
             self.MARKDOWN_UNDERLINE_MARKER,
         )
-        result: list[str] = []
+        marker_counts = dict.fromkeys(markers, 0)
         escape_run = 0
-        while text:
-            if text[0] == self.MARKDOWN_ESCAPE_CHARACTER:
+        index = 0
+        while index < len(text):
+            if text[index] == self.MARKDOWN_ESCAPE_CHARACTER:
                 escape_run += 1
-                text = text[1:]
+                index += 1
                 continue
-            if escape_run:
-                is_escape_target = text[:2] in markers
-                if is_escape_target and escape_run % 2 == 1:
-                    # An odd number of backslashes escapes the marker:
-                    # keep the paired backslashes plus the literal marker.
-                    result.append(self.MARKDOWN_ESCAPE_CHARACTER * (escape_run // 2))
-                    result.append(text[:2])
-                    text = text[2:]
-                    escape_run = 0
-                    continue
-                result.append(self.MARKDOWN_ESCAPE_CHARACTER * ((escape_run + 1) // 2))
-                escape_run = 0
-            result.append(text[0])
-            text = text[1:]
-        if escape_run:
-            result.append(self.MARKDOWN_ESCAPE_CHARACTER * escape_run)
+            marker = text[index : index + 2]
+            if marker in marker_counts and escape_run % 2 == 0:
+                marker_counts[marker] += 1
+                index += 2
+            else:
+                index += 1
+            escape_run = 0
+
+        unbalanced_markers = {
+            marker for marker, count in marker_counts.items() if count % 2
+        }
+        if not unbalanced_markers:
+            return text
+
+        result: list[str] = []
+        index = 0
+        escape_run = 0
+        while index < len(text):
+            if text[index] == self.MARKDOWN_ESCAPE_CHARACTER:
+                result.append(text[index])
+                escape_run += 1
+                index += 1
+                continue
+            marker = text[index : index + 2]
+            if marker in unbalanced_markers:
+                if escape_run % 2 == 0:
+                    result.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                result.append(marker)
+                index += 2
+            else:
+                result.append(text[index])
+                index += 1
+            escape_run = 0
         return "".join(result)
 
-    def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
+    def _parse_chars(
+        self,
+        text: str,
+        markdown: bool,
+        *,
+        _initial_emphasis: tuple[bool, bool, bool, bool] | None = None,
+    ) -> Iterator[Fragment]:
         "Split text into fragments"
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
             if self.str_alias_nb_pages:
@@ -4528,10 +4549,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag: list[str] = []
-        in_bold: bool = "B" in self.font_style
-        in_italics: bool = "I" in self.font_style
-        in_strikethrough: bool = bool(self.strikethrough)
-        in_underline: bool = bool(self.underline)
+        if _initial_emphasis is None:
+            in_bold: bool = "B" in self.font_style
+            in_italics: bool = "I" in self.font_style
+            in_strikethrough: bool = bool(self.strikethrough)
+            in_underline: bool = bool(self.underline)
+        else:
+            in_bold, in_italics, in_strikethrough, in_underline = _initial_emphasis
         current_fallback_font = None
         current_text_script = None
 
@@ -4654,27 +4678,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     link_text, link_dest, text = is_link.groups()
                     if txt_frag:
                         yield frag()
-                    gstate = self._get_current_graphics_state()
-                    gstate.font_style = ("B" if in_bold else "") + (
-                        "I" if in_italics else ""
-                    )
-                    gstate.strikethrough = in_strikethrough
-                    gstate.underline = self.MARKDOWN_LINK_UNDERLINE or in_underline
-                    if self.MARKDOWN_LINK_COLOR:
-                        gstate.text_color = convert_to_device_color(
-                            self.MARKDOWN_LINK_COLOR
-                        )
                     try:
                         page = int(link_dest)
                         link_dest = self.add_link(page=page)
                     except ValueError:
                         pass
-                    yield Fragment(
-                        list(self._markdown_unescape_link_text(link_text)),
-                        gstate,
-                        self.k,
-                        link=link_dest,
-                    )
+                    link_text = self._markdown_escape_unbalanced_link_markers(link_text)
+                    for link_frag in self._parse_chars(
+                        link_text,
+                        True,
+                        _initial_emphasis=(
+                            in_bold,
+                            in_italics,
+                            in_strikethrough,
+                            in_underline,
+                        ),
+                    ):
+                        link_frag.link = link_dest
+                        link_frag.graphics_state.underline = (
+                            self.MARKDOWN_LINK_UNDERLINE
+                            or link_frag.graphics_state.underline
+                        )
+                        if self.MARKDOWN_LINK_COLOR:
+                            link_frag.graphics_state.text_color = (
+                                convert_to_device_color(self.MARKDOWN_LINK_COLOR)
+                            )
+                        yield link_frag
                     continue
             if self.is_ttf_font and text[0] != "\n" and not ord(text[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
@@ -4857,10 +4886,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                 text_parts.append(emphasis_markers[te])
                         last_emphasis = next_emphasis
                     text = "".join(frag.characters)
-                    # Markdown markers are not interpreted inside of links, but the
-                    # display text must still be escaped so that markers it contains
-                    # are re-parsed as literal characters rather than emphasis, and
-                    # so the LINES re-serialization round-trip stays stable.
+                    # Escape literal marker characters in link fragments so the
+                    # LINES re-serialization round-trip stays stable. Styling is
+                    # represented by the surrounding emphasis markers above.
                     text_parts.append(
                         f"[{escape(text):s}]({frag.link!s:s})"
                         if frag.link

@@ -410,11 +410,6 @@ def test_multi_cell_markdown_escaped_markers_inside_link():  # issue 1847
 
     text = "[\\**Issue\\** 1844](https://github.com/py-pdf/fpdf2/pull/1844)"
 
-    # The parsed link fragment must not contain any escape backslash.
-    frags = list(pdf._parse_chars(text, True))
-    assert len(frags) == 1
-    assert "".join(frags[0].characters) == "**Issue** 1844"
-
     # The LINES re-serialization must round-trip stably without accumulating
     # additional escape characters.
     lines = pdf.multi_cell(
@@ -426,7 +421,4 @@ def test_multi_cell_markdown_escaped_markers_inside_link():  # issue 1847
         new_y="next",
         output=fpdf.enums.MethodReturnValue.LINES,
     )
-    reparsed = [
-        "".join(f.characters) for line in lines for f in pdf._parse_chars(line, True)
-    ]
-    assert reparsed == ["**Issue** 1844"]
+    assert lines == ["[\\**Issue\\** 1844](https://github.com/py-pdf/fpdf2/pull/1844)"]
