@@ -26,6 +26,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * basic support for SVG `<switch>` elements in the SVG parser - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537)
 * support for keeping aspect ratio for images in templates - _cf._ [issue #1118](https://github.com/py-pdf/fpdf2/issues/1118)
 ### Fixed
+* custom height passed to `Paragraph.ln()` in a text region is now applied to the line it terminates instead of the first line of the following paragraph - _cf._ [issue #1786](https://github.com/py-pdf/fpdf2/issues/1786)
 * the optional `numpy` import in `image_parsing.py` no longer crashes on CPUs unsupported by numpy's `manylinux` wheel baseline; `RuntimeError` is now treated the same as `ImportError`, so `numpy` degrades to unavailable instead of taking down `import fpdf` - _cf._ [issue #1908](https://github.com/py-pdf/fpdf2/issues/1908)
 * font state (family, style, size, current font, and the page-level "font is set" flag) no longer leaks back onto the `FPDF` instance after a `text_columns()` / `text_region()` context exits, so a subsequent `pdf.cell()` / `pdf.write()` renders at the caller's font instead of the last paragraph's - _cf._ [issue #1804](https://github.com/py-pdf/fpdf2/issues/1804)
 * text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
