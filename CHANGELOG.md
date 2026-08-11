@@ -17,7 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.8.9] - Not released yet
-
+### Fixed
+* `FPDF.write_html()` no longer raises `IndexError: pop from empty list` when a `<ul>` or `<ol>` element carries a `line-height` that is not a bare number (_e.g._ `line-height: normal` or `line-height: 1.5em`); such values are now ignored, and the default line height is used, consistently with `<p line-height="x">`
 
 ## [2.8.8] - 2026-08-09
 ### Added
