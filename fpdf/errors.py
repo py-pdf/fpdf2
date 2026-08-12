@@ -62,3 +62,7 @@ class ComplianceError(FPDFException):
 
 class PDFAComplianceError(ComplianceError):
     """Raised when an operation would produce a PDF that violates the selected PDF/A profile."""
+
+
+class FPDFSvgLimitExceeded(FPDFException):
+    """Raised when an SVG file exceeds the configured limits for use depth or resolved elements."""

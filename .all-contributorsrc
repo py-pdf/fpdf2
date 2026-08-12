@@ -1781,6 +1781,52 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "dannymaaz",
+      "name": "Danny Maaz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61290346?v=4",
+      "profile": "https://dannymaaz.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hvbtup",
+      "name": "Henning von Bargen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7644776?v=4",
+      "profile": "https://github.com/hvbtup",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "prateek-dagar",
+      "name": "prateek-dagar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/107306613?v=4",
+      "profile": "https://github.com/prateek-dagar",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "stumpylog",
+      "name": "Trenton H",
+      "avatar_url": "https://avatars.githubusercontent.com/u/797416?v=4",
+      "profile": "https://github.com/stumpylog",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "Sanjays2402",
+      "name": "Sanjay Santhanam",
+      "avatar_url": "https://avatars.githubusercontent.com/u/51058514?v=4",
+      "profile": "https://github.com/Sanjays2402",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

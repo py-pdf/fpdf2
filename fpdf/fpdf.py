@@ -164,7 +164,12 @@ from .pattern import Gradient
 from .recorder import FPDFRecorder
 from .sign import Signature
 from .structure_tree import StructElem, StructureTreeBuilder
-from .svg import Percent, SVGObject, apply_svg_transform_to_user_space_gradients
+from .svg import (
+    Percent,
+    SVGObject,
+    SVGLimits,
+    apply_svg_transform_to_user_space_gradients,
+)
 from .syntax import DestinationXYZ, Name, PDFArray, PDFDate, PDFString
 from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
@@ -192,7 +197,7 @@ if TYPE_CHECKING:
     from .prefs import ViewerPreferences
 
 # Public global variables:
-FPDF_VERSION = "2.8.7"
+FPDF_VERSION = "2.8.8"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),  # 297mm × 420mm
@@ -355,6 +360,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.embedded_files: list[PDFEmbeddedFile] = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
         self.resource_access_policy = ResourceAccessPolicy.DEFAULT
+        self.svg_limits: SVGLimits = SVGLimits()
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
@@ -5406,6 +5412,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name,
             dims,
             resource_access_policy=resource_access_policy,
+            svg_limits=self.svg_limits,
         )
         if isinstance(info, VectorImageInfo):
             return self._vector_image(
@@ -5747,6 +5754,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name,  # pyright: ignore[reportArgumentType, reportReturnType]
             dims,
             resource_access_policy=self.resource_access_policy,
+            svg_limits=self.svg_limits,
         )
 
     def preload_glyph_image(self, glyph_image_bytes: bytes | BinaryIO) -> tuple[
@@ -5759,6 +5767,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name=glyph_image_bytes,
             dims=None,  # pyright: ignore[reportArgumentType, reportReturnType]
             resource_access_policy=self.resource_access_policy,
+            svg_limits=self.svg_limits,
         )
 
     @check_page

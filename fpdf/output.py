@@ -1701,6 +1701,7 @@ class OutputProducer:
         catalog_obj.o_c_properties = Raw(
             f"<< /OCGs [{all_refs}]"
             f" /D << /ON [{on_refs}] /OFF [{off_refs}]"
+            f" /BaseState /ON /Order [{all_refs}]"
             f" /AS [ << /Event /View /OCGs [{all_refs}] /Category [/View] >>"
             f" << /Event /Print /OCGs [{all_refs}] /Category [/Print] >> ] >> >>"
         )

@@ -311,6 +311,45 @@ class TestSVGObject:
 
         assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
 
+    def test_svg_switch_uses_the_first_unconditional_child(self):
+        svg_data = """
+            <svg xmlns="http://www.w3.org/2000/svg">
+              <switch>
+                <rect width="10" height="10" />
+                <circle cx="5" cy="5" r="5" />
+              </switch>
+            </svg>
+        """
+
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        switch_group = svg.base_group.path_items[0]
+        selected_shape = switch_group.path_items[0]
+        assert isinstance(selected_shape, fpdf.drawing.PaintedPath)
+        assert isinstance(
+            selected_shape._root_graphics_context.path_items[1],
+            fpdf.drawing.RoundedRectangle,
+        )
+
+    def test_svg_switch_skips_conditional_children_for_a_fallback(self):
+        svg_data = """
+            <svg xmlns="http://www.w3.org/2000/svg">
+              <switch>
+                <rect requiredFeatures="http://example.invalid/feature" width="10" height="10" />
+                <circle cx="5" cy="5" r="5" />
+              </switch>
+            </svg>
+        """
+
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        switch_group = svg.base_group.path_items[0]
+        selected_shape = switch_group.path_items[0]
+        assert isinstance(selected_shape, fpdf.drawing.PaintedPath)
+        assert isinstance(
+            selected_shape._root_graphics_context.path_items[1], fpdf.drawing.Ellipse
+        )
+
     def test_svg_rendering_image_over_page_break(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.add_page()

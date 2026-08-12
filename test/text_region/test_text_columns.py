@@ -443,3 +443,28 @@ def test_text_columns_restore_page_font_after_context(tmp_path):
         HERE / "text_columns_restore_page_font_after_context.pdf",
         tmp_path,
     )
+
+
+def test_tcols_ln_with_custom_height():
+    """Regression test for issue #1786.
+
+    Paragraph.ln(h) carries the custom height on the "\\n" fragment it
+    appends. That fragment is consumed by the line it terminates, but the
+    height was applied to the *following* line instead, so the extra spacing
+    appeared inside the next paragraph (between its first and second line)
+    rather than before it.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=16)
+    with pdf.text_columns() as cols:
+        cols.write(text="A\nA")
+        cols.ln(16)
+        cols.write(text="B\nB")
+        # pylint: disable=protected-access
+        heights = [w.line.height for w in cols._paragraphs[-1].build_lines(False)]
+
+    # The 16pt gap belongs to the line the ln() terminates (the 2nd "A"),
+    # not to the first line of the next paragraph.
+    assert heights[1] == 16
+    assert heights[2] == heights[3] == heights[0]

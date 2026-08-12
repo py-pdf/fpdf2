@@ -881,6 +881,11 @@ class MultiLineBreak:
         while self.fragment_index < len(self.fragments):
             current_fragment = self.fragments[self.fragment_index]
 
+            if self.character_index >= len(current_fragment.characters):
+                self.character_index = 0
+                self.fragment_index += 1
+                continue
+
             if FloatTolerance.greater_than(
                 current_fragment.font_size, current_font_height
             ):
@@ -892,11 +897,6 @@ class MultiLineBreak:
                 if self._is_first_line:
                     max_width -= self.first_line_indent
 
-            if self.character_index >= len(current_fragment.characters):
-                self.character_index = 0
-                self.fragment_index += 1
-                continue
-
             character = current_fragment.characters[self.character_index]
             character_width = current_fragment.get_character_width(
                 character, self.print_sh, initial_cs=not first_char
@@ -905,8 +905,13 @@ class MultiLineBreak:
 
             if character in (NEWLINE, FORM_FEED):
                 self.character_index += 1
-                if not current_line.fragments:
-                    current_line.height = current_font_height * self.line_height
+                # The fragment carrying the line break may request a larger
+                # height than the text it terminates (this is how
+                # Paragraph.ln(h) passes on a custom height), and that height
+                # belongs to this line rather than to the following one.
+                current_line.height = max(
+                    current_line.height, current_font_height * self.line_height
+                )
                 self._is_first_line = False
                 return current_line.manual_break(
                     Align.L if self.align == Align.J else self.align,
