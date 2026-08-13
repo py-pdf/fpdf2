@@ -925,6 +925,36 @@ def test_html_ol_ul_line_height(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)
 
 
+def test_html_ol_ul_invalid_line_height(tmp_path):
+    # An invalid line-height on <ul> / <ol> must be ignored - just like on <p> -
+    # and render exactly like a list without any line-height:
+    def build(list_attrs, nested_attrs=""):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.write_html(f"""<ul{list_attrs}>
+            <li>item</li>
+            <li>item
+                <ol{nested_attrs}>
+                    <li>nested item</li>
+                </ol>
+            </li>
+            <li>item</li>
+        </ul>
+        <ol{list_attrs}>
+            <li>item</li>
+        </ol>""")
+        return pdf
+
+    for attrs in (' style="line-height: normal"', ' line-height="1.5em"'):
+        assert_pdf_equal(build(attrs), build(""), tmp_path)
+    # A nested list must not consume its parent list line-height either:
+    assert_pdf_equal(
+        build(' line-height="2"', ' style="line-height: inherit"'),
+        build(' line-height="2"'),
+        tmp_path,
+    )
+
+
 def test_html_long_list_entries(tmp_path):
     pdf = FPDF()
     pdf.add_page()
