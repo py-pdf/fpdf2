@@ -514,32 +514,32 @@ class TotalPagesSubstitutionFragment(Fragment):
                 UserWarning,
             )
 
-        render_args = getattr(self, "_render_args", None)
-        if not render_args or len(render_args) <= 3:
-            return super().render_pdf_text(
-                *getattr(self, "_render_args", ()), **self._render_kwargs
-            )
-
-        original_adjust_x: float = float(render_args[3])
-        pos_y: float = float(render_args[4])
-        h: float = float(render_args[5])
-
-        use_shaping_rendering = bool(self.is_ttf_font and self.text_shaping_parameters)
-        shift = (dummy_width - replacement_width) / 2
-
-        if use_shaping_rendering:
-            mutable_args = list(render_args)
-            mutable_args[3] += shift
-            self._render_args = tuple(mutable_args)
+        shift = 0.0
+        if (
+            self.graphics_state.text_shaping
+            and hasattr(self, "_render_args")
+            and self._render_args
+        ):
+            args = list(self._render_args)
+            if len(args) > 3:
+                # adjust_x is at index 3: frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h
+                shift = (dummy_width - replacement_width) / 2
+                args[3] += shift
+                self._render_args = tuple(args)
 
         ret = super().render_pdf_text(*self._render_args, **self._render_kwargs)
 
-        if not use_shaping_rendering:
-            start_x = original_adjust_x + shift
-            ret = f"1 0 0 1 {start_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm {ret}"
-
-        end_x = original_adjust_x + dummy_width
-        ret += f" 1 0 0 1 {end_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm"
+        if (
+            self.graphics_state.text_shaping
+            and hasattr(self, "_render_args")
+            and self._render_args
+        ):
+            # Reset PDF cursor to the end of reserved space to prevent splitting subsequent text:
+            original_adjust_x = self._render_args[3] - shift
+            end_x = original_adjust_x + dummy_width
+            h = self._render_args[5]
+            pos_y = self._render_args[4]
+            ret += f" 1 0 0 1 {end_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm"
 
         return ret
 
