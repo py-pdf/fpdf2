@@ -451,7 +451,7 @@ class TotalPagesSubstitutionFragment(Fragment):
         # Use dummy_width_string for layout phase width calculation if characters are not empty (non-cloned)
         # and text shaping is active.
         if self.characters and self.graphics_state.text_shaping:
-            self.characters = list(dummy_width_string)
+            self.characters = [dummy_width_string]
 
     def clone(
         self, characters: Union[list[str], str] = "", link: Optional[int | str] = None
@@ -508,38 +508,38 @@ class TotalPagesSubstitutionFragment(Fragment):
 
         if replacement_width > dummy_width:
             warnings.warn(
-                f"Replacement text '{replacement_text}' width ({replacement_width}) "
-                f"exceeds reserved dummy width ({dummy_width}) for alias '{alias_name}'. "
-                "Consider using a longer alias name to reserve more space.",
+                f"The total page count '{replacement_text}' is wider than the reserved "
+                f"alias width for '{alias_name}'. Use a longer alias with "
+                "alias_nb_pages() to reserve more space.",
                 UserWarning,
             )
 
-        shift = 0.0
-        if (
-            self.graphics_state.text_shaping
-            and hasattr(self, "_render_args")
-            and self._render_args
-        ):
-            args = list(self._render_args)
-            if len(args) > 3:
-                # adjust_x is at index 3: frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h
-                shift = (dummy_width - replacement_width) / 2
-                args[3] += shift
-                self._render_args = tuple(args)
+        render_args = getattr(self, "_render_args", None)
+        if not render_args or len(render_args) <= 3:
+            return super().render_pdf_text(
+                *getattr(self, "_render_args", ()), **self._render_kwargs
+            )
+
+        original_adjust_x: float = float(render_args[3])
+        pos_y: float = float(render_args[4])
+        h: float = float(render_args[5])
+
+        use_shaping_rendering = bool(self.is_ttf_font and self.text_shaping_parameters)
+        shift = (dummy_width - replacement_width) / 2
+
+        if use_shaping_rendering:
+            mutable_args = list(render_args)
+            mutable_args[3] += shift
+            self._render_args = tuple(mutable_args)
 
         ret = super().render_pdf_text(*self._render_args, **self._render_kwargs)
 
-        if (
-            self.graphics_state.text_shaping
-            and hasattr(self, "_render_args")
-            and self._render_args
-        ):
-            # Reset PDF cursor to the end of reserved space to prevent splitting subsequent text:
-            original_adjust_x = self._render_args[3] - shift
-            end_x = original_adjust_x + dummy_width
-            h = self._render_args[5]
-            pos_y = self._render_args[4]
-            ret += f" 1 0 0 1 {end_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm"
+        if not use_shaping_rendering:
+            start_x = original_adjust_x + shift
+            ret = f"1 0 0 1 {start_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm {ret}"
+
+        end_x = original_adjust_x + dummy_width
+        ret += f" 1 0 0 1 {end_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm"
 
         return ret
 

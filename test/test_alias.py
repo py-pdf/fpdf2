@@ -178,5 +178,5 @@ def test_alias_overflow_warning():
     for _ in range(12):
         pdf.add_page()
         pdf.write(text="Page a")
-    with pytest.warns(UserWarning, match="exceeds reserved dummy width"):
+    with pytest.warns(UserWarning, match="is wider than the reserved"):
         pdf.output()
