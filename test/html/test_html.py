@@ -1291,3 +1291,23 @@ def test_html_ol_nested_in_ul(tmp_path):  # cf. issue #1358
           </li>
         </ul>""")
     assert_pdf_equal(pdf, HERE / "html_ol_nested_in_ul.pdf", tmp_path)
+
+
+def test_html_list_after_h1(tmp_path):  # cf. issue #1921
+    pdf = FPDF()
+    pdf.add_page()
+    html = """
+    <h1>Header</h1>
+    <ol>
+        <li>Item 1</li>
+        <li>Item 2</li>
+    </ol>
+    <br break-before="page">
+    <h1>Header 2</h1>
+    <ul>
+        <li>Item A</li>
+        <li>Item B</li>
+    </ul>
+    """
+    pdf.write_html(html)
+    assert_pdf_equal(pdf, HERE / "html_list_after_h1.pdf", tmp_path)
