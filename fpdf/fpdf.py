@@ -3110,6 +3110,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         h: float = 1,
         name: Optional[FileAttachmentAnnotationName | str] = None,
         flags: tuple[AnnotationFlag | str, ...] = DEFAULT_ANNOT_FLAGS,
+        hide_icon: bool = False,
         **kwargs: Any,
     ) -> AnnotationDict:
         """
@@ -3123,6 +3124,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle
             name (fpdf.enums.FileAttachmentAnnotationName, str): optional icon that shall be used in displaying the annotation
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            hide_icon (bool): do not display the default icon for this annotation, by giving it an
+                empty appearance stream. The file stays embedded and accessible - False by default
             bytes (bytes): optional, as an alternative to file_path, bytes content of the file to embed
             basename (str): optional, required if bytes is provided, file base name
             creation_date (datetime): date and time when the file was created
@@ -3144,6 +3147,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             file_spec=embedded_file.file_spec(),
             name=FileAttachmentAnnotationName.coerce(name) if name else None,
             flags=flags,
+            appearance_stream=b"" if hide_icon else None,
         )
         self.pages[self.page].add_annotation(annotation)
         return annotation
