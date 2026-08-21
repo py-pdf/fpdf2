@@ -9,7 +9,7 @@
 <span class=n>gs1</span> <span class=o>=</span> <span class=n>f</span><span class=o>.</span><span class=n>_get_current_graphics_state</span><span class=p>()</span>
 <span class=c1># Step 2 - restore gs0</span>
 <span class=n>f</span><span class=o>.</span><span class=n>_pop_local_stack</span><span class=p>()</span>
-<span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>f</span><span class=o>.</span><span class=n>font_size_pt</span><span class=si>=}</span><span class=s2> </span><span class=si>{</span><span class=n>f</span><span class=o>.</span><span class=n>underline</span><span class=si>=}</span><span class=s2>&quot;</span><span class=p>)</span>
+<span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>"</span><span class=si>{</span><span class=n>f</span><span class=o>.</span><span class=n>font_size_pt</span><span class=si>=}</span><span class=s2> </span><span class=si>{</span><span class=n>f</span><span class=o>.</span><span class=n>underline</span><span class=si>=}</span><span class=s2>"</span><span class=p>)</span>
 <span class=c1># -&gt; f.font_size_pt=0 f.underline=False</span>
 </code></pre></div></p> <p>The graphics states used in the code above can be depicted by this diagram:</p> <pre class=mermaid><code>stateDiagram-v2
   direction LR

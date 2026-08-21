@@ -3,10 +3,10 @@
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
-<span class=n>pdf</span><span class=o>.</span><span class=n>set_title</span><span class=p>(</span><span class=s1>&#39;Initiating a borb doc from a FPDF instance&#39;</span><span class=p>)</span>
-<span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s1>&#39;helvetica&#39;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
+<span class=n>pdf</span><span class=o>.</span><span class=n>set_title</span><span class=p>(</span><span class=s1>'Initiating a borb doc from a FPDF instance'</span><span class=p>)</span>
+<span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s1>'helvetica'</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
 <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-<span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;Hello world!&quot;</span><span class=p>)</span>
+<span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"Hello world!"</span><span class=p>)</span>
 
 <span class=n>doc</span> <span class=o>=</span> <span class=n>PDF</span><span class=o>.</span><span class=n>loads</span><span class=p>(</span><span class=n>BytesIO</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()))</span>
 <span class=nb>print</span><span class=p>(</span><span class=n>doc</span><span class=o>.</span><span class=n>get_document_info</span><span class=p>()</span><span class=o>.</span><span class=n>get_title</span><span class=p>())</span>

@@ -4,20 +4,20 @@
 <span class=k>def</span><span class=w> </span><span class=nf>report</span><span class=p>(</span><span class=n>request</span><span class=p>):</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
-    <span class=k>return</span> <span class=n>HttpResponse</span><span class=p>(</span><span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()),</span> <span class=n>content_type</span><span class=o>=</span><span class=s2>&quot;application/pdf&quot;</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
+    <span class=k>return</span> <span class=n>HttpResponse</span><span class=p>(</span><span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()),</span> <span class=n>content_type</span><span class=o>=</span><span class=s2>"application/pdf"</span><span class=p>)</span>
 </code></pre></div> <h2 id=wsgi-applications>WSGI applications<a class=headerlink href=#wsgi-applications title="Permanent link">&para;</a></h2> <p>The following code can be placed in a <code>fpdf2_app.py</code> to make a WSGI application</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
 <span class=k>def</span><span class=w> </span><span class=nf>app</span><span class=p>(</span><span class=n>environ</span><span class=p>,</span> <span class=n>start_response</span><span class=p>):</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;Hello world!&quot;</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"Hello world!"</span><span class=p>)</span>
     <span class=n>data</span> <span class=o>=</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span>
-    <span class=n>start_response</span><span class=p>(</span><span class=s2>&quot;200 OK&quot;</span><span class=p>,</span> <span class=p>[</span>
-        <span class=p>(</span><span class=s2>&quot;Content-Type&quot;</span><span class=p>,</span> <span class=s2>&quot;application/pdf&quot;</span><span class=p>),</span>
-        <span class=p>(</span><span class=s2>&quot;Content-Length&quot;</span><span class=p>,</span> <span class=nb>str</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=n>data</span><span class=p>)))</span>
+    <span class=n>start_response</span><span class=p>(</span><span class=s2>"200 OK"</span><span class=p>,</span> <span class=p>[</span>
+        <span class=p>(</span><span class=s2>"Content-Type"</span><span class=p>,</span> <span class=s2>"application/pdf"</span><span class=p>),</span>
+        <span class=p>(</span><span class=s2>"Content-Length"</span><span class=p>,</span> <span class=nb>str</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=n>data</span><span class=p>)))</span>
     <span class=p>])</span>
     <span class=k>return</span> <span class=nb>iter</span><span class=p>([</span><span class=n>data</span><span class=p>])</span>
 </code></pre></div> <p>This script can then be served as a HTTP application using either:</p> <ul> <li>the standard <a href="https://docs.python.org/3/library/wsgiref.html"><code>wsgiref</code></a> module</li> <li><a href="https://werkzeug.palletsprojects.com/en/stable/serving/"><code>werkzeug.serving.run_simple</code></a></li> <li><a href="https://gunicorn.org/">Gunicorn</a>, using: <code>gunicorn --bind localhost:8000 fpdf2_app:app</code></li> <li><a href="https://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a>, using: <code>uwsgi --http :8000 --module fpdf2_app:app</code></li> </ul> <h3 id=flask>Flask<a class=headerlink href=#flask title="Permanent link">&para;</a></h3> <p><a href="https://flask.palletsprojects.com">Flask</a> is a micro web framework written in Python.</p> <p>The following code can be placed in a <code>app.py</code> file and launched using <code>flask run</code>:</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>flask</span><span class=w> </span><span class=kn>import</span> <span class=n>Flask</span><span class=p>,</span> <span class=n>make_response</span>
@@ -25,34 +25,34 @@
 
 <span class=n>app</span> <span class=o>=</span> <span class=n>Flask</span><span class=p>(</span><span class=vm>__name__</span><span class=p>)</span>
 
-<span class=nd>@app</span><span class=o>.</span><span class=n>route</span><span class=p>(</span><span class=s2>&quot;/&quot;</span><span class=p>)</span>
+<span class=nd>@app</span><span class=o>.</span><span class=n>route</span><span class=p>(</span><span class=s2>"/"</span><span class=p>)</span>
 <span class=k>def</span><span class=w> </span><span class=nf>hello_world</span><span class=p>():</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
     <span class=n>response</span> <span class=o>=</span> <span class=n>make_response</span><span class=p>(</span><span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()))</span>
-    <span class=n>response</span><span class=o>.</span><span class=n>headers</span><span class=p>[</span><span class=s2>&quot;Content-Type&quot;</span><span class=p>]</span> <span class=o>=</span> <span class=s2>&quot;application/pdf&quot;</span>
+    <span class=n>response</span><span class=o>.</span><span class=n>headers</span><span class=p>[</span><span class=s2>"Content-Type"</span><span class=p>]</span> <span class=o>=</span> <span class=s2>"application/pdf"</span>
     <span class=k>return</span> <span class=n>response</span>
 </code></pre></div> <h3 id=bottle>Bottle<a class=headerlink href=#bottle title="Permanent link">&para;</a></h3> <p><a href="https://bottlepy.org/docs/dev/index.html">Bottle</a> is:</p> <blockquote> <p>Bottle is a fast, simple and lightweight WSGI micro web-framework for Python. It is distributed as a single file module and has no dependencies other than the Python Standard Library.</p> </blockquote> <p>The following code can be placed in a <code>app.py</code> file and launched using <code>python3 app.py</code></p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>bottle</span><span class=w> </span><span class=kn>import</span> <span class=n>route</span><span class=p>,</span> <span class=n>run</span><span class=p>,</span> <span class=n>response</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
-<span class=nd>@route</span><span class=p>(</span><span class=s1>&#39;/&#39;</span><span class=p>)</span>
+<span class=nd>@route</span><span class=p>(</span><span class=s1>'/'</span><span class=p>)</span>
 <span class=k>def</span><span class=w> </span><span class=nf>hello</span><span class=p>():</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
     <span class=n>pdf_bytes</span> <span class=o>=</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span>
 
-    <span class=n>response</span><span class=o>.</span><span class=n>set_header</span><span class=p>(</span><span class=s1>&#39;Content-Type&#39;</span><span class=p>,</span> <span class=s1>&#39;application/pdf&#39;</span><span class=p>)</span>
+    <span class=n>response</span><span class=o>.</span><span class=n>set_header</span><span class=p>(</span><span class=s1>'Content-Type'</span><span class=p>,</span> <span class=s1>'application/pdf'</span><span class=p>)</span>
     <span class=n>response</span><span class=o>.</span><span class=n>status</span> <span class=o>=</span> <span class=mi>200</span>
     <span class=n>response</span><span class=o>.</span><span class=n>content_length</span> <span class=o>=</span> <span class=nb>len</span><span class=p>(</span><span class=n>pdf_bytes</span><span class=p>)</span>
 
     <span class=k>return</span> <span class=n>pdf_bytes</span>
 
-<span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s1>&#39;__main__&#39;</span><span class=p>:</span>
-    <span class=n>run</span><span class=p>(</span><span class=n>host</span><span class=o>=</span><span class=s1>&#39;localhost&#39;</span><span class=p>,</span> <span class=n>port</span><span class=o>=</span><span class=mi>8080</span><span class=p>,</span> <span class=n>debug</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span>
+<span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s1>'__main__'</span><span class=p>:</span>
+    <span class=n>run</span><span class=p>(</span><span class=n>host</span><span class=o>=</span><span class=s1>'localhost'</span><span class=p>,</span> <span class=n>port</span><span class=o>=</span><span class=mi>8080</span><span class=p>,</span> <span class=n>debug</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span>
 </code></pre></div> <h3 id=cherrypy>CherryPy<a class=headerlink href=#cherrypy title="Permanent link">&para;</a></h3> <p><a href="https://cherrypy.dev">CherryPy</a> is:</p> <blockquote> <p>a pythonic, object-oriented web framework, allowing developers to build web applications in much the same way they would build any other object-oriented Python program.</p> </blockquote> <p>The following code can be placed in a <code>app.py</code> file and launched using <code>python3 app.py</code></p> <div class=highlight><pre><span></span><code><span class=kn>import</span><span class=w> </span><span class=nn>cherrypy</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
@@ -61,17 +61,17 @@
     <span class=k>def</span><span class=w> </span><span class=nf>index</span><span class=p>(</span><span class=bp>self</span><span class=p>):</span>
         <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
         <span class=n>pdf_bytes</span> <span class=o>=</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span>
 
-        <span class=n>cherrypy</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>headers</span><span class=p>[</span><span class=s1>&#39;content-type&#39;</span><span class=p>]</span> <span class=o>=</span> <span class=s1>&#39;application/pdf&#39;</span>
+        <span class=n>cherrypy</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>headers</span><span class=p>[</span><span class=s1>'content-type'</span><span class=p>]</span> <span class=o>=</span> <span class=s1>'application/pdf'</span>
         <span class=n>cherrypy</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>status</span> <span class=o>=</span> <span class=mi>200</span>
 
         <span class=k>return</span> <span class=n>pdf_bytes</span>
 
 
-<span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s2>&quot;__main__&quot;</span><span class=p>:</span>
+<span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s2>"__main__"</span><span class=p>:</span>
     <span class=n>cherrypy</span><span class=o>.</span><span class=n>quickstart</span><span class=p>(</span><span class=n>HelloWorld</span><span class=p>())</span>
 </code></pre></div> <h2 id=aws-lambda>AWS lambda<a class=headerlink href=#aws-lambda title="Permanent link">&para;</a></h2> <p>The following code demonstrates some minimal <a href="https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html">AWS lambda handler function</a> that returns a PDF file as binary output: <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>base64</span><span class=w> </span><span class=kn>import</span> <span class=n>b64encode</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
@@ -79,15 +79,15 @@
 <span class=k>def</span><span class=w> </span><span class=nf>handler</span><span class=p>(</span><span class=n>event</span><span class=p>,</span> <span class=n>context</span><span class=p>):</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
     <span class=k>return</span> <span class=p>{</span>
-        <span class=s1>&#39;statusCode&#39;</span><span class=p>:</span> <span class=mi>200</span><span class=p>,</span>
-        <span class=s1>&#39;headers&#39;</span><span class=p>:</span> <span class=p>{</span>
-            <span class=s1>&#39;Content-Type&#39;</span><span class=p>:</span> <span class=s1>&#39;application/json&#39;</span><span class=p>,</span>
+        <span class=s1>'statusCode'</span><span class=p>:</span> <span class=mi>200</span><span class=p>,</span>
+        <span class=s1>'headers'</span><span class=p>:</span> <span class=p>{</span>
+            <span class=s1>'Content-Type'</span><span class=p>:</span> <span class=s1>'application/json'</span><span class=p>,</span>
         <span class=p>},</span>
-        <span class=s1>&#39;body&#39;</span><span class=p>:</span> <span class=n>b64encode</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s1>&#39;utf-8&#39;</span><span class=p>),</span>
-        <span class=s1>&#39;isBase64Encoded&#39;</span><span class=p>:</span> <span class=kc>True</span>
+        <span class=s1>'body'</span><span class=p>:</span> <span class=n>b64encode</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s1>'utf-8'</span><span class=p>),</span>
+        <span class=s1>'isBase64Encoded'</span><span class=p>:</span> <span class=kc>True</span>
     <span class=p>}</span>
 </code></pre></div></p> <p>This AWS lambda function can then be linked to a HTTP endpoint using <a href="https://docs.aws.amazon.com/lambda/latest/dg/services-apigateway.html">API Gateway</a>, or simply exposed as a <a href="https://aws.amazon.com/fr/blogs/aws/announcing-aws-lambda-function-urls-built-in-https-endpoints-for-single-function-microservices/">Lambda Function URL</a>. More information on those pages:</p> <ul> <li><a href="https://docs.aws.amazon.com/lambda/latest/dg/urls-tutorial.html">Tutorial: Creating a Lambda function with a function URL</a></li> <li><a href="https://docs.aws.amazon.com/apigateway/latest/developerguide/lambda-proxy-binary-media.html">Return binary media from a Lambda</a></li> </ul> <p>For reference, the test lambda function was initiated using the following <a href="https://aws.amazon.com/cli/">AWS CLI</a> commands:</p> <details> <summary>Creating &amp; uploading a lambda layer</summary> <div class=highlight><pre><span></span><code><span class=nv>pyv</span><span class=o>=</span><span class=m>3</span>.8
 pip<span class=si>${</span><span class=nv>pyv</span><span class=si>}</span><span class=w> </span>install<span class=w> </span>fpdf2<span class=w> </span>-t<span class=w> </span>python/lib/python<span class=si>${</span><span class=nv>pyv</span><span class=si>}</span>/site-packages/
@@ -95,7 +95,7 @@ pip<span class=si>${</span><span class=nv>pyv</span><span class=si>}</span><span
 rm<span class=w> </span>-r<span class=w> </span>python/lib/python<span class=si>${</span><span class=nv>pyv</span><span class=si>}</span>/site-packages/<span class=o>{</span>PIL,Pillow<span class=o>}</span>*
 zip<span class=w> </span>-r<span class=w> </span>fpdf2-deps.zip<span class=w> </span>python<span class=w> </span>&gt;<span class=w> </span>/dev/null
 aws<span class=w> </span>lambda<span class=w> </span>publish-layer-version<span class=w> </span>--layer-name<span class=w> </span>fpdf2-deps<span class=w> </span><span class=se>\</span>
-<span class=w>    </span>--description<span class=w> </span><span class=s2>&quot;Dependencies for fpdf2 lambda&quot;</span><span class=w> </span><span class=se>\</span>
+<span class=w>    </span>--description<span class=w> </span><span class=s2>"Dependencies for fpdf2 lambda"</span><span class=w> </span><span class=se>\</span>
 <span class=w>    </span>--zip-file<span class=w> </span>fileb://fpdf2-deps.zip<span class=w> </span>--compatible-runtimes<span class=w> </span>python<span class=si>${</span><span class=nv>pyv</span><span class=si>}</span>
 </code></pre></div> </details> <details> <summary>Creating the lambda</summary> <div class=highlight><pre><span></span><code><span class=nv>AWS_ACCOUNT_ID</span><span class=o>=</span>...
 <span class=nv>AWS_REGION</span><span class=o>=</span>eu-west-3
@@ -110,27 +110,27 @@ aws<span class=w> </span>lambda<span class=w> </span>create-function-url-config<
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 <span class=kn>import</span><span class=w> </span><span class=nn>streamlit</span><span class=w> </span><span class=k>as</span><span class=w> </span><span class=nn>st</span>
 
-<span class=n>st</span><span class=o>.</span><span class=n>title</span><span class=p>(</span><span class=s2>&quot;Demo of fpdf2 usage with streamlit&quot;</span><span class=p>)</span>
+<span class=n>st</span><span class=o>.</span><span class=n>title</span><span class=p>(</span><span class=s2>"Demo of fpdf2 usage with streamlit"</span><span class=p>)</span>
 
 <span class=nd>@st</span><span class=o>.</span><span class=n>cache</span>
 <span class=k>def</span><span class=w> </span><span class=nf>gen_pdf</span><span class=p>():</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+    <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
     <span class=k>return</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span>
 
 <span class=c1># Embed PDF to display it:</span>
-<span class=n>base64_pdf</span> <span class=o>=</span> <span class=n>b64encode</span><span class=p>(</span><span class=n>gen_pdf</span><span class=p>())</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s2>&quot;utf-8&quot;</span><span class=p>)</span>
-<span class=n>pdf_display</span> <span class=o>=</span> <span class=sa>f</span><span class=s1>&#39;&lt;embed src=&quot;data:application/pdf;base64,</span><span class=si>{</span><span class=n>base64_pdf</span><span class=si>}</span><span class=s1>&quot; width=&quot;700&quot; height=&quot;400&quot; type=&quot;application/pdf&quot;&gt;&#39;</span>
+<span class=n>base64_pdf</span> <span class=o>=</span> <span class=n>b64encode</span><span class=p>(</span><span class=n>gen_pdf</span><span class=p>())</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s2>"utf-8"</span><span class=p>)</span>
+<span class=n>pdf_display</span> <span class=o>=</span> <span class=sa>f</span><span class=s1>'&lt;embed src="data:application/pdf;base64,</span><span class=si>{</span><span class=n>base64_pdf</span><span class=si>}</span><span class=s1>" width="700" height="400" type="application/pdf"&gt;'</span>
 <span class=n>st</span><span class=o>.</span><span class=n>markdown</span><span class=p>(</span><span class=n>pdf_display</span><span class=p>,</span> <span class=n>unsafe_allow_html</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span>
 
 <span class=c1># Add a download button:</span>
 <span class=n>st</span><span class=o>.</span><span class=n>download_button</span><span class=p>(</span>
-    <span class=n>label</span><span class=o>=</span><span class=s2>&quot;Download PDF&quot;</span><span class=p>,</span>
+    <span class=n>label</span><span class=o>=</span><span class=s2>"Download PDF"</span><span class=p>,</span>
     <span class=n>data</span><span class=o>=</span><span class=n>gen_pdf</span><span class=p>(),</span>
-    <span class=n>file_name</span><span class=o>=</span><span class=s2>&quot;file_name.pdf&quot;</span><span class=p>,</span>
-    <span class=n>mime</span><span class=o>=</span><span class=s2>&quot;application/pdf&quot;</span><span class=p>,</span>
+    <span class=n>file_name</span><span class=o>=</span><span class=s2>"file_name.pdf"</span><span class=p>,</span>
+    <span class=n>mime</span><span class=o>=</span><span class=s2>"application/pdf"</span><span class=p>,</span>
 <span class=p>)</span>
 </code></pre></div> <h2 id=fastapi>FastAPI<a class=headerlink href=#fastapi title="Permanent link">&para;</a></h2> <p><a href="https://fastapi.tiangolo.com/">FastAPI</a> is:</p> <blockquote> <p>a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.</p> </blockquote> <p>The following code shows how to generate a PDF file via a POST endpoint that receives a JSON object. The JSON object can be used to write into the PDF file. The generated PDF file will be returned back to the user/frontend as the response. </p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fastapi</span><span class=w> </span><span class=kn>import</span> <span class=n>FastAPI</span><span class=p>,</span> <span class=n>Request</span><span class=p>,</span> <span class=n>Response</span><span class=p>,</span> <span class=n>HTTPException</span><span class=p>,</span> <span class=n>status</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
@@ -139,12 +139,12 @@ aws<span class=w> </span>lambda<span class=w> </span>create-function-url-config<
 <span class=n>app</span> <span class=o>=</span> <span class=n>FastAPI</span><span class=p>()</span>
 
 
-<span class=nd>@app</span><span class=o>.</span><span class=n>post</span><span class=p>(</span><span class=s2>&quot;/send_data&quot;</span><span class=p>,</span> <span class=n>status_code</span><span class=o>=</span><span class=n>status</span><span class=o>.</span><span class=n>HTTP_200_OK</span><span class=p>)</span>
+<span class=nd>@app</span><span class=o>.</span><span class=n>post</span><span class=p>(</span><span class=s2>"/send_data"</span><span class=p>,</span> <span class=n>status_code</span><span class=o>=</span><span class=n>status</span><span class=o>.</span><span class=n>HTTP_200_OK</span><span class=p>)</span>
 <span class=k>async</span> <span class=k>def</span><span class=w> </span><span class=nf>create_pdf</span><span class=p>(</span><span class=n>request</span><span class=p>:</span> <span class=n>Request</span><span class=p>):</span>
-<span class=w>    </span><span class=sd>&quot;&quot;&quot; </span>
+<span class=w>    </span><span class=sd>""" </span>
 <span class=sd>    POST endpoint that accepts a JSON object</span>
 <span class=sd>    This endpoint returns a PDF file as the response</span>
-<span class=sd>    &quot;&quot;&quot;</span>
+<span class=sd>    """</span>
     <span class=k>try</span><span class=p>:</span>
         <span class=c1># data will read the JSON object and can be accessed like a Python Dictionary </span>
         <span class=c1># The contents of the JSON object can be used to write into the PDF file (if needed)</span>
@@ -154,21 +154,21 @@ aws<span class=w> </span>lambda<span class=w> </span>create-function-url-config<
         <span class=c1># Create a sample PDF file</span>
         <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;hello world&quot;</span><span class=p>)</span>
-        <span class=c1># pdf.cell(text=data[&quot;content&quot;])  # Using the contents of the JSON object to write into the PDF file</span>
-        <span class=c1># Use str(data[&quot;content&quot;]) if the content is non-string type</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"hello world"</span><span class=p>)</span>
+        <span class=c1># pdf.cell(text=data["content"])  # Using the contents of the JSON object to write into the PDF file</span>
+        <span class=c1># Use str(data["content"]) if the content is non-string type</span>
 
 
         <span class=c1># Prepare the filename and headers</span>
-        <span class=n>filename</span> <span class=o>=</span> <span class=s2>&quot;&lt;file_name_here&gt;.pdf&quot;</span>
+        <span class=n>filename</span> <span class=o>=</span> <span class=s2>"&lt;file_name_here&gt;.pdf"</span>
         <span class=n>headers</span> <span class=o>=</span> <span class=p>{</span>
-            <span class=s2>&quot;Content-Disposition&quot;</span><span class=p>:</span> <span class=sa>f</span><span class=s2>&quot;attachment; filename=</span><span class=si>{</span><span class=n>filename</span><span class=si>}</span><span class=s2>&quot;</span>
+            <span class=s2>"Content-Disposition"</span><span class=p>:</span> <span class=sa>f</span><span class=s2>"attachment; filename=</span><span class=si>{</span><span class=n>filename</span><span class=si>}</span><span class=s2>"</span>
         <span class=p>}</span>
 
 
         <span class=c1># Return the file as a response</span>
-        <span class=k>return</span> <span class=n>Response</span><span class=p>(</span><span class=n>content</span><span class=o>=</span><span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()),</span> <span class=n>media_type</span><span class=o>=</span><span class=s2>&quot;application/pdf&quot;</span><span class=p>,</span> <span class=n>headers</span><span class=o>=</span><span class=n>headers</span><span class=p>)</span>
+        <span class=k>return</span> <span class=n>Response</span><span class=p>(</span><span class=n>content</span><span class=o>=</span><span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()),</span> <span class=n>media_type</span><span class=o>=</span><span class=s2>"application/pdf"</span><span class=p>,</span> <span class=n>headers</span><span class=o>=</span><span class=n>headers</span><span class=p>)</span>
 
 
     <span class=k>except</span> <span class=ne>Exception</span> <span class=k>as</span> <span class=n>e</span><span class=p>:</span>
@@ -177,53 +177,53 @@ aws<span class=w> </span>lambda<span class=w> </span>create-function-url-config<
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
 <span class=k>class</span><span class=w> </span><span class=nc>PDFReportView</span><span class=p>(</span><span class=n>BrowserView</span><span class=p>):</span>
-<span class=w>    </span><span class=sd>&quot;&quot;&quot;Generate and serve a PDF report&quot;&quot;&quot;</span>
+<span class=w>    </span><span class=sd>"""Generate and serve a PDF report"""</span>
 
     <span class=k>def</span><span class=w> </span><span class=fm>__call__</span><span class=p>(</span><span class=bp>self</span><span class=p>):</span>
         <span class=c1># Create PDF</span>
         <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;Hello from Plone!&quot;</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>24</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"Hello from Plone!"</span><span class=p>)</span>
 
         <span class=c1># Add content from the context</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>ln</span><span class=p>(</span><span class=mi>10</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=sa>f</span><span class=s2>&quot;Title: </span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>context</span><span class=o>.</span><span class=n>Title</span><span class=p>()</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=sa>f</span><span class=s2>"Title: </span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>context</span><span class=o>.</span><span class=n>Title</span><span class=p>()</span><span class=si>}</span><span class=s2>"</span><span class=p>)</span>
 
         <span class=c1># Generate PDF bytes</span>
         <span class=n>pdf_bytes</span> <span class=o>=</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span>
 
         <span class=c1># Set response headers</span>
-        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>&#39;Content-Type&#39;</span><span class=p>,</span> <span class=s1>&#39;application/pdf&#39;</span><span class=p>)</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>'Content-Type'</span><span class=p>,</span> <span class=s1>'application/pdf'</span><span class=p>)</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span>
-            <span class=s1>&#39;Content-Disposition&#39;</span><span class=p>,</span>
-            <span class=s1>&#39;attachment; filename=&quot;report.pdf&quot;&#39;</span>
+            <span class=s1>'Content-Disposition'</span><span class=p>,</span>
+            <span class=s1>'attachment; filename="report.pdf"'</span>
         <span class=p>)</span>
-        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>&#39;Content-Length&#39;</span><span class=p>,</span> <span class=nb>len</span><span class=p>(</span><span class=n>pdf_bytes</span><span class=p>))</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>'Content-Length'</span><span class=p>,</span> <span class=nb>len</span><span class=p>(</span><span class=n>pdf_bytes</span><span class=p>))</span>
 
         <span class=k>return</span> <span class=n>pdf_bytes</span>
 </code></pre></div> <p>Register the view in your package's <code>configure.zcml</code>:</p> <div class=highlight><pre><span></span><code><span class=nt>&lt;browser:page</span>
-<span class=w>    </span><span class=na>name=</span><span class=s>&quot;pdf-report&quot;</span>
-<span class=w>    </span><span class=na>for=</span><span class=s>&quot;*&quot;</span>
-<span class=w>    </span><span class=na>class=</span><span class=s>&quot;.views.PDFReportView&quot;</span>
-<span class=w>    </span><span class=na>permission=</span><span class=s>&quot;zope2.View&quot;</span>
+<span class=w>    </span><span class=na>name=</span><span class=s>"pdf-report"</span>
+<span class=w>    </span><span class=na>for=</span><span class=s>"*"</span>
+<span class=w>    </span><span class=na>class=</span><span class=s>".views.PDFReportView"</span>
+<span class=w>    </span><span class=na>permission=</span><span class=s>"zope2.View"</span>
 <span class=w>    </span><span class=nt>/&gt;</span>
 </code></pre></div> <p>The PDF can then be accessed at: <code>http://yoursite.com/path/to/content/@@pdf-report</code></p> <h3 id=as-a-custom-content-type-method>As a Custom Content Type Method<a class=headerlink href=#as-a-custom-content-type-method title="Permanent link">&para;</a></h3> <p>For a custom Dexterity content type, you can add a method that generates PDFs:</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>plone.dexterity.content</span><span class=w> </span><span class=kn>import</span> <span class=n>Container</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
 <span class=k>class</span><span class=w> </span><span class=nc>Report</span><span class=p>(</span><span class=n>Container</span><span class=p>):</span>
-<span class=w>    </span><span class=sd>&quot;&quot;&quot;Custom content type that can generate PDF reports&quot;&quot;&quot;</span>
+<span class=w>    </span><span class=sd>"""Custom content type that can generate PDF reports"""</span>
 
     <span class=k>def</span><span class=w> </span><span class=nf>generate_pdf</span><span class=p>(</span><span class=bp>self</span><span class=p>):</span>
-<span class=w>        </span><span class=sd>&quot;&quot;&quot;Generate PDF from content type data&quot;&quot;&quot;</span>
+<span class=w>        </span><span class=sd>"""Generate PDF from content type data"""</span>
         <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=s2>&quot;B&quot;</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=s2>"B"</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>title</span><span class=p>)</span>
 
         <span class=n>pdf</span><span class=o>.</span><span class=n>ln</span><span class=p>(</span><span class=mi>10</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>12</span><span class=p>)</span>
         <span class=k>if</span> <span class=bp>self</span><span class=o>.</span><span class=n>description</span><span class=p>:</span>
             <span class=n>pdf</span><span class=o>.</span><span class=n>multi_cell</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=mi>5</span><span class=p>,</span> <span class=n>text</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>description</span><span class=p>)</span>
 
@@ -231,42 +231,42 @@ aws<span class=w> </span>lambda<span class=w> </span>create-function-url-config<
 </code></pre></div> <p>Then create a view to serve it:</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>Products.Five</span><span class=w> </span><span class=kn>import</span> <span class=n>BrowserView</span>
 
 <span class=k>class</span><span class=w> </span><span class=nc>DownloadPDFView</span><span class=p>(</span><span class=n>BrowserView</span><span class=p>):</span>
-<span class=w>    </span><span class=sd>&quot;&quot;&quot;Download PDF for Report content type&quot;&quot;&quot;</span>
+<span class=w>    </span><span class=sd>"""Download PDF for Report content type"""</span>
 
     <span class=k>def</span><span class=w> </span><span class=fm>__call__</span><span class=p>(</span><span class=bp>self</span><span class=p>):</span>
         <span class=n>pdf_bytes</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>context</span><span class=o>.</span><span class=n>generate_pdf</span><span class=p>()</span>
 
-        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>&#39;Content-Type&#39;</span><span class=p>,</span> <span class=s1>&#39;application/pdf&#39;</span><span class=p>)</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>'Content-Type'</span><span class=p>,</span> <span class=s1>'application/pdf'</span><span class=p>)</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span>
-            <span class=s1>&#39;Content-Disposition&#39;</span><span class=p>,</span>
-            <span class=sa>f</span><span class=s1>&#39;attachment; filename=&quot;</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>context</span><span class=o>.</span><span class=n>getId</span><span class=p>()</span><span class=si>}</span><span class=s1>.pdf&quot;&#39;</span>
+            <span class=s1>'Content-Disposition'</span><span class=p>,</span>
+            <span class=sa>f</span><span class=s1>'attachment; filename="</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>context</span><span class=o>.</span><span class=n>getId</span><span class=p>()</span><span class=si>}</span><span class=s1>.pdf"'</span>
         <span class=p>)</span>
 
         <span class=k>return</span> <span class=n>pdf_bytes</span>
 </code></pre></div> <p>Register this view in <code>configure.zcml</code>:</p> <div class=highlight><pre><span></span><code><span class=nt>&lt;browser:page</span>
-<span class=w>    </span><span class=na>name=</span><span class=s>&quot;download-pdf&quot;</span>
-<span class=w>    </span><span class=na>for=</span><span class=s>&quot;.interfaces.IReport&quot;</span>
-<span class=w>    </span><span class=na>class=</span><span class=s>&quot;.views.DownloadPDFView&quot;</span>
-<span class=w>    </span><span class=na>permission=</span><span class=s>&quot;zope2.View&quot;</span>
+<span class=w>    </span><span class=na>name=</span><span class=s>"download-pdf"</span>
+<span class=w>    </span><span class=na>for=</span><span class=s>".interfaces.IReport"</span>
+<span class=w>    </span><span class=na>class=</span><span class=s>".views.DownloadPDFView"</span>
+<span class=w>    </span><span class=na>permission=</span><span class=s>"zope2.View"</span>
 <span class=w>    </span><span class=nt>/&gt;</span>
 </code></pre></div> <h3 id=with-catalog-queries>With Catalog Queries<a class=headerlink href=#with-catalog-queries title="Permanent link">&para;</a></h3> <p>Generate PDFs from catalog search results:</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>Products.Five</span><span class=w> </span><span class=kn>import</span> <span class=n>BrowserView</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
 <span class=k>class</span><span class=w> </span><span class=nc>CatalogReportView</span><span class=p>(</span><span class=n>BrowserView</span><span class=p>):</span>
-<span class=w>    </span><span class=sd>&quot;&quot;&quot;Generate PDF report from catalog query&quot;&quot;&quot;</span>
+<span class=w>    </span><span class=sd>"""Generate PDF report from catalog query"""</span>
 
     <span class=k>def</span><span class=w> </span><span class=fm>__call__</span><span class=p>(</span><span class=bp>self</span><span class=p>):</span>
         <span class=n>catalog</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>context</span><span class=o>.</span><span class=n>portal_catalog</span>
-        <span class=n>results</span> <span class=o>=</span> <span class=n>catalog</span><span class=p>(</span><span class=n>portal_type</span><span class=o>=</span><span class=s1>&#39;Document&#39;</span><span class=p>,</span>
-                         <span class=n>review_state</span><span class=o>=</span><span class=s1>&#39;published&#39;</span><span class=p>)</span>
+        <span class=n>results</span> <span class=o>=</span> <span class=n>catalog</span><span class=p>(</span><span class=n>portal_type</span><span class=o>=</span><span class=s1>'Document'</span><span class=p>,</span>
+                         <span class=n>review_state</span><span class=o>=</span><span class=s1>'published'</span><span class=p>)</span>
 
         <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
         <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=s2>&quot;B&quot;</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;Published Documents Report&quot;</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=s2>"B"</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>"Published Documents Report"</span><span class=p>)</span>
 
         <span class=n>pdf</span><span class=o>.</span><span class=n>ln</span><span class=p>(</span><span class=mi>10</span><span class=p>)</span>
-        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>10</span><span class=p>)</span>
+        <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>"Helvetica"</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>10</span><span class=p>)</span>
 
         <span class=k>for</span> <span class=n>brain</span> <span class=ow>in</span> <span class=n>results</span><span class=p>:</span>
             <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=n>brain</span><span class=o>.</span><span class=n>Title</span><span class=p>)</span>
@@ -274,10 +274,10 @@ aws<span class=w> </span>lambda<span class=w> </span>create-function-url-config<
 
         <span class=n>pdf_bytes</span> <span class=o>=</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>())</span>
 
-        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>&#39;Content-Type&#39;</span><span class=p>,</span> <span class=s1>&#39;application/pdf&#39;</span><span class=p>)</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span><span class=s1>'Content-Type'</span><span class=p>,</span> <span class=s1>'application/pdf'</span><span class=p>)</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>request</span><span class=o>.</span><span class=n>response</span><span class=o>.</span><span class=n>setHeader</span><span class=p>(</span>
-            <span class=s1>&#39;Content-Disposition&#39;</span><span class=p>,</span>
-            <span class=s1>&#39;attachment; filename=&quot;catalog-report.pdf&quot;&#39;</span>
+            <span class=s1>'Content-Disposition'</span><span class=p>,</span>
+            <span class=s1>'attachment; filename="catalog-report.pdf"'</span>
         <span class=p>)</span>
 
         <span class=k>return</span> <span class=n>pdf_bytes</span>
