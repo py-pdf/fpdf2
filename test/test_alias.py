@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 import fpdf
 from test.conftest import assert_pdf_equal
 
@@ -20,15 +21,12 @@ def test_custom_alias_nb_pages(tmp_path):
     pdf = fpdf.FPDF()
     pdf.set_font("Times")
     alias = "n{}b"
-    # Prerequisite to get exactly the same output in the PDF:
-    # the default alias and the new one must be of same width:
-    assert pdf.get_string_width(pdf.str_alias_nb_pages) == pdf.get_string_width(alias)
     pdf.alias_nb_pages(alias)
     pdf.add_page()
     pdf.cell(0, 10, f"Page {pdf.page_no()}/{alias}", align="C")
     pdf.add_page()
     pdf.cell(0, 10, f"Page {pdf.page_no()}/{alias}", align="C")
-    assert_pdf_equal(pdf, HERE / "alias_nb_pages.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "custom_alias_nb_pages.pdf", tmp_path)
 
 
 def test_page_label(tmp_path):
@@ -131,3 +129,54 @@ def test_alias_with_shaping(tmp_path):
     pdf.write_html("<h1>{nb}</h1>")
     pdf.multi_cell(w=pdf.epw, text="Number of pages: {nb}\nAgain:{nb}")
     assert_pdf_equal(pdf, HERE / "alias_with_text_shaping.pdf", tmp_path)
+
+
+def test_alias_in_middle_with_shaping(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.add_page()
+    pdf.set_font("Quicksand", size=24)
+    pdf.set_text_shaping(True)
+    pdf.write(text="Pages {nb} with shaping")
+    pdf.ln()
+    pdf.write(text="Pages {nb} with {nb} shaping")
+    assert_pdf_equal(pdf, HERE / "alias_in_middle_with_shaping.pdf", tmp_path)
+
+
+def test_alias_in_middle_with_shaping_many_pages(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.set_font("Quicksand", size=24)
+    pdf.set_text_shaping(True)
+    for _ in range(14):
+        pdf.add_page()
+        pdf.write(text="Pages {nb} with shaping")
+        pdf.ln()
+        pdf.write(text="Pages {nb} with {nb} shaping")
+    assert_pdf_equal(
+        pdf, HERE / "alias_in_middle_with_shaping_many_pages.pdf", tmp_path
+    )
+
+
+def test_alias_in_middle_with_shaping_markdown(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.add_font("Quicksand", style="B", fname=HERE / "fonts" / "Quicksand-Bold.otf")
+    pdf.add_page()
+    pdf.set_font("Quicksand", size=24)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(w=pdf.epw, text="**Pages {nb}** with shaping", markdown=True)
+    assert_pdf_equal(pdf, HERE / "alias_in_middle_with_shaping_markdown.pdf", tmp_path)
+
+
+def test_alias_overflow_warning():
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.set_font("Quicksand", size=24)
+    pdf.set_text_shaping(True)
+    pdf.alias_nb_pages("a")
+    for _ in range(12):
+        pdf.add_page()
+        pdf.write(text="Page a")
+    with pytest.warns(UserWarning, match="is wider than the reserved"):
+        pdf.output()

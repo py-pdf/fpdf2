@@ -4468,6 +4468,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         "Split text into fragments"
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
             if self.str_alias_nb_pages:
+                dummy_width_string = (
+                    "0" * max(1, len(self.str_alias_nb_pages) - 1)
+                    if self.str_alias_nb_pages == "{nb}"
+                    else "0" * len(self.str_alias_nb_pages)
+                )
                 for seq, fragment_text in enumerate(
                     text.split(self.str_alias_nb_pages)
                 ):
@@ -4476,6 +4481,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             self.str_alias_nb_pages,
                             self._get_current_graphics_state(),
                             self.k,
+                            dummy_width_string=dummy_width_string,
                         )
                     if fragment_text:
                         yield Fragment(
@@ -4579,10 +4585,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     )
                     gstate.strikethrough = in_strikethrough
                     gstate.underline = in_underline
+                    dummy_width_string = (
+                        "0" * max(1, len(self.str_alias_nb_pages) - 1)
+                        if self.str_alias_nb_pages == "{nb}"
+                        else "0" * len(self.str_alias_nb_pages)
+                    )
                     yield TotalPagesSubstitutionFragment(
                         self.str_alias_nb_pages,
                         gstate,
                         self.k,
+                        dummy_width_string=dummy_width_string,
                     )
                     text = text[len(self.str_alias_nb_pages) :]
                     continue

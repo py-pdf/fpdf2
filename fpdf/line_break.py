@@ -20,7 +20,9 @@ from typing import (
     Sequence,
     Tuple,
     Union,
+    cast,
 )
+import warnings
 from uuid import uuid4
 
 from fpdf.drawing_primitives import DeviceCMYK, DeviceGray, DeviceRGB
@@ -84,6 +86,16 @@ class Fragment:
             f"Fragment(characters={self.characters},"
             f" graphics_state={self.graphics_state},"
             f" k={self.k}, link={self.link})"
+        )
+
+    def clone(
+        self, characters: Union[list[str], str] = "", link: Optional[int | str] = None
+    ) -> "Fragment":
+        return self.__class__(
+            characters=characters,
+            graphics_state=self.graphics_state,
+            k=self.k,
+            link=link,
         )
 
     @property
@@ -370,13 +382,20 @@ class Fragment:
             )
 
         char_spacing = self.char_spacing * (self.font_stretching / 100) / self.k
-        for ti in self.font.shape_text(
-            self.string, self.font_size_pt, self.text_shaping_parameters
+        for i, ti in enumerate(
+            self.font.shape_text(
+                self.string, self.font_size_pt, self.text_shaping_parameters
+            )
         ):
             if ti["mapped_char"] is None:  # Missing glyph
                 continue
             char = self.font.escape_text(chr(ti["mapped_char"]))
-            if ti["x_offset"] != 0 or ti["y_offset"] != 0:
+            is_first_char = i == 0
+            if (
+                ti["x_offset"] != 0
+                or ti["y_offset"] != 0
+                or (isinstance(self, TotalPagesSubstitutionFragment) and is_first_char)
+            ):
                 if text:
                     ret += f"({text}) Tj "
                     text = ""
@@ -423,9 +442,37 @@ class TotalPagesSubstitutionFragment(Fragment):
     output is being produced.
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, dummy_width_string: str = "1", **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.uuid = uuid4()
+        self.dummy_width_string = dummy_width_string
+        # Use dummy_width_string for layout phase width calculation if characters are not empty (non-cloned)
+        # and text shaping is active.
+        if self.characters and self.graphics_state.text_shaping:
+            self.characters = [dummy_width_string]
+
+    def clone(
+        self, characters: Union[list[str], str] = "", link: Optional[int | str] = None
+    ) -> "TotalPagesSubstitutionFragment":
+        clone_obj = cast(
+            TotalPagesSubstitutionFragment,
+            super().clone(characters=characters, link=link),
+        )
+        clone_obj.dummy_width_string = self.dummy_width_string
+        return clone_obj
+
+    def get_width(
+        self,
+        start: int = 0,
+        end: Optional[int] = None,
+        chars: Optional[str] = None,
+        initial_cs: bool = True,
+    ) -> float:
+        if chars is None:
+            chars = self.dummy_width_string
+        return super().get_width(start, end, chars, initial_cs)
 
     def get_placeholder_string(self) -> str:
         """
@@ -453,8 +500,48 @@ class TotalPagesSubstitutionFragment(Fragment):
         to render the fragment with the preserved rendering state (stored in `_render_args` and `_render_kwargs`)
         and insert the final text in place of the placeholder.
         """
+        alias_name = self.string
         self.characters = list(replacement_text)
-        return super().render_pdf_text(*self._render_args, **self._render_kwargs)
+
+        dummy_width = self.get_width(chars=self.dummy_width_string)
+        replacement_width = self.get_width(chars=replacement_text)
+
+        if replacement_width > dummy_width:
+            warnings.warn(
+                f"The total page count '{replacement_text}' is wider than the reserved "
+                f"alias width for '{alias_name}'. Use a longer alias with "
+                "alias_nb_pages() to reserve more space.",
+                UserWarning,
+            )
+
+        shift = 0.0
+        if (
+            self.graphics_state.text_shaping
+            and hasattr(self, "_render_args")
+            and self._render_args
+        ):
+            args = list(self._render_args)
+            if len(args) > 3:
+                # adjust_x is at index 3: frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h
+                shift = (dummy_width - replacement_width) / 2
+                args[3] += shift
+                self._render_args = tuple(args)
+
+        ret = super().render_pdf_text(*self._render_args, **self._render_kwargs)
+
+        if (
+            self.graphics_state.text_shaping
+            and hasattr(self, "_render_args")
+            and self._render_args
+        ):
+            # Reset PDF cursor to the end of reserved space to prevent splitting subsequent text:
+            original_adjust_x = self._render_args[3] - shift
+            end_x = original_adjust_x + dummy_width
+            h = self._render_args[5]
+            pos_y = self._render_args[4]
+            ret += f" 1 0 0 1 {end_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm"
+
+        return ret
 
 
 class TextLine(NamedTuple):
@@ -567,10 +654,8 @@ class CurrentLine:
         if not self.fragments:
             assert isinstance(original_fragment, Fragment)
             self.fragments.append(
-                original_fragment.__class__(
+                original_fragment.clone(
                     characters="",
-                    graphics_state=original_fragment.graphics_state,
-                    k=original_fragment.k,
                     link=url,
                 )
             )
@@ -584,10 +669,8 @@ class CurrentLine:
                 and url == self.fragments[-1].link
             ):
                 self.fragments.append(
-                    original_fragment.__class__(
+                    original_fragment.clone(
                         characters="",
-                        graphics_state=original_fragment.graphics_state,
-                        k=original_fragment.k,
                         link=url,
                     )
                 )
