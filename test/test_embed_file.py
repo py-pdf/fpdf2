@@ -80,6 +80,18 @@ def test_file_attachment_annotation(tmp_path):
     assert_pdf_equal(pdf, HERE / "file_attachment_annotation.pdf", tmp_path)
 
 
+def test_file_attachment_annotation_hide_icon(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    annotation = pdf.file_attachment_annotation(
+        _make_text_file(tmp_path), modification_date=False, x=50, y=50, hide_icon=True
+    )
+    # The file stays embedded and reachable through the annotation's /FS entry,
+    # only its default icon is hidden through an empty appearance stream:
+    assert annotation.f_s is not None
+    assert_pdf_equal(pdf, HERE / "file_attachment_annotation_hide_icon.pdf", tmp_path)
+
+
 def test_embed_file_invalid_params():
     pdf = FPDF()
     pdf.add_page()
