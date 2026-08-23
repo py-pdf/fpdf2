@@ -52,7 +52,12 @@ jobs:
           python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip setuptools wheel swig
+          export CFLAGS="-DPyInt_FromLong=PyLong_FromLong"
+          export CXXFLAGS="-DPyInt_FromLong=PyLong_FromLong"
+          export CPPFLAGS="-DPyInt_FromLong=PyLong_FromLong"
+          export CL="-DPyInt_FromLong=PyLong_FromLong"
+          pip install --no-build-isolation endesive
           pip install --upgrade .[dev,test]
       # Running zizmor 1st, because it is blocking PR merge
       - name: Run zizmor 🌈
@@ -124,7 +129,7 @@ jobs:
         # for python 3.14
         shell: bash
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip setuptools wheel swig
           # --- Create constraints file ---
           # For Python 3.14 only - temporary solution while camelot-py
           # update its dependencies
@@ -137,6 +142,11 @@ jobs:
             echo "Created empty $CONSTRAINTS_FILE"
           fi
           # --- Install dependencies respecting constraints ---
+          export CFLAGS="-DPyInt_FromLong=PyLong_FromLong"
+          export CXXFLAGS="-DPyInt_FromLong=PyLong_FromLong"
+          export CPPFLAGS="-DPyInt_FromLong=PyLong_FromLong"
+          export CL="-DPyInt_FromLong=PyLong_FromLong"
+          pip install --no-build-isolation endesive -c "$CONSTRAINTS_FILE"
           pip install --upgrade .[dev,test] -c "$CONSTRAINTS_FILE"
       - name: Run tests ☑
         shell: bash
