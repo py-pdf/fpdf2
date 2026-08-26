@@ -406,6 +406,13 @@ def test_markdown_parse_link_variations():
     assert frags[0].graphics_state.font_style == ""
     assert frags[0].link == "url"
 
+    for text in ("[***a**b](url)", "[**a***b](url)"):
+        frags = merge_fragments(tuple(FPDF()._parse_chars(text, True)))
+        assert len(frags) == 1
+        assert "".join(frags[0].characters) == text[1:-6]
+        assert frags[0].graphics_state.font_style == ""
+        assert frags[0].link == "url"
+
     frags = tuple(FPDF()._parse_chars("[x](url)**y**", True))
     assert len(frags) == 2
     assert "".join(frags[0].characters) == "x"

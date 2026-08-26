@@ -297,6 +297,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_STRIKETHROUGH_MARKER = "~~"
     MARKDOWN_UNDERLINE_MARKER = "--"
+    MARKDOWN_MARKERS = (
+        MARKDOWN_BOLD_MARKER,
+        MARKDOWN_ITALICS_MARKER,
+        MARKDOWN_STRIKETHROUGH_MARKER,
+        MARKDOWN_UNDERLINE_MARKER,
+    )
     MARKDOWN_ESCAPE_CHARACTER = "\\"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
     MARKDOWN_LINK_COLOR = None
@@ -4464,6 +4470,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
+    def _markdown_marker_at(
+        self, text: str, previous_character: str | None = None
+    ) -> str | None:
+        """Return the active markdown marker at the start of ``text``, if any."""
+        marker = text[:2]
+        if (
+            marker in self.MARKDOWN_MARKERS
+            and previous_character != marker[0]
+            and (len(text) < 3 or text[2] != marker[0])
+        ):
+            return marker
+        return None
+
     def _markdown_escape_unbalanced_link_markers(self, text: str) -> str:
         """
         Escape marker kinds that do not form complete pairs inside a link label.
@@ -4472,13 +4491,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         an opening marker from spanning the link boundary. Existing escapes are
         preserved and taken into account when counting markers.
         """
-        markers = (
-            self.MARKDOWN_BOLD_MARKER,
-            self.MARKDOWN_ITALICS_MARKER,
-            self.MARKDOWN_STRIKETHROUGH_MARKER,
-            self.MARKDOWN_UNDERLINE_MARKER,
-        )
-        marker_counts = dict.fromkeys(markers, 0)
+        marker_counts = dict.fromkeys(self.MARKDOWN_MARKERS, 0)
         escape_run = 0
         index = 0
         while index < len(text):
@@ -4486,8 +4499,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 escape_run += 1
                 index += 1
                 continue
-            marker = text[index : index + 2]
-            if marker in marker_counts and escape_run % 2 == 0:
+            marker = self._markdown_marker_at(
+                text[index:], text[index - 1] if index else None
+            )
+            if marker and escape_run % 2 == 0:
                 marker_counts[marker] += 1
                 index += 2
             else:
@@ -4509,7 +4524,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 escape_run += 1
                 index += 1
                 continue
-            marker = text[index : index + 2]
+            marker = self._markdown_marker_at(
+                text[index:], text[index - 1] if index else None
+            )
             if marker in unbalanced_markers:
                 if escape_run % 2 == 0:
                     result.append(self.MARKDOWN_ESCAPE_CHARACTER)
@@ -4596,12 +4613,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 continue
 
             if markdown and escape_run:
-                is_escape_target = text[:2] in (
-                    self.MARKDOWN_BOLD_MARKER,
-                    self.MARKDOWN_ITALICS_MARKER,
-                    self.MARKDOWN_STRIKETHROUGH_MARKER,
-                    self.MARKDOWN_UNDERLINE_MARKER,
-                )
+                is_escape_target = text[:2] in self.MARKDOWN_MARKERS
                 if is_escape_target and escape_run % 2 == 1:
                     for _ in range(escape_run // 2):
                         txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
@@ -4616,15 +4628,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
                 escape_run = 0
 
-            is_marker = text[:2] in (
-                self.MARKDOWN_BOLD_MARKER,
-                self.MARKDOWN_ITALICS_MARKER,
-                self.MARKDOWN_STRIKETHROUGH_MARKER,
-                self.MARKDOWN_UNDERLINE_MARKER,
-            )
+            marker = self._markdown_marker_at(text, txt_frag[-1] if txt_frag else None)
+            is_marker = marker is not None
             if markdown and escape_next_marker:
                 is_marker = False
-            half_marker = text[0]
             text_script = get_unicode_script(text[0])
             if text_script not in (
                 UnicodeScript.COMMON,
@@ -4655,11 +4662,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             # Check that previous & next characters are not identical to the marker:
             if markdown:
-                if (
-                    is_marker
-                    and (not txt_frag or txt_frag[-1] != half_marker)
-                    and (len(text) < 3 or text[2] != half_marker)
-                ):
+                if is_marker:
                     if txt_frag:
                         yield frag()
                     if text[:2] == self.MARKDOWN_BOLD_MARKER:
