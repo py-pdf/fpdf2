@@ -3134,6 +3134,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             compress (bool): enabled zlib compression of the file - False by default
             checksum (bool): insert a MD5 checksum of the file content - False by default
         """
+        if hide_icon and self._compliance and self._compliance.profile == "PDFA":
+            raise PDFAComplianceError(
+                f"hide_icon is not allowed for documents compliant with {self._compliance.label}: "
+                "the empty appearance stream it produces is not valid PDF/A"
+            )
         embedded_file = self.embed_file(file_path, **kwargs)
         # Attachment annotations should not be listed in the document-level AF entry
         # (they are reachable through the annotation itself), so keep them out of AF:

@@ -31,6 +31,17 @@ def test_pdfa1_forbids_embed(dc):
     )
 
 
+@pytest.mark.parametrize(
+    "dc", [DocumentCompliance.PDFA_1B, DocumentCompliance.PDFA_2B]
+)
+def test_pdfa_forbids_file_attachment_hide_icon(dc):
+    pdf = FPDF(enforce_compliance=dc)
+    pdf.add_page()
+    with pytest.raises(PDFAComplianceError) as err:
+        pdf.file_attachment_annotation("test.txt", x=50, y=50, hide_icon=True)
+    assert "hide_icon is not allowed" in str(err.value)
+
+
 @pytest.mark.skipif(
     USING_ZLIB_NG,
     reason="Skipped when Python uses zlib-ng because compressed data differs",
