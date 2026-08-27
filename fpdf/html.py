@@ -581,9 +581,21 @@ class HTML2FPDF(HTMLParser):
         prev_family = self.pdf.font_family
         prev_style = self.pdf.font_style
         prev_size = self.pdf.font_size_pt
-        self.pdf.font_family = self.font_family
-        self.pdf.font_style = self.font_emphasis.style
-        self.pdf.font_size_pt = self.font_size_pt
+
+        prev_underline = self.pdf.underline
+        prev_strikethrough = self.pdf.strikethrough
+        prev_current_font = self.pdf.current_font
+        prev_font_set = self.pdf.current_font_is_set_on_page
+        page = self.pdf.page
+        # Set page to 0 to prevent set_font from writing redundant Tf operators to the PDF stream
+        self.pdf.page = 0
+        self.pdf.set_font(
+            family=self.font_family,
+            style=self.font_emphasis.style,
+            size=self.font_size_pt,
+        )
+        self.pdf.page = page
+
         self._paragraph = self._column.paragraph(
             text_align=self.align if isinstance(self.align, Align) else None,
             line_height=line_height,
@@ -596,6 +608,10 @@ class HTML2FPDF(HTMLParser):
         self.pdf.font_family = prev_family
         self.pdf.font_style = prev_style
         self.pdf.font_size_pt = prev_size
+        self.pdf.current_font = prev_current_font
+        self.pdf.current_font_is_set_on_page = prev_font_set
+        self.pdf.underline = prev_underline
+        self.pdf.strikethrough = prev_strikethrough
         self.follows_trailing_space = True
         self.follows_heading = False
 

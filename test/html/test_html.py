@@ -1311,3 +1311,26 @@ def test_html_list_after_h1(tmp_path):  # cf. issue #1921
     """
     pdf.write_html(html)
     assert_pdf_equal(pdf, HERE / "html_list_after_h1.pdf", tmp_path)
+
+
+def test_html_list_heading_different_fonts(tmp_path):
+    pdf = FPDF()
+    pdf.add_font("roboto", fname=FONT_DIR / "Roboto-Regular.ttf")
+    pdf.add_page()
+    html = """
+    <font face="courier"><h1>Courier Header 1</h1></font>
+    <font face="times">
+    <ul>
+        <li>Times Regular Item A</li>
+        <li>Times Regular Item B</li>
+    </ul></font>
+    <br break-before="page">
+    <font face="courier"><h1>Courier Header 2</h1></font>
+    <font face="roboto">
+    <ol>
+        <li>Roboto Regular Item 1</li>
+        <li>Roboto Regular Item 2</li>
+    </ol></font>
+    """
+    pdf.write_html(html)
+    assert_pdf_equal(pdf, HERE / "html_list_heading_different_fonts.pdf", tmp_path)
