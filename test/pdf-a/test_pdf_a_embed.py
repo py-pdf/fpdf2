@@ -31,9 +31,7 @@ def test_pdfa1_forbids_embed(dc):
     )
 
 
-@pytest.mark.parametrize(
-    "dc", [DocumentCompliance.PDFA_1B, DocumentCompliance.PDFA_2B]
-)
+@pytest.mark.parametrize("dc", [DocumentCompliance.PDFA_1B, DocumentCompliance.PDFA_2B])
 def test_pdfa_forbids_file_attachment_hide_icon(dc):
     pdf = FPDF(enforce_compliance=dc)
     pdf.add_page()
