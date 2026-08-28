@@ -194,6 +194,20 @@ class TestSVGObject:
             assert (width, height) == pytest.approx(expected_dim)
             assert base_group.transform == pytest.approx(expected_tf)
 
+    @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
+    def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg"'
+            f' width="{whitespace}" height="{whitespace}" viewBox="0 0 10 10"></svg>'
+        )
+
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        assert isinstance(svg.width, fpdf.svg.Percent)
+        assert isinstance(svg.height, fpdf.svg.Percent)
+        assert svg.width == pytest.approx(100)
+        assert svg.height == pytest.approx(100)
+
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):
         svg = fpdf.svg.SVGObject.from_file(svg_file)
