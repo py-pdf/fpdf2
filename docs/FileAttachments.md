@@ -31,12 +31,14 @@ pdf.output("file_attachment_annotation.pdf")
 Resulting PDF: [file_attachment_annotation.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/file_attachment_annotation.pdf)
 
 By default, PDF viewers render an icon (a paperclip, a pushpin, ...) for a file attachment annotation.
-Pass `hide_icon=True` to suppress that icon while keeping the file embedded and reachable:
+Pass `appearance=FileAttachmentAppearance.HIDDEN` to suppress that icon while keeping the file embedded and reachable:
 
 ```python
+from fpdf.enums import FileAttachmentAppearance
+
 pdf = FPDF()
 pdf.add_page()
-pdf.file_attachment_annotation(__file__, x=50, y=50, hide_icon=True)
+pdf.file_attachment_annotation(__file__, x=50, y=50, appearance=FileAttachmentAppearance.HIDDEN)
 pdf.output("file_attachment_annotation.pdf")
 ```
 

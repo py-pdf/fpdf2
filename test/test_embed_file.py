@@ -3,6 +3,7 @@ import sys
 
 from pathlib import Path
 from fpdf import FPDF
+from fpdf.enums import FileAttachmentAppearance
 from test.conftest import assert_pdf_equal, EPOCH
 
 HERE = Path(__file__).resolve().parent
@@ -84,7 +85,11 @@ def test_file_attachment_annotation_hide_icon(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     annotation = pdf.file_attachment_annotation(
-        _make_text_file(tmp_path), modification_date=False, x=50, y=50, hide_icon=True
+        _make_text_file(tmp_path),
+        modification_date=False,
+        x=50,
+        y=50,
+        appearance=FileAttachmentAppearance.HIDDEN,
     )
     # The file stays embedded and reachable through the annotation's /FS entry,
     # only its default icon is hidden through an empty appearance stream:
