@@ -369,6 +369,9 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/prateek-dagar"><img src="https://avatars.githubusercontent.com/u/107306613?v=4?s=100" width="100px;" alt="prateek-dagar"/><br /><sub><b>prateek-dagar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=prateek-dagar" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/stumpylog"><img src="https://avatars.githubusercontent.com/u/797416?v=4?s=100" width="100px;" alt="Trenton H"/><br /><sub><b>Trenton H</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Astumpylog" title="Bug reports">🐛</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=stumpylog" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Sanjays2402"><img src="https://avatars.githubusercontent.com/u/51058514?v=4?s=100" width="100px;" alt="Sanjay Santhanam"/><br /><sub><b>Sanjay Santhanam</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Sanjays2402" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Anai-Guo"><img src="https://avatars.githubusercontent.com/u/275560793?v=4?s=100" width="100px;" alt="Tai An"/><br /><sub><b>Tai An</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Anai-Guo" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

@@ -51,7 +51,11 @@ jobs:
         with:
           python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
+        # Constraining swig version as a workaround for: https://github.com/py-pdf/fpdf2/issues/1928 / https://github.com/LudovicRousseau/PyKCS11/issues/167
+        env:
+          PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
+          echo 'swig<4.5' > "$PIP_BUILD_CONSTRAINT"
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade .[dev,test]
       # Running zizmor 1st, because it is blocking PR merge
@@ -60,7 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           sarif_file: results.sarif
           category: zizmor
@@ -75,7 +79,7 @@ jobs:
           mypy
           pyright
       - name: Scan project with grype 🔎
-        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           path: "."
           fail-build: true
@@ -88,7 +92,7 @@ jobs:
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@bee27e3a4fd1ea2111cf90ab89cd076c870fce14 # v1.48.0
+        uses: crate-ci/typos@4d9c206a77c041268485162b8e2579ad7a5cb9a3 # v1.50.0
   test:
     strategy:
       matrix:
@@ -120,24 +124,23 @@ jobs:
           choco install qpdf -y
           qpdf --version
       - name: Install Python dependencies ⚙️
-        # Temporarily writing a constraints file to make sure numpy 2.3.3 is used
-        # for python 3.14
+        # Temporarily writing a constraints file
+        # to make sure numpy 2.3.3 is used for Python 3.14
         shell: bash
+        env:
+          PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
+          echo 'swig<4.5' > "$PIP_BUILD_CONSTRAINT"
           python -m pip install --upgrade pip setuptools wheel
           # --- Create constraints file ---
           # For Python 3.14 only - temporary solution while camelot-py
           # update its dependencies
-          CONSTRAINTS_FILE="constraints.txt"
           if [[ "${{ matrix.python-version }}" == "3.14" ]]; then
-            echo "numpy>=2.3.3" > "$CONSTRAINTS_FILE"
-            echo "Added numpy>=2.3.3 to $CONSTRAINTS_FILE"
-          else
-            : > "$CONSTRAINTS_FILE"   # create empty file
-            echo "Created empty $CONSTRAINTS_FILE"
+            echo "numpy>=2.3.3" >> "$PIP_BUILD_CONSTRAINT"
+            echo "Added numpy>=2.3.3 to $PIP_BUILD_CONSTRAINT"
           fi
           # --- Install dependencies respecting constraints ---
-          pip install --upgrade .[dev,test] -c "$CONSTRAINTS_FILE"
+          pip install --upgrade .[dev,test]
       - name: Run tests ☑
         shell: bash
         env:
@@ -180,7 +183,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           egress-policy: block
           allowed-endpoints:
@@ -254,7 +257,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           egress-policy: block
           allowed-endpoints:
