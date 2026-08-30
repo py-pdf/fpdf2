@@ -4491,7 +4491,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         an opening marker from spanning the link boundary. Existing escapes are
         preserved and taken into account when counting markers.
         """
-        marker_counts = dict.fromkeys(self.MARKDOWN_MARKERS, 0)
+        marker_counts: dict[str, int] = dict.fromkeys(self.MARKDOWN_MARKERS, 0)
         escape_run = 0
         index = 0
         while index < len(text):
@@ -4566,11 +4566,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag: list[str] = []
+        in_bold: bool
+        in_italics: bool
+        in_strikethrough: bool
+        in_underline: bool
         if _initial_emphasis is None:
-            in_bold: bool = "B" in self.font_style
-            in_italics: bool = "I" in self.font_style
-            in_strikethrough: bool = bool(self.strikethrough)
-            in_underline: bool = bool(self.underline)
+            in_bold = "B" in self.font_style
+            in_italics = "I" in self.font_style
+            in_strikethrough = bool(self.strikethrough)
+            in_underline = bool(self.underline)
         else:
             in_bold, in_italics, in_strikethrough, in_underline = _initial_emphasis
         current_fallback_font = None
