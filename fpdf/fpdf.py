@@ -4572,17 +4572,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag: list[str] = []
-        in_bold: bool
-        in_italics: bool
-        in_strikethrough: bool
-        in_underline: bool
+        initial_emphasis: tuple[bool, bool, bool, bool]
         if _initial_emphasis is None:
-            in_bold = "B" in self.font_style
-            in_italics = "I" in self.font_style
-            in_strikethrough = bool(self.strikethrough)
-            in_underline = bool(self.underline)
+            initial_emphasis = (
+                "B" in self.font_style,
+                "I" in self.font_style,
+                bool(self.strikethrough),
+                bool(self.underline),
+            )
         else:
-            in_bold, in_italics, in_strikethrough, in_underline = _initial_emphasis
+            initial_emphasis = _initial_emphasis
+        in_bold, in_italics, in_strikethrough, in_underline = initial_emphasis
         current_fallback_font = None
         current_text_script = None
 
