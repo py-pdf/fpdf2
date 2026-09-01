@@ -7,7 +7,7 @@ _New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CH
 In PDF (Portable Document Format), a **pattern** is a graphical object that can be used to fill (or stroke) shapes. Patterns can include simple color fills, images, or more advanced textures and gradients. 
 
 The **patterns** on PDF documents are grouped on 2 types:
-- **Tiling patterns** for any repeating patters.  
+- **Tiling patterns** for any repeating patterns.  
 - **Shading patterns** for gradients.  
 
 *fpdf2* provides a context manager `pdf.use_pattern(...)`. Within this context, all drawn shapes or text will use the specified pattern. Once the context ends, drawing reverts to the previously defined color.
