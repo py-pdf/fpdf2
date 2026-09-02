@@ -32,7 +32,7 @@ based on its `height` and the current ordinate (`y` position).
 
 In order to render content, like [tables](Tables.md),
 with the insurance that no page break will be performed in it,
-on the can use the `FPDF.unbreakable()` context-manager:
+one can use the `FPDF.unbreakable()` context-manager:
 
 ```python
 pdf = fpdf.FPDF()
