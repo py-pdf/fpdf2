@@ -298,6 +298,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_STRIKETHROUGH_MARKER = "~~"
     MARKDOWN_UNDERLINE_MARKER = "--"
+    MARKDOWN_MARKERS = (
+        MARKDOWN_BOLD_MARKER,
+        MARKDOWN_ITALICS_MARKER,
+        MARKDOWN_STRIKETHROUGH_MARKER,
+        MARKDOWN_UNDERLINE_MARKER,
+    )
     MARKDOWN_ESCAPE_CHARACTER = "\\"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
     MARKDOWN_LINK_COLOR = None
@@ -4477,7 +4483,81 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
-    def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
+    def _markdown_marker_at(
+        self, text: str, previous_character: str | None = None
+    ) -> str | None:
+        """Return the active markdown marker at the start of ``text``, if any."""
+        marker = text[:2]
+        if (
+            marker in self.MARKDOWN_MARKERS
+            and previous_character != marker[0]
+            and (len(text) < 3 or text[2] != marker[0])
+        ):
+            return marker
+        return None
+
+    def _markdown_escape_unbalanced_link_markers(self, text: str) -> str:
+        """
+        Escape marker kinds that do not form complete pairs inside a link label.
+
+        This lets balanced emphasis be parsed within the label while preventing
+        an opening marker from spanning the link boundary. Existing escapes are
+        preserved and taken into account when counting markers.
+        """
+        marker_counts: dict[str, int] = dict.fromkeys(self.MARKDOWN_MARKERS, 0)
+        escape_run = 0
+        index = 0
+        while index < len(text):
+            if text[index] == self.MARKDOWN_ESCAPE_CHARACTER:
+                escape_run += 1
+                index += 1
+                continue
+            marker = self._markdown_marker_at(
+                text[index:], text[index - 1] if index else None
+            )
+            if marker and escape_run % 2 == 0:
+                marker_counts[marker] += 1
+                index += 2
+            else:
+                index += 1
+            escape_run = 0
+
+        unbalanced_markers = {
+            marker for marker, count in marker_counts.items() if count % 2
+        }
+        if not unbalanced_markers:
+            return text
+
+        result: list[str] = []
+        index = 0
+        escape_run = 0
+        while index < len(text):
+            if text[index] == self.MARKDOWN_ESCAPE_CHARACTER:
+                result.append(text[index])
+                escape_run += 1
+                index += 1
+                continue
+            marker = self._markdown_marker_at(
+                text[index:], text[index - 1] if index else None
+            )
+            if marker in unbalanced_markers:
+                if escape_run % 2 == 0:
+                    result.append(self.MARKDOWN_ESCAPE_CHARACTER)
+                result.append(marker)
+                index += 2
+            else:
+                result.append(text[index])
+                index += 1
+            escape_run = 0
+        return "".join(result)
+
+    def _parse_chars(
+        self,
+        text: str,
+        markdown: bool,
+        *,
+        _initial_emphasis: tuple[bool, bool, bool, bool] | None = None,
+    ) -> Iterator[Fragment]:
         "Split text into fragments"
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
             if self.str_alias_nb_pages:
@@ -4505,10 +4585,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag: list[str] = []
-        in_bold: bool = "B" in self.font_style
-        in_italics: bool = "I" in self.font_style
-        in_strikethrough: bool = bool(self.strikethrough)
-        in_underline: bool = bool(self.underline)
+        initial_emphasis: tuple[bool, bool, bool, bool]
+        if _initial_emphasis is None:
+            initial_emphasis = (
+                "B" in self.font_style,
+                "I" in self.font_style,
+                bool(self.strikethrough),
+                bool(self.underline),
+            )
+        else:
+            initial_emphasis = _initial_emphasis
+        in_bold, in_italics, in_strikethrough, in_underline = initial_emphasis
         current_fallback_font = None
         current_text_script = None
 
@@ -4549,12 +4636,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 continue
 
             if markdown and escape_run:
-                is_escape_target = text[:2] in (
-                    self.MARKDOWN_BOLD_MARKER,
-                    self.MARKDOWN_ITALICS_MARKER,
-                    self.MARKDOWN_STRIKETHROUGH_MARKER,
-                    self.MARKDOWN_UNDERLINE_MARKER,
-                )
+                is_escape_target = text[:2] in self.MARKDOWN_MARKERS
                 if is_escape_target and escape_run % 2 == 1:
                     for _ in range(escape_run // 2):
                         txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
@@ -4569,15 +4651,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     txt_frag.append(self.MARKDOWN_ESCAPE_CHARACTER)
                 escape_run = 0
 
-            is_marker = text[:2] in (
-                self.MARKDOWN_BOLD_MARKER,
-                self.MARKDOWN_ITALICS_MARKER,
-                self.MARKDOWN_STRIKETHROUGH_MARKER,
-                self.MARKDOWN_UNDERLINE_MARKER,
-            )
+            marker = self._markdown_marker_at(text, txt_frag[-1] if txt_frag else None)
+            is_marker = marker is not None
             if markdown and escape_next_marker:
                 is_marker = False
-            half_marker = text[0]
             text_script = get_unicode_script(text[0])
             if text_script not in (
                 UnicodeScript.COMMON,
@@ -4614,11 +4691,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             # Check that previous & next characters are not identical to the marker:
             if markdown:
-                if (
-                    is_marker
-                    and (not txt_frag or txt_frag[-1] != half_marker)
-                    and (len(text) < 3 or text[2] != half_marker)
-                ):
+                if is_marker:
                     if txt_frag:
                         yield frag()
                     if text[:2] == self.MARKDOWN_BOLD_MARKER:
@@ -4637,27 +4710,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     link_text, link_dest, text = is_link.groups()
                     if txt_frag:
                         yield frag()
-                    gstate = self._get_current_graphics_state()
-                    gstate.font_style = ("B" if in_bold else "") + (
-                        "I" if in_italics else ""
-                    )
-                    gstate.strikethrough = in_strikethrough
-                    gstate.underline = self.MARKDOWN_LINK_UNDERLINE or in_underline
-                    if self.MARKDOWN_LINK_COLOR:
-                        gstate.text_color = convert_to_device_color(
-                            self.MARKDOWN_LINK_COLOR
-                        )
                     try:
                         page = int(link_dest)
                         link_dest = self.add_link(page=page)
                     except ValueError:
                         pass
-                    yield Fragment(
-                        list(link_text),
-                        gstate,
-                        self.k,
-                        link=link_dest,
-                    )
+                    link_text = self._markdown_escape_unbalanced_link_markers(link_text)
+                    for link_frag in self._parse_chars(
+                        link_text,
+                        True,
+                        _initial_emphasis=(
+                            in_bold,
+                            in_italics,
+                            in_strikethrough,
+                            in_underline,
+                        ),
+                    ):
+                        link_frag.link = link_dest
+                        link_frag.graphics_state.underline = (
+                            self.MARKDOWN_LINK_UNDERLINE
+                            or link_frag.graphics_state.underline
+                        )
+                        if self.MARKDOWN_LINK_COLOR:
+                            link_frag.graphics_state.text_color = (
+                                convert_to_device_color(self.MARKDOWN_LINK_COLOR)
+                            )
+                        yield link_frag
                     continue
             if self.is_ttf_font and text[0] != "\n" and not ord(text[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
@@ -4840,10 +4918,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                 text_parts.append(emphasis_markers[te])
                         last_emphasis = next_emphasis
                     text = "".join(frag.characters)
-                    # NOTE: Currently, markdown format inside of links is not handled
-                    #       so only escape markdown markers outside of links
+                    # Escape literal marker characters in link fragments so the
+                    # LINES re-serialization round-trip stays stable. Styling is
+                    # represented by the surrounding emphasis markers above.
                     text_parts.append(
-                        f"[{text:s}]({frag.link!s:s})" if frag.link else escape(text)
+                        f"[{escape(text):s}]({frag.link!s:s})"
+                        if frag.link
+                        else escape(text)
                     )
                 next_emphasis = TextEmphasis.NONE
                 removed_emphasis = last_emphasis & ~next_emphasis

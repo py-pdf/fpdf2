@@ -396,3 +396,29 @@ def test_multi_cell_markdown_dry_run_lines_output_escape(tmp_path):
     assert_pdf_equal(
         pdf, HERE / "multi_cell_markdown_dry_run_lines_output_escape.pdf", tmp_path
     )
+
+
+def test_multi_cell_markdown_escaped_markers_inside_link():  # issue 1847
+    # Escaping markdown markers inside a link previously left the escape
+    # backslashes in the rendered text, and the LINES re-serialization emitted
+    # the display text verbatim, producing double-escaped output such as
+    # "\**Issue\**". Both the parsed fragment and the LINES round-trip must
+    # now be free of stray escape characters.
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    text = "[\\**Issue\\** 1844](https://github.com/py-pdf/fpdf2/pull/1844)"
+
+    # The LINES re-serialization must round-trip stably without accumulating
+    # additional escape characters.
+    lines = pdf.multi_cell(
+        pdf.epw,
+        text=text,
+        dry_run=True,
+        markdown=True,
+        new_x="left",
+        new_y="next",
+        output=fpdf.enums.MethodReturnValue.LINES,
+    )
+    assert lines == ["[\\**Issue\\** 1844](https://github.com/py-pdf/fpdf2/pull/1844)"]

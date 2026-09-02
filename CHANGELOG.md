@@ -58,6 +58,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * reject SVG `<use>` cycles and excessive nested expansion to prevent resource exhaustion in `FPDF.image()`
 * count SVG `<switch>` elements in SVG complexity limits
 * declare the default base state and display order for Optional Content Groups so PDF viewers can list layers correctly - _cf._ [issue #1895](https://github.com/py-pdf/fpdf2/issues/1895)
+* parse balanced markdown styles inside link labels while keeping unbalanced markers literal, and consume escapes without destabilizing `LINES` re-serialization - _cf._ [issue #1847](https://github.com/py-pdf/fpdf2/issues/1847)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 

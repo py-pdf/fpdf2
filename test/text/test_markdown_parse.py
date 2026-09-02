@@ -390,10 +390,28 @@ def test_markdown_parse_link_variations():
 
     frags = tuple(FPDF()._parse_chars("[**bold**](https://example.com)", True))
     assert len(frags) == 1
-    assert "".join(frags[0].characters) == "**bold**"
+    assert "".join(frags[0].characters) == "bold"
     assert frags[0].graphics_state.underline is True
-    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].graphics_state.font_style == "B"
     assert frags[0].link == "https://example.com"
+
+    frags = tuple(FPDF()._parse_chars("[**bold** normal](url)", True))
+    assert ["".join(frag.characters) for frag in frags] == ["bold", " normal"]
+    assert [frag.graphics_state.font_style for frag in frags] == ["B", ""]
+    assert all(frag.link == "url" for frag in frags)
+
+    frags = merge_fragments(tuple(FPDF()._parse_chars("[**bold](url)", True)))
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "**bold"
+    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].link == "url"
+
+    for text in ("[***a**b](url)", "[**a***b](url)"):
+        frags = merge_fragments(tuple(FPDF()._parse_chars(text, True)))
+        assert len(frags) == 1
+        assert "".join(frags[0].characters) == text[1:-6]
+        assert frags[0].graphics_state.font_style == ""
+        assert frags[0].link == "url"
 
     frags = tuple(FPDF()._parse_chars("[x](url)**y**", True))
     assert len(frags) == 2
@@ -410,3 +428,25 @@ def test_markdown_parse_link_variations():
     )
     assert frags == expected
     assert frags[1].link == "url"
+
+
+def test_markdown_parse_escaped_markers_inside_link():  # issue 1847
+    # Escaping markdown markers inside a link must consume the escape
+    # backslashes, exactly as it does outside of a link, instead of leaving
+    # them as literal backslashes in the rendered text.
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars("[\\**Issue\\** 1844](https://example.com/1844)", True)
+        )
+    )
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "**Issue** 1844"
+    assert frags[0].link == "https://example.com/1844"
+    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].graphics_state.underline is True
+
+    # A doubled backslash inside a link collapses to a single literal
+    # backslash, just like outside of a link.
+    frags = tuple(FPDF()._parse_chars("[a\\\\b](url)", True))
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "a\\b"
