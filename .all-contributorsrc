@@ -1836,6 +1836,24 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "loris307",
+      "name": "Loris Galler",
+      "avatar_url": "https://avatars.githubusercontent.com/u/128334610?v=4",
+      "profile": "https://lorisgaller.de/",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "ChrisJr404",
+      "name": "ChrisJr404",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11917633?v=4",
+      "profile": "https://linktr.ee/chrisjr404",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

@@ -1053,6 +1053,7 @@ class OutputProducer:
         catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
         sig_annotation_obj = self._add_annotations_as_objects()
+        self._add_annotation_appearance_streams()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
             self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
@@ -1228,6 +1229,27 @@ class OutputProducer:
                         ), "A /Sig annotation is present on more than 1 page"
                         sig_annotation_obj = annot_obj
         return sig_annotation_obj
+
+    def _add_annotation_appearance_streams(self) -> None:
+        """Build a normal appearance stream (/AP << /N ... >>) for every annotation
+        that requested one. The appearance is a Form XObject whose content stream is
+        the bytes stored on the annotation; an empty stream yields a blank appearance,
+        which portably hides the annotation's default icon - cf. issue #561."""
+        for page_obj in self.fpdf.pages.values():
+            assert isinstance(page_obj.annots, PDFArray)
+            for annot_obj in page_obj.annots:
+                appearance_stream = getattr(annot_obj, "_appearance_stream", None)
+                if appearance_stream is None:
+                    continue
+                width, height = annot_obj._appearance_bbox
+                xobject = PDFContentStream(contents=appearance_stream)
+                xobject.type = Name("XObject")  # type: ignore[attr-defined]
+                xobject.subtype = Name("Form")  # type: ignore[attr-defined]
+                xobject.b_box = PDFArray(  # type: ignore[attr-defined]
+                    [0, 0, round(width, 2), round(height, 2)]
+                )
+                self._add_pdf_obj(xobject, "annotations")
+                annot_obj.a_p = Raw(f"<< /N {xobject.ref} >>")
 
     def _add_fonts(
         self,
