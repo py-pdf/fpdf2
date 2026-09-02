@@ -22,6 +22,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * visual gap in rendering subsequent text after `{nb}` page alias when text shaping is enabled - _cf._ [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090) - thanks to @prateek-dagar
 * `FPDF.write_html()` no longer raises `IndexError: pop from empty list` when a `<ul>` or `<ol>` element carries a `line-height` that is not a bare number (_e.g._ `line-height: normal` or `line-height: 1.5em`); such values are now ignored, and the default line height is used, consistently with `<p line-height="x">` - _cf._ [PR #1917](https://github.com/py-pdf/fpdf2/pull/1917)
+* `FPDF.write_html()` now renders list bullets with correct font styling instead of inheriting preceding heading (e.g. `<h1>`) styles - _cf._ [issue #1921](https://github.com/py-pdf/fpdf2/issues/1921)
+
 
 ## [2.8.8] - 2026-08-09
 ### Added
