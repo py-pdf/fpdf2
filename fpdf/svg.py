@@ -1492,7 +1492,7 @@ class SVGObject:
 
         self.width = None
         if width_str is not None:
-            width_str.strip()
+            width_str = width_str.strip()
             if width_str.endswith("%"):
                 self.width = Percent(width_str[:-1])
             else:
@@ -1500,7 +1500,7 @@ class SVGObject:
 
         self.height = None
         if height_str is not None:
-            height_str.strip()
+            height_str = height_str.strip()
             if height_str.endswith("%"):
                 self.height = Percent(height_str[:-1])
             else:
