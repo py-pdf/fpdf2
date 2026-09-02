@@ -1412,6 +1412,16 @@ class FileAttachmentAnnotationName(CoerciveEnum):
     PAPERCLIP_TAG = Name("PaperclipTag")
 
 
+class FileAttachmentAppearance(CoerciveEnum):
+    "How a file attachment annotation is displayed on the page"
+
+    DEFAULT = "DEFAULT"
+    "Display the icon selected by the annotation name (the default)"
+
+    HIDDEN = "HIDDEN"
+    "Give the annotation an empty appearance stream so no icon is drawn"
+
+
 class IntersectionRule(CoerciveEnum):
     """
     An enumeration representing the two possible PDF intersection rules.

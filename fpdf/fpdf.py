@@ -101,6 +101,7 @@ from .enums import (
     DocumentCompliance,
     EncryptionMethod,
     FileAttachmentAnnotationName,
+    FileAttachmentAppearance,
     MethodReturnValue,
     OutputIntentSubType,
     PageLabelStyle,
@@ -3110,6 +3111,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         h: float = 1,
         name: Optional[FileAttachmentAnnotationName | str] = None,
         flags: tuple[AnnotationFlag | str, ...] = DEFAULT_ANNOT_FLAGS,
+        appearance: FileAttachmentAppearance | str = FileAttachmentAppearance.DEFAULT,
         **kwargs: Any,
     ) -> AnnotationDict:
         """
@@ -3123,6 +3125,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle
             name (fpdf.enums.FileAttachmentAnnotationName, str): optional icon that shall be used in displaying the annotation
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            appearance (fpdf.enums.FileAttachmentAppearance, str): how the annotation is displayed. With
+                `HIDDEN` no icon is drawn (the annotation gets an empty appearance stream) while the file
+                stays embedded and accessible - `DEFAULT` by default
             bytes (bytes): optional, as an alternative to file_path, bytes content of the file to embed
             basename (str): optional, required if bytes is provided, file base name
             creation_date (datetime): date and time when the file was created
@@ -3131,6 +3136,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             compress (bool): enabled zlib compression of the file - False by default
             checksum (bool): insert a MD5 checksum of the file content - False by default
         """
+        appearance = FileAttachmentAppearance.coerce(appearance)
+        hide_icon = appearance == FileAttachmentAppearance.HIDDEN
+        if hide_icon and self._compliance and self._compliance.profile == "PDFA":
+            raise PDFAComplianceError(
+                f"appearance={appearance.value} is not allowed for documents compliant with "
+                f"{self._compliance.label}: the empty appearance stream it produces is not valid PDF/A"
+            )
         embedded_file = self.embed_file(file_path, **kwargs)
         # Attachment annotations should not be listed in the document-level AF entry
         # (they are reachable through the annotation itself), so keep them out of AF:
@@ -3144,6 +3156,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             file_spec=embedded_file.file_spec(),
             name=FileAttachmentAnnotationName.coerce(name) if name else None,
             flags=flags,
+            appearance_stream=b"" if hide_icon else None,
         )
         self.pages[self.page].add_annotation(annotation)
         return annotation
