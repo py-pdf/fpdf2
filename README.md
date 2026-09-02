@@ -374,6 +374,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Anai-Guo"><img src="https://avatars.githubusercontent.com/u/275560793?v=4?s=100" width="100px;" alt="Tai An"/><br /><sub><b>Tai An</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Anai-Guo" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://lorisgaller.de/"><img src="https://avatars.githubusercontent.com/u/128334610?v=4?s=100" width="100px;" alt="Loris Galler"/><br /><sub><b>Loris Galler</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=loris307" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/chrisjr404"><img src="https://avatars.githubusercontent.com/u/11917633?v=4?s=100" width="100px;" alt="ChrisJr404"/><br /><sub><b>ChrisJr404</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=ChrisJr404" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://apoorvdarshan.com"><img src="https://avatars.githubusercontent.com/u/90602809?v=4?s=100" width="100px;" alt="Apoorv Darshan"/><br /><sub><b>Apoorv Darshan</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=apoorvdarshan" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
