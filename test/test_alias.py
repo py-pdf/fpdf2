@@ -180,3 +180,100 @@ def test_alias_overflow_warning():
         pdf.write(text="Page a")
     with pytest.warns(UserWarning, match="is wider than the reserved"):
         pdf.output()
+
+
+def test_alias_in_rtl_text(tmp_path):  # issue #1925
+    """Alias must be substituted correctly when surrounded by RTL text."""
+    pdf = fpdf.FPDF()
+    pdf.add_font("SBL_Hbrw", fname=HERE / "text_shaping" / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=18)
+    pdf.set_text_shaping(True, direction="rtl")
+    for _ in range(12):
+        pdf.add_page()
+        pdf.cell(text="אבג {nb} דהו")
+
+    assert_pdf_equal(pdf, HERE / "alias_in_rtl_text.pdf", tmp_path)
+
+
+def test_alias_in_rtl_text_custom_alias(tmp_path):  # issue #1925
+    """Custom alias must also be substituted correctly with RTL text shaping."""
+    pdf = fpdf.FPDF()
+    pdf.add_font("SBL_Hbrw", fname=HERE / "text_shaping" / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=18)
+    pdf.set_text_shaping(True, direction="rtl")
+    pdf.alias_nb_pages("TOTAL")
+    for _ in range(12):
+        pdf.add_page()
+        pdf.cell(text="אבג TOTAL דהו")
+
+    assert_pdf_equal(pdf, HERE / "alias_in_rtl_text_custom_alias.pdf", tmp_path)
+
+
+def test_alias_in_rtl_text_rtl_alias(tmp_path):  # issue #1925
+    """Custom alias in RTL script."""
+    pdf = fpdf.FPDF()
+    pdf.add_font("SBL_Hbrw", fname=HERE / "text_shaping" / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=18)
+    pdf.set_text_shaping(True, direction="rtl")
+    pdf.alias_nb_pages("מספר")
+    for _ in range(12):
+        pdf.add_page()
+        pdf.cell(text="אבג מספר דהו")
+
+    assert_pdf_equal(pdf, HERE / "alias_in_rtl_text_rtl_alias.pdf", tmp_path)
+
+
+def test_alias_in_rtl_text_markdown(tmp_path):
+    """Markdown markers in RTL text with page alias."""
+    pdf = fpdf.FPDF()
+    pdf.add_font("SBL_Hbrw", fname=HERE / "text_shaping" / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=18)
+    pdf.set_text_shaping(True, direction="rtl")
+    for _ in range(12):
+        pdf.add_page()
+        pdf.cell(text="--אבג {nb} דהו--", markdown=True)
+        pdf.ln()
+        pdf.cell(text="--אבג {nb} דהו--ABC", markdown=True)
+        pdf.ln()
+        pdf.cell(text="--אבג {nb} דהו--אבג", markdown=True)
+        pdf.ln()
+        pdf.cell(text="--אבג {nb}-- ABC --דהו--", markdown=True)
+
+    assert_pdf_equal(pdf, HERE / "alias_in_rtl_text_markdown.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "alias_pattern,literal_pattern,expected_pdf_file",
+    [
+        ("אבג {nb} דהו", "אבג 12 דהו", "alias_in_rtl_text_side_by_side_simple.pdf"),
+        (
+            "אבג 10/{nb} דהו",
+            "אבג 10/12 דהו",
+            "alias_in_rtl_text_side_by_side_slash.pdf",
+        ),
+        (
+            "אבג {nb}-10 דהו",
+            "אבג 12-10 דהו",
+            "alias_in_rtl_text_side_by_side_hyphen.pdf",
+        ),
+        (
+            "אבג ({nb}%) דהו",
+            "אבג (12%) דהו",
+            "alias_in_rtl_text_side_by_side_parens_percent.pdf",
+        ),
+    ],
+)
+def test_alias_and_literal_side_by_side_in_rtl(
+    tmp_path, alias_pattern, literal_pattern, expected_pdf_file
+):  # issue #1925
+    """Render alias and literal number side-by-side in the same PDF."""
+    pdf = fpdf.FPDF()
+    pdf.add_font("SBL_Hbrw", fname=HERE / "text_shaping" / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=16)
+    pdf.set_text_shaping(True, direction="rtl")
+    for _ in range(12):
+        pdf.add_page()
+        pdf.cell(w=90, text=alias_pattern, border=1)
+        pdf.cell(w=90, text=literal_pattern, border=1)
+
+    assert_pdf_equal(pdf, HERE / expected_pdf_file, tmp_path)

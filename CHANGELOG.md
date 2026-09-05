@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.9] - Not released yet
 ### Added
+* support for page number alias substitution with bidirectional / RTL text shaping - _cf._ [issue #1925](https://github.com/py-pdf/fpdf2/issues/1925) - thanks to @prateek-dagar
 * `appearance` parameter for [`FPDF.file_attachment_annotation()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_attachment_annotation), accepting `FileAttachmentAppearance.HIDDEN` to give the annotation an empty appearance stream so its default icon is not displayed while the file stays embedded and reachable - _cf._ [issue #561](https://github.com/py-pdf/fpdf2/issues/561)
 ### Fixed
 * visual gap in rendering subsequent text after `{nb}` page alias when text shaping is enabled - _cf._ [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090) - thanks to @prateek-dagar
