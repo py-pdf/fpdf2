@@ -136,8 +136,7 @@ ve aksi takdirde yoksayılır.
 
 ## Öğretici 4 - Çoklu Sütunlar
 
- Bu örnek, metni birden fazla sütuna yayarak, metni birden fazla sütuna yayarak nasıl yapılacağını gösterir.
- This example is a variant of the previous one, showing how to lay the text across multiple columns.
+ Bu örnek, bir öncekinin bir çeşitlemesidir ve metnin birden fazla sütuna nasıl yayılacağını gösterir.
 
 ```python
 {% include "../tutorial/tuto4.py" %}
@@ -218,3 +217,37 @@ Dış bağlantı oluşturmak için bir resim kullanarak dış bağlantı oluştu
 Alternatif olarak, yazı tipi stilini değiştirmek ve bağlantılar eklemek için başka bir seçenek de
  `write_html()` yöntemini kullanın. Metin eklemeyi sağlayan bir html ayrıştırıcıdır,
  yazı tipi stilini değiştirme ve html kullanarak bağlantı ekleme özelliklerine sahiptir.
+
+## Öğretici 7 - PDF/A Belgeleri Oluşturma
+
+_[:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md) sürümünde eklendi_
+
+### PDF/A Standartları
+
+<b>PDF/A-1</b> PDF 1.4 sürümünü kullanır. Tüm kaynaklar (resimler, grafikler, yazı tipleri) belgenin içine gömülmelidir. Renk yönetimi kesin olmalı ve ICC profilleriyle platformdan bağımsız biçimde tanımlanmalıdır; belge üst verisi de XMP üst verisi olarak verilmelidir.
+
+<b>PDF/A-2</b> PDF 1.7 sürümünü kullanır. JPEG2000 ile sıkıştırmaya, saydam öğelere, OpenType yazı tiplerine ve dijital imzalara izin verir.
+
+<b>PDF/A-3</b> için tek ek, herhangi bir dosyanın belgeye gömülebilmesidir.
+
+### Uyumluluk Sınıfları
+
+A Seviyesi (erişilebilir), içerik yapısının eşlenmesi ve belge içeriğinin doğru okuma sırası dahil olmak üzere standardın tüm gerekliliklerini kapsar. Metin içeriği çıkarılabilir olmalı ve yapı, doğal okuma sırasını yansıtmalıdır.
+
+B Seviyesi (temel), içeriğin görsel olarak net biçimde yeniden üretilebilmesini garanti eder. B Seviyesi genellikle A Seviyesine göre daha kolay üretilir, ancak metnin %100 çıkarılabilir ya da aranabilir olmasını sağlamaz. İçeriğin sorunsuz biçimde yeniden kullanılabilmesi de garanti edilmez.
+
+Bunu başarmak için küçük bir örnek:
+
+```python
+{% include "../tutorial/tuto7.py" %}
+```
+
+[Sonuç PDF: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
+
+[VeraPDF](https://verapdf.org/) gibi araçlar, üretilen PDF belgelerinin uyumluluğunu kontrol edebilir:
+
+    verapdf --format text -v tutorial/tuto7.pdf
+
+Şu çıktıyı üretir:
+
+    PASS fpdf2/tutorial/tuto7.pdf 3b
