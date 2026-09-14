@@ -20,6 +20,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for page number alias substitution with bidirectional / RTL text shaping - _cf._ [issue #1925](https://github.com/py-pdf/fpdf2/issues/1925) - thanks to @prateek-dagar
 * `appearance` parameter for [`FPDF.file_attachment_annotation()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_attachment_annotation), accepting `FileAttachmentAppearance.HIDDEN` to give the annotation an empty appearance stream so its default icon is not displayed while the file stays embedded and reachable - _cf._ [issue #561](https://github.com/py-pdf/fpdf2/issues/561)
+* Turkish translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-tr.html#ogretici-7-pdfa-belgeleri-olusturma) tutorial section, along with a fix for the duplicated clause in the Tuto 4 description - _cf._ [PR #1951](https://github.com/py-pdf/fpdf2/pull/1951) - thanks to @ihsandeniz
 ### Fixed
 * visual gap in rendering subsequent text after `{nb}` page alias when text shaping is enabled - _cf._ [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090) - thanks to @prateek-dagar
 * `FPDF.write_html()` no longer raises `IndexError: pop from empty list` when a `<ul>` or `<ol>` element carries a `line-height` that is not a bare number (_e.g._ `line-height: normal` or `line-height: 1.5em`); such values are now ignored, and the default line height is used, consistently with `<p line-height="x">` - _cf._ [PR #1917](https://github.com/py-pdf/fpdf2/pull/1917)
