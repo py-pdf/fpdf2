@@ -84,7 +84,7 @@ Logo, [image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image
 Yükseklik otomatik olarak hesaplanır ve resmin oranlarını korumak için kullanılır.
 
 Sayfa numarasını yazdırmak için, hücre genişliği olarak null bir değer geçilir. 
-Bu, metnin sağ kenarına kadar uzanması gerektiği anlamına gelir; metni ortalamak için kullanışlıdır. 
+Bu, hücrenin sayfanın sağ kenar boşluğuna kadar uzanması gerektiği anlamına gelir; metni ortalamak için kullanışlıdır. 
 Geçerli sayfa numarası [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) metodu ile alınır; 
 toplam sayfa sayısı ise belge kapatıldığında `{nb}` ile değiştirilecek özel bir değerle alınır 
 (bu özel değer [alias_nb_pages()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) ile değiştirilebilir). 
@@ -186,14 +186,14 @@ Bu öğretici, bir pdf belgesi içine bağlantılar eklemenin birkaç yolunu aç
 [Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
-Bu öğreticide, metin yazdırmak için gösterilen yeni yöntem
+Bu öğreticide metin yazdırmak için gösterilen yeni yöntem
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
-. Burada gösterilen yeni yöntem, metni yazdırmak için kullanılan
+ metodudur. Bu metot,
  [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- metoduna oldukça benzer, temel farklar şunlardır:
+ metoduna oldukça benzer; temel farkları şunlardır:
 
 - Satır sonu sağ kenarda ve bir sonraki satır sol kenarda başlar.
-- işaretçi konum metnin sonuna taşınır.
+- Geçerli konum metnin sonuna taşınır.
 
 Bu yöntem, bir metin parçası yazmamıza, yazı tipi stilini değiştirmemize ve kaldığımız yerden devam etmemize olanak tanır.
 Öte yandan, metni
@@ -206,13 +206,13 @@ Bu yöntem, bir metin parçası yazmamıza, yazı tipi stilini değiştirmemize 
  [set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
  metoduyla altı çizili haline getirildi ve cümle tamamlandı.
 
-İkinci sayfaya yönlendiren bir iç bağlantı eklemek için, ikinci sayfayı ekledik ve
+İkinci sayfaya yönlendiren bir iç bağlantı eklemek için
  [add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
- metoduyla ikinci sayfaya yönlendiren bir bağlantı linki oluşturduk.
+ metodunu kullandık; bu metot, "link" adını verdiğimiz ve belge içindeki başka bir sayfaya yönlendiren tıklanabilir bir alan oluşturur.
 
-Dış bağlantı oluşturmak için bir resim kullanarak dış bağlantı oluşturduk
+Bir resim kullanarak dış bağlantı oluşturmak için
     [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
-. Metodun bir bağlantıyı bir argüman olarak geçme seçeneği vardır. Bağlantı hem iç hem de dış bağlantı olabilir.
+ metodunu kullandık. Metodun, bağlantıyı argümanlarından biri olarak geçme seçeneği vardır. Bağlantı hem iç hem de dış bağlantı olabilir.
 
 Alternatif olarak, yazı tipi stilini değiştirmek ve bağlantılar eklemek için başka bir seçenek de
  `write_html()` yöntemini kullanın. Metin eklemeyi sağlayan bir html ayrıştırıcıdır,
