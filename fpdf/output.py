@@ -1303,7 +1303,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<00> <FF>\n"
                         "endcodespacerange\n"
-                        f"{_build_bfchar_blocks(bfChar)}"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1490,7 +1490,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<0000> <FFFF>\n"
                         "endcodespacerange\n"
-                        f"{_build_bfchar_blocks(bfChar)}"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1525,9 +1525,7 @@ class OutputProducer:
                             "1 begincodespacerange\n"
                             "<0000> <FFFF>\n"
                             "endcodespacerange\n"
-                            f"{len(cid_mapping)} begincidchar\n"
-                            f"{''.join(cid_mapping)}"
-                            "endcidchar\n"
+                            f"{_build_cmap_blocks(cid_mapping, 'cidchar')}"
                             "endcmap\n"
                             "CMapName currentdict /CMap defineresource pop\n"
                             "end\n"
@@ -2271,12 +2269,14 @@ def stream_content_for_raster_image(
     )
 
 
-def _build_bfchar_blocks(entries: list[str]) -> str:
-    """Limit CMap bfchar blocks to 100 entries (Adobe Technical Note #5014)."""
+def _build_cmap_blocks(
+    entries: list[str], operator: Literal["bfchar", "cidchar"]
+) -> str:
+    """Limit CMap mapping blocks to 100 entries (Adobe Technical Note #5014)."""
     blocks: list[str] = []
     for start in range(0, len(entries), 100):
         chunk = entries[start : start + 100]
-        blocks.append(f"{len(chunk)} beginbfchar\n{''.join(chunk)}endbfchar\n")
+        blocks.append(f"{len(chunk)} begin{operator}\n{''.join(chunk)}end{operator}\n")
     return "".join(blocks)
 
 
