@@ -1303,9 +1303,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<00> <FF>\n"
                         "endcodespacerange\n"
-                        f"{len(bfChar)} beginbfchar\n"
-                        f"{''.join(bfChar)}"
-                        "endbfchar\n"
+                        f"{_build_bfchar_blocks(bfChar)}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1492,9 +1490,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<0000> <FFFF>\n"
                         "endcodespacerange\n"
-                        f"{len(bfChar)} beginbfchar\n"
-                        f"{''.join(bfChar)}"
-                        "endbfchar\n"
+                        f"{_build_bfchar_blocks(bfChar)}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -2273,6 +2269,15 @@ def stream_content_for_raster_image(
         f" {x * scale:.2f} {stream_y * scale:.2f} cm"
         f" /I{info['i']} Do Q"
     )
+
+
+def _build_bfchar_blocks(entries: list[str]) -> str:
+    """Limit CMap bfchar blocks to 100 entries (Adobe Technical Note #5014)."""
+    blocks: list[str] = []
+    for start in range(0, len(entries), 100):
+        chunk = entries[start : start + 100]
+        blocks.append(f"{len(chunk)} beginbfchar\n{''.join(chunk)}endbfchar\n")
+    return "".join(blocks)
 
 
 def _tt_font_widths(font: TTFFont) -> str:
