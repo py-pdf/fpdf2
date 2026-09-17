@@ -51,11 +51,7 @@ jobs:
         with:
           python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
-        # Constraining swig version as a workaround for: https://github.com/py-pdf/fpdf2/issues/1928 / https://github.com/LudovicRousseau/PyKCS11/issues/167
-        env:
-          PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
-          echo 'swig<4.5' > "$PIP_BUILD_CONSTRAINT"
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade .[dev,test]
       # Running zizmor 1st, because it is blocking PR merge
@@ -130,9 +126,12 @@ jobs:
         env:
           PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
-          echo 'swig<4.5' > "$PIP_BUILD_CONSTRAINT"
-          python -m pip install --upgrade pip setuptools wheel
           # --- Create constraints file ---
+          # It must exist before the first pip invocation, and even when empty:
+          # PIP_BUILD_CONSTRAINT applies to every pip call in this step, and pip
+          # aborts with "Could not open requirements file" if the path is missing.
+          : > "$PIP_BUILD_CONSTRAINT"
+          python -m pip install --upgrade pip setuptools wheel
           # For Python 3.14 only - temporary solution while camelot-py
           # update its dependencies
           if [[ "${{ matrix.python-version }}" == "3.14" ]]; then
