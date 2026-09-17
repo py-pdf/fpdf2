@@ -793,7 +793,10 @@ class Row:
                     cells.extend([None] * (cell.colspan - 1))
         # now we can correctly interpret active_rowspans
         remaining_rowspans: dict[int, int] = {}
-        for k, v in active_rowspans.items():
+        # ascending, so that an insert never shifts a placeholder that is
+        # already in place: the keys reach us in the order the rowspans
+        # started, which is not the column order
+        for k, v in sorted(active_rowspans.items()):
             cells.insert(k, None)
             if v > 1:
                 remaining_rowspans[k] = v - 1
