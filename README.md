@@ -378,6 +378,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/olafure"><img src="https://avatars.githubusercontent.com/u/830918?v=4?s=100" width="100px;" alt="Olafur Egilsson"/><br /><sub><b>Olafur Egilsson</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aolafure" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ihsandeniz.net.tr/"><img src="https://avatars.githubusercontent.com/u/132747884?v=4?s=100" width="100px;" alt="İhsan Deniz"/><br /><sub><b>İhsan Deniz</b></sub></a><br /><a href="#translation-ihsandeniz" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>
