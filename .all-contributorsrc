@@ -1872,6 +1872,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "ihsandeniz",
+      "name": "İhsan Deniz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/132747884?v=4",
+      "profile": "https://ihsandeniz.net.tr/",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
