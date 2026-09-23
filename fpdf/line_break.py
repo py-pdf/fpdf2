@@ -446,13 +446,13 @@ class TotalPagesSubstitutionFragment(Fragment):
         self,
         *args: Any,
         dummy_width_string: str = "1",
-        align: Optional[Union[Align, str]] = None,
+        align: Optional[Union[Align, str]] = Align.L,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.uuid = uuid4()
         self.dummy_width_string = dummy_width_string
-        self.align = Align.coerce(align) if align is not None else None
+        self.align = Align.coerce(align) if align is not None else Align.L
         # Use dummy_width_string for layout phase width calculation if characters are not empty (non-cloned)
         # and text shaping is active.
         if self.characters and self.graphics_state.text_shaping:
@@ -501,10 +501,8 @@ class TotalPagesSubstitutionFragment(Fragment):
         return self.get_placeholder_string()
 
     def _get_alias_shift(self, gap: float) -> float:
-        align = self.align
-        if align is None:
-            align = Align.C if self.graphics_state.text_shaping else Align.L
-        elif align == Align.J:
+        align = self.align or Align.L
+        if align == Align.J:
             warnings.warn(
                 "Align.J (justify) is not supported for alias substitution and will fall back to Align.L (left).",
                 UserWarning,

@@ -1042,7 +1042,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_min_pdf_version("1.5")
 
     def alias_nb_pages(
-        self, alias: str = "{nb}", align: Optional[Union[Align, str]] = None
+        self, alias: str = "{nb}", align: Union[Align, str] = Align.L
     ) -> None:
         """
         Defines an alias for the total number of pages.
@@ -1056,7 +1056,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             alias (str): the alias. Defaults to `"{nb}"`.
             align (Align, str, optional): alignment of substitution text in the reserved space.
-                Defaults to None (backward compatible: Center for text shaping, Left for non-shaping).
+                Defaults to `Align.L` (left-aligned). Can also be `Align.C` or `Align.R`.
 
         Notes
         -----
@@ -1068,7 +1068,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         which can causes slight positioning differences.
         """
         self.str_alias_nb_pages = alias
-        self.alias_nb_pages_align = Align.coerce(align) if align is not None else None
+        self.alias_nb_pages_align = (
+            Align.coerce(align) if align is not None else Align.L
+        )
 
     @check_page
     def set_page_label(
