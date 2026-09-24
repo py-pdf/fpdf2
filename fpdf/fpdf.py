@@ -116,6 +116,7 @@ from .enums import (
     TextEmphasis,
     TextMarkupType,
     TextMode,
+    VAlign,
     WrapMode,
     XPos,
     YPos,
@@ -141,6 +142,11 @@ from .image_parsing import (
     get_img_info,
     load_image,
     preload_image,
+)
+from .inline_image import (
+    ImageFragment,
+    render_inline_image,
+    write_inline_image,
 )
 from .line_break import (
     Fragment,
@@ -4062,7 +4068,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if FloatTolerance.greater_than(frag.font_size, max_font_size):
                 max_font_size = frag.font_size
         if h is None:
-            h = max_font_size
+            h = text_line.height if text_line.height else max_font_size
         page_break_triggered = self._perform_page_break_if_need_be(h)
         sl: list[str] = []
 
@@ -4224,6 +4230,33 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         )
                     )
                     current_char_vpos = frag.char_vpos
+                if isinstance(frag, ImageFragment):
+                    # Exit text object to render image
+                    sl.append("ET")
+                    img_x = s_start + s_width
+                    img_y = frag.get_y(self.y, max_font_size)
+
+                    render_inline_image(self, frag, img_x, img_y, sl)
+
+                    s_width += frag.w
+                    # Re-open text object at current position
+                    curr_x_pt = (s_start + s_width) * k
+                    curr_y_pt = (self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k
+                    sl.append(f"BT 1 0 0 1 {curr_x_pt:.2f} {curr_y_pt:.2f} Tm")
+                    if current_font is not None and current_font_size_pt is not None:
+                        sl.append(f"/F{current_font.i} {current_font_size_pt:.2f} Tf")
+                    if current_font_stretching != 100:
+                        sl.append(f"{current_font_stretching:.2f} Tz")
+                    if current_char_spacing != 0:
+                        sl.append(f"{current_char_spacing:.2f} Tc")
+                    if current_lift != 0.0:
+                        sl.append(f"{current_lift:.2f} Ts")
+                    if current_text_mode != TextMode.FILL:
+                        sl.append(f"{current_text_mode} Tr")
+                    if last_used_color is not None:
+                        sl.append(last_used_color.serialize().lower())
+                    continue
+
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
@@ -5345,8 +5378,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "Parameter 'h' must be a number, not a string."
                 " You can omit it by passing string content with text="
             )
-        if h is None:
-            h = self.font_size
 
         page_break_triggered = False
         normalized_string = self.normalize_text(text).replace("\r", "")
@@ -5377,12 +5408,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if not text_lines:
             return False
 
+        prev_line_h = self._lasth
         for text_line_index, text_line in enumerate(text_lines):
+            line_h = h or text_line.height
             if text_line_index > 0:
-                self.ln()
+                self.ln(h=prev_line_h)
+                prev_line_h = line_h
+            else:
+                prev_line_h = max(line_h, prev_line_h)
             new_page = self._render_styled_text_line(
                 text_line,
-                h=h,
+                h=line_h,
                 border=0,
                 new_x=XPos.WCONT,
                 new_y=YPos.TOP,
@@ -5394,6 +5430,47 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
         return page_break_triggered
+
+    @check_page
+    def write_image(
+        self,
+        name: ImageType,
+        w: float = 0,
+        h: float = 0,
+        valign: Union[VAlign, str] = VAlign.M,
+        keep_aspect_ratio: bool = True,
+        link: Optional[str | int] = "",
+        title: Optional[str] = None,
+        alt_text: Optional[str] = None,
+        resource_access_policy: Optional[ResourceAccessPolicy] = None,
+    ) -> bool:
+        """
+        Prints an inline image from the current position, wrapping to the next line
+        if it does not fit in the remaining line width.
+
+        Args:
+            name: image file path, URL, bytes, io.BytesIO, or PIL.Image.Image
+            w (float): target width in document units. If 0, computed from h or intrinsic size.
+            h (float): target height in document units. If 0, computed from w or current font_size.
+            valign (VAlign or str): vertical alignment relative to the line ('TOP', 'MIDDLE', 'BOTTOM'). Defaults to MIDDLE.
+            keep_aspect_ratio (bool): preserve aspect ratio if both w and h are provided. Defaults to True.
+            link (str or int): optional internal/external link.
+            title (str): optional image title.
+            alt_text (str): optional alternative text.
+            resource_access_policy: optional resource access policy.
+        """
+        return write_inline_image(
+            pdf=self,
+            name=name,
+            w=w,
+            h=h,
+            valign=valign,
+            keep_aspect_ratio=keep_aspect_ratio,
+            link=link,
+            title=title,
+            alt_text=alt_text,
+            resource_access_policy=resource_access_policy,
+        )
 
     @check_page
     def text_columns(
