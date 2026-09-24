@@ -46,10 +46,14 @@ class Padding(NamedTuple):
     @classmethod
     def new(cls, padding: Union[Number, Sequence[Number], "Padding"]) -> "Padding":
         """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
+        if isinstance(padding, Padding):
+            return padding
         if isinstance(padding, NumberClass):
-            return Padding(
-                float(padding), float(padding), float(padding), float(padding)
-            )
+            val = float(padding)
+            return Padding(val, val, val, val)
+        if len(padding) == 1:
+            val = float(padding[0])
+            return Padding(val, val, val, val)
         if len(padding) == 2:
             return Padding(
                 float(padding[0]),
@@ -73,7 +77,7 @@ class Padding(NamedTuple):
             )
 
         raise ValueError(
-            f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+            f"padding shall be a number or a sequence of 1, 2, 3 or 4 numbers, got {str(padding)}"
         )
 
 
