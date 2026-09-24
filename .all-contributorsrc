@@ -1891,6 +1891,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "swimmingbrain",
+      "name": "Braian Plaku",
+      "avatar_url": "https://avatars.githubusercontent.com/u/93007893?v=4",
+      "profile": "https://swimmingbrain.dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
