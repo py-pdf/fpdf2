@@ -99,3 +99,17 @@ def test_pdfa_transparent_png(tmp_path, dc):
         HERE / f"{dc.name.lower()}_transparent_png.pdf",
         tmp_path,
     )
+
+
+def test_pdfa_1b_cidset(tmp_path):
+    # PDF/A-1 requires a CIDSet stream for every embedded CIDFont subset - issue #88
+    pdf = FPDF(enforce_compliance=DocumentCompliance.PDFA_1B)
+    pdf.set_lang("en-US")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.add_font(fname=FONT_DIR / "SourceHanSansCN-Normal.otf")
+    pdf.add_page()
+    pdf.set_font("DejaVuSans", size=16)
+    pdf.cell(text="TrueType CIDFont: Ça va? Ğüşİöç", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("SourceHanSansCN-Normal", size=16)
+    pdf.cell(text="CFF CIDFont: 中文字体测试", new_x="LMARGIN", new_y="NEXT")
+    assert_pdf_equal(pdf, HERE / "pdfa_1b_cidset.pdf", tmp_path)
