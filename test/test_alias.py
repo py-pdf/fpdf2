@@ -277,3 +277,74 @@ def test_alias_and_literal_side_by_side_in_rtl(
         pdf.cell(w=90, text=literal_pattern, border=1)
 
     assert_pdf_equal(pdf, HERE / expected_pdf_file, tmp_path)
+
+
+def test_alias_alignment_warnings():
+    # Test Align.J warning:
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica", size=12)
+    pdf.alias_nb_pages(alias="{total_pages}", align=fpdf.enums.Align.J)
+    pdf.add_page()
+    pdf.cell(text="Total pages: {total_pages}")
+    with pytest.warns(UserWarning, match="Align.J.*fall back to Align.L"):
+        pdf.output()
+
+    # Test Align.X warning:
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica", size=12)
+    pdf.alias_nb_pages(alias="{total_pages}", align=fpdf.enums.Align.X)
+    pdf.add_page()
+    pdf.cell(text="Total pages: {total_pages}")
+    with pytest.warns(UserWarning, match="Align.X is treated as Align.C"):
+        pdf.output()
+
+
+def test_alias_alignment(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.set_font("Quicksand", size=12)
+    align_modes = (None, "L", "C", "R")
+    for _ in range(12):
+        pdf.add_page()
+        # Non-shaped rendering:
+        pdf.set_text_shaping(False)
+        for align_mode in align_modes:
+            pdf.alias_nb_pages(alias="{nb}", align=align_mode)
+            label = "Default" if align_mode is None else align_mode
+            pdf.cell(
+                w=pdf.epw,
+                text=f"Non-shaped Align {label}: {pdf.page_no()}/{{nb}} pages",
+                border=1,
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+        pdf.cell(
+            w=pdf.epw,
+            text=f"Non-shaped Literal: {pdf.page_no()}/12 pages",
+            border=1,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+
+        pdf.ln(4)
+
+        # Text-shaped rendering:
+        pdf.set_text_shaping(True)
+        for align_mode in align_modes:
+            pdf.alias_nb_pages(alias="{nb}", align=align_mode)
+            label = "Default" if align_mode is None else align_mode
+            pdf.cell(
+                w=pdf.epw,
+                text=f"Shaped Align {label}: {pdf.page_no()}/{{nb}} pages",
+                border=1,
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+        pdf.cell(
+            w=pdf.epw,
+            text=f"Shaped Literal: {pdf.page_no()}/12 pages",
+            border=1,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+    assert_pdf_equal(pdf, HERE / "alias_alignment.pdf", tmp_path)

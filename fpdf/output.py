@@ -2281,72 +2281,12 @@ def _build_cmap_blocks(
 
 
 def _tt_font_widths(font: TTFFont) -> str:
-    rangeid: int = 0
-    range_: dict[int, list[int]] = {}
-    range_interval: dict[int, bool] = {}
-    prevcid: int = -2
-    prevwidth: int = -1
-    interval: bool = False
-
-    # Glyphs sorted by mapped character id
-    glyphs = dict(sorted(font.subset.items(), key=lambda item: item[1]))
-
-    for glyph in glyphs:
-        assert glyph is not None
-        cid_mapped = glyphs[glyph]
-        if cid_mapped == (prevcid + 1):
-            if glyph.glyph_width == prevwidth:
-                if glyph.glyph_width == range_[rangeid][0]:
-                    range_.setdefault(rangeid, []).append(glyph.glyph_width)
-                else:
-                    range_[rangeid].pop()
-                    # new range
-                    rangeid = prevcid
-                    range_[rangeid] = [prevwidth, glyph.glyph_width]
-                interval = True
-                range_interval[rangeid] = True
-            else:
-                if interval:
-                    # new range
-                    rangeid = cid_mapped
-                    range_[rangeid] = [glyph.glyph_width]
-                else:
-                    range_[rangeid].append(glyph.glyph_width)
-                interval = False
-        else:
-            rangeid = cid_mapped
-            range_[rangeid] = [glyph.glyph_width]
-            interval = False
-        prevcid = cid_mapped
-        prevwidth = glyph.glyph_width
-    prevk = -1
-    nextk = -1
-    prevint = False
-
-    ri = range_interval
-    for k, ws in sorted(range_.items()):
-        cws = len(ws)
-        if k == nextk and not prevint and (k not in ri or cws < 3):
-            if k in ri:
-                del ri[k]
-            range_[prevk] = range_[prevk] + range_[k]
-            del range_[k]
-        else:
-            prevk = k
-        nextk = k + cws
-        if k in ri:
-            prevint = cws > 3
-            del ri[k]
-            nextk -= 1
-        else:
-            prevint = False
-    w: list[str] = []
-    for k, ws in sorted(range_.items()):
-        if len(set(ws)) == 1:
-            w.append(f" {k} {k + len(ws) - 1} {ws[0]}")
-        else:
-            w.append(f" {k} [ {' '.join(str(int(h)) for h in ws)} ]\n")
-    return f"[{''.join(w)}]"
+    cid_widths = {
+        cid: glyph.glyph_width
+        for glyph, cid in font.subset.items()
+        if glyph is not None
+    }
+    return _cid_font_widths(cid_widths)
 
 
 def _cid_font_widths(cid_widths: dict[int, int]) -> str:
