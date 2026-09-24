@@ -1041,7 +1041,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if image_filter == "JPXDecode":
             self._set_min_pdf_version("1.5")
 
-    def alias_nb_pages(self, alias: str = "{nb}") -> None:
+    def alias_nb_pages(
+        self, alias: str = "{nb}", align: Union[Align, str] = Align.L
+    ) -> None:
         """
         Defines an alias for the total number of pages.
         It will be substituted as the document is closed.
@@ -1053,6 +1055,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             alias (str): the alias. Defaults to `"{nb}"`.
+            align (Align, str, optional): alignment of substitution text in the reserved space.
+                Defaults to `Align.L` (left-aligned). Can also be `Align.C` or `Align.R`.
 
         Notes
         -----
@@ -1064,6 +1068,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         which can causes slight positioning differences.
         """
         self.str_alias_nb_pages = alias
+        self.alias_nb_pages_align = (
+            Align.coerce(align) if align is not None else Align.L
+        )
 
     @check_page
     def set_page_label(
@@ -4591,6 +4598,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             self._get_current_graphics_state(),
                             self.k,
                             dummy_width_string=dummy_width_string,
+                            align=self.alias_nb_pages_align,
                         )
                     if fragment_text:
                         yield Fragment(
@@ -4701,6 +4709,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         gstate,
                         self.k,
                         dummy_width_string=dummy_width_string,
+                        align=self.alias_nb_pages_align,
                     )
                     text = text[len(self.str_alias_nb_pages) :]
                     continue
