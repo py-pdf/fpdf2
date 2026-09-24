@@ -535,8 +535,24 @@ def calculate_isolate_runs(paragraph: list[BidiCharacter]) -> list[IsolatingRun]
 
 
 class BidiParagraph:
+    SENTINEL_CANDIDATES: tuple[str, ...] = (
+        "\U0001d7ff",  # MATHEMATICAL BOLD DIGIT NINE (Bidi Class: EN)
+        "\U0001d7fe",  # MATHEMATICAL BOLD DIGIT EIGHT
+        "\U0001d7fd",  # MATHEMATICAL BOLD DIGIT SEVEN
+        "\U0001d7fc",  # MATHEMATICAL BOLD DIGIT SIX
+        "\U0001d7fb",  # MATHEMATICAL BOLD DIGIT FIVE
+        "\U0001d7fa",  # MATHEMATICAL BOLD DIGIT FOUR
+        "\U0001d7f9",  # MATHEMATICAL BOLD DIGIT THREE
+        "\U0001d7f8",  # MATHEMATICAL BOLD DIGIT TWO
+        "\U0001d7f7",  # MATHEMATICAL BOLD DIGIT ONE
+        "\U0001d7f6",  # MATHEMATICAL BOLD DIGIT ZERO
+        "\U0001d7ce",  # MATHEMATICAL BOLD DIGIT ZERO (alternative)
+    )
+
     __slots__ = (
         "text",
+        "alias",
+        "sentinel",
         "base_direction",
         "debug",
         "preserve_bn_chars",
@@ -550,7 +566,18 @@ class BidiParagraph:
         base_direction: Optional[TextDirection] = None,
         debug: bool = False,
         preserve_bn_chars: bool = False,
+        alias: Optional[str] = None,
     ) -> None:
+        self.alias = alias
+        self.sentinel: Optional[str] = None
+        if alias and alias in text:
+            for cand in self.SENTINEL_CANDIDATES:
+                if cand not in text:
+                    self.sentinel = cand
+                    break
+            if self.sentinel:
+                text = text.replace(alias, self.sentinel)
+
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -582,7 +609,10 @@ class BidiParagraph:
 
     def get_reordered_string(self) -> str:
         "Used for conformance validation"
-        return "".join(c.character for c in self.reorder_resolved_levels())
+        s = "".join(c.character for c in self.reorder_resolved_levels())
+        if self.alias and self.sentinel:
+            s = s.replace(self.sentinel, self.alias)
+        return s
 
     def get_bidi_fragments(self) -> tuple[tuple[str, TextDirection], ...]:
         return self.split_bidi_fragments()
@@ -737,9 +767,14 @@ class BidiParagraph:
         for c in self.characters:
             if c.get_direction_from_level() != current_direction:
                 if current_fragment:
+                    frag_text = (
+                        current_fragment.replace(self.sentinel, self.alias)
+                        if self.alias and self.sentinel
+                        else current_fragment
+                    )
                     bidi_fragments.append(
                         (
-                            current_fragment,
+                            frag_text,
                             (
                                 TextDirection.RTL
                                 if current_direction == "R"
@@ -751,9 +786,14 @@ class BidiParagraph:
                 current_direction = c.get_direction_from_level()
             current_fragment += c.character
         if current_fragment:
+            frag_text = (
+                current_fragment.replace(self.sentinel, self.alias)
+                if self.alias and self.sentinel
+                else current_fragment
+            )
             bidi_fragments.append(
                 (
-                    current_fragment,
+                    frag_text,
                     (
                         TextDirection.RTL
                         if current_direction == "R"

@@ -443,11 +443,16 @@ class TotalPagesSubstitutionFragment(Fragment):
     """
 
     def __init__(
-        self, *args: Any, dummy_width_string: str = "1", **kwargs: Any
+        self,
+        *args: Any,
+        dummy_width_string: str = "1",
+        align: Optional[Union[Align, str]] = Align.L,
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.uuid = uuid4()
         self.dummy_width_string = dummy_width_string
+        self.align = Align.coerce(align) if align is not None else Align.L
         # Use dummy_width_string for layout phase width calculation if characters are not empty (non-cloned)
         # and text shaping is active.
         if self.characters and self.graphics_state.text_shaping:
@@ -461,6 +466,7 @@ class TotalPagesSubstitutionFragment(Fragment):
             super().clone(characters=characters, link=link),
         )
         clone_obj.dummy_width_string = self.dummy_width_string
+        clone_obj.align = self.align
         return clone_obj
 
     def get_width(
@@ -494,6 +500,26 @@ class TotalPagesSubstitutionFragment(Fragment):
         self._render_kwargs = kwargs
         return self.get_placeholder_string()
 
+    def _get_alias_shift(self, gap: float) -> float:
+        align = self.align or Align.L
+        if align == Align.J:
+            warnings.warn(
+                "Align.J (justify) is not supported for alias substitution and will fall back to Align.L (left).",
+                UserWarning,
+            )
+            align = Align.L
+        elif align == Align.X:
+            warnings.warn(
+                "Align.X is treated as Align.C (center) for alias substitution.",
+                UserWarning,
+            )
+            align = Align.C
+        if align == Align.R:
+            return gap
+        if align == Align.C:
+            return gap / 2
+        return 0.0
+
     def render_text_substitution(self, replacement_text: str) -> str:
         """
         This method is invoked at the output phase. It calls `render_pdf_text()` from the superclass
@@ -514,34 +540,40 @@ class TotalPagesSubstitutionFragment(Fragment):
                 UserWarning,
             )
 
-        shift = 0.0
+        shift = self._get_alias_shift(dummy_width - replacement_width)
+
         if (
-            self.graphics_state.text_shaping
-            and hasattr(self, "_render_args")
+            hasattr(self, "_render_args")
             and self._render_args
+            and len(self._render_args) > 5
         ):
-            args = list(self._render_args)
-            if len(args) > 3:
-                # adjust_x is at index 3: frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h
-                shift = (dummy_width - replacement_width) / 2
+            pos_x, pos_y, h = self._render_args[3:6]
+            reset_tm = (
+                f" 1 0 0 1 {(pos_x + dummy_width) * self.k:.2f} "
+                f"{(h - pos_y) * self.k:.2f} Tm"
+            )
+
+            if self.graphics_state.text_shaping:
+                args = list(self._render_args)
                 args[3] += shift
                 self._render_args = tuple(args)
+                return (
+                    super().render_pdf_text(*self._render_args, **self._render_kwargs)
+                    + reset_tm
+                )
 
-        ret = super().render_pdf_text(*self._render_args, **self._render_kwargs)
+            if shift != 0.0:
+                set_tm = (
+                    f"1 0 0 1 {(pos_x + shift) * self.k:.2f} "
+                    f"{(h - pos_y) * self.k:.2f} Tm "
+                )
+                return (
+                    set_tm
+                    + super().render_pdf_text(*self._render_args, **self._render_kwargs)
+                    + reset_tm
+                )
 
-        if (
-            self.graphics_state.text_shaping
-            and hasattr(self, "_render_args")
-            and self._render_args
-        ):
-            # Reset PDF cursor to the end of reserved space to prevent splitting subsequent text:
-            original_adjust_x = self._render_args[3] - shift
-            end_x = original_adjust_x + dummy_width
-            h = self._render_args[5]
-            pos_y = self._render_args[4]
-            ret += f" 1 0 0 1 {end_x * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm"
-
-        return ret
+        return super().render_pdf_text(*self._render_args, **self._render_kwargs)
 
 
 class TextLine(NamedTuple):

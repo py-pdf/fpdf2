@@ -18,12 +18,19 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.9] - Not released yet
 ### Added
+* `align` parameter for [`FPDF.alias_nb_pages()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) to control horizontal alignment (`Align.L`, `Align.C`, `Align.R`) of substitution text inside reserved alias space - _cf._ [issue #1926](https://github.com/py-pdf/fpdf2/issues/1926) - thanks to @prateek-dagar
+* support for page number alias substitution with bidirectional / RTL text shaping - _cf._ [issue #1925](https://github.com/py-pdf/fpdf2/issues/1925) - thanks to @prateek-dagar
 * `appearance` parameter for [`FPDF.file_attachment_annotation()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_attachment_annotation), accepting `FileAttachmentAppearance.HIDDEN` to give the annotation an empty appearance stream so its default icon is not displayed while the file stays embedded and reachable - _cf._ [issue #561](https://github.com/py-pdf/fpdf2/issues/561)
+* Turkish translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-tr.html#ogretici-7-pdfa-belgeleri-olusturma) tutorial section, along with fixes for duplicated clauses and mistranslations in the Tuto 2, 4 & 6 descriptions - _cf._ [PR #1951](https://github.com/py-pdf/fpdf2/pull/1951) - thanks to @ihsandeniz
 ### Fixed
+* split font `/ToUnicode` and `/Encoding` CMap mappings into blocks of at most 100 entries, as required by the PDF specification - _cf._ [issue #1952](https://github.com/py-pdf/fpdf2/issues/1952)
 * visual gap in rendering subsequent text after `{nb}` page alias when text shaping is enabled - _cf._ [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090) - thanks to @prateek-dagar
 * `FPDF.write_html()` no longer raises `IndexError: pop from empty list` when a `<ul>` or `<ol>` element carries a `line-height` that is not a bare number (_e.g._ `line-height: normal` or `line-height: 1.5em`); such values are now ignored, and the default line height is used, consistently with `<p line-height="x">` - _cf._ [PR #1917](https://github.com/py-pdf/fpdf2/pull/1917)
 * `FPDF.write_html()` now renders list bullets with correct font styling instead of inheriting preceding heading (e.g. `<h1>`) styles - _cf._ [issue #1921](https://github.com/py-pdf/fpdf2/issues/1921)
 * table cells landing in the wrong column when a row was covered by several rowspans that did not start in column order - _cf._ [issue #1948](https://github.com/py-pdf/fpdf2/issues/1948)
+* `Padding.new()` now accepts 1-element sequences per CSS shorthand rules and preserves existing `Padding` instances without redundant allocations
+### Changed
+* Refactored `_tt_font_widths` to reuse `_cid_font_widths` glyph interval compression logic - thanks to @agustin18
 
 
 ## [2.8.8] - 2026-08-09

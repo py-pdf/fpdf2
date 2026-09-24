@@ -1863,6 +1863,34 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "olafure",
+      "name": "Olafur Egilsson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/830918?v=4",
+      "profile": "https://github.com/olafure",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "ihsandeniz",
+      "name": "İhsan Deniz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/132747884?v=4",
+      "profile": "https://ihsandeniz.net.tr/",
+      "contributions": [
+        "translation",
+        "code"
+      ]
+    },
+    {
+      "login": "agustin18",
+      "name": "agustin18",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23065192?v=4",
+      "profile": "https://github.com/agustin18",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

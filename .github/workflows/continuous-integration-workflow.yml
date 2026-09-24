@@ -38,7 +38,7 @@ jobs:
           scripts/verapdf.py --print-aggregated-report
           scripts/check-PDF-A-with-verapdf.sh
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       security-events: write  # for zizmor
     steps:
@@ -51,11 +51,7 @@ jobs:
         with:
           python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
-        # Constraining swig version as a workaround for: https://github.com/py-pdf/fpdf2/issues/1928 / https://github.com/LudovicRousseau/PyKCS11/issues/167
-        env:
-          PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
-          echo 'swig<4.5' > "$PIP_BUILD_CONSTRAINT"
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade .[dev,test]
       # Running zizmor 1st, because it is blocking PR merge
@@ -64,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           sarif_file: results.sarif
           category: zizmor
@@ -92,7 +88,7 @@ jobs:
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@d43b6c087ac471e2ea7b8af622ff15f05c0c365b # v1.50.1
+        uses: crate-ci/typos@512fc24f32f44ab01972217aaaf3dc86ec234d53 # v1.50.2
   test:
     strategy:
       matrix:
@@ -130,9 +126,12 @@ jobs:
         env:
           PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
-          echo 'swig<4.5' > "$PIP_BUILD_CONSTRAINT"
-          python -m pip install --upgrade pip setuptools wheel
           # --- Create constraints file ---
+          # It must exist before the first pip invocation, and even when empty:
+          # PIP_BUILD_CONSTRAINT applies to every pip call in this step, and pip
+          # aborts with "Could not open requirements file" if the path is missing.
+          : > "$PIP_BUILD_CONSTRAINT"
+          python -m pip install --upgrade pip setuptools wheel
           # For Python 3.14 only - temporary solution while camelot-py
           # update its dependencies
           if [[ "${{ matrix.python-version }}" == "3.14" ]]; then

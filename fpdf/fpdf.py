@@ -1041,7 +1041,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if image_filter == "JPXDecode":
             self._set_min_pdf_version("1.5")
 
-    def alias_nb_pages(self, alias: str = "{nb}") -> None:
+    def alias_nb_pages(
+        self, alias: str = "{nb}", align: Union[Align, str] = Align.L
+    ) -> None:
         """
         Defines an alias for the total number of pages.
         It will be substituted as the document is closed.
@@ -1053,6 +1055,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             alias (str): the alias. Defaults to `"{nb}"`.
+            align (Align, str, optional): alignment of substitution text in the reserved space.
+                Defaults to `Align.L` (left-aligned). Can also be `Align.C` or `Align.R`.
 
         Notes
         -----
@@ -1064,6 +1068,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         which can causes slight positioning differences.
         """
         self.str_alias_nb_pages = alias
+        self.alias_nb_pages_align = (
+            Align.coerce(align) if align is not None else Align.L
+        )
 
     @check_page
     def set_page_label(
@@ -4401,23 +4408,37 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if self.text_shaping["direction"]
             else auto_detect_base_direction(text)
         )
+        self.text_shaping["paragraph_direction"] = paragraph_direction
 
         paragraph = BidiParagraph(
             text=text,
             base_direction=paragraph_direction,
             preserve_bn_chars=True,
+            alias=self.str_alias_nb_pages,
         )
         directional_segments = paragraph.get_bidi_fragments()
-        self.text_shaping["paragraph_direction"] = paragraph.base_direction
+        emphasis = (
+            "B" in self.font_style,
+            "I" in self.font_style,
+            self.strikethrough,
+            self.underline,
+        )
 
         fragments: list[Fragment] = []
         for bidi_text, bidi_direction in directional_segments:
             self.text_shaping["fragment_direction"] = bidi_direction
-            fragments += self._preload_font_styles(bidi_text, markdown)
+            styled_frags = self._preload_font_styles(
+                bidi_text, markdown, _initial_emphasis=emphasis
+            )
+            emphasis = getattr(self, "_markdown_emphasis", emphasis)
+            fragments.extend(styled_frags)
         return tuple(fragments)
 
     def _preload_font_styles(
-        self, text: Optional[str], markdown: bool
+        self,
+        text: Optional[str],
+        markdown: bool,
+        _initial_emphasis: Optional[tuple[bool, bool, bool, bool]] = None,
     ) -> Sequence[Fragment]:
         """
         When Markdown styling is enabled, we require secondary fonts
@@ -4434,7 +4455,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             prev_font_style += "U"
         if self.strikethrough:
             prev_font_style += "S"
-        styled_txt_frags = tuple(self._parse_chars(text, markdown))
+        styled_txt_frags = tuple(
+            self._parse_chars(text, markdown, _initial_emphasis=_initial_emphasis)
+        )
         if markdown:
             page = self.page
             # We set the current to page to zero so that
@@ -4575,6 +4598,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             self._get_current_graphics_state(),
                             self.k,
                             dummy_width_string=dummy_width_string,
+                            align=self.alias_nb_pages_align,
                         )
                     if fragment_text:
                         yield Fragment(
@@ -4685,6 +4709,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         gstate,
                         self.k,
                         dummy_width_string=dummy_width_string,
+                        align=self.alias_nb_pages_align,
                     )
                     text = text[len(self.str_alias_nb_pages) :]
                     continue
@@ -4767,6 +4792,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             escape_run = 0
         if txt_frag:
             yield frag()
+        self._markdown_emphasis = (
+            in_bold,
+            in_italics,
+            in_strikethrough,
+            in_underline,
+        )
 
     def will_page_break(self, height: float) -> bool:
         """
