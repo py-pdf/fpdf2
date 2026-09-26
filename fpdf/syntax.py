@@ -396,7 +396,12 @@ class PDFArray(list[Any]):
     ) -> str:
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
-        elif all(isinstance(elem, (int, float)) for elem in self):
+        elif all(isinstance(elem, bool) for elem in self):
+            serialized_elems = " ".join(str(elem).lower() for elem in self)
+        elif all(
+            isinstance(elem, (int, float)) and not isinstance(elem, bool)
+            for elem in self
+        ):
             serialized_elems = " ".join(str(elem) for elem in self)
         else:
             serialized_chunks: list[str] = []
