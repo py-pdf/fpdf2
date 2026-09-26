@@ -89,7 +89,7 @@ if TYPE_CHECKING:
 
 
 def clear_empty_fields(d: Mapping[str, object]) -> Mapping[str, object]:
-    return {k: v for k, v in d.items() if v}
+    return {k: v for k, v in d.items() if v or v is False or v == 0}
 
 
 def create_dictionary_string(
@@ -115,7 +115,12 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join(key_value_join.join((k, str(v))) for k, v in dict_.items()),
+            field_join.join(
+                key_value_join.join(
+                    (k, str(v).lower() if isinstance(v, bool) else str(v))
+                )
+                for k, v in dict_.items()
+            ),
             close_dict,
         ]
     )
