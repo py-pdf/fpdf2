@@ -1572,6 +1572,25 @@ class OutputProducer:
                     self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
                     cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
 
+                compliance = self.fpdf._compliance
+                if compliance and compliance.profile == "PDFA" and compliance.part == 1:
+                    # PDF/A-1 requires a CIDSet identifying the CIDs present in
+                    # the embedded font subset (veraPDF rule 6.3.5-3). It is
+                    # optional in later parts and deprecated since PDF 2.0.
+                    cids_present = {0}
+                    if is_cff_cid and code_to_cid:
+                        cids_present.update(code_to_cid.values())
+                    else:
+                        cids_present.update(code_to_glyph)
+                    cid_set = bytearray(max(cids_present) // 8 + 1)
+                    for cid in cids_present:
+                        cid_set[cid // 8] |= 0x80 >> (cid % 8)
+                    cid_set_obj = PDFContentStream(
+                        contents=bytes(cid_set), compress=True
+                    )
+                    self._add_pdf_obj(cid_set_obj, "fonts")
+                    font_descriptor_obj.c_i_d_set = cid_set_obj  # type: ignore[attr-defined]
+
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
                 if is_cff_cid:
                     font_file_cs_obj.subtype = Name("CIDFontType0C")  # type: ignore[attr-defined]
