@@ -23,6 +23,11 @@ class DummyObj(PDFObject):
         ([1, True], "[1\ntrue]"),
         ([False, 0], "[false\n0]"),
         ([DummyObj(1), True], "[1 0 R\ntrue]"),
+        ([None], "[null]"),
+        ([None, None], "[null null]"),
+        ([1, None], "[1\nnull]"),
+        ([None, True], "[null\ntrue]"),
+        ([DummyObj(1), None], "[1 0 R\nnull]"),
     ],
 )
 def test_pdf_array_serialize_booleans_and_numbers(elements, expected):
