@@ -217,16 +217,17 @@ class PDFObject:
             obj_dict = self._build_obj_dict(_security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
-        content_stream = self.content_stream()
-        if content_stream:
+        # Subclasses return bytes for stream objects.
+        content_stream = self.content_stream()  # pylint: disable=assignment-from-none
+        if content_stream is not None:
             output.append(create_stream(content_stream))
         output.append("endobj")
         return "\n".join(output)
 
     # pylint: disable=no-self-use
-    def content_stream(self) -> bytes:
-        "Subclasses can override this method to indicate the presence of a content stream"
-        return b""
+    def content_stream(self) -> Optional[bytes]:
+        "Return None for no stream; subclasses may return bytes, including an empty stream."
+        return None
 
     def _build_obj_dict(
         self, security_handler: Optional["StandardSecurityHandler"] = None

@@ -4527,52 +4527,49 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         an opening marker from spanning the link boundary. Existing escapes are
         preserved and taken into account when counting markers.
         """
-        marker_counts: dict[str, int] = dict.fromkeys(self.MARKDOWN_MARKERS, 0)
-        escape_run = 0
-        index = 0
-        while index < len(text):
-            if text[index] == self.MARKDOWN_ESCAPE_CHARACTER:
-                escape_run += 1
-                index += 1
-                continue
-            marker = self._markdown_marker_at(
-                text[index:], text[index - 1] if index else None
-            )
-            if marker and escape_run % 2 == 0:
-                marker_counts[marker] += 1
-                index += 2
-            else:
-                index += 1
-            escape_run = 0
-
-        unbalanced_markers = {
-            marker for marker, count in marker_counts.items() if count % 2
+        marker_positions: dict[str, list[int]] = {
+            marker: [] for marker in self.MARKDOWN_MARKERS
         }
-        if not unbalanced_markers:
-            return text
-
-        result: list[str] = []
-        index = 0
         escape_run = 0
+        previous_character = None
+        index = 0
         while index < len(text):
             if text[index] == self.MARKDOWN_ESCAPE_CHARACTER:
-                result.append(text[index])
                 escape_run += 1
                 index += 1
                 continue
-            marker = self._markdown_marker_at(
-                text[index:], text[index - 1] if index else None
-            )
-            if marker in unbalanced_markers:
-                if escape_run % 2 == 0:
-                    result.append(self.MARKDOWN_ESCAPE_CHARACTER)
-                result.append(marker)
+            if escape_run:
+                if escape_run % 2 and text[index : index + 2] in self.MARKDOWN_MARKERS:
+                    # _parse_chars consumes both escaped characters and flushes
+                    # the fragment, resetting adjacency for the next marker.
+                    index += 2
+                    previous_character = None
+                    escape_run = 0
+                    continue
+                previous_character = self.MARKDOWN_ESCAPE_CHARACTER
+                escape_run = 0
+            marker = self._markdown_marker_at(text[index:], previous_character)
+            if marker:
+                marker_positions[marker].append(index)
                 index += 2
+                previous_character = None
             else:
-                result.append(text[index])
+                previous_character = text[index]
                 index += 1
-            escape_run = 0
-        return "".join(result)
+
+        unbalanced_positions = {
+            index
+            for positions in marker_positions.values()
+            if len(positions) % 2
+            for index in positions
+        }
+        if not unbalanced_positions:
+            return text
+        return "".join(
+            (self.MARKDOWN_ESCAPE_CHARACTER if index in unbalanced_positions else "")
+            + character
+            for index, character in enumerate(text)
+        )
 
     def _parse_chars(
         self,
