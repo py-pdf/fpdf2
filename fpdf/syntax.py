@@ -403,6 +403,8 @@ class PDFArray(list[Any]):
             serialized_elems = " ".join(self)
         elif all(isinstance(elem, bool) for elem in self):
             serialized_elems = " ".join(str(elem).lower() for elem in self)
+        elif all(elem is None for elem in self):
+            serialized_elems = " ".join("null" for _ in self)
         elif all(
             isinstance(elem, (int, float)) and not isinstance(elem, bool)
             for elem in self
@@ -423,6 +425,8 @@ class PDFArray(list[Any]):
                     serialized_chunks.append(str(elem).lower())
                 elif isinstance(elem, (int, float)):
                     serialized_chunks.append(str(elem))
+                elif elem is None:
+                    serialized_chunks.append("null")
                 else:
                     serialized_chunks.append(str(elem))
             serialized_elems = "\n".join(serialized_chunks)
