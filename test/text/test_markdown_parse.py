@@ -1,4 +1,6 @@
 # pylint: disable=protected-access
+import pytest
+
 from fpdf import FPDF
 from fpdf.line_break import Fragment
 
@@ -450,3 +452,34 @@ def test_markdown_parse_escaped_markers_inside_link():  # issue 1847
     frags = tuple(FPDF()._parse_chars("[a\\\\b](url)", True))
     assert len(frags) == 1
     assert "".join(frags[0].characters) == "a\\b"
+
+
+@pytest.mark.parametrize("marker", ["**", "__", "--", "~~"])
+@pytest.mark.parametrize("escape_count", [1, 2, 3, 4])
+@pytest.mark.parametrize("balanced", [False, True])
+def test_markdown_link_escaped_marker_adjacency(marker, escape_count, balanced):
+    pdf = FPDF()
+    pdf.MARKDOWN_LINK_UNDERLINE = False
+    label = "\\" * escape_count + marker * 2 + "Z"
+    if balanced:
+        label += marker
+    frags = tuple(pdf._parse_chars(f"[{label}](url) tail", True))
+    linked = [frag for frag in frags if frag.link == "url"]
+    active = balanced and escape_count % 2 == 1
+    expected = "\\" * (escape_count // 2) + marker * (1 if active else 2) + "Z"
+    if balanced and not active:
+        expected += marker
+    assert "".join(frag.string for frag in linked) == expected
+    for frag in linked:
+        styled = active and "Z" in frag.string
+        assert frag.font_style == (
+            "B"
+            if styled and marker == "**"
+            else "I" if styled and marker == "__" else ""
+        )
+        assert frag.underline == (styled and marker == "--")
+        assert frag.strikethrough == (styled and marker == "~~")
+    assert frags[-1].string == " tail"
+    assert frags[-1].font_style == ""
+    assert not frags[-1].underline
+    assert not frags[-1].strikethrough

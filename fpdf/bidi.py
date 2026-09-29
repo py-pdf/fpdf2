@@ -2,6 +2,7 @@
 # Unicode bidirectional algorithm - Revision 48 for Unicode 15.1.0
 # https://unicode.org/reports/tr9/
 
+import logging
 import unicodedata
 from collections import deque
 from dataclasses import dataclass, replace
@@ -9,6 +10,8 @@ from operator import itemgetter
 from typing import Optional, TypedDict
 
 from .enums import TextDirection
+
+LOGGER = logging.getLogger(__name__)
 
 MAX_DEPTH: int = 125
 
@@ -575,7 +578,12 @@ class BidiParagraph:
                 if cand not in text:
                     self.sentinel = cand
                     break
-            if self.sentinel:
+            if self.sentinel is None:
+                LOGGER.warning(
+                    "No unused sentinel is available to protect the page-count alias "
+                    "during bidirectional text processing; continuing without alias protection."
+                )
+            else:
                 text = text.replace(alias, self.sentinel)
 
         self.text = text

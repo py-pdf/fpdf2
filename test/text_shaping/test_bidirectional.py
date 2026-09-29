@@ -1,6 +1,8 @@
 from pathlib import Path
 import lzma
 
+import pytest
+
 from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
 from fpdf.enums import TextDirection
@@ -289,3 +291,46 @@ def test_bidi_preserves_bn_chars():
     characters = [char.character for char in paragraph.get_characters()]
     assert characters.count("\u00ad") == 3
     assert characters.count("\U000e007a") == 1
+
+
+@pytest.mark.parametrize("alias", ["{nb}", "TOTAL", "מספר"])
+def test_bidi_alias_sentinel_exhaustion(alias, caplog):
+    text = "".join(BidiParagraph.SENTINEL_CANDIDATES) + f" אבג 10/{alias} דהו"
+    paragraph = BidiParagraph(text=text, alias=alias)
+    assert paragraph.sentinel is None
+    assert paragraph.text == text
+    assert caplog.record_tuples == [
+        (
+            "fpdf.bidi",
+            30,
+            (
+                "No unused sentinel is available to protect the page-count alias "
+                "during bidirectional text processing; continuing without alias protection."
+            ),
+        )
+    ]
+    assert (
+        paragraph.get_bidi_fragments() == BidiParagraph(text=text).get_bidi_fragments()
+    )
+    assert (
+        paragraph.get_reordered_string()
+        == BidiParagraph(text=text).get_reordered_string()
+    )
+
+
+@pytest.mark.parametrize("alias", [None, "", "{nb}"])
+def test_bidi_sentinel_exhaustion_without_alias_in_text(alias):
+    text = "".join(BidiParagraph.SENTINEL_CANDIDATES)
+    paragraph = BidiParagraph(text=text, alias=alias)
+    assert paragraph.get_bidi_fragments() == ((text, TextDirection.LTR),)
+    assert paragraph.get_reordered_string() == text
+
+
+def test_bidi_alias_with_one_unused_sentinel():
+    existing = "".join(BidiParagraph.SENTINEL_CANDIDATES[:-1])
+    paragraph = BidiParagraph(text=f"אבג 10/{{nb}} {existing} דהו", alias="{nb}")
+    fragments = paragraph.get_bidi_fragments()
+    assert ("10/{nb}", TextDirection.LTR) in fragments
+    assert (existing, TextDirection.LTR) in fragments
+    assert "10/{nb}" in paragraph.get_reordered_string()
+    assert existing in paragraph.get_reordered_string()
