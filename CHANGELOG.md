@@ -16,7 +16,10 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.9] - Not released yet
+## [2.9.0] - Not released yet
+
+
+## [2.8.9] - 2026-09-29
 ### Added
 * `align` parameter for [`FPDF.alias_nb_pages()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) to control horizontal alignment (`Align.L`, `Align.C`, `Align.R`) of substitution text inside reserved alias space - _cf._ [issue #1926](https://github.com/py-pdf/fpdf2/issues/1926) - thanks to @prateek-dagar
 * support for page number alias substitution with bidirectional / RTL text shaping - _cf._ [issue #1925](https://github.com/py-pdf/fpdf2/issues/1925) - thanks to @prateek-dagar
