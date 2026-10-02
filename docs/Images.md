@@ -362,3 +362,48 @@ for ... # loop
 This recipe is valid for `fpdf2` v2.5.7+.
 For previous versions of `fpdf2`, a _deepcopy_ of `.images` must be made,
 (_cf._ [issue #501](https://github.com/py-pdf/fpdf2/issues/501#issuecomment-1224310277)).
+
+
+## Inline images & figures in flowing text ##
+
+You can embed images (raster images or vector SVGs) directly into flowing lines of text using [`FPDF.write_image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_image).
+
+Inline images automatically flow with [`write()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write), align to the text baseline, and wrap cleanly to the next line when approaching the page margin:
+
+```python
+from fpdf import FPDF, VAlign
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica", size=12)
+
+# Insert inline image centered on the text line (VAlign.M):
+pdf.write(text="Formula result: ")
+pdf.write_image("equation.png", h=6, valign=VAlign.M)
+pdf.write(text=" is computed inline.\n\n")
+
+# Vector SVG inline:
+pdf.write(text="Status icon: ")
+pdf.write_image("badge.svg", h=7, valign=VAlign.M)
+pdf.write(text=" verified by automated test.\n\n")
+
+# Multi-line word wrapping with tall inline images:
+pdf.write(text="This paragraph wraps around inline images ")
+pdf.write_image("equation.png", h=8, valign=VAlign.M)
+pdf.write(text=" and continues seamlessly on subsequent lines without overlapping.")
+pdf.output("inline-images.pdf")
+```
+
+### Vertical alignment (`valign`)
+
+* `VAlign.M` (default / Middle): Centers the image vertically around the lowercase character body (x-height midpoint).
+* `VAlign.T` (Top): Aligns the top of the image with the top edge of capital letter ascenders.
+* `VAlign.B` (Bottom): Places the bottom edge of the image directly on the text baseline.
+
+### Sizing and aspect ratio
+
+* **Default (`w=0, h=0`)**: Height automatically matches current `font_size`, width scales proportionally.
+* **Width only (`w>0, h=0`)** or **Height only (`w=0, h>0`)**: The missing dimension is computed from the image aspect ratio.
+* **Fit inside box (`keep_aspect_ratio=True`)**: When both `w` and `h` are provided, the image is scaled to fit inside the bounding box without distortion.
+* **Exact stretch (`keep_aspect_ratio=False`)**: Forces the image to exact `w` and `h` dimensions.
+
