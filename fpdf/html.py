@@ -325,6 +325,21 @@ def parse_css_style(style_attr: str) -> dict[str, str]:
     return style
 
 
+def _parse_html_dimension(val: str | None) -> float:
+    """Parse a numeric HTML attribute length, stripping common CSS units like px and pt."""
+    if not val:
+        return 0.0
+    cleaned = str(val).strip().lower()
+    for unit in ("px", "pt"):
+        if cleaned.endswith(unit):
+            cleaned = cleaned[: -len(unit)].rstrip()
+            break
+    try:
+        return float(cleaned)
+    except ValueError:
+        return 0.0
+
+
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
@@ -789,10 +804,11 @@ class HTML2FPDF(HTMLParser):
             self._end_paragraph()
             width_str = css_style.get("width", attrs_dict.get("width"))
             if width_str:
-                if width_str[-1] == "%":
+                width_str = width_str.strip()
+                if width_str.endswith("%"):
                     hr_width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    hr_width = float(width_str) / self.pdf.k
+                    hr_width = _parse_html_dimension(width_str) / self.pdf.k
             else:
                 hr_width = self.pdf.epw
             # Centering:
@@ -1102,10 +1118,11 @@ class HTML2FPDF(HTMLParser):
             width: Optional[float] = None
             width_str = css_style.get("width") or attrs_dict.get("width")
             if width_str:
-                if width_str[-1] == "%":
+                width_str = width_str.strip()
+                if width_str.endswith("%"):
                     width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    width = float(width_str) / self.pdf.k
+                    width = _parse_html_dimension(width_str) / self.pdf.k
             if "border" not in attrs_dict:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
@@ -1127,11 +1144,11 @@ class HTML2FPDF(HTMLParser):
                     borders_layout = "NONE"
             align = Align.coerce(attrs_dict.get("align") or "CENTER")
             padding = (
-                float(attrs_dict["cellpadding"] or 0)
+                _parse_html_dimension(attrs_dict["cellpadding"])
                 if "cellpadding" in attrs_dict
                 else None
             )
-            spacing = float(attrs_dict.get("cellspacing") or 0)
+            spacing = _parse_html_dimension(attrs_dict.get("cellspacing"))
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -1172,13 +1189,13 @@ class HTML2FPDF(HTMLParser):
                     tag,
                 )
             if "width" in attrs_dict:
-                width_str = attrs_dict["width"] or "0"
+                width_str = (attrs_dict["width"] or "0").strip()
                 # pylint: disable=protected-access
                 if len(self.table.rows) == 1:  # => first table row
-                    if width_str[-1] == "%":
+                    if width_str.endswith("%"):
                         width = float(width_str[:-1])
                     else:
-                        width = float(width_str)
+                        width = _parse_html_dimension(width_str)
                     if not self.table._col_widths:
                         self.table._col_widths = []
                     assert isinstance(self.table._col_widths, list)
@@ -1190,8 +1207,8 @@ class HTML2FPDF(HTMLParser):
                         tag,
                     )
         if tag == "img" and "src" in attrs_dict:
-            width = float(attrs_dict.get("width") or 0) / self.pdf.k
-            height = float(attrs_dict.get("height") or 0) / self.pdf.k
+            width = _parse_html_dimension(attrs_dict.get("width")) / self.pdf.k
+            height = _parse_html_dimension(attrs_dict.get("height")) / self.pdf.k
             if self.table_row:  # => <img> in a <table>
                 if width or height:
                     LOGGER.warning(

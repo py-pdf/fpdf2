@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, FPDFException, TextStyle
+from fpdf import FPDF, FPDFException, HTML2FPDF, TextStyle
 from test.conftest import assert_pdf_equal
 from test.table.test_table import MULTILINE_TABLE_DATA
 
@@ -390,3 +390,69 @@ Table outside paragraph:
         },
     )
     assert_pdf_equal(pdf, HERE / "html_table_inside_paragraph.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "width_attr,expected_width",
+    [
+        ('width="100"', 100.0),
+        ('width="100px"', 100.0),
+        ('width=" 100 px "', 100.0),
+        ('width="80pt"', 80.0),
+        ('width="50%"', 50.0),
+    ],
+)
+def test_html_table_td_th_dimension_units(width_attr, expected_width):
+    pdf = FPDF()
+    pdf.add_page()
+    parser = HTML2FPDF(pdf)
+    parser.feed(
+        f'<table><tr><th {width_attr}>Header</th><td width="100">Data</td></tr>'
+    )
+    # pylint: disable=protected-access
+    assert parser.table._col_widths[0] == pytest.approx(expected_width)
+
+    pdf2 = FPDF()
+    pdf2.add_page()
+    pdf2.write_html(
+        f'<table><tr><th {width_attr}>Header</th><td width="100">Data</td></tr></table>'
+    )
+    assert len(pdf2.pages) == 1
+
+
+@pytest.mark.parametrize(
+    "table_attrs",
+    [
+        'width="300px"',
+        'width="300pt"',
+        'cellpadding="5px" cellspacing="2px"',
+        'cellpadding=" 5 px "',
+    ],
+)
+def test_html_table_dimension_units(table_attrs):
+    pdf = FPDF()
+    pdf.add_page()
+    html = f"""
+    <table {table_attrs}>
+        <tr>
+            <td>Cell</td>
+        </tr>
+    </table>
+    """
+    pdf.write_html(html)
+    assert len(pdf.pages) == 1
+
+
+def test_html_table_invalid_dimension_unit():
+    pdf = FPDF()
+    pdf.add_page()
+    html = """
+    <table>
+        <tr>
+            <th width="invalid">Header</th>
+            <td width="100">Data</td>
+        </tr>
+    </table>
+    """
+    pdf.write_html(html)
+    assert len(pdf.pages) == 1
