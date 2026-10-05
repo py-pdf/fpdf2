@@ -66,6 +66,16 @@ from .image_datastructures import ImageCache, VectorImageInfo
 from .output import stream_content_for_raster_image
 from .pattern import shape_linear_gradient, shape_radial_gradient
 
+# pylint: disable=unused-import
+from .util import (
+    absolute_length_units,  # pyright: ignore[reportUnusedImport]
+    relative_length_units,  # pyright: ignore[reportUnusedImport]
+    resolve_length,
+    unit_splitter,
+)
+
+# pylint: enable=unused-import
+
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element  # nosec
 
@@ -152,41 +162,6 @@ def _resolved_element_cost(item: Any) -> int:
     return 1
 
 
-unit_splitter = re.compile(r"\s*(?P<value>[-+]?[\d\.]+)\s*(?P<unit>%|[a-zA-Z]*)")
-
-# none of these are supported right now
-# https://www.w3.org/TR/css-values-4/#lengths
-relative_length_units = {
-    "%",  # (context sensitive, depends on which attribute it is applied to)
-    "em",  # (current font size)
-    "ex",  # (current font x-height)
-    # CSS 3
-    "ch",  # (advance measure of 0, U+0030 glyph)
-    "rem",  # (font-size of the root element)
-    "vw",  # (1% of viewport width)
-    "vh",  # (1% of viewport height)
-    "vmin",  # (smaller of vw or vh)
-    "vmax",  # (larger of vw or vh)
-    # CSS 4
-    "cap",  # (font cap height)
-    "ic",  # (advance measure of fullwidth U+6C34 glyph)
-    "lh",  # (line height)
-    "rlh",  # (root element line height)
-    "vi",  # (1% of viewport size in root element's inline axis)
-    "vb",  # (1% of viewport size in root element's block axis)
-}
-
-absolute_length_units = {
-    "in": 72,  # (inches, 72 pt)
-    "cm": 72 / 2.54,  # (centimeters, 72 / 2.54 pt)
-    "mm": 72 / 25.4,  # (millimeters 72 / 25.4 pt)
-    "pt": 1,  # (pdf canonical unit)
-    "pc": 12,  # (pica, 12 pt)
-    "px": 0.75,  # (reference pixel unit, 0.75 pt)
-    # CSS 3
-    "Q": 72 / 101.6,  # (quarter-millimeter, 72 / 101.6 pt)
-}
-
 angle_units = {
     "deg": math.tau / 360,
     "grad": math.tau / 400,
@@ -221,32 +196,6 @@ def parse_viewbox(viewbox: str) -> tuple[float, float, float, float]:
     if (vw < 0) or (vh < 0):
         raise ValueError(f"invalid negative width/height in viewBox {viewbox}")
     return vx, vy, vw, vh
-
-
-# in CSS the default length unit is px, but as far as I can tell, for SVG interpreting
-# unitless numbers as being expressed in pt is more appropriate. Particularly, the
-# scaling we do using viewBox attempts to scale so that 1 svg user unit = 1 pdf pt
-# because this results in the output PDF having the correct physical dimensions (i.e. a
-# feature with a 1cm size in SVG will actually end up being 1cm in size in the PDF).
-@force_nodocument
-def resolve_length(length_str: str, default_unit: str = "pt") -> float:
-    """Convert a length unit to our canonical length unit, pt."""
-    match = unit_splitter.match(length_str)
-    if match is None:
-        raise ValueError(f"Unable to parse '{length_str}' as a length") from None
-    value, unit = match.groups()
-    if not unit:
-        unit = default_unit
-
-    try:
-        return float(value) * absolute_length_units[unit]
-    except KeyError:
-        if unit in relative_length_units:
-            raise ValueError(
-                f"{length_str} uses unsupported relative length {unit}"
-            ) from None
-
-        raise ValueError(f"{length_str} contains unrecognized unit {unit}") from None
 
 
 @force_nodocument

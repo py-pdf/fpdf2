@@ -30,7 +30,7 @@ from .errors import FPDFException
 from .fonts import FontFace, TextStyle
 from .outline import OutlineSection
 from .table import Row, Table
-from .util import get_scale_factor, int2roman
+from .util import get_scale_factor, int2roman, resolve_length, unit_splitter
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -325,18 +325,16 @@ def parse_css_style(style_attr: str) -> dict[str, str]:
     return style
 
 
-def _parse_html_dimension(val: str | None) -> float:
-    """Parse a numeric HTML attribute length, stripping common CSS units like px and pt."""
+def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
+    """Parse a numeric HTML attribute length into points (pt)."""
     if not val:
         return 0.0
-    cleaned = str(val).strip().lower()
-    for unit in ("px", "pt"):
-        if cleaned.endswith(unit):
-            cleaned = cleaned[: -len(unit)].rstrip()
-            break
+    val_str = str(val).strip()
+    if not val_str:
+        return 0.0
     try:
-        return float(cleaned)
-    except ValueError:
+        return resolve_length(val_str, default_unit=default_unit)
+    except (ValueError, KeyError):
         return 0.0
 
 
@@ -1143,12 +1141,30 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     borders_layout = "NONE"
             align = Align.coerce(attrs_dict.get("align") or "CENTER")
-            padding = (
-                _parse_html_dimension(attrs_dict["cellpadding"])
-                if "cellpadding" in attrs_dict
-                else None
-            )
-            spacing = _parse_html_dimension(attrs_dict.get("cellspacing"))
+            padding = None
+            if "cellpadding" in attrs_dict:
+                pad_val = attrs_dict["cellpadding"]
+                match = unit_splitter.match((pad_val or "").strip())
+                if match and not match.group("unit"):
+                    try:
+                        padding = float(match.group("value"))
+                    except ValueError:
+                        padding = 0.0
+                else:
+                    padding = _parse_html_dimension(pad_val) / self.pdf.k
+
+            sp_val = attrs_dict.get("cellspacing")
+            if sp_val is not None:
+                match = unit_splitter.match((sp_val or "").strip())
+                if match and not match.group("unit"):
+                    try:
+                        spacing = float(match.group("value"))
+                    except ValueError:
+                        spacing = 0.0
+                else:
+                    spacing = _parse_html_dimension(sp_val) / self.pdf.k
+            else:
+                spacing = 0.0
             self.table = Table(
                 self.pdf,
                 align=align,
