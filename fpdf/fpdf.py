@@ -375,7 +375,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.alias_nb_pages()  # enable alias by default
 
         self._angle: float = 0  # used by deprecated method: rotate()
-        self.xmp_metadata = None
+        self.xmp_metadata: Optional[str] = None
         # Define the compression algorithm used when embedding images:
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
@@ -428,7 +428,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
-        self.page_background = None
+        self.page_background: Optional[str | BinaryIO | Image | tuple[float, ...]] = (
+            None
+        )
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         self.text_mode = TextMode.FILL
@@ -4627,7 +4629,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             gstate.strikethrough = in_strikethrough
             gstate.underline = in_underline
             if current_fallback_font:
-                style = "".join(c for c in current_fallback_font if c in ("BI"))
+                style = "".join(c for c in current_fallback_font if c in "BI")
                 family = current_fallback_font.replace("B", "").replace("I", "")
                 gstate.font_family = family
                 gstate.font_style = style

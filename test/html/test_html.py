@@ -1334,3 +1334,21 @@ def test_html_list_heading_different_fonts(tmp_path):
     """
     pdf.write_html(html)
     assert_pdf_equal(pdf, HERE / "html_list_heading_different_fonts.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html_snippet",
+    [
+        '<img src="docs/fpdf2-logo.png" width="100px" height="50px">',
+        '<img src="docs/fpdf2-logo.png" width="80pt" height="40pt">',
+        '<img src="docs/fpdf2-logo.png" width=" 100 px ">',
+        '<hr width="200px">',
+        '<hr width="150pt">',
+        '<hr width=" 200 px ">',
+    ],
+)
+def test_html_img_and_hr_dimension_units(html_snippet):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html_snippet)
+    assert len(pdf.pages) == 1

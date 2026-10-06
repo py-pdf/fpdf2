@@ -719,7 +719,7 @@ class TextRegion(ParagraphCollectorMixin):
 
     def get_width(self, height: float) -> float:
         start, end = self.current_x_extents(self.pdf.y, height)
-        if self.pdf.x > start and self.pdf.x < end:
+        if start < self.pdf.x < end:
             start = self.pdf.x
         res = end - start
         return res
