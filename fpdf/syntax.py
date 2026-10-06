@@ -117,7 +117,14 @@ def create_dictionary_string(
             open_dict,
             field_join.join(
                 key_value_join.join(
-                    (k, str(v).lower() if isinstance(v, bool) else str(v))
+                    (
+                        k,
+                        (
+                            "null"
+                            if v is None
+                            else (str(v).lower() if isinstance(v, bool) else str(v))
+                        ),
+                    )
                 )
                 for k, v in dict_.items()
             ),
