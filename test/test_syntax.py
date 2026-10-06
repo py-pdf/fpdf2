@@ -76,3 +76,43 @@ def test_create_dictionary_string_booleans(
         has_empty_fields=True,
     )
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "dict_input,field_join,key_value_join,has_empty_fields,expected",
+    [
+        (
+            {"/Key": None},
+            "\n",
+            " ",
+            False,
+            "<</Key null>>",
+        ),
+        (
+            {"/A": None, "/B": True, "/C": False, "/Count": 0},
+            " ",
+            " ",
+            False,
+            "<</A null /B true /C false /Count 0>>",
+        ),
+        (
+            {"/Empty": None},
+            "",
+            " ",
+            False,
+            "<</Empty null>>",
+        ),
+    ],
+)
+def test_create_dictionary_string_null(
+    dict_input, field_join, key_value_join, has_empty_fields, expected
+):
+    result = create_dictionary_string(
+        dict_input,
+        open_dict="<<",
+        close_dict=">>",
+        field_join=field_join,
+        key_value_join=key_value_join,
+        has_empty_fields=has_empty_fields,
+    )
+    assert result == expected
