@@ -56,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L301-L312" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L301-L312" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def color_as_decimal(
     color: Optional[str] = &#34;#000000&#34;,
@@ -81,7 +81,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1438-L1449" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1471-L1482" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ol_prefix(ol_type: str, index: int) -&gt; int | str:
     if ol_type == &#34;1&#34;:
@@ -105,7 +105,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L315-L325" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L315-L325" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_css_style(style_attr: str) -&gt; dict[str, str]:
     &#34;&#34;&#34;Parse `style=&#34;...&#34;` HTML attributes, and return a dict of key-value&#34;&#34;&#34;
@@ -128,7 +128,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1428-L1435" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1461-L1468" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ul_prefix(ul_type: str, is_ttf_font: bool) -&gt; str:
     if ul_type == &#34;disc&#34;:
@@ -154,7 +154,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L328-L1404" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L341-L1437" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTML2FPDF(HTMLParser):
     &#34;Render basic HTML to FPDF&#34;
@@ -620,10 +620,11 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             self._end_paragraph()
             width_str = css_style.get(&#34;width&#34;, attrs_dict.get(&#34;width&#34;))
             if width_str:
-                if width_str[-1] == &#34;%&#34;:
+                width_str = width_str.strip()
+                if width_str.endswith(&#34;%&#34;):
                     hr_width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    hr_width = float(width_str) / self.pdf.k
+                    hr_width = _parse_html_dimension(width_str) / self.pdf.k
             else:
                 hr_width = self.pdf.epw
             # Centering:
@@ -933,10 +934,11 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             width: Optional[float] = None
             width_str = css_style.get(&#34;width&#34;) or attrs_dict.get(&#34;width&#34;)
             if width_str:
-                if width_str[-1] == &#34;%&#34;:
+                width_str = width_str.strip()
+                if width_str.endswith(&#34;%&#34;):
                     width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    width = float(width_str) / self.pdf.k
+                    width = _parse_html_dimension(width_str) / self.pdf.k
             if &#34;border&#34; not in attrs_dict:  # default borders
                 borders_layout = (
                     &#34;HORIZONTAL_LINES&#34;
@@ -957,12 +959,30 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                 except ValueError:
                     borders_layout = &#34;NONE&#34;
             align = Align.coerce(attrs_dict.get(&#34;align&#34;) or &#34;CENTER&#34;)
-            padding = (
-                float(attrs_dict[&#34;cellpadding&#34;] or 0)
-                if &#34;cellpadding&#34; in attrs_dict
-                else None
-            )
-            spacing = float(attrs_dict.get(&#34;cellspacing&#34;) or 0)
+            padding = None
+            if &#34;cellpadding&#34; in attrs_dict:
+                pad_val = attrs_dict[&#34;cellpadding&#34;]
+                match = unit_splitter.match((pad_val or &#34;&#34;).strip())
+                if match and not match.group(&#34;unit&#34;):
+                    try:
+                        padding = float(match.group(&#34;value&#34;))
+                    except ValueError:
+                        padding = 0.0
+                else:
+                    padding = _parse_html_dimension(pad_val) / self.pdf.k
+
+            sp_val = attrs_dict.get(&#34;cellspacing&#34;)
+            if sp_val is not None:
+                match = unit_splitter.match((sp_val or &#34;&#34;).strip())
+                if match and not match.group(&#34;unit&#34;):
+                    try:
+                        spacing = float(match.group(&#34;value&#34;))
+                    except ValueError:
+                        spacing = 0.0
+                else:
+                    spacing = _parse_html_dimension(sp_val) / self.pdf.k
+            else:
+                spacing = 0.0
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -1003,13 +1023,13 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                     tag,
                 )
             if &#34;width&#34; in attrs_dict:
-                width_str = attrs_dict[&#34;width&#34;] or &#34;0&#34;
+                width_str = (attrs_dict[&#34;width&#34;] or &#34;0&#34;).strip()
                 # pylint: disable=protected-access
                 if len(self.table.rows) == 1:  # =&gt; first table row
-                    if width_str[-1] == &#34;%&#34;:
+                    if width_str.endswith(&#34;%&#34;):
                         width = float(width_str[:-1])
                     else:
-                        width = float(width_str)
+                        width = _parse_html_dimension(width_str)
                     if not self.table._col_widths:
                         self.table._col_widths = []
                     assert isinstance(self.table._col_widths, list)
@@ -1021,8 +1041,8 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
                         tag,
                     )
         if tag == &#34;img&#34; and &#34;src&#34; in attrs_dict:
-            width = float(attrs_dict.get(&#34;width&#34;) or 0) / self.pdf.k
-            height = float(attrs_dict.get(&#34;height&#34;) or 0) / self.pdf.k
+            width = _parse_html_dimension(attrs_dict.get(&#34;width&#34;)) / self.pdf.k
+            height = _parse_html_dimension(attrs_dict.get(&#34;height&#34;)) / self.pdf.k
             if self.table_row:  # =&gt; &lt;img&gt; in a &lt;table&gt;
                 if width or height:
                     LOGGER.warning(
@@ -1300,7 +1320,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1403-L1404" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1436-L1437" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def error(self, message: str) -&gt; None:
     raise RuntimeError(message)</code></pre>
@@ -1314,7 +1334,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1355-L1361" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1388-L1394" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def feed(self, data: str) -&gt; None:
     super().feed(data)
@@ -1335,7 +1355,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L664-L752" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L677-L765" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_data(self, data: str) -&gt; None:
     if self._in_title:
@@ -1436,7 +1456,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1242-L1353" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1275-L1386" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_endtag(self, tag: str) -&gt; None:
     while (
@@ -1560,7 +1580,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L767-L1240" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L780-L1273" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
     self._pre_started = False
@@ -1587,10 +1607,11 @@ as you want (may include '\n').</p></div>
         self._end_paragraph()
         width_str = css_style.get(&#34;width&#34;, attrs_dict.get(&#34;width&#34;))
         if width_str:
-            if width_str[-1] == &#34;%&#34;:
+            width_str = width_str.strip()
+            if width_str.endswith(&#34;%&#34;):
                 hr_width = self.pdf.epw * float(width_str[:-1]) / 100
             else:
-                hr_width = float(width_str) / self.pdf.k
+                hr_width = _parse_html_dimension(width_str) / self.pdf.k
         else:
             hr_width = self.pdf.epw
         # Centering:
@@ -1900,10 +1921,11 @@ as you want (may include '\n').</p></div>
         width: Optional[float] = None
         width_str = css_style.get(&#34;width&#34;) or attrs_dict.get(&#34;width&#34;)
         if width_str:
-            if width_str[-1] == &#34;%&#34;:
+            width_str = width_str.strip()
+            if width_str.endswith(&#34;%&#34;):
                 width = self.pdf.epw * float(width_str[:-1]) / 100
             else:
-                width = float(width_str) / self.pdf.k
+                width = _parse_html_dimension(width_str) / self.pdf.k
         if &#34;border&#34; not in attrs_dict:  # default borders
             borders_layout = (
                 &#34;HORIZONTAL_LINES&#34;
@@ -1924,12 +1946,30 @@ as you want (may include '\n').</p></div>
             except ValueError:
                 borders_layout = &#34;NONE&#34;
         align = Align.coerce(attrs_dict.get(&#34;align&#34;) or &#34;CENTER&#34;)
-        padding = (
-            float(attrs_dict[&#34;cellpadding&#34;] or 0)
-            if &#34;cellpadding&#34; in attrs_dict
-            else None
-        )
-        spacing = float(attrs_dict.get(&#34;cellspacing&#34;) or 0)
+        padding = None
+        if &#34;cellpadding&#34; in attrs_dict:
+            pad_val = attrs_dict[&#34;cellpadding&#34;]
+            match = unit_splitter.match((pad_val or &#34;&#34;).strip())
+            if match and not match.group(&#34;unit&#34;):
+                try:
+                    padding = float(match.group(&#34;value&#34;))
+                except ValueError:
+                    padding = 0.0
+            else:
+                padding = _parse_html_dimension(pad_val) / self.pdf.k
+
+        sp_val = attrs_dict.get(&#34;cellspacing&#34;)
+        if sp_val is not None:
+            match = unit_splitter.match((sp_val or &#34;&#34;).strip())
+            if match and not match.group(&#34;unit&#34;):
+                try:
+                    spacing = float(match.group(&#34;value&#34;))
+                except ValueError:
+                    spacing = 0.0
+            else:
+                spacing = _parse_html_dimension(sp_val) / self.pdf.k
+        else:
+            spacing = 0.0
         self.table = Table(
             self.pdf,
             align=align,
@@ -1970,13 +2010,13 @@ as you want (may include '\n').</p></div>
                 tag,
             )
         if &#34;width&#34; in attrs_dict:
-            width_str = attrs_dict[&#34;width&#34;] or &#34;0&#34;
+            width_str = (attrs_dict[&#34;width&#34;] or &#34;0&#34;).strip()
             # pylint: disable=protected-access
             if len(self.table.rows) == 1:  # =&gt; first table row
-                if width_str[-1] == &#34;%&#34;:
+                if width_str.endswith(&#34;%&#34;):
                     width = float(width_str[:-1])
                 else:
-                    width = float(width_str)
+                    width = _parse_html_dimension(width_str)
                 if not self.table._col_widths:
                     self.table._col_widths = []
                 assert isinstance(self.table._col_widths, list)
@@ -1988,8 +2028,8 @@ as you want (may include '\n').</p></div>
                     tag,
                 )
     if tag == &#34;img&#34; and &#34;src&#34; in attrs_dict:
-        width = float(attrs_dict.get(&#34;width&#34;) or 0) / self.pdf.k
-        height = float(attrs_dict.get(&#34;height&#34;) or 0) / self.pdf.k
+        width = _parse_html_dimension(attrs_dict.get(&#34;width&#34;)) / self.pdf.k
+        height = _parse_html_dimension(attrs_dict.get(&#34;height&#34;)) / self.pdf.k
         if self.table_row:  # =&gt; &lt;img&gt; in a &lt;table&gt;
             if width or height:
                 LOGGER.warning(
@@ -2046,7 +2086,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1363-L1383" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1396-L1416" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def put_link(self, text: str) -&gt; None:
     &#34;Insert a hyperlink&#34;
@@ -2079,7 +2119,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1386-L1400" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1419-L1433" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_toc(self, pdf: &#34;FPDF&#34;, outline: list[OutlineSection]) -&gt; None:
     &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
@@ -2109,7 +2149,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/f6e67a42eddb112b4c31401388babf0daf6d1c5b/fpdf/html.py#L1452-L1467" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f65697c58658bfdc6f45b204862b51405b7624ea/fpdf/html.py#L1485-L1500" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTMLMixin:
     &#34;&#34;&#34;
