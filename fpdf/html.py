@@ -790,7 +790,8 @@ class HTML2FPDF(HTMLParser):
         if tag in ("b", "i", "u") and self.td_th is not None:
             self.td_th[tag] = True
         if tag == "a":
-            self.href = attrs_dict["href"] or ""
+            # <a name="..."> and <a id="..."> are anchors, not links: no href means plain text
+            self.href = attrs_dict.get("href") or ""
             try:
                 page = int(self.href)
                 self.href = self.pdf.add_link(page=page)
