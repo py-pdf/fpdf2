@@ -20,6 +20,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
+* Python 3.15 is now officially supported
 ### Fixed
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
 * `FPDF.write_html()` supports `<ul type="square">`, the third standard HTML bullet type, instead of raising `NotImplementedError`: Unicode fonts use ▪ and core fonts fall back to the bullet - thanks to @RavSinghChandan
@@ -30,6 +31,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
 ### Changed
 * Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision
+### Removed
+* support for Python 3.10, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions)
 
 
 ## [2.8.9] - 2026-09-29
