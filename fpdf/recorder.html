@@ -58,7 +58,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/55cfce284eea1c3d967d5a2586c4152aaa71b712/fpdf/recorder.py#L83-L90" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/recorder.py#L86-L93" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CallRecorder:
     def __init__(self, func: Callable[..., Any], calls: list[CallRecord]) -&gt; None:
@@ -79,7 +79,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/55cfce284eea1c3d967d5a2586c4152aaa71b712/fpdf/recorder.py#L24-L80" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/recorder.py#L25-L83" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFRecorder:
     &#34;&#34;&#34;
@@ -127,7 +127,9 @@ in non-backward-compatible ways.</p>
             func, args, kwargs = call
             try:
                 result = func(*args, **kwargs)
-                if isinstance(result, types.GeneratorType):
+                if isinstance(
+                    result, (contextlib.AbstractContextManager, types.GeneratorType)
+                ) or (hasattr(result, &#34;__enter__&#34;) and hasattr(result, &#34;__exit__&#34;)):
                     warnings.warn(
                         &#34;Detected usage of a context manager inside an unbreakable() section, which is not supported&#34;,
                         stacklevel=get_stack_level(),
@@ -168,14 +170,16 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/55cfce284eea1c3d967d5a2586c4152aaa71b712/fpdf/recorder.py#L65-L80" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/recorder.py#L66-L83" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def replay(self) -&gt; None:
     for call in self._calls:
         func, args, kwargs = call
         try:
             result = func(*args, **kwargs)
-            if isinstance(result, types.GeneratorType):
+            if isinstance(
+                result, (contextlib.AbstractContextManager, types.GeneratorType)
+            ) or (hasattr(result, &#34;__enter__&#34;) and hasattr(result, &#34;__exit__&#34;)):
                 warnings.warn(
                     &#34;Detected usage of a context manager inside an unbreakable() section, which is not supported&#34;,
                     stacklevel=get_stack_level(),
@@ -196,7 +200,7 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/55cfce284eea1c3d967d5a2586c4152aaa71b712/fpdf/recorder.py#L59-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/recorder.py#L60-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rewind(self) -&gt; None:
     pdf_dict = vars(self.pdf)
