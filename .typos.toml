@@ -17,6 +17,7 @@ extend-ignore-identifiers-re = [
 extend-ignore-re = [
     "loca subsetting",
     "np.arange",
+    '\("a", 53, "ba"\)', # Alphabetic ordered-list marker test case.
 ]
 
 [default.extend-identifiers]
