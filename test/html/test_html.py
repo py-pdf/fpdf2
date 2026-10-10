@@ -301,6 +301,31 @@ def test_html_list_with_custom_font(caplog, tmp_path):  # cf. issue #1496
     assert "WARN" not in caplog.text
 
 
+def test_html_ul_type_square(tmp_path):
+    '<ul type="square"> renders like a list using the square bullet character.'
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    pdf.write_html('<ul type="square"><li>item</li></ul>')
+    expected = FPDF()
+    expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    expected.set_font("DejaVuSans")
+    expected.add_page()
+    expected.write_html('<ul type="\u25aa"><li>item</li></ul>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_ul_type_square_core_font(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ul type="square"><li>item</li></ul>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<ul><li>item</li></ul>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_li_prefix_color(tmp_path):
     html = """<ul>
         <li>item1</li>
