@@ -5362,6 +5362,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         paragraphs = text.split("\n")
         for index, raw_paragraph in enumerate(paragraphs):
+            # A trailing newline belongs to the preceding line; it does not
+            # create another text line. An explicit empty item still does.
+            if index == len(paragraphs) - 1 and not raw_paragraph:
+                continue
             paragraph = raw_paragraph
             marker = self.MARKDOWN_BULLET_REGEX.match(paragraph)
             offset = self.MARKDOWN_BULLET_INDENT if marker else 0

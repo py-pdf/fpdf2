@@ -305,14 +305,7 @@ def test_multi_cell_markdown_unordered_list_output_lines():
         w=pdf.epw, text=text, markdown=True, output=MethodReturnValue.LINES
     )
     assert isinstance(lines, list)
-    assert len(lines) == 3
-    assert "Apples" in lines[0]
-    assert "Bananas" in lines[1]
-    assert "Cherries" in lines[2]
-    for line in lines:
-        assert isinstance(line, str)
-        stripped = line.lstrip()  # pylint: disable=no-member
-        assert not stripped.startswith(("* ", "- ", "+ "))
+    assert lines == ["Apples", "**Bananas**", "__Cherries__"]
 
 
 def test_multi_cell_markdown_unordered_list_output_lines_padding():
@@ -434,6 +427,34 @@ def test_multi_cell_markdown_unordered_list_cursor(new_x, new_y):
         )
         positions.append((pdf.x, pdf.y))
     assert positions[1] == pytest.approx(positions[0])
+
+
+@pytest.mark.parametrize("trailing_newlines", ["\n", "\n\n"])
+@pytest.mark.parametrize("new_x", ["LEFT", "RIGHT"])
+@pytest.mark.parametrize("new_y", ["TOP", "NEXT", "LAST"])
+@pytest.mark.parametrize("padding", [0, (10, 3, 5, 7)])
+def test_multi_cell_markdown_unordered_list_trailing_newline(
+    trailing_newlines, new_x, new_y, padding
+):
+    results = []
+    for text in ("Apples", "* Apples"):
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=12)
+        pdf.set_xy(30, 40)
+        lines, height = pdf.multi_cell(
+            80,
+            5,
+            text + trailing_newlines,
+            markdown=True,
+            padding=padding,
+            new_x=new_x,
+            new_y=new_y,
+            output=MethodReturnValue.LINES | MethodReturnValue.HEIGHT,
+        )
+        results.append((lines, height, pdf.x, pdf.y))
+    assert results[1][0] == results[0][0]
+    assert results[1][1:] == pytest.approx(results[0][1:])
 
 
 def test_multi_cell_markdown_unordered_list_empty_item():
