@@ -185,6 +185,11 @@ in order to enable basic Markdown-like styling: `**bold**, __italics__, --underl
 
 If the printable text contains a character sequence that would be incorrectly interpreted as a formatting marker, it can be escaped using `\`. The escape character works the same way it generally does in Python (see the example below).
 
+With `multi_cell(markdown=True)`, lines beginning with `* `, `- `, or `+ `
+are rendered as single-level unordered list items. Wrapped lines align with the
+item text. Borders, fill, and padding apply to the entire block, and `dry_run`
+and `output=LINES` use the same wrapping as rendering. Nested lists are not supported.
+
 Bold & italics require using dedicated fonts for each style.
 
 For the standard fonts (Courier, Helvetica & Times), those dedicated fonts are configured by default:

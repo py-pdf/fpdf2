@@ -308,6 +308,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
     MARKDOWN_LINK_COLOR = None
     MARKDOWN_LINK_UNDERLINE = True
+    MARKDOWN_BULLET_INDENT = 10  # in mm
+    MARKDOWN_BULLET_REGEX = re.compile(r"^[ \t]*[*\-+] ", re.MULTILINE)
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -4398,13 +4400,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     def _preload_bidirectional_text(
-        self, text: str, markdown: bool
+        self,
+        text: str,
+        markdown: bool,
+        _initial_emphasis: Optional[tuple[bool, bool, bool, bool]] = None,
     ) -> Sequence[Fragment]:
         """ "
         Break the text into bidirectional segments and preload font styles for each fragment
         """
         if not self.text_shaping:
-            return self._preload_font_styles(text, markdown)
+            return self._preload_font_styles(text, markdown, _initial_emphasis)
         paragraph_direction = (
             self.text_shaping["direction"]
             if self.text_shaping["direction"]
@@ -4419,7 +4424,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             alias=self.str_alias_nb_pages,
         )
         directional_segments = paragraph.get_bidi_fragments()
-        emphasis = (
+        emphasis = _initial_emphasis or (
             "B" in self.font_style,
             "I" in self.font_style,
             self.strikethrough,
@@ -5173,11 +5178,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Calculate text length
         text = self.normalize_text(text)
         normalized_string = text.replace("\r", "")
-        styled_text_fragments = (
-            self._preload_bidirectional_text(normalized_string, markdown)
-            if self.text_shaping
-            else self._preload_font_styles(normalized_string, markdown)
-        )
 
         prev_current_font = self.current_font
         prev_font_style = self.font_style
@@ -5185,18 +5185,35 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         total_height: float = 0
 
         text_lines: list[TextLine] = []
-        multi_line_break = MultiLineBreak(
-            styled_text_fragments,
-            maximum_allowed_width,
-            clearance_margins,
-            align=align,
-            print_sh=print_sh,
-            wrapmode=wrapmode,
-        )
-        text_line = multi_line_break.get_line()
-        while (text_line) is not None:
-            text_lines.append(text_line)
+        list_offsets: list[float] = []
+        list_bullets: list[bool] = []
+        if markdown and self.MARKDOWN_BULLET_REGEX.search(normalized_string):
+            text_lines, list_offsets, list_bullets = self._break_markdown_list(
+                normalized_string,
+                maximum_allowed_width,
+                clearance_margins,
+                align,
+                print_sh,
+                wrapmode,
+            )
+        else:
+            styled_text_fragments = (
+                self._preload_bidirectional_text(normalized_string, markdown)
+                if self.text_shaping
+                else self._preload_font_styles(normalized_string, markdown)
+            )
+            multi_line_break = MultiLineBreak(
+                styled_text_fragments,
+                maximum_allowed_width,
+                clearance_margins,
+                align=align,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+            )
             text_line = multi_line_break.get_line()
+            while text_line is not None:
+                text_lines.append(text_line)
+                text_line = multi_line_break.get_line()
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -5247,6 +5264,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     self.fill_color if fill else None,
                 )
             is_last_line = text_line_index == len(text_lines) - 1
+            list_x = self.x
+            offset = list_offsets[text_line_index] if list_offsets else 0
+            if list_bullets and list_bullets[text_line_index]:
+                if align == Align.X:
+                    self.x -= w / 2
+                self.cell(
+                    w=offset,
+                    h=line_height,
+                    text=" • " if self.is_ttf_font else " - ",
+                    new_x=XPos.LEFT,
+                    new_y=YPos.TOP,
+                )
+                self.x = list_x
+            self.x += offset / 2 if align == Align.X else offset
             self._render_styled_text_line(
                 text_line,
                 h=line_height,
@@ -5258,6 +5289,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 padding=Padding(0, padding.right, 0, padding.left),
                 prevent_font_change=markdown,
             )
+            if list_offsets and (not is_last_line or new_x == XPos.LEFT):
+                self.x = list_x
             total_height += line_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
@@ -5307,6 +5340,65 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if len(return_value) == 1:
             return return_value[0]
         return return_value  # type: ignore[return-value]
+
+    def _break_markdown_list(
+        self,
+        text: str,
+        width: float,
+        clearance_margins: list[float],
+        align: Align,
+        print_sh: bool,
+        wrapmode: WrapMode,
+    ) -> tuple[list[TextLine], list[float], list[bool]]:
+        """Break list items with hanging indentation, before rendering the block."""
+        text_lines: list[TextLine] = []
+        offsets: list[float] = []
+        bullets: list[bool] = []
+        emphasis = (
+            "B" in self.font_style,
+            "I" in self.font_style,
+            bool(self.strikethrough),
+            bool(self.underline),
+        )
+        paragraphs = text.split("\n")
+        for index, raw_paragraph in enumerate(paragraphs):
+            # A trailing newline belongs to the preceding line; it does not
+            # create another text line. An explicit empty item still does.
+            if index == len(paragraphs) - 1 and not raw_paragraph:
+                continue
+            paragraph = raw_paragraph
+            marker = self.MARKDOWN_BULLET_REGEX.match(paragraph)
+            offset = self.MARKDOWN_BULLET_INDENT if marker else 0
+            if marker:
+                paragraph = paragraph[marker.end() :]
+            empty_last = not paragraph and index == len(paragraphs) - 1
+            if index < len(paragraphs) - 1 or empty_last:
+                paragraph += "\n"
+            fragments = (
+                self._preload_bidirectional_text(paragraph, True, emphasis)
+                if self.text_shaping
+                else self._preload_font_styles(paragraph, True, emphasis)
+            )
+            emphasis = getattr(self, "_markdown_emphasis", emphasis)
+            line_break = MultiLineBreak(
+                fragments,
+                width - offset,
+                clearance_margins,
+                align=align,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+            )
+            first_line = True
+            line = line_break.get_line()
+            while line is not None:
+                if empty_last:
+                    line = line._replace(trailing_nl=False)
+                text_lines.append(line)
+                offsets.append(offset)
+                bullets.append(bool(marker) and first_line)
+                first_line = False
+                line = line_break.get_line()
+        return text_lines, offsets, bullets
 
     @check_page
     @support_deprecated_txt_arg
