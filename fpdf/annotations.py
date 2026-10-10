@@ -26,6 +26,8 @@ from .syntax import (
     iobj_ref as pdf_ref,
 )
 
+from .util import trim_trailing_zeros
+
 if TYPE_CHECKING:
     from .encryption import StandardSecurityHandler
 
@@ -60,26 +62,41 @@ class AnnotationMixin:
     ) -> None:
         self.type = Name("Annot")
         self.subtype = Name(subtype)
-        self.rect = f"[{x:.2f} {y - height:.2f} {x + width:.2f} {y:.2f}]"
-        self.border = f"[0 0 {border_width}]"
+        self.rect = pdf_list(
+            [
+                trim_trailing_zeros(f"{coord:.2f}")
+                for coord in (x, y - height, x + width, y)
+            ]
+        )
+        self.border = f"[0 0 {trim_trailing_zeros(str(border_width))}]"
         self.f_t = Name(field_type) if field_type else None
         self.v = value
         self.f = sum(tuple(AnnotationFlag.coerce(flag) for flag in flags))
         self.contents = PDFString(contents, encrypt=True) if contents else None
         self.a = action
         self.dest = dest
-        self.c = f"[{color[0]} {color[1]} {color[2]}]" if color else None
+        self.c = (
+            pdf_list([trim_trailing_zeros(str(component)) for component in color])
+            if color
+            else None
+        )
         self.t = PDFString(title, encrypt=True) if title else None
         self.m = PDFDate(modification_time, encrypt=True) if modification_time else None
         self.quad_points = (
-            pdf_list([f"{quad_point:.2f}" for quad_point in quad_points])
+            pdf_list(
+                [trim_trailing_zeros(f"{quad_point:.2f}") for quad_point in quad_points]
+            )
             if quad_points
             else None
         )
         self.p = None  # must always be set before calling .serialize()
         self.name = name
         self.ink_list = (
-            ("[" + pdf_list([f"{coord:.2f}" for coord in ink_list]) + "]")
+            (
+                "["
+                + pdf_list([trim_trailing_zeros(f"{coord:.2f}") for coord in ink_list])
+                + "]"
+            )
             if ink_list
             else None
         )

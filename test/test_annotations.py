@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fpdf import FPDF
+from fpdf.annotations import AnnotationDict
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
 from fpdf.enums import AnnotationName
 from fpdf.syntax import DestinationXYZ
@@ -209,3 +210,22 @@ def test_free_text_annotation_width_parameter(tmp_path):
     pdf.set_font_size(12)
     pdf.free_text_annotation(text="This is a free text annotation.", w=80)
     assert_pdf_equal(pdf, HERE / "free_text_annotation_width_parameter.pdf", tmp_path)
+
+
+def test_annotation_numbers_preserve_rounding():
+    annotation = AnnotationDict(
+        subtype="Ink",
+        x=10.0,
+        y=20.1234,
+        width=30.0,
+        height=5.0,
+        border_width=1.0,
+        color=(0.0, 0.123456789012345, 1.0),
+        quad_points=(10.0, 20.1234),
+        ink_list=(10.0, 20.1234),
+    )
+    assert annotation.rect == "[10 15.12 40 20.12]"
+    assert annotation.border == "[0 0 1]"
+    assert annotation.c == "[0 0.123456789012345 1]"
+    assert annotation.quad_points == "[10 20.12]"
+    assert annotation.ink_list == "[[10 20.12]]"
