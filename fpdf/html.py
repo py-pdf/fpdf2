@@ -345,7 +345,7 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
 
 def _parse_html_span(val: str | None) -> int:
     """Parse a colspan / rowspan attribute like browsers do: an invalid value or one below 1 means 1."""
-    match = re.match(r"\s*(\d+)", val or "")
+    match = re.match(r"\s*\+?(\d+)", val or "")
     return max(int(match.group(1)), 1) if match else 1
 
 
