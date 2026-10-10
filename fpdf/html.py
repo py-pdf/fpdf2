@@ -46,6 +46,7 @@ MESSAGE_WAITING_WIN1252 = "\x95"  # MESSAGE WAITING character in Windows-1252 en
 BULLET_UNICODE = "•"  # U+2022
 DEGREE_SIGN_WIN1252 = "\xb0"  # DEGREE SIGN character in Windows-1252 encoding
 RING_OPERATOR_UNICODE = "∘"  # U+2218
+BLACK_SMALL_SQUARE_UNICODE = "▪"  # U+25AA
 HEADING_TAGS = ("title", "h1", "h2", "h3", "h4", "h5", "h6")
 # Some of the margin values below are fractions, in order to be fully backward-compatible,
 # and due to the _scale_units() conversion performed in HTML2FPDF constructor below.
@@ -376,7 +377,7 @@ class HTML2FPDF(HTMLParser):
                 numeric indentation of `<dd>` elements - Set `tag_styles` instead
             table_line_separators (bool): enable horizontal line separators in `<table>`. Defaults to `False`.
             ul_bullet_char (str): bullet character preceding `<li>` items in `<ul>` lists.
-                You can also specify special bullet names like `"circle"` or `"disc"` (the default).
+                You can also specify special bullet names like `"circle"`, `"square"` or `"disc"` (the default).
                 Can also be configured using the HTML `type` attribute of `<ul>` tags.
             li_prefix_color (tuple, str, fpdf.drawing.DeviceCMYK, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): color for bullets
                 or numbers preceding `<li>` tags. This applies to both `<ul>` & `<ol>` lists.
@@ -1469,6 +1470,9 @@ def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
         return BULLET_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
     if ul_type == "circle":
         return RING_OPERATOR_UNICODE if is_ttf_font else DEGREE_SIGN_WIN1252
+    if ul_type == "square":
+        # Windows-1252 has no square, so core fonts fall back to the bullet
+        return BLACK_SMALL_SQUARE_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
     if len(ul_type) == 1:
         return ul_type
     raise NotImplementedError(f"Unsupported type: {ul_type}")
