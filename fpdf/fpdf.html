@@ -58,7 +58,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L235-L275" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L235-L275" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_page_format(
     format: str | tuple[float, float], k: Optional[float] = None
@@ -130,7 +130,7 @@ case insensitive key (the name of the new format) and 2-tuple value of
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L294-L6917" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L294-L7009" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDF(GraphicsStateMixin, TextRegionMixin):
     &#34;PDF Generation class&#34;
@@ -149,6 +149,8 @@ case insensitive key (the name of the new format) and 2-tuple value of
     MARKDOWN_LINK_REGEX = re.compile(r&#34;^\[([^][]+)\]\(([^()]+)\)(.*)$&#34;, re.DOTALL)
     MARKDOWN_LINK_COLOR = None
     MARKDOWN_LINK_UNDERLINE = True
+    MARKDOWN_BULLET_INDENT = 10  # in mm
+    MARKDOWN_BULLET_REGEX = re.compile(r&#34;^[ \t]*[*\-+] &#34;, re.MULTILINE)
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -4239,13 +4241,16 @@ case insensitive key (the name of the new format) and 2-tuple value of
         )
 
     def _preload_bidirectional_text(
-        self, text: str, markdown: bool
+        self,
+        text: str,
+        markdown: bool,
+        _initial_emphasis: Optional[tuple[bool, bool, bool, bool]] = None,
     ) -&gt; Sequence[Fragment]:
         &#34;&#34;&#34; &#34;
         Break the text into bidirectional segments and preload font styles for each fragment
         &#34;&#34;&#34;
         if not self.text_shaping:
-            return self._preload_font_styles(text, markdown)
+            return self._preload_font_styles(text, markdown, _initial_emphasis)
         paragraph_direction = (
             self.text_shaping[&#34;direction&#34;]
             if self.text_shaping[&#34;direction&#34;]
@@ -4260,7 +4265,7 @@ case insensitive key (the name of the new format) and 2-tuple value of
             alias=self.str_alias_nb_pages,
         )
         directional_segments = paragraph.get_bidi_fragments()
-        emphasis = (
+        emphasis = _initial_emphasis or (
             &#34;B&#34; in self.font_style,
             &#34;I&#34; in self.font_style,
             self.strikethrough,
@@ -5014,11 +5019,6 @@ case insensitive key (the name of the new format) and 2-tuple value of
         # Calculate text length
         text = self.normalize_text(text)
         normalized_string = text.replace(&#34;\r&#34;, &#34;&#34;)
-        styled_text_fragments = (
-            self._preload_bidirectional_text(normalized_string, markdown)
-            if self.text_shaping
-            else self._preload_font_styles(normalized_string, markdown)
-        )
 
         prev_current_font = self.current_font
         prev_font_style = self.font_style
@@ -5026,18 +5026,35 @@ case insensitive key (the name of the new format) and 2-tuple value of
         total_height: float = 0
 
         text_lines: list[TextLine] = []
-        multi_line_break = MultiLineBreak(
-            styled_text_fragments,
-            maximum_allowed_width,
-            clearance_margins,
-            align=align,
-            print_sh=print_sh,
-            wrapmode=wrapmode,
-        )
-        text_line = multi_line_break.get_line()
-        while (text_line) is not None:
-            text_lines.append(text_line)
+        list_offsets: list[float] = []
+        list_bullets: list[bool] = []
+        if markdown and self.MARKDOWN_BULLET_REGEX.search(normalized_string):
+            text_lines, list_offsets, list_bullets = self._break_markdown_list(
+                normalized_string,
+                maximum_allowed_width,
+                clearance_margins,
+                align,
+                print_sh,
+                wrapmode,
+            )
+        else:
+            styled_text_fragments = (
+                self._preload_bidirectional_text(normalized_string, markdown)
+                if self.text_shaping
+                else self._preload_font_styles(normalized_string, markdown)
+            )
+            multi_line_break = MultiLineBreak(
+                styled_text_fragments,
+                maximum_allowed_width,
+                clearance_margins,
+                align=align,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+            )
             text_line = multi_line_break.get_line()
+            while text_line is not None:
+                text_lines.append(text_line)
+                text_line = multi_line_break.get_line()
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -5088,6 +5105,20 @@ case insensitive key (the name of the new format) and 2-tuple value of
                     self.fill_color if fill else None,
                 )
             is_last_line = text_line_index == len(text_lines) - 1
+            list_x = self.x
+            offset = list_offsets[text_line_index] if list_offsets else 0
+            if list_bullets and list_bullets[text_line_index]:
+                if align == Align.X:
+                    self.x -= w / 2
+                self.cell(
+                    w=offset,
+                    h=line_height,
+                    text=&#34; • &#34; if self.is_ttf_font else &#34; - &#34;,
+                    new_x=XPos.LEFT,
+                    new_y=YPos.TOP,
+                )
+                self.x = list_x
+            self.x += offset / 2 if align == Align.X else offset
             self._render_styled_text_line(
                 text_line,
                 h=line_height,
@@ -5099,6 +5130,8 @@ case insensitive key (the name of the new format) and 2-tuple value of
                 padding=Padding(0, padding.right, 0, padding.left),
                 prevent_font_change=markdown,
             )
+            if list_offsets and (not is_last_line or new_x == XPos.LEFT):
+                self.x = list_x
             total_height += line_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
@@ -5148,6 +5181,65 @@ case insensitive key (the name of the new format) and 2-tuple value of
         if len(return_value) == 1:
             return return_value[0]
         return return_value  # type: ignore[return-value]
+
+    def _break_markdown_list(
+        self,
+        text: str,
+        width: float,
+        clearance_margins: list[float],
+        align: Align,
+        print_sh: bool,
+        wrapmode: WrapMode,
+    ) -&gt; tuple[list[TextLine], list[float], list[bool]]:
+        &#34;&#34;&#34;Break list items with hanging indentation, before rendering the block.&#34;&#34;&#34;
+        text_lines: list[TextLine] = []
+        offsets: list[float] = []
+        bullets: list[bool] = []
+        emphasis = (
+            &#34;B&#34; in self.font_style,
+            &#34;I&#34; in self.font_style,
+            bool(self.strikethrough),
+            bool(self.underline),
+        )
+        paragraphs = text.split(&#34;\n&#34;)
+        for index, raw_paragraph in enumerate(paragraphs):
+            # A trailing newline belongs to the preceding line; it does not
+            # create another text line. An explicit empty item still does.
+            if index == len(paragraphs) - 1 and not raw_paragraph:
+                continue
+            paragraph = raw_paragraph
+            marker = self.MARKDOWN_BULLET_REGEX.match(paragraph)
+            offset = self.MARKDOWN_BULLET_INDENT if marker else 0
+            if marker:
+                paragraph = paragraph[marker.end() :]
+            empty_last = not paragraph and index == len(paragraphs) - 1
+            if index &lt; len(paragraphs) - 1 or empty_last:
+                paragraph += &#34;\n&#34;
+            fragments = (
+                self._preload_bidirectional_text(paragraph, True, emphasis)
+                if self.text_shaping
+                else self._preload_font_styles(paragraph, True, emphasis)
+            )
+            emphasis = getattr(self, &#34;_markdown_emphasis&#34;, emphasis)
+            line_break = MultiLineBreak(
+                fragments,
+                width - offset,
+                clearance_margins,
+                align=align,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+            )
+            first_line = True
+            line = line_break.get_line()
+            while line is not None:
+                if empty_last:
+                    line = line._replace(trailing_nl=False)
+                text_lines.append(line)
+                offsets.append(offset)
+                bullets.append(bool(marker) and first_line)
+                first_line = False
+                line = line_break.get_line()
+        return text_lines, offsets, bullets
 
     @check_page
     @support_deprecated_txt_arg
@@ -6817,6 +6909,14 @@ Default to "mm".</dd>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
+<dt id="fpdf.fpdf.FPDF.MARKDOWN_BULLET_INDENT"><code class="name">var <span class="ident">MARKDOWN_BULLET_INDENT</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="fpdf.fpdf.FPDF.MARKDOWN_BULLET_REGEX"><code class="name">var <span class="ident">MARKDOWN_BULLET_REGEX</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="fpdf.fpdf.FPDF.MARKDOWN_ESCAPE_CHARACTER"><code class="name">var <span class="ident">MARKDOWN_ESCAPE_CHARACTER</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
@@ -6875,7 +6975,7 @@ The class bool is a subclass of the class int, and cannot be subclassed.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3832-L3845" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3834-L3847" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def accept_page_break(self) -&gt; bool:
@@ -6917,7 +7017,7 @@ a value according to the mode selected by <code><a title="fpdf.fpdf.FPDF.set_aut
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L736-L743" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L738-L745" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def default_page_dimensions(self) -&gt; tuple[float, float]:
@@ -6953,7 +7053,7 @@ def default_page_dimensions(self) -&gt; tuple[float, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L566-L574" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L568-L576" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def emphasis(self) -&gt; TextEmphasis:
@@ -6972,7 +7072,7 @@ def emphasis(self) -&gt; TextEmphasis:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L643-L648" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L645-L650" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def eph(self) -&gt; float:
@@ -6988,7 +7088,7 @@ def eph(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L636-L641" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L638-L643" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def epw(self) -&gt; float:
@@ -7004,7 +7104,7 @@ def epw(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L491-L493" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L493-L495" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def fonts(self) -&gt; dict[str, CoreFont | TTFFont]:
@@ -7017,7 +7117,7 @@ def fonts(self) -&gt; dict[str, CoreFont | TTFFont]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L576-L578" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L578-L580" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def is_ttf_font(self) -&gt; bool:
@@ -7048,7 +7148,7 @@ def is_ttf_font(self) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L592-L594" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L594-L596" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def output_intents(self) -&gt; ValuesView[OutputIntentDictionary]:
@@ -7067,7 +7167,7 @@ matches FPDF's instance attributes. Manually setting the page does not.</p></div
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L884-L886" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L886-L888" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def page_layout(self) -&gt; Optional[PageLayout]:
@@ -7080,7 +7180,7 @@ def page_layout(self) -&gt; Optional[PageLayout]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L580-L582" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L582-L584" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def page_mode(self) -&gt; Optional[PageMode]:
@@ -7093,7 +7193,7 @@ def page_mode(self) -&gt; Optional[PageMode]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L650-L659" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L652-L661" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def pages_count(self) -&gt; int:
@@ -7203,7 +7303,7 @@ but is less compatible with the PDF spec.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3271-L3298" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3273-L3300" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def add_action(
@@ -7257,7 +7357,7 @@ def add_action(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2509-L2614" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2511-L2616" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@deprecated_parameter([(&#34;uni&#34;, &#34;2.5.1&#34;)])
 def add_font(
@@ -7400,7 +7500,7 @@ Only applicable to fonts with CPAL table (color fonts).</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2810-L2858" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2812-L2860" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_link(
     self,
@@ -7486,7 +7586,7 @@ or from external documents.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L596-L634" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L598-L636" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_output_intent(
     self,
@@ -7558,7 +7658,7 @@ readable description of profile</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1112-L1265" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1114-L1267" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_page(
     self,
@@ -7764,7 +7864,7 @@ page label. Possible values are:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3349-L3400" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3351-L3402" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def add_text_markup_annotation(
@@ -7851,7 +7951,7 @@ the title bar of the annotation’s pop-up window. Defaults to yellow.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1046-L1075" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1048-L1077" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def alias_nb_pages(
     self, alias: str = &#34;{nb}&#34;, align: Union[Align, str] = Align.L
@@ -7912,7 +8012,7 @@ which can causes slight positioning differences.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2239-L2386" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2241-L2388" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def arc(
@@ -8104,7 +8204,7 @@ It can be drawn (border only), filled (with no border) or both.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2433-L2507" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2435-L2509" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def bezier(
     self,
@@ -8211,7 +8311,7 @@ for it to be drawn as an open path.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3847-L3974" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3849-L3976" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @support_deprecated_txt_arg
@@ -8401,7 +8501,7 @@ Supports <code>\</code> as escape character. Default to False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2129-L2153" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2131-L2155" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def circle(
@@ -8457,7 +8557,7 @@ It can be drawn (border only), filled (with no border) or both.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6376-L6446" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6468-L6538" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @support_deprecated_txt_arg
@@ -8540,7 +8640,7 @@ def code39(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1809-L1844" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1811-L1846" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def dashed_line(
@@ -8608,7 +8708,7 @@ def dashed_line(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1610-L1627" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1612-L1629" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_path(
     self,
@@ -8649,7 +8749,7 @@ caution.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1690-L1721" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1692-L1723" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_vector_glyph(
     self, path: Union[PaintedPath, GraphicsContext], font: &#34;Type3Font&#34;
@@ -8693,7 +8793,7 @@ caution.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1498-L1540" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1500-L1542" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 @check_page
@@ -8750,7 +8850,7 @@ raise an exception, as base drawing contexts cannot be nested.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2061-L2086" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2063-L2088" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def ellipse(
@@ -8808,7 +8908,7 @@ It can be drawn (border only), filled (with no border) or both.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6472-L6490" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6564-L6582" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -8852,7 +8952,7 @@ useful to render only part of an image.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3017-L3117" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3019-L3119" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def embed_file(
     self,
@@ -8997,7 +9097,7 @@ Associated File).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3119-L3177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3121-L3179" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def file_attachment_annotation(
@@ -9104,7 +9204,7 @@ stays embedded and accessible - <code>DEFAULT</code> by default</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6239-L6247" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6331-L6339" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def file_id(self) -&gt; Optional[str | Literal[-1]]:  # pylint: disable=no-self-use
     &#34;&#34;&#34;
@@ -9140,7 +9240,7 @@ representing a subset of properties of this GraphicsState.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1339-L1347" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1341-L1349" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def footer(self) -&gt; None:
     &#34;&#34;&#34;
@@ -9165,7 +9265,7 @@ in a subclass to implement your own rendering logic.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3217-L3269" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3219-L3271" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def free_text_annotation(
@@ -9253,7 +9353,7 @@ to the current font size</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L4487-L4509" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L4492-L4514" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_fallback_font(self, char: str, style: str = &#34;&#34;) -&gt; Optional[str]:
     &#34;&#34;&#34;
@@ -9290,7 +9390,7 @@ of <code><a title="fpdf.fpdf.FPDF.set_fallback_fonts" href="#fpdf.fpdf.FPDF.set_
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2860-L2880" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2862-L2882" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_named_destination(self, name: str) -&gt; str:
     &#34;&#34;&#34;
@@ -9337,7 +9437,7 @@ of <code><a title="fpdf.fpdf.FPDF.set_fallback_fonts" href="#fpdf.fpdf.FPDF.set_
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1353-L1359" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1355-L1361" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_page_label(self) -&gt; str:
     &#34;&#34;&#34;
@@ -9358,7 +9458,7 @@ This will be displayed by some PDF readers to identify pages.
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1435-L1456" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1437-L1458" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_string_width(
     self, s: str, normalized: bool = False, markdown: bool = False
@@ -9405,7 +9505,7 @@ on the left &amp; right sides, equal to the .c_margin property.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5989-L5991" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6081-L6083" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_x(self) -&gt; float:
     &#34;&#34;&#34;Returns the abscissa of the current position.&#34;&#34;&#34;
@@ -9420,7 +9520,7 @@ on the left &amp; right sides, equal to the .c_margin property.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6003-L6009" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6095-L6101" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_y(self) -&gt; float:
     &#34;&#34;&#34;Returns the ordinate of the current position.&#34;&#34;&#34;
@@ -9439,7 +9539,7 @@ on the left &amp; right sides, equal to the .c_margin property.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1670-L1688" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1672-L1690" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def glyph_drawing_context(self) -&gt; Generator[DrawingContext, None, None]:
@@ -9470,7 +9570,7 @@ def glyph_drawing_context(self) -&gt; Generator[DrawingContext, None, None]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1326-L1337" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1328-L1339" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def header(self) -&gt; None:
     &#34;&#34;&#34;
@@ -9500,7 +9600,7 @@ in a subclass to implement your own rendering logic.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3300-L3337" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3302-L3339" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def highlight(
@@ -9567,7 +9667,7 @@ the title bar of the annotation’s pop-up window. Defaults to yellow.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5451-L5571" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5543-L5663" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def image(
     self,
@@ -9760,7 +9860,7 @@ otherwise, auto page break detection will be performed.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3402-L3441" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3404-L3443" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def ink_annotation(
@@ -9828,7 +9928,7 @@ the title bar of the annotation’s pop-up window. Defaults to yellow.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6555-L6605" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6647-L6697" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def insert_toc_placeholder(
@@ -9912,7 +10012,7 @@ separate numbering style for the ToC is recommended.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6317-L6374" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6409-L6466" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @support_deprecated_txt_arg
@@ -9982,7 +10082,7 @@ def interleaved2of5(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1723-L1737" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1725-L1739" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def line(self, x1: float, y1: float, x2: float, y2: float) -&gt; None:
@@ -10021,7 +10121,7 @@ def line(self, x1: float, y1: float, x2: float, y2: float) -&gt; None:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2942-L3015" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2944-L3017" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def link(
     self,
@@ -10132,7 +10232,7 @@ Not all PDF readers honor this: Acrobat renders it but not Sumatra.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5968-L5987" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6060-L6079" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def ln(self, h: Optional[float] = None) -&gt; None:
@@ -10175,7 +10275,7 @@ the document, then the current font height is used.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3659-L3720" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3661-L3722" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -10298,7 +10398,7 @@ This method must be used as a context manager using <code>with</code>:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3602-L3635" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3604-L3637" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -10357,7 +10457,7 @@ context (with the exception of clickable areas).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L4982-L5309" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L4987-L5342" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @support_deprecated_txt_arg
@@ -10553,11 +10653,6 @@ def multi_cell(
     # Calculate text length
     text = self.normalize_text(text)
     normalized_string = text.replace(&#34;\r&#34;, &#34;&#34;)
-    styled_text_fragments = (
-        self._preload_bidirectional_text(normalized_string, markdown)
-        if self.text_shaping
-        else self._preload_font_styles(normalized_string, markdown)
-    )
 
     prev_current_font = self.current_font
     prev_font_style = self.font_style
@@ -10565,18 +10660,35 @@ def multi_cell(
     total_height: float = 0
 
     text_lines: list[TextLine] = []
-    multi_line_break = MultiLineBreak(
-        styled_text_fragments,
-        maximum_allowed_width,
-        clearance_margins,
-        align=align,
-        print_sh=print_sh,
-        wrapmode=wrapmode,
-    )
-    text_line = multi_line_break.get_line()
-    while (text_line) is not None:
-        text_lines.append(text_line)
+    list_offsets: list[float] = []
+    list_bullets: list[bool] = []
+    if markdown and self.MARKDOWN_BULLET_REGEX.search(normalized_string):
+        text_lines, list_offsets, list_bullets = self._break_markdown_list(
+            normalized_string,
+            maximum_allowed_width,
+            clearance_margins,
+            align,
+            print_sh,
+            wrapmode,
+        )
+    else:
+        styled_text_fragments = (
+            self._preload_bidirectional_text(normalized_string, markdown)
+            if self.text_shaping
+            else self._preload_font_styles(normalized_string, markdown)
+        )
+        multi_line_break = MultiLineBreak(
+            styled_text_fragments,
+            maximum_allowed_width,
+            clearance_margins,
+            align=align,
+            print_sh=print_sh,
+            wrapmode=wrapmode,
+        )
         text_line = multi_line_break.get_line()
+        while text_line is not None:
+            text_lines.append(text_line)
+            text_line = multi_line_break.get_line()
 
     if not text_lines:  # ensure we display at least one cell - cf. issue #349
         text_lines = [
@@ -10627,6 +10739,20 @@ def multi_cell(
                 self.fill_color if fill else None,
             )
         is_last_line = text_line_index == len(text_lines) - 1
+        list_x = self.x
+        offset = list_offsets[text_line_index] if list_offsets else 0
+        if list_bullets and list_bullets[text_line_index]:
+            if align == Align.X:
+                self.x -= w / 2
+            self.cell(
+                w=offset,
+                h=line_height,
+                text=&#34; • &#34; if self.is_ttf_font else &#34; - &#34;,
+                new_x=XPos.LEFT,
+                new_y=YPos.TOP,
+            )
+            self.x = list_x
+        self.x += offset / 2 if align == Align.X else offset
         self._render_styled_text_line(
             text_line,
             h=line_height,
@@ -10638,6 +10764,8 @@ def multi_cell(
             padding=Padding(0, padding.right, 0, padding.left),
             prevent_font_change=markdown,
         )
+        if list_offsets and (not is_last_line or new_x == XPos.LEFT):
+            self.x = list_x
         total_height += line_height
         if not is_last_line and align == Align.X:
             # prevent cumulative shift to the left
@@ -10774,7 +10902,7 @@ useful to build tables with multiline text in cells.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1586-L1608" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1588-L1610" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def new_path(
@@ -10821,7 +10949,7 @@ on the path style settings.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6034-L6047" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6126-L6139" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def normalize_text(self, text: str) -&gt; str:
     &#34;&#34;&#34;Check that text input is in the correct format/encoding&#34;&#34;&#34;
@@ -10847,7 +10975,7 @@ on the path style settings.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6539-L6553" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6631-L6645" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def offset_rendering(self) -&gt; Generator[FPDFRecorder, None, None]:
@@ -10876,7 +11004,7 @@ before performing them "for real".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5897-L5937" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5989-L6029" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -10945,7 +11073,7 @@ not get printed::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6840-L6917" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6932-L7009" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@deprecated_parameter([(&#34;dest&#34;, &#34;2.2.0&#34;)])
 def output(
@@ -11047,7 +11175,7 @@ If a <code>name</code> is given, the PDF is written to a new file.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1349-L1351" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1351-L1353" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def page_no(self) -&gt; int:
     &#34;&#34;&#34;Get the current page number&#34;&#34;&#34;
@@ -11062,7 +11190,7 @@ If a <code>name</code> is given, the PDF is written to a new file.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1788-L1807" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1790-L1809" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def polygon(
@@ -11109,7 +11237,7 @@ def polygon(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1739-L1786" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1741-L1788" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def polyline(
@@ -11187,7 +11315,7 @@ segments that should be drawn</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5884-L5895" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5976-L5987" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def preload_glyph_image(self, glyph_image_bytes: bytes | BinaryIO) -&gt; tuple[
     str,
@@ -11211,7 +11339,7 @@ segments that should be drawn</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5852-L5882" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5944-L5974" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def preload_image(
     self,
@@ -11258,7 +11386,7 @@ segments that should be drawn</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1846-L1892" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1848-L1894" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def rect(
@@ -11352,7 +11480,7 @@ It can be drawn (border only), filled (with no border) or both.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6448-L6470" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6540-L6562" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -11400,7 +11528,7 @@ useful to render only part of an image.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2155-L2197" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2157-L2199" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def regular_polygon(
@@ -11478,7 +11606,7 @@ Style can also be applied (fill, border&hellip;)</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3494-L3529" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3496-L3531" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def rotate(
@@ -11529,7 +11657,7 @@ def rotate(
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3531-L3565" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3533-L3567" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -11598,7 +11726,7 @@ invoked after it has finished.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6492-L6505" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6584-L6597" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -11635,7 +11763,7 @@ useful to render only part of an image.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L946-L953" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L948-L955" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_author(self, author: str | Sequence[str]) -&gt; None:
     &#34;&#34;&#34;
@@ -11658,7 +11786,7 @@ author(str): the name of the author</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L720-L734" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L722-L736" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_auto_page_break(self, auto: bool, margin: float = 0) -&gt; None:
     &#34;&#34;&#34;
@@ -11696,7 +11824,7 @@ in the unit specified to FPDF constructor</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2749-L2763" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2751-L2765" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_char_spacing(self, spacing: float) -&gt; None:
     &#34;&#34;&#34;
@@ -11732,7 +11860,7 @@ By default, no spacing is set (which is equivalent to a value of 0).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L894-L907" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L896-L909" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_compression(self, compress: bool) -&gt; None:
     &#34;&#34;&#34;
@@ -11768,7 +11896,7 @@ of about 2 for the resulting document.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L978-L988" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L980-L990" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_creation_date(self, date: Optional[datetime] = None) -&gt; None:
     &#34;&#34;&#34;Sets Creation of Date time, or current time if None given.&#34;&#34;&#34;
@@ -11791,7 +11919,7 @@ of about 2 for the resulting document.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L964-L972" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L966-L974" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_creator(self, creator: str) -&gt; None:
     &#34;&#34;&#34;
@@ -11819,7 +11947,7 @@ This is typically the name of the application that generates the PDF.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1629-L1658" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1631-L1660" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_dash_pattern(
     self, dash: float = 0, gap: float = 0, phase: float = 0
@@ -11873,7 +12001,7 @@ If omitted, the dash length will be used.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L764-L803" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L766-L805" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_display_mode(
     self,
@@ -11941,7 +12069,7 @@ The layout set by default is "continuous".</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L999-L1021" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1001-L1023" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_doc_option(self, opt: Literal[&#34;core_fonts_encoding&#34;], value: str) -&gt; None:
     &#34;&#34;&#34;
@@ -11987,7 +12115,7 @@ The layout set by default is "continuous".</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1361-L1382" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1363-L1384" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_draw_color(
     self, r: Number | Color | str | Sequence[Number], g: Number = -1, b: Number = -1
@@ -12035,7 +12163,7 @@ Else, this indicates the grey level. The value must be between 0 and 255.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L495-L531" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L497-L533" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_encryption(
     self,
@@ -12104,7 +12232,7 @@ Defaults to False.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2779-L2808" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2781-L2810" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_fallback_fonts(
     self, fallback_fonts: Sequence[str], exact_match: bool = True
@@ -12159,7 +12287,7 @@ To get even more control over this logic, you can also override <code><a title="
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1384-L1405" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1386-L1407" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_fill_color(
     self, r: Number | Color | str | Sequence[Number], g: Number = -1, b: Number = -1
@@ -12207,7 +12335,7 @@ Else, this indicates the grey level. The value must be between 0 and 255.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2616-L2718" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2618-L2720" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_font(
     self,
@@ -12346,7 +12474,7 @@ Bold and italic styles do not apply to Symbol and ZapfDingbats fonts.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2720-L2730" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2722-L2732" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_font_size(self, size: float) -&gt; None:
     &#34;&#34;&#34;
@@ -12375,7 +12503,7 @@ Bold and italic styles do not apply to Symbol and ZapfDingbats fonts.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1023-L1044" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1025-L1046" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_image_filter(self, image_filter: str) -&gt; None:
     &#34;&#34;&#34;
@@ -12422,7 +12550,7 @@ will improve performances, reducing execution time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L955-L962" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L957-L964" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_keywords(self, keywords: str | Sequence[str]) -&gt; None:
     &#34;&#34;&#34;
@@ -12448,7 +12576,7 @@ will improve performances, reducing execution time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L923-L935" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L925-L937" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_lang(self, lang: str) -&gt; None:
     &#34;&#34;&#34;
@@ -12482,7 +12610,7 @@ or a Language-Tag as defined in RFC 3066, "Tags for the Identification of Langua
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L690-L700" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L692-L702" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_left_margin(self, margin: float) -&gt; None:
     &#34;&#34;&#34;
@@ -12512,7 +12640,7 @@ Also sets the current FPDF.x on the page to this minimum horizontal position.</p
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1458-L1470" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1460-L1472" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_line_width(self, width: float) -&gt; None:
     &#34;&#34;&#34;
@@ -12545,7 +12673,7 @@ The method can be called before the first page is created and the value is retai
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2882-L2940" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2884-L2942" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_link(
     self,
@@ -12639,7 +12767,7 @@ or from external documents.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L661-L669" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L663-L671" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_margin(self, margin: float) -&gt; None:
     &#34;&#34;&#34;
@@ -12666,7 +12794,7 @@ or from external documents.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L671-L688" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L673-L690" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_margins(self, left: float, top: float, right: float = -1) -&gt; None:
     &#34;&#34;&#34;
@@ -12708,7 +12836,7 @@ Also sets the current FPDF.y on the page to this minimum vertical position.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1472-L1496" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1474-L1498" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_page_background(
     self, background: Optional[str | BinaryIO | Image | DeviceRGB | tuple[float]]
@@ -12754,7 +12882,7 @@ or a RGB tuple representing a color to fill the background with or <code>None</c
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1077-L1110" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1079-L1112" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def set_page_label(
@@ -12801,7 +12929,7 @@ This will be displayed by some PDF readers to identify pages.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L974-L976" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L976-L978" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_producer(self, producer: str) -&gt; None:
     &#34;&#34;&#34;Producer of document&#34;&#34;&#34;
@@ -12816,7 +12944,7 @@ This will be displayed by some PDF readers to identify pages.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L711-L718" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L713-L720" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_right_margin(self, margin: float) -&gt; None:
     &#34;&#34;&#34;
@@ -12842,7 +12970,7 @@ This will be displayed by some PDF readers to identify pages.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6607-L6640" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6699-L6732" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_section_title_styles(
     self,
@@ -12907,7 +13035,7 @@ After calling this method, calls to <code><a title="fpdf.fpdf.FPDF.start_section
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2765-L2777" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2767-L2779" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_stretching(self, stretching: float) -&gt; None:
     &#34;&#34;&#34;
@@ -12939,7 +13067,7 @@ By default, no stretching is set (which is equivalent to a value of 100).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L937-L944" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L939-L946" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_subject(self, subject: str) -&gt; None:
     &#34;&#34;&#34;
@@ -12965,7 +13093,7 @@ By default, no stretching is set (which is equivalent to a value of 100).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1407-L1433" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1409-L1435" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_text_color(
     self,
@@ -13018,7 +13146,7 @@ Else, this indicates the grey level. The value must be between 0 and 255.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L805-L882" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L807-L884" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_text_shaping(
     self,
@@ -13127,7 +13255,7 @@ or "rtl" (right to left).</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L909-L921" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L911-L923" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_title(self, title: str) -&gt; None:
     &#34;&#34;&#34;
@@ -13162,7 +13290,7 @@ There is also a related <code><a title="fpdf.prefs.ViewerPreferences" href="pref
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L702-L709" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L704-L711" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_top_margin(self, margin: float) -&gt; None:
     &#34;&#34;&#34;
@@ -13188,7 +13316,7 @@ There is also a related <code><a title="fpdf.prefs.ViewerPreferences" href="pref
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5993-L6001" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6085-L6093" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_x(self, x: float) -&gt; None:
     &#34;&#34;&#34;
@@ -13216,7 +13344,7 @@ If the value provided is negative, it is relative to the right of the page.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L990-L997" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L992-L999" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_xmp_metadata(self, xmp_metadata: str) -&gt; None:
     if &#34;&lt;?xpacket&#34; in xmp_metadata[:50]:
@@ -13236,7 +13364,7 @@ If the value provided is negative, it is relative to the right of the page.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6022-L6032" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6114-L6124" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_xy(self, x: float, y: float) -&gt; None:
     &#34;&#34;&#34;
@@ -13268,7 +13396,7 @@ If the values provided are negative, they are relative respectively to the right
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6011-L6020" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6103-L6112" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_y(self, y: float) -&gt; None:
     &#34;&#34;&#34;
@@ -13297,7 +13425,7 @@ If the value provided is negative, it is relative to the bottom of the page.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6100-L6158" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6192-L6250" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def sign(
@@ -13390,7 +13518,7 @@ a recipient to contact the signer to verify the signature</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6049-L6098" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6141-L6190" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def sign_pkcs12(
     self,
@@ -13474,7 +13602,7 @@ a recipient to contact the signer to verify the signature</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3567-L3600" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3569-L3602" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -13538,7 +13666,7 @@ context (with the exception of clickable areas).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2388-L2431" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2390-L2433" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def solid_arc(
     self,
@@ -13622,7 +13750,7 @@ It can be drawn (border only), filled (with no border) or both.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L2199-L2237" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L2201-L2239" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def star(
@@ -13698,7 +13826,7 @@ It can be drawn (border only), filled (with no border) or both.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6642-L6713" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6734-L6805" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def start_section(self, name: str, level: int = 0, strict: bool = True) -&gt; None:
@@ -13795,7 +13923,7 @@ for example with a level-3 section following a level-1 section.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6779-L6822" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6871-L6914" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -13908,7 +14036,7 @@ first_row_as_headings is used in case num_heading_rows is 1.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3443-L3492" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3445-L3494" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @support_deprecated_txt_arg
@@ -13987,7 +14115,7 @@ but it is usually easier to use the <code><a title="fpdf.fpdf.FPDF.cell" href="#
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3179-L3215" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3181-L3217" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def text_annotation(
@@ -14057,7 +14185,7 @@ pop-up window when open and active. This entry shall identify the user who added
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5397-L5449" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5489-L5541" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 def text_columns(
@@ -14154,7 +14282,7 @@ beginning will be skipped if True. (Default: False)</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L3637-L3657" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L3639-L3659" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @contextmanager
@@ -14197,7 +14325,7 @@ to PDF Device Units (points, bottom-left origin).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6507-L6537" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6599-L6629" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def unbreakable(self) -&gt; Generator[FPDFRecorder, None, None]:
@@ -14245,7 +14373,7 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6739-L6777" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6831-L6869" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def use_font_face(self, font_face: FontFace) -&gt; Generator[None, None, None]:
@@ -14303,7 +14431,7 @@ the temporary style may "leak" in the header() &amp; footer().</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L1542-L1558" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L1544-L1560" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 @check_page
@@ -14332,7 +14460,7 @@ def use_pattern(self, shading: Gradient) -&gt; Generator[None, None, None]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L6715-L6737" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L6807-L6829" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@contextmanager
 def use_text_style(self, text_style: TextStyle) -&gt; Generator[None, None, None]:
@@ -14367,7 +14495,7 @@ def use_text_style(self, text_style: TextStyle) -&gt; Generator[None, None, None
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L4801-L4817" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L4806-L4822" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def will_page_break(self, height: float) -&gt; bool:
     &#34;&#34;&#34;
@@ -14405,7 +14533,7 @@ based on its height and the current ordinate (<code>y</code> position).</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5311-L5395" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5403-L5487" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@check_page
 @support_deprecated_txt_arg
@@ -14525,7 +14653,7 @@ character, instead of a line breaking opportunity. Default value: False</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L533-L561" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L535-L563" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def write_html(self, text: str, *args: Any, **kwargs: Any) -&gt; None:
     &#34;&#34;&#34;
@@ -14602,7 +14730,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fpdf.py#L5639-L5656" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fpdf.py#L5731-L5748" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def x_by_align(
     self,
@@ -14635,7 +14763,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L15-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L15-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ImageInfo(dict[str, object]):
     &#34;&#34;&#34;Information about an image used in the PDF document (base class).
@@ -14705,7 +14833,7 @@ We subclass this to distinguish between raster and vector images.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L24-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L24-L27" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def height(self) -&gt; float:
@@ -14719,7 +14847,7 @@ def height(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L34-L37" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L34-L37" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def rendered_height(self) -&gt; float:
@@ -14733,7 +14861,7 @@ def rendered_height(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L29-L32" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L29-L32" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def rendered_width(self) -&gt; float:
@@ -14747,7 +14875,7 @@ def rendered_width(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L19-L22" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L19-L22" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def width(self) -&gt; float:
@@ -14766,7 +14894,7 @@ def width(self) -&gt; float:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L45-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L45-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def scale_inside_box(
     self, x: float, y: float, w: float, h: float
@@ -14801,7 +14929,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L66-L81" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L66-L81" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RasterImageInfo(ImageInfo):
     &#34;Information about a raster image used in the PDF document&#34;
@@ -14881,7 +15009,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L69-L81" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L69-L81" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def size_in_document_units(
     self, w: float, h: float, scale: float = 1
@@ -14909,7 +15037,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/enums.py#L1120-L1130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/enums.py#L1120-L1130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextMode(CoerciveIntEnum):
     &#34;Values described in PDF spec section &#39;Text Rendering Mode&#39;&#34;
@@ -14989,7 +15117,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/fonts.py#L263-L273" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/fonts.py#L263-L273" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TitleStyle(TextStyle):
     def __init__(self, *args: Any, **kwargs: Any) -&gt; None:
@@ -15046,7 +15174,7 @@ Same as <code>dataclasses.replace()</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/image_datastructures.py#L84-L87" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/image_datastructures.py#L84-L87" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class VectorImageInfo(ImageInfo):
     &#34;Information about a vector image used in the PDF document&#34;
@@ -15117,7 +15245,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/enums.py#L1133-L1158" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/enums.py#L1133-L1158" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class XPos(CoerciveEnum):
     &#34;Positional values in horizontal direction for use after printing text.&#34;
@@ -15209,7 +15337,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/2f51f6f269e07b1222a58aee080df9500e8cadb9/fpdf/enums.py#L1161-L1177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4b23c3eaca09a5f45cca3a08b0e51b386e826c85/fpdf/enums.py#L1161-L1177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class YPos(CoerciveEnum):
     &#34;Positional values in vertical direction for use after printing text&#34;
@@ -15305,6 +15433,8 @@ In the reduced dimension it will be centered within the available space.</p></di
 <li><code><a title="fpdf.fpdf.FPDF.DEFAULT_TEXT_COLOR" href="graphics_state.html#fpdf.fpdf.FPDF.DEFAULT_TEXT_COLOR">DEFAULT_TEXT_COLOR</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.HTML2FPDF_CLASS" href="#fpdf.fpdf.FPDF.HTML2FPDF_CLASS">HTML2FPDF_CLASS</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.MARKDOWN_BOLD_MARKER" href="#fpdf.fpdf.FPDF.MARKDOWN_BOLD_MARKER">MARKDOWN_BOLD_MARKER</a></code></li>
+<li><code><a title="fpdf.fpdf.FPDF.MARKDOWN_BULLET_INDENT" href="#fpdf.fpdf.FPDF.MARKDOWN_BULLET_INDENT">MARKDOWN_BULLET_INDENT</a></code></li>
+<li><code><a title="fpdf.fpdf.FPDF.MARKDOWN_BULLET_REGEX" href="#fpdf.fpdf.FPDF.MARKDOWN_BULLET_REGEX">MARKDOWN_BULLET_REGEX</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.MARKDOWN_ESCAPE_CHARACTER" href="#fpdf.fpdf.FPDF.MARKDOWN_ESCAPE_CHARACTER">MARKDOWN_ESCAPE_CHARACTER</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.MARKDOWN_ITALICS_MARKER" href="#fpdf.fpdf.FPDF.MARKDOWN_ITALICS_MARKER">MARKDOWN_ITALICS_MARKER</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.MARKDOWN_LINK_COLOR" href="#fpdf.fpdf.FPDF.MARKDOWN_LINK_COLOR">MARKDOWN_LINK_COLOR</a></code></li>
