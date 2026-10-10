@@ -22,6 +22,7 @@ from .drawing_primitives import (
     DeviceGray,
     DeviceRGB,
     color_from_hex_string,
+    color_from_rgb_string,
     convert_to_device_color,
 )
 from .enums import Align, CharVPos, TextEmphasis, XPos, YPos
@@ -311,8 +312,12 @@ def color_as_decimal(
     Convert a web color name to a (R, G, B) color tuple.
     cf. https://en.wikipedia.org/wiki/Web_colors#HTML_color_names
     """
-    if not color:
+    if not color or not color.strip():
         return None
+    color = color.strip()
+    # CSS functional notation, as written by many HTML editors: rgb(255, 0, 0)
+    if color.lower().startswith("rgb("):
+        return color_from_rgb_string(color.lower())
     # Checks if color is a name and gets the hex value
     hexcolor = COLOR_DICT.get(color.lower(), color)
     return color_from_hex_string(hexcolor)

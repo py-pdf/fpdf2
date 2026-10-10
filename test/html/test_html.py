@@ -653,6 +653,35 @@ def test_html_custom_pre_code_font_deprecated(tmp_path):  # issue 770
     assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<font color="rgb(255, 0, 0)">red</font>',
+        '<font color="RGB(255,0,0)">red</font>',
+        '<font color=" #ff0000 ">red</font>',
+    ],
+)
+def test_html_font_color_rgb_function(tmp_path, html):
+    "A css rgb() color, or one with surrounding spaces, renders like its hex value."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<font color="#ff0000">red</font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_table_bgcolor_rgb_function(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<table><tr bgcolor="rgb(238, 238, 238)"><td>a</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<table><tr bgcolor="#eeeeee"><td>a</td></tr></table>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf = FPDF()
     pdf.add_page()
