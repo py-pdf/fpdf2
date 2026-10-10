@@ -25,6 +25,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
 
+### Changed
+* Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision
+
 
 ## [2.8.9] - 2026-09-29
 ### Added

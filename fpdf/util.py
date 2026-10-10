@@ -217,6 +217,19 @@ def convert_unit(
     return float(to_convert) / unit_conversion_factor
 
 
+def trim_trailing_zeros(value: str) -> str:
+    """Remove redundant fractional zeros from an already formatted number.
+
+    Preserve its precision, integer zeros, exponent, and sign (including -0).
+    """
+    mantissa, separator, exponent = value.partition("e")
+    if not separator:
+        mantissa, separator, exponent = value.partition("E")
+    if "." in mantissa:
+        mantissa = mantissa.rstrip("0").rstrip(".")
+    return mantissa + separator + exponent
+
+
 def number_to_str(number: Number) -> str:
     """
     Convert a decimal number to a minimal string representation (no trailing 0 or .).

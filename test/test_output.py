@@ -25,3 +25,9 @@ def test_deprecation_warning(tmp_path):
 def test_save_to_absolute_path(tmp_path):
     pdf = fpdf.FPDF()
     pdf.output((tmp_path / "empty.pdf").absolute())
+
+
+def test_page_dimensions_trailing_zeros_preserve_rounding():
+    pdf = fpdf.FPDF(unit="pt", format=(100.0, 200.1234))
+    pdf.add_page()
+    assert b"/MediaBox [0 0 100 200.12]" in pdf.output()
