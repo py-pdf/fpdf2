@@ -745,6 +745,17 @@ def test_html_link_underline(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_link_underline.pdf", tmp_path)
 
 
+def test_html_anchor_without_href(tmp_path):
+    "An <a> without href, such as a named anchor, renders as plain text."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<a name="intro">Introduction</a> and <a id="body">body</a>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("Introduction and body")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_link_style(tmp_path):
     pdf = FPDF()
     pdf.add_page()
