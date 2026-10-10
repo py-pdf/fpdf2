@@ -1,7 +1,7 @@
 from io import BytesIO
 
 import pytest
-from defusedxml.ElementTree import fromstring
+from xml.etree.ElementTree import fromstring
 from pypdf import PdfReader
 
 from fpdf import FPDF

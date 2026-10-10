@@ -32,7 +32,6 @@ repos:
         files: ^fpdf/.*\.py$
         additional_dependencies:
           - cryptography
-          - defusedxml
           - endesive
           - fonttools
           - numpy
@@ -45,7 +44,6 @@ repos:
         files: ^fpdf/.*\.py$
         additional_dependencies:
           - cryptography
-          - defusedxml
           - endesive
           - fonttools
           - numpy

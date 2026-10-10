@@ -5,7 +5,7 @@ from pathlib import Path
 import fpdf
 from ..conftest import assert_pdf_equal
 
-from defusedxml.ElementTree import fromstring as parse_xml_str
+from xml.etree.ElementTree import fromstring as parse_xml_str
 import pytest
 
 

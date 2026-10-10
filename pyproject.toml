@@ -39,7 +39,6 @@ classifiers = [
 ]
 
 dependencies = [
-  "defusedxml",
   "Pillow>=8.3.2,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
                             # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
                             # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
@@ -131,9 +130,6 @@ strict = true
 files = ["fpdf"]
 
 # Optional dependencies to ignore
-[[tool.mypy.overrides]]
-module = "defusedxml.ElementTree"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "endesive"

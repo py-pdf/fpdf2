@@ -38,7 +38,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 
 Compared with other PDF libraries, `fpdf2` is **fast, versatile, easy to learn and to extend** ([example](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2)).
 It is also entirely written in Python and has very few dependencies:
-[Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fontTools](https://fonttools.readthedocs.io/en/latest/index.html). It is a fork and the successor of `PyFPDF` (_cf._ [history](https://py-pdf.github.io/fpdf2/History.html)).
+[Pillow](https://pillow.readthedocs.io/en/stable/) & [fontTools](https://fonttools.readthedocs.io/en/latest/index.html). It is a fork and the successor of `PyFPDF` (_cf._ [history](https://py-pdf.github.io/fpdf2/History.html)).
 
 **Development status**: this project is **mature** and **actively maintained**.
 

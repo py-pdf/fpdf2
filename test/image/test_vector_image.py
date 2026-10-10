@@ -2,7 +2,8 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from defusedxml.common import EntitiesForbidden
+from xml.etree.ElementTree import ParseError
+from xml.parsers.expat import errors
 
 import fpdf
 from test.conftest import assert_pdf_equal
@@ -193,10 +194,11 @@ def test_svg_image_from_bytes_with_xml_whitespace(tmp_path, as_stream, prefix):
 
 
 def test_svg_image_billion_laughs():
-    "cf. https://pypi.org/project/defusedxml/#attack-vectors"
+    # pylint: disable=no-member
+    "cf. https://docs.python.org/3/library/xml.html#xml-security"
     pdf = fpdf.FPDF()
     pdf.add_page()
-    with pytest.raises(EntitiesForbidden):
+    with pytest.raises(ParseError) as exc:
         pdf.image(
             BytesIO(
                 b'<?xml version="1.0"?>'
@@ -216,6 +218,30 @@ def test_svg_image_billion_laughs():
                 b"<lolz>&lol9;</lolz>"
             )
         )
+    assert exc.value.code == errors.codes[errors.XML_ERROR_AMPLIFICATION_LIMIT_BREACH]
+
+
+def test_svg_image_quadratic_entity_expansion():
+    # pylint: disable=no-member
+    # Repeat one large entity without nesting: potential expansion is 32 MiB.
+    entity = "x" * 4096
+    references = "&large;" * 8192
+    svg = (
+        '<?xml version="1.0"?>'
+        f'<!DOCTYPE svg [<!ENTITY large "{entity}">]>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+        f"<desc>{references}</desc>"
+        '<rect width="10" height="10"/>'
+        "</svg>"
+    ).encode("utf-8")
+
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+
+    with pytest.raises(ParseError) as exc:
+        pdf.image(BytesIO(svg))
+
+    assert exc.value.code == errors.codes[errors.XML_ERROR_AMPLIFICATION_LIMIT_BREACH]
 
 
 def test_svg_image_fit_rect(tmp_path):
