@@ -14,7 +14,6 @@ import logging
 import re
 import warnings
 from html.parser import HTMLParser
-from string import ascii_lowercase, ascii_uppercase
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from .deprecation import get_stack_level
@@ -30,7 +29,13 @@ from .errors import FPDFException
 from .fonts import FontFace, TextStyle
 from .outline import OutlineSection
 from .table import Row, Table
-from .util import get_scale_factor, int2roman, resolve_length, unit_splitter
+from .util import (
+    get_scale_factor,
+    int2roman,
+    int_to_letters,
+    resolve_length,
+    unit_splitter,
+)
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -1469,24 +1474,15 @@ def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
     raise NotImplementedError(f"Unsupported type: {ul_type}")
 
 
-def _alphabetic(index: int, letters: str) -> int | str:
-    # Like browsers: a..z, then aa, ab..., and plain numbers below 1.
-    if index < 1:
-        return index
-    prefix = ""
-    while index:
-        index, remainder = divmod(index - 1, len(letters))
-        prefix = letters[remainder] + prefix
-    return prefix
-
-
 def ol_prefix(ol_type: str, index: int) -> int | str:
     if ol_type == "1":
         return index
-    if ol_type == "a":
-        return _alphabetic(index, ascii_lowercase)
-    if ol_type == "A":
-        return _alphabetic(index, ascii_uppercase)
+    if ol_type in ("a", "A"):
+        # Like browsers: a..z, then aa, ab..., and plain numbers below 1.
+        if index < 1:
+            return index
+        letters = int_to_letters(index - 1)
+        return letters.lower() if ol_type == "a" else letters
     if ol_type == "I":
         return int2roman(index)
     if ol_type == "i":
