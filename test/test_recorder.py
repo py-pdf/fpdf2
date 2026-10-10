@@ -1,5 +1,8 @@
+import contextlib
 from pathlib import Path
 from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
+
+import pytest
 
 from fpdf import FPDF
 from fpdf.recorder import FPDFRecorder
@@ -77,3 +80,41 @@ def test_recorder_with_ttf_font(tmp_path):
     recorder.cell(w=recorder.epw, h=10, text="Hello again!", align="C")
     recorder.rewind()
     assert_pdf_equal(recorder, expected, tmp_path)
+
+
+class _CustomContextManager:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return None
+
+
+def _make_generator():
+    return (x for x in ())
+
+
+@contextlib.contextmanager
+def _sample_context_manager():
+    yield
+
+
+@pytest.mark.parametrize(
+    "cm_callable",
+    [
+        _make_generator,
+        _sample_context_manager,
+        _CustomContextManager,
+    ],
+    ids=["generator", "generator_context_manager", "custom_context_manager"],
+)
+def test_recorder_replay_warns_on_context_manager(cm_callable):
+    pdf = init_pdf()
+    recorder = FPDFRecorder(pdf)
+    setattr(pdf, "trigger_cm", cm_callable)
+    recorder.trigger_cm()
+    with pytest.warns(
+        UserWarning,
+        match=r"Detected usage of a context manager inside an unbreakable\(\) section",
+    ):
+        recorder.replay()

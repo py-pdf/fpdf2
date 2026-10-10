@@ -6,6 +6,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
+import contextlib
 import types
 import warnings
 from copy import deepcopy
@@ -67,7 +68,9 @@ class FPDFRecorder:
             func, args, kwargs = call
             try:
                 result = func(*args, **kwargs)
-                if isinstance(result, types.GeneratorType):
+                if isinstance(
+                    result, (contextlib.AbstractContextManager, types.GeneratorType)
+                ) or (hasattr(result, "__enter__") and hasattr(result, "__exit__")):
                     warnings.warn(
                         "Detected usage of a context manager inside an unbreakable() section, which is not supported",
                         stacklevel=get_stack_level(),
