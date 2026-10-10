@@ -2,8 +2,6 @@
 
 Documentación completa de los métodos: [Documentación de la API de `fpdf.FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tutorial 1 - Ejemplo básico ##
 
 Empecemos con el ejemplo clásico: 
@@ -193,7 +191,7 @@ También mostrará muchas formas en que podemos usar los diferentes estilos de t
 ```
 
 [PDF resultante](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[Logo de fpdf2](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[Logo de fpdf2](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 El nuevo método mostrado aquí para imprimir texto es
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
@@ -233,3 +231,37 @@ Para crear un enlace externo usando una imagen, usamos
 Como alternativa, otra opción para cambiar el estilo de fuente y agregar enlaces es
  usar el método `write_html()`. Este es un analizador de html que permite agregar texto,
  cambiar el estilo de fuente y agregar enlaces usando html.
+
+## Tutorial 7 - Creando documentos PDF/A ##
+
+_Nuevo en [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+### Estándares PDF/A ###
+
+<b>PDF/A-1</b> usa PDF versión 1.4. Todos los recursos (imágenes, gráficos, fuentes) deben ser incrustados en el documento. El manejo del color debe ser preciso y especificado de forma independiente de la plataforma con perfiles ICC y los metadatos del documento deben darse con metadatos XMP.
+
+<b>PDF/A-2</b> usa PDF versión 1.7. Permite compresión con JPEG2000, elementos transparentes, fuentes open type y firmas digitales.
+
+La única adición en <b>PDF/A-3</b> es la posibilidad de incrustar cualquier archivo posible.
+
+### Clases de Conformidad ###
+
+El nivel A (accesible) incluye todos los requerimientos del estándar, incluidos el mapeo de la estructura de contenido y el orden correcto de lectura del contenido del documento. El contenido de texto debe ser extraíble, y la estructura debe reflejar la secuencia de lectura natural.
+
+El nivel B (básico) garantiza una reproducibilidad visual clara del contenido. El nivel B es generalmente más fácil de generar que el nivel A, pero no asegura en un ciento por ciento la extracción del texto o la buscabilidad. El reúso sin complicaciones del contenido no está necesariamente garantizado.
+
+Para lograr esto, aquí hay un pequeño ejemplo:
+
+```python
+{% include "../tutorial/tuto7.py" %}
+```
+
+[PDF resultante: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
+
+Herramientas como [VeraPDF](https://verapdf.org/) pueden verificar la conformidad de los documentos PDF producidos:
+
+    verapdf --format text -v tutorial/tuto7.pdf
+
+Produce:
+
+    PASS fpdf2/tutorial/tuto7.pdf 3b

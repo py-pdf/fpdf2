@@ -1,5 +1,7 @@
 from pathlib import Path
-from urllib.request import urlopen
+import lzma
+
+import pytest
 
 from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
@@ -44,6 +46,11 @@ def test_bidi_conformance():
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
     https://www.unicode.org/reports/tr41/tr41-32.html#Tests9
     This file contains 770,241 tests
+
+    The file BidiTest.txt is available from:
+    https://www.unicode.org/Public/17.0.0/ucd/BidiTest.txt
+
+    The local copy is compressed with xz to save space (the original file is 7.7 MB)
     """
 
     def check_result(string, base_direction, levels, reorder):
@@ -57,18 +64,16 @@ def test_bidi_conformance():
             len_levels = len(levels)
         if len(characters) != len_levels:
             return False
-        for indx, char in enumerate(characters):
-            if levels[indx] != "x" and levels[indx] != str(char.embedding_level):
+        for index, char in enumerate(characters):
+            if levels[index] != "x" and levels[index] != str(char.embedding_level):
                 return False
         return not any(
-            reorder[indx] != str(char.character_index)
-            for (indx, char) in enumerate(reordered_characters)
+            reorder[index] != str(char.character_index)
+            for (index, char) in enumerate(reordered_characters)
         )
 
-    with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt"
-    ) as url_file:  # nosec B310
-        data = url_file.read().decode("utf-8").split("\n")
+    with lzma.open(HERE / "BidiTest.txt.xz", "rb") as compressed_file:
+        data = compressed_file.read().decode("utf-8").split("\n")
 
     levels = []
     reorder = []
@@ -108,12 +113,15 @@ def test_bidi_character():
     """
     The other test file, BidiCharacterTest.txt, contains test sequences of explicit code points, including, for example, bracket pairs.
     There are 91,707 tests on this file
+
+    The file BidiCharacterTest.txt is available from:
+    https://www.unicode.org/Public/17.0.0/ucd/BidiCharacterTest.txt
+
+    The local copy is compressed with xz to save space (the original file is 6.7 MB)
     """
 
-    with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt"
-    ) as url_file:  # nosec B310
-        data = url_file.read().decode("utf-8").split("\n")
+    with lzma.open(HERE / "BidiCharacterTest.txt.xz", "rb") as compressed_file:
+        data = compressed_file.read().decode("utf-8").split("\n")
 
     test_count = 0
     for line in data:
@@ -268,3 +276,61 @@ def test_bidi_get_string_width(tmp_path):
         pdf.ln()
     pdf.ln()
     assert_pdf_equal(pdf, HERE / "bidi_get_string_width.pdf", tmp_path)
+
+
+def test_bidi_preserves_bn_chars():
+    paragraph = BidiParagraph(
+        text="This is an in\u00adter\U000e007ana\u00adtion\u00adal",
+        base_direction=TextDirection.LTR,
+        preserve_bn_chars=True,
+    )
+
+    assert paragraph.get_bidi_fragments() == (
+        ("This is an in\u00adter\U000e007ana\u00adtion\u00adal", TextDirection.LTR),
+    )
+    characters = [char.character for char in paragraph.get_characters()]
+    assert characters.count("\u00ad") == 3
+    assert characters.count("\U000e007a") == 1
+
+
+@pytest.mark.parametrize("alias", ["{nb}", "TOTAL", "מספר"])
+def test_bidi_alias_sentinel_exhaustion(alias, caplog):
+    text = "".join(BidiParagraph.SENTINEL_CANDIDATES) + f" אבג 10/{alias} דהו"
+    paragraph = BidiParagraph(text=text, alias=alias)
+    assert paragraph.sentinel is None
+    assert paragraph.text == text
+    assert caplog.record_tuples == [
+        (
+            "fpdf.bidi",
+            30,
+            (
+                "No unused sentinel is available to protect the page-count alias "
+                "during bidirectional text processing; continuing without alias protection."
+            ),
+        )
+    ]
+    assert (
+        paragraph.get_bidi_fragments() == BidiParagraph(text=text).get_bidi_fragments()
+    )
+    assert (
+        paragraph.get_reordered_string()
+        == BidiParagraph(text=text).get_reordered_string()
+    )
+
+
+@pytest.mark.parametrize("alias", [None, "", "{nb}"])
+def test_bidi_sentinel_exhaustion_without_alias_in_text(alias):
+    text = "".join(BidiParagraph.SENTINEL_CANDIDATES)
+    paragraph = BidiParagraph(text=text, alias=alias)
+    assert paragraph.get_bidi_fragments() == ((text, TextDirection.LTR),)
+    assert paragraph.get_reordered_string() == text
+
+
+def test_bidi_alias_with_one_unused_sentinel():
+    existing = "".join(BidiParagraph.SENTINEL_CANDIDATES[:-1])
+    paragraph = BidiParagraph(text=f"אבג 10/{{nb}} {existing} דהו", alias="{nb}")
+    fragments = paragraph.get_bidi_fragments()
+    assert ("10/{nb}", TextDirection.LTR) in fragments
+    assert (existing, TextDirection.LTR) in fragments
+    assert "10/{nb}" in paragraph.get_reordered_string()
+    assert existing in paragraph.get_reordered_string()

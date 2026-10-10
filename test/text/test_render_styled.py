@@ -6,7 +6,7 @@ import pytest
 import fpdf
 from fpdf.enums import Align, XPos, YPos
 from fpdf.line_break import MultiLineBreak, TextLine
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
 
@@ -502,7 +502,7 @@ def test_cell_lnpos(tmp_path):
             )
 
         assert len(record) == 1
-        assert record[0].filename == __file__
+        assert_same_file(record[0].filename, __file__)
 
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
@@ -545,7 +545,7 @@ def test_multi_cell_ln_newpos(tmp_path):
                 ln=ln,
             )
         assert len(record) == 1
-        assert record[0].filename == __file__
+        assert_same_file(record[0].filename, __file__)
 
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):

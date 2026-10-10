@@ -23,6 +23,7 @@ contributors/contributors.html
 # virtualenv
 include/
 local/
+.venv/
 
 # vscode
 .vscode

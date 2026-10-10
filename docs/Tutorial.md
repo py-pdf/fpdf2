@@ -2,8 +2,6 @@
 
 Methods full documentation: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - Minimal Example ##
 
 Let's start with the classic example:
@@ -193,7 +191,7 @@ This tutorial will explain several ways to insert links inside a pdf document,
 ```
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 The new method shown here to print text is
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
@@ -259,23 +257,6 @@ To achieve this, here a little example:
 ```
 
 [Resulting PDF: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
-
-First, we add the needed embedded fonts using the
-[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
-method for each style.
-
-Then, we add the ICC profile object to the output intents array using the
-[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
-method.
-
-After adding some pages, using the embedded fonts, and writing some text,
-we create the pdf by calling `create_pdf_with_metadata()`,
-that uses [pikepdf](https://pypi.org/project/pikepdf/)
-to create the necessary metadata and set the type to PDF/A-3B.
-
-For more information on PDF metadata, check the dedicated documentation page: [Metadata](Metadata.md).
-
-Note that instead of using a function, you could also subclass `FPDF.output()` to ensure that all your documents are PDF-A compliant, as done in [test/pdf-a/test_pdf_a.py](https://github.com/py-pdf/fpdf2/blob/master/test/pdf-a/test_pdf_a.py).
 
 Tools like [VeraPDF](https://verapdf.org/) can check conformance of PDF documents produced:
 

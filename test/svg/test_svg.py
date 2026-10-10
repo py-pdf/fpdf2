@@ -1,5 +1,5 @@
 # pylint: disable=no-self-use, protected-access
-import io
+from io import BytesIO
 from pathlib import Path
 
 import fpdf
@@ -11,7 +11,8 @@ import pytest
 
 from . import parameters
 
-GENERATED_PDF_DIR = Path(__file__).resolve().parent / "generated_pdf"
+HERE = Path(__file__).resolve().parent
+GENERATED_PDF_DIR = HERE / "generated_pdf"
 
 
 def assert_style_match(lhs, rhs):
@@ -109,25 +110,18 @@ class TestSVGPathParsing:
         with pytest.raises(ValueError):
             fpdf.svg.svg_path_converter(pdf_path, "A 1 2 0 1 0 4 5")
 
-    @pytest.mark.parametrize(
-        "debug", (pytest.param(False, id="no debug"), pytest.param(True, id="debug"))
-    )
     @pytest.mark.parametrize("path, expected", parameters.svg_path_render_tests)
-    def test_rendering_smooth_curves(self, debug, path, expected):
+    def test_rendering_smooth_curves(self, path, expected):
         pdf_path = fpdf.drawing.PaintedPath()
 
         fpdf.svg.svg_path_converter(pdf_path, path)
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        resource_catalog = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         first_point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(first_point)
 
-        if debug:
-            dbg = io.StringIO()
-            result = pdf_path.render_debug(gsdr, style, start, first_point, dbg, "")[0]
-        else:
-            result = pdf_path.render(gsdr, style, start, first_point)[0]
+        result = pdf_path.render(resource_catalog, style, start, first_point)[0]
 
         assert result == expected
 
@@ -199,6 +193,20 @@ class TestSVGObject:
 
             assert (width, height) == pytest.approx(expected_dim)
             assert base_group.transform == pytest.approx(expected_tf)
+
+    @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
+    def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg"'
+            f' width="{whitespace}" height="{whitespace}" viewBox="0 0 10 10"></svg>'
+        )
+
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        assert isinstance(svg.width, fpdf.svg.Percent)
+        assert isinstance(svg.height, fpdf.svg.Percent)
+        assert svg.width == pytest.approx(100)
+        assert svg.height == pytest.approx(100)
 
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):
@@ -280,6 +288,82 @@ class TestSVGObject:
 
         assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
 
+    @pytest.mark.parametrize(
+        "fill_color, stroke_color, file_suffix", parameters.svg_current_color
+    )
+    def test_svg_current_color(self, tmp_path, fill_color, stroke_color, file_suffix):
+        svg_file = parameters.svgfile("simple_rect_current_color.svg")
+
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
+        pdf.allow_images_transparency = False
+        pdf.add_page()
+
+        if fill_color is not None:
+            pdf.set_fill_color(fill_color[0], fill_color[1], fill_color[2])
+        if stroke_color is not None:
+            pdf.set_draw_color(stroke_color[0], stroke_color[1], stroke_color[2])
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(
+            pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
+        )
+
+    def test_svg_render_content_in_a_tag(self, tmp_path):
+        svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
+
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
+        pdf.allow_images_transparency = False
+        pdf.add_page()
+
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
+
+    def test_svg_switch_uses_the_first_unconditional_child(self):
+        svg_data = """
+            <svg xmlns="http://www.w3.org/2000/svg">
+              <switch>
+                <rect width="10" height="10" />
+                <circle cx="5" cy="5" r="5" />
+              </switch>
+            </svg>
+        """
+
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        switch_group = svg.base_group.path_items[0]
+        selected_shape = switch_group.path_items[0]
+        assert isinstance(selected_shape, fpdf.drawing.PaintedPath)
+        assert isinstance(
+            selected_shape._root_graphics_context.path_items[1],
+            fpdf.drawing.RoundedRectangle,
+        )
+
+    def test_svg_switch_skips_conditional_children_for_a_fallback(self):
+        svg_data = """
+            <svg xmlns="http://www.w3.org/2000/svg">
+              <switch>
+                <rect requiredFeatures="http://example.invalid/feature" width="10" height="10" />
+                <circle cx="5" cy="5" r="5" />
+              </switch>
+            </svg>
+        """
+
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        switch_group = svg.base_group.path_items[0]
+        selected_shape = switch_group.path_items[0]
+        assert isinstance(selected_shape, fpdf.drawing.PaintedPath)
+        assert isinstance(
+            selected_shape._root_graphics_context.path_items[1], fpdf.drawing.Ellipse
+        )
+
     def test_svg_rendering_image_over_page_break(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.add_page()
@@ -289,3 +373,120 @@ class TestSVGObject:
         assert_pdf_equal(
             pdf, GENERATED_PDF_DIR / "svg_rendering_image_over_page_break.pdf", tmp_path
         )
+
+    def test_svg_text_ttf_font(self, tmp_path):
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.add_font(
+            family="serif", style="", fname=HERE.parent / "fonts" / "DejaVuSans.ttf"
+        )
+        pdf.image(
+            name=HERE / "svg_sources" / "ocanada.svg",
+            x=pdf.l_margin,
+            y=pdf.t_margin,
+            w=pdf.epw,
+            h=pdf.eph,
+            keep_aspect_ratio=True,
+        )
+        assert_pdf_equal(
+            pdf,
+            GENERATED_PDF_DIR / "ocanada.pdf",
+            tmp_path,
+        )
+
+    def test_svg_symbol(self):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" '
+            'xmlns:xlink="http://www.w3.org/1999/xlink">'
+            "<defs>"
+            '<symbol id="rond" width="10" height="10" viewBox="0 0 2 2"><circle cx="1" cy="1" r="1" fill="red"/></symbol>'
+            "</defs>"
+            '<use href="#rond" x="10" y="10" width="40" height="40"/>'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg is not None
+        assert "#rond" in svg.cross_references
+
+    def test_svg_symbol_uses_symbol_dimensions(self):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20">'
+            '<symbol id="myDot" width="10" height="10" viewBox="0 0 2 2">'
+            '<circle cx="1" cy="1" r="1" />'
+            "</symbol>"
+            '<use href="#myDot" x="5" y="5" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        symbol_use = svg.base_group.path_items[0]
+        assert tuple(symbol_use.transform) == pytest.approx((10, 0, 0, 10, 5, 5))
+        assert tuple(symbol_use.path_items[0].transform) == pytest.approx(
+            (0.5, 0, 0, 0.5, 0, 0)
+        )
+
+    def test_svg_symbol_use_dimensions_override_symbol_dimensions(self):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20">'
+            '<symbol id="myDot" width="10" height="10" viewBox="0 0 2 2">'
+            '<circle cx="1" cy="1" r="1" />'
+            "</symbol>"
+            '<use href="#myDot" x="5" y="5" width="40" height="20" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        symbol_use = svg.base_group.path_items[0]
+        assert tuple(symbol_use.transform) == pytest.approx((40, 0, 0, 20, 5, 5))
+
+    def test_svg_symbol_viewbox_origin_is_translated_before_scaling(self):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20">'
+            '<symbol id="myDot" width="10" height="10" viewBox="10 10 2 2">'
+            '<circle cx="11" cy="11" r="1" />'
+            "</symbol>"
+            '<use href="#myDot" x="5" y="5" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        symbol_use = svg.base_group.path_items[0]
+        assert tuple(symbol_use.transform) == pytest.approx((10, 0, 0, 10, 5, 5))
+        assert tuple(symbol_use.path_items[0].transform) == pytest.approx(
+            (0.5, 0, 0, 0.5, -5, -5)
+        )
+
+    def test_use_width_height_do_not_scale_non_symbol_references(self):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20">'
+            '<defs><path id="path" d="M 0 0 L 1 2 Z"/></defs>'
+            '<use href="#path" x="5" y="5" width="40" height="20" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        path_use = svg.base_group.path_items[0]
+        assert tuple(path_use.transform) == pytest.approx((1, 0, 0, 1, 5, 5))
+
+
+def test_user_space_gradient_tracks_svg_image_transform(tmp_path):
+    svg_data = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+            <defs>
+            <linearGradient id="g" x1="5" y1="5" x2="45" y2="45" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#ff0000" />
+                <stop offset="1" stop-color="#0000ff" />
+            </linearGradient>
+            </defs>
+            <rect width="50" height="50" fill="url(#g)" />
+        </svg>
+        """
+    pdf = fpdf.FPDF(unit="mm", format=(180, 70))
+    pdf.set_margin(0)
+    pdf.add_page()
+
+    pdf.image(BytesIO(svg_data.encode()), x=10, y=10)
+
+    pdf.image(BytesIO(svg_data.encode()), x=95, y=10)
+
+    assert_pdf_equal(
+        pdf,
+        GENERATED_PDF_DIR / "gradient_user_space_tracks_svg_transform.pdf",
+        tmp_path,
+    )

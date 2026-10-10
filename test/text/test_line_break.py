@@ -1,6 +1,13 @@
 from fpdf import FPDF, FPDFException, TextMode
-from fpdf.line_break import Fragment, MultiLineBreak, CurrentLine, TextLine
+from fpdf.line_break import (
+    Fragment,
+    MultiLineBreak,
+    CurrentLine,
+    TextLine,
+    TotalPagesSubstitutionFragment,
+)
 from fpdf.enums import Align, CharVPos
+from fpdf.graphics_state import GraphicsState
 
 import pytest
 
@@ -19,6 +26,10 @@ class FxFragment(Fragment):
         """Return the relevant width from "wdict"."""
         cw = self.wdict[self.font_style]
         return cw[character]
+
+
+class FxTotalPagesSubstitutionFragment(FxFragment, TotalPagesSubstitutionFragment):
+    pass
 
 
 class FxFont:
@@ -134,23 +145,23 @@ def test_no_fragments():
     assert multi_line_break.get_line() is None
 
 
-_gs_normal = dict(
+_gs_normal = GraphicsState(
     font_style="normal",
     font_size_pt=12,
     font_family="helvetica",
     font_stretching=100,
     char_spacing=0,
-    current_font={},
+    current_font=None,
     char_vpos=CharVPos.LINE,
     text_shaping=None,
 )
-_gs_bold = dict(
+_gs_bold = GraphicsState(
     font_style="bold",
     font_size_pt=12,
     font_family="helvetica",
     font_stretching=100,
     char_spacing=0,
-    current_font={},
+    current_font=None,
     char_vpos=CharVPos.LINE,
     text_shaping=None,
 )
@@ -158,7 +169,7 @@ _gs_bold = dict(
 
 def gs_with_font(graphics_state, cw):
     gs = graphics_state
-    gs["current_font"] = FxFont(cw)
+    gs.current_font = FxFont(cw)
     return gs
 
 
@@ -179,7 +190,7 @@ def test_width_calculation():
         alphabet["normal"][char] = char_width + i
     alphabet["normal"][" "] = char_width
     gs = _gs_normal
-    gs["current_font"] = FxFont(alphabet["normal"])
+    gs.current_font = FxFont(alphabet["normal"])
     fragments = [FxFragment(text, gs, 1, None, alphabet)]
     multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0])
 
@@ -238,7 +249,7 @@ def test_single_space_in_fragment():
         "normal": {},
     }
     gs = _gs_normal
-    gs["current_font"] = FxFont(alphabet["normal"])
+    gs.current_font = FxFont(alphabet["normal"])
     fragments = [FxFragment(text, gs, 1, None, alphabet)]
     for char in text:
         alphabet["normal"][char] = char_width
@@ -1428,3 +1439,94 @@ def test_line_break_no_initial_newline():  # issue-847
     multi_line_break = MultiLineBreak(fragments, 188, [0, 0])
     text_line = multi_line_break.get_line()
     assert text_line.fragments
+
+
+def test_substitution_fragments_are_not_merged_with_base_fragments():
+    """
+    There are three fragments, all of which fit on a single line. Normally, they would be merged into one fragment.
+    However, a substitution fragment cannot be merged with a base fragment, otherwise,
+    characters from the base fragment would be lost after replacement.
+
+    Expected behavior:
+        The fragments are not merged.
+    """
+    pdf = FPDF()
+    assert pdf.str_alias_nb_pages
+    alias = pdf.str_alias_nb_pages
+
+    char_width = 6
+    line_width = 200 * char_width
+    text_before = "before"
+    text_after = "after"
+
+    alphabet = {
+        "normal": {},
+    }
+    for char in text_before + alias + text_after:
+        alphabet["normal"][char] = char_width
+
+    graphics_state = gs_with_font(_gs_normal, alphabet["normal"])
+
+    fragment_before = FxFragment(text_before, graphics_state, 1, None, alphabet)
+    fragment_after = FxFragment(text_after, graphics_state, 1, None, alphabet)
+    substitution_fragment = FxTotalPagesSubstitutionFragment(
+        alias, graphics_state, 1, None, alphabet
+    )
+
+    multi_line_break = MultiLineBreak(
+        [fragment_before, substitution_fragment, fragment_after],
+        line_width,
+        [0, 0],
+    )
+
+    line = multi_line_break.get_line()
+    assert line.fragments == [fragment_before, substitution_fragment, fragment_after]
+
+    assert multi_line_break.get_line() is None
+
+
+def test_forced_break_across_many_small_fragments():  # issue #1250
+    """
+    Text without any break opportunity can be split into many small fragments
+    (as happens when a fallback font alternates with the main font).
+    Consecutive lines are then force-broken at the same character index
+    within *different* fragments, which must not raise
+    "Not enough horizontal space to render a single character".
+    """
+    char_width = 6
+    test_width = char_width * 3
+    alphabet = {
+        "normal": {},
+    }
+    for char in "abcde":
+        alphabet["normal"][char] = char_width
+    graphics_state = gs_with_font(_gs_normal, alphabet["normal"])
+    fragments = [
+        FxFragment(characters, graphics_state, 1, None, alphabet)
+        for characters in ("aa", "b", "cc", "d", "ee")
+    ]
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
+    lines = []
+    while (line := multi_line_break.get_line()) is not None:
+        lines.append("".join("".join(frag.characters) for frag in line.fragments))
+    assert lines == ["aab", "ccd", "ee"]
+
+
+def test_character_wider_than_line_raises():
+    """A single character wider than the line must still raise."""
+    char_width = 50
+    test_width = 20
+    alphabet = {
+        "normal": {"x": char_width, "y": char_width},
+    }
+    fragments = [
+        FxFragment(
+            "xy", gs_with_font(_gs_normal, alphabet["normal"]), 1, None, alphabet
+        )
+    ]
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
+    with pytest.raises(FPDFException) as error:
+        for _ in range(10):
+            if multi_line_break.get_line() is None:
+                break
+    assert "Not enough horizontal space" in str(error.value)

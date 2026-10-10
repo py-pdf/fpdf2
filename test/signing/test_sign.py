@@ -1,12 +1,11 @@
+import pytest
+
 from pathlib import Path
-
-
 from fpdf import FPDF
-from test.conftest import assert_pdf_equal, check_signature, EPOCH
-
+from test.conftest import USING_ZLIB_NG, assert_pdf_equal, check_signature, EPOCH
 
 HERE = Path(__file__).resolve().parent
-TRUSTED_CERT_PEMS = (HERE / "signing.crt.pem",)
+TRUSTED_CERT_PEMS = (HERE / "signing-certificate.crt",)
 
 
 def test_sign_pkcs12(tmp_path):
@@ -18,6 +17,10 @@ def test_sign_pkcs12(tmp_path):
     check_signature(pdf, TRUSTED_CERT_PEMS)
 
 
+@pytest.mark.skipif(
+    USING_ZLIB_NG,
+    reason="Skipped when Python uses zlib-ng because compressed data differs",
+)
 def test_sign_pkcs12_with_link(tmp_path):
     "This test ensures that Signature & Link annotations can be combined"
     pdf = FPDF()

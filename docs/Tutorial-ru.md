@@ -2,8 +2,6 @@
 
 Полная документация по методам класса **FPDF**: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Руководство 1 - Минимальный пример ##
 
 Начнём с классического примера:
@@ -132,7 +130,7 @@ English versions:
 ```
 
 [Итоговый PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 Новый метод, показанный здесь для печати текста - это [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Он очень похож на [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), основные отличия заключаются в следующем:
 

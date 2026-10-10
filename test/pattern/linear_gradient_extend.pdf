@@ -1,4 +1,5 @@
 %PDF-1.3
+%יכס¿
 1 0 obj
 <<
 /Count 1
@@ -34,53 +35,48 @@ endstream
 endobj
 5 0 obj
 <<
+/Matrix [2.83464567 0 0 -2.83464567 0 841.89]
+/PatternType 2
+/Shading 11 0 R
+/Type /Pattern
+>>
+endobj
+6 0 obj
+<<
+/Matrix [2.83464567 0 0 -2.83464567 0 841.89]
+/PatternType 2
+/Shading 13 0 R
+/Type /Pattern
+>>
+endobj
+7 0 obj
+<<
+/Matrix [2.83464567 0 0 -2.83464567 0 841.89]
+/PatternType 2
+/Shading 15 0 R
+/Type /Pattern
+>>
+endobj
+8 0 obj
+<<
+/Matrix [2.83464567 0 0 -2.83464567 0 841.89]
+/PatternType 2
+/Shading 17 0 R
+/Type /Pattern
+>>
+endobj
+9 0 obj
+<<
 /BaseFont /Helvetica
 /Encoding /WinAnsiEncoding
 /Subtype /Type1
 /Type /Font
 >>
 endobj
-6 0 obj
-<<
-/C0 [0.76 0.22 0.39]
-/C1 [0.11 0.15 0.44]
-/Domain [0 1]
-/FunctionType 2
-/N 1
->>
-endobj
-7 0 obj
-<<
-/ColorSpace /DeviceRGB
-/Coords [56.69 841.89 538.59 841.89]
-/Extend [false false]
-/Function 6 0 R
-/ShadingType 2
->>
-endobj
-8 0 obj
-<<
-/C0 [0.76 0.22 0.39]
-/C1 [0.11 0.15 0.44]
-/Domain [0 1]
-/FunctionType 2
-/N 1
->>
-endobj
-9 0 obj
-<<
-/Background [0.53 0.56 0.59]
-/ColorSpace /DeviceRGB
-/Coords [56.69 841.89 538.59 841.89]
-/Extend [false false]
-/Function 8 0 R
-/ShadingType 2
->>
-endobj
 10 0 obj
 <<
-/C0 [0.76 0.22 0.39]
-/C1 [0.11 0.15 0.44]
+/C0 [0.76470588 0.21568627 0.39215686]
+/C1 [0.11372549 0.14901961 0.44313725]
 /Domain [0 1]
 /FunctionType 2
 /N 1
@@ -88,18 +84,18 @@ endobj
 endobj
 11 0 obj
 <<
-/Background [0.53 0.56 0.59]
+/AntiAlias true
 /ColorSpace /DeviceRGB
-/Coords [56.69 841.89 538.59 841.89]
-/Extend [true false]
+/Coords [20 0 190.00155556 0]
+/Extend [false false]
 /Function 10 0 R
 /ShadingType 2
 >>
 endobj
 12 0 obj
 <<
-/C0 [0.76 0.22 0.39]
-/C1 [0.11 0.15 0.44]
+/C0 [0.76470588 0.21568627 0.39215686]
+/C1 [0.11372549 0.14901961 0.44313725]
 /Domain [0 1]
 /FunctionType 2
 /N 1
@@ -107,54 +103,67 @@ endobj
 endobj
 13 0 obj
 <<
-/Background [0.53 0.56 0.59]
+/AntiAlias true
+/Background [0.5254902 0.56078431 0.58823529]
 /ColorSpace /DeviceRGB
-/Coords [56.69 841.89 538.59 841.89]
-/Extend [true true]
+/Coords [20 0 190.00155556 0]
+/Extend [false false]
 /Function 12 0 R
 /ShadingType 2
 >>
 endobj
 14 0 obj
 <<
-/PatternType 2
-/Shading 7 0 R
-/Type /Pattern
+/C0 [0.76470588 0.21568627 0.39215686]
+/C1 [0.11372549 0.14901961 0.44313725]
+/Domain [0 1]
+/FunctionType 2
+/N 1
 >>
 endobj
 15 0 obj
 <<
-/PatternType 2
-/Shading 9 0 R
-/Type /Pattern
+/AntiAlias true
+/Background [0.5254902 0.56078431 0.58823529]
+/ColorSpace /DeviceRGB
+/Coords [20 0 190.00155556 0]
+/Extend [true false]
+/Function 14 0 R
+/ShadingType 2
 >>
 endobj
 16 0 obj
 <<
-/PatternType 2
-/Shading 11 0 R
-/Type /Pattern
+/C0 [0.76470588 0.21568627 0.39215686]
+/C1 [0.11372549 0.14901961 0.44313725]
+/Domain [0 1]
+/FunctionType 2
+/N 1
 >>
 endobj
 17 0 obj
 <<
-/PatternType 2
-/Shading 13 0 R
-/Type /Pattern
+/AntiAlias true
+/Background [0.5254902 0.56078431 0.58823529]
+/ColorSpace /DeviceRGB
+/Coords [20 0 190.00155556 0]
+/Extend [true true]
+/Function 16 0 R
+/ShadingType 2
 >>
 endobj
 18 0 obj
 <<
-/Font <</F1 5 0 R>>
-/Pattern <</P1 14 0 R
-/P2 15 0 R
-/P3 16 0 R
-/P4 17 0 R>>
+/Font <</F1 9 0 R>>
+/Pattern <</P1 5 0 R
+/P2 6 0 R
+/P3 7 0 R
+/P4 8 0 R>>
 /ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
-/Shading <</Sh1 7 0 R
-/Sh2 9 0 R
-/Sh3 11 0 R
-/Sh4 13 0 R>>
+/Shading <</Sh1 11 0 R
+/Sh2 13 0 R
+/Sh3 15 0 R
+/Sh4 17 0 R>>
 >>
 endobj
 19 0 obj
@@ -165,32 +174,32 @@ endobj
 xref
 0 20
 0000000000 65535 f 
-0000000009 00000 n 
-0000000096 00000 n 
-0000000199 00000 n 
-0000000280 00000 n 
-0000000641 00000 n 
-0000000738 00000 n 
-0000000836 00000 n 
-0000000970 00000 n 
-0000001068 00000 n 
-0000001231 00000 n 
-0000001330 00000 n 
-0000001494 00000 n 
-0000001593 00000 n 
-0000001756 00000 n 
-0000001823 00000 n 
-0000001890 00000 n 
-0000001958 00000 n 
-0000002026 00000 n 
-0000002230 00000 n 
+0000000015 00000 n 
+0000000102 00000 n 
+0000000205 00000 n 
+0000000286 00000 n 
+0000000647 00000 n 
+0000000760 00000 n 
+0000000873 00000 n 
+0000000986 00000 n 
+0000001099 00000 n 
+0000001196 00000 n 
+0000001331 00000 n 
+0000001476 00000 n 
+0000001611 00000 n 
+0000001802 00000 n 
+0000001937 00000 n 
+0000002127 00000 n 
+0000002262 00000 n 
+0000002451 00000 n 
+0000002653 00000 n 
 trailer
 <<
 /Size 20
 /Root 2 0 R
 /Info 19 0 R
-/ID [<8317618270864AE848C45526A9BCADB1><8317618270864AE848C45526A9BCADB1>]
+/ID [<80255F7734BA95A64EBCCE130012F32A><80255F7734BA95A64EBCCE130012F32A>]
 >>
 startxref
-2286
+2709
 %%EOF

@@ -21,7 +21,6 @@ def test_linear_gradient_extend(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin + 10,
             0,
             pdf.epw + pdf.l_margin - 10,
@@ -44,7 +43,6 @@ def test_linear_gradient_extend(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin + 10,
             0,
             pdf.epw + pdf.l_margin - 10,
@@ -68,7 +66,6 @@ def test_linear_gradient_extend(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin + 10,
             0,
             pdf.epw + pdf.l_margin - 10,
@@ -93,7 +90,6 @@ def test_linear_gradient_extend(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin + 10,
             0,
             pdf.epw + pdf.l_margin - 10,
@@ -112,7 +108,11 @@ def test_linear_gradient_extend(tmp_path):
             text="LINEAR GRADIENT", align="C", w=pdf.epw, new_x="LEFT", new_y="NEXT"
         )
 
-    assert_pdf_equal(pdf, HERE / "linear_gradient_extend.pdf", tmp_path)
+    assert_pdf_equal(
+        pdf,
+        HERE / "linear_gradient_extend.pdf",
+        tmp_path,
+    )
 
 
 def test_linear_gradient_multiple_colors(tmp_path):
@@ -122,7 +122,6 @@ def test_linear_gradient_multiple_colors(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin,
             0,
             pdf.epw + pdf.l_margin,
@@ -135,7 +134,6 @@ def test_linear_gradient_multiple_colors(tmp_path):
 
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin,
             0,
             pdf.epw + pdf.l_margin,
@@ -159,7 +157,6 @@ def test_linear_gradient_vertical(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             0,
             y,
             0,
@@ -172,7 +169,6 @@ def test_linear_gradient_vertical(tmp_path):
 
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             0,
             y,
             0,
@@ -192,7 +188,6 @@ def test_linear_gradient_diagonal(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin,
             y,
             pdf.epw + pdf.l_margin,
@@ -205,7 +200,6 @@ def test_linear_gradient_diagonal(tmp_path):
 
     with pdf.use_pattern(
         LinearGradient(
-            pdf,
             pdf.l_margin,
             y + 100,
             pdf.epw + pdf.l_margin,

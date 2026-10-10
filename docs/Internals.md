@@ -19,7 +19,7 @@ The [syntax.py](https://github.com/py-pdf/fpdf2/blob/master/fpdf/syntax.py) pack
 Classes inherit from the [PDFObject](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.syntax.PDFObject) class, that has the following properties:
 
 * every PDF object has an `.id`, that is assigned during the document serialization by the [OutputProducer](#outputproducer)
-* the `.serialize()` method renders the PDF object as an `obj<</>>endobj` text block. It can be overridden by child classes.
+* the `.serialize()` method renders the PDF object as an `obj<<...>>endobj` text block. It can be overridden by child classes
 * the `.content_stream()` method must return non empty bytes if the PDF Object has a _content stream_
 
 Other notable core classes are:
@@ -37,13 +37,17 @@ allows to manage a stack of graphics state variables:
 
 * docstring: [fpdf.graphics_state.GraphicsStateMixin](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsStateMixin)
 * source file: [graphics_state.py](https://github.com/py-pdf/fpdf2/blob/master/fpdf/graphics_state.py)
+* data container: [fpdf.graphics_state.GraphicsState](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsState)
 
 The main methods of this API are:
 
 * [_push_local_stack()](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsStateMixin._push_local_stack): Push a graphics state on the stack
 * [_pop_local_stack()](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsStateMixin._pop_local_stack): Pop the last graphics state on the stack
 * [_get_current_graphics_state()](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsStateMixin._get_current_graphics_state): Retrieve the current graphics state
-* [_is_current_graphics_state_nested()](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsStateMixin._is_current_graphics_state_nested): Indicate if the stack contains items (else it is empty)
+* [_is_current_graphics_state_nested()](https://py-pdf.github.io/fpdf2/fpdf/graphics_state.html#fpdf.graphics_state.GraphicsStateMixin._is_current_graphics_state_nested): Indicate if a nested graphics state is active
+
+Each stack entry is a `GraphicsState` dataclass, and `_get_current_graphics_state()` returns a copy
+used by fragments or temporary contexts.
 
 Thanks to this _mixin_, we can use the following semantics:
 ```python

@@ -1,6 +1,7 @@
 import io
 import logging
 import sys
+import tempfile
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -26,8 +27,8 @@ def test_insert_jpg(tmp_path):
     reason="Required system libraries to generate JPEG2000 images are a PITA to install under Windows",
 )
 @pytest.mark.skipif(
-    sys.version_info < (3, 9),
-    reason="JPEG2000 changes were done on pillow 11.1.0 which is not available for python 3.8",
+    sys.version_info < (3, 11),
+    reason="JPEG2000 changes were done on Pillow 11 which are not compatible with versions of Python < 3.11",
 )
 def test_insert_jpg_jpxdecode(tmp_path):
     pdf = fpdf.FPDF()
@@ -234,6 +235,17 @@ def test_insert_bytesio(tmp_path):
     pdf.image(img_bytes, x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
     assert not img_bytes.closed  # cf. issue #881
+
+
+def test_insert_tempfile(tmp_path):
+    """Compare unnamed temporary file vs the same reference files as test_insert_bytesio"""
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with tempfile.TemporaryFile() as img_file:
+        img_file.write((HERE / "insert_images_insert_png.png").read_bytes())
+        img_file.seek(0)
+        pdf.image(img_file, x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
 
 
 def test_insert_bytes(tmp_path):

@@ -783,6 +783,18 @@ test_svg_sources = (
         svgfile("path_clippingpath.svg"),
         id="<clipPath> containing a <path> used in a group with color - issue #1147",
     ),
+    pytest.param(svgfile("text-samples.svg"), id="<text> tests"),
+    pytest.param(svgfile("text01.svg"), id="<text> test"),
+    pytest.param(svgfile("tspan01.svg"), id="<text> with <tspan>"),
+    pytest.param(svgfile("tspan02.svg"), id="<text> with multiple <tspan>"),
+    pytest.param(svgfile("gradient_linear.svg"), id="Linear gradient"),
+    pytest.param(svgfile("gradient_radial.svg"), id="Radial gradient"),
+    pytest.param(svgfile("gradient_multiple.svg"), id="Multiple gradients"),
+    pytest.param(svgfile("gradient_opacity.svg"), id="Gradient with opacity"),
+    pytest.param(svgfile("gradient_spread_methods.svg"), id="Gradient spread methods"),
+    # issue 1831
+    pytest.param(svgfile("sunburst.svg"), id="small arc round to zero"),
+    pytest.param(svgfile("symbol.svg"), id="symbol reused in different placements"),
 )
 
 svg_path_edge_cases = (
@@ -1131,5 +1143,22 @@ svg_shape_info_tests = (
         None,
         pytest.raises(ValueError),
         id="invalid viewbox",
+    ),
+)
+
+svg_current_color = (
+    # if there's no color defined in the graphics context, we expect black
+    # (that's the behaviour when the SVG is opened in a browser)
+    pytest.param(
+        None,
+        None,
+        "_black_by_default",
+        id="red draw and",
+    ),
+    pytest.param(
+        (255, 0, 0),
+        (255, 0, 0),
+        "_red_fill_draw",
+        id="red fill and draw colors",
     ),
 )

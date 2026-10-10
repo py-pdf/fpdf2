@@ -7,8 +7,8 @@ Columns will always be of equal width.
 Text columns support all the standard [text region](TextRegion.md) methods, and some extra ones:
 
 * [`.paragraph()`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.TextColumns.paragraph)
-* [`.write()`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.TextColumns.write)
-* [`.ln()`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.TextColumns.ln)
+* [`.write()`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.Paragraph.write)
+* [`.ln()`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.ParagraphCollectorMixin.ln)
 * [`.new_column()`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.TextColumns.new_column)
 
 A **form feed** character (`\u000c`) in the text will have the same effect as an explicit call to `.new_column()`,

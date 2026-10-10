@@ -120,9 +120,21 @@ def test_flextemplate_multipage(tmp_path):
     tmpl_0["label"] = "Offset: 120 / 120 mm"
     tmpl_0.render(offsetx=120, offsety=120, rotate=30.0)
     tmpl_1 = FlexTemplate(pdf)
-    tmpl_1.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
+    tmpl_1.parse_csv(HERE / "template_definition.csv", delimiter=";")
     tmpl_1.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_multipage.pdf", tmp_path)
+
+
+def test_flextemplate_multipage_parse_json(tmp_path):
+    pdf = FPDF()
+    tmpl = FlexTemplate(pdf)
+    tmpl.parse_json(HERE / "template_definition.json")
+    # Repeat on 5 pages, changing a single setting for each page:
+    for n in range(1, 6):
+        pdf.add_page()
+        tmpl["numeric_text"] = f"{n:03d}"
+        tmpl.render()
+    assert_pdf_equal(pdf, HERE / "flextemplate_multipage_parse_json.pdf", tmp_path)
 
 
 def test_flextemplate_rotation(tmp_path):
@@ -520,3 +532,187 @@ def test_flextemplate_wrapmode(tmp_path):
     templ = FlexTemplate(pdf, charwrap_elements)
     templ.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_wrapmode.pdf", tmp_path)
+
+
+def test_flextemplate_dashed_elements(tmp_path):
+    """Test that elements can be created with dashed lines and that the dash pattern does not leak."""
+
+    elements = [
+        {
+            "name": "solid-line1",
+            "type": "L",
+            "x1": 10,
+            "y1": 5,
+            "x2": 100,
+            "y2": 5,
+            "size": 1,
+        },
+        {
+            "name": "dashed-line",
+            "type": "L",
+            "x1": 10,
+            "y1": 10,
+            "x2": 100,
+            "y2": 10,
+            "size": 1,
+            "dash_pattern": {"dash": 2, "gap": 4, "phase": 0.5},
+        },
+        {
+            "name": "solid-line2",
+            "type": "L",
+            "x1": 10,
+            "y1": 15,
+            "x2": 100,
+            "y2": 15,
+            "size": 1,
+        },
+        {
+            "name": "solid-rect1",
+            "type": "B",
+            "x1": 5,
+            "y1": 25,
+            "x2": 105,
+            "y2": 55,
+            "size": 1.5,
+        },
+        {
+            "name": "dashed-rect",
+            "type": "B",
+            "x1": 10,
+            "y1": 30,
+            "x2": 100,
+            "y2": 50,
+            "size": 0.5,
+            "dash_pattern": {"dash": 2},
+        },
+        {
+            "name": "solid-rect2",
+            "type": "B",
+            "x1": 15,
+            "y1": 35,
+            "x2": 95,
+            "y2": 45,
+            "size": 0.5,
+        },
+        {
+            "name": "solid-ellipse1",
+            "type": "E",
+            "x1": 15,
+            "y1": 85,
+            "x2": 95,
+            "y2": 95,
+            "size": 0.5,
+        },
+        {
+            "name": "dashed-ellipse",
+            "type": "E",
+            "x1": 10,
+            "y1": 80,
+            "x2": 100,
+            "y2": 100,
+            "size": 0.5,
+            "dash_pattern": {"dash": 2, "gap": 1},
+        },
+        {
+            "name": "solid-ellipse2",
+            "type": "E",
+            "x1": 5,
+            "y1": 75,
+            "x2": 105,
+            "y2": 105,
+            "size": 0.5,
+        },
+    ]
+
+    pdf = FPDF()
+    template = FlexTemplate(pdf, elements)
+
+    # First page has a solid dash_pattern before rendering the template.
+    pdf.add_page()
+    pdf.set_dash_pattern()
+    template.render()
+
+    # Second page has a dash_pattern applied prior to rendering the template.
+    pdf.add_page()
+    pdf.set_dash_pattern(5, 5, 1)
+    template.render()
+
+    assert_pdf_equal(pdf, HERE / "flextemplate_dashed_elements.pdf", tmp_path)
+
+
+def test_flextemplate_dash_pattern_badinput():
+    elements = [
+        {
+            "name": "bad-line",
+            "type": "L",
+            "x1": 100,
+            "y1": 100,
+            "x2": 200,
+            "y2": 150,
+            "dash_pattern": {"dash": 5, "bad_key": 6},
+        }
+    ]
+
+    pdf = FPDF()
+    with raises(KeyError):
+        template = FlexTemplate(pdf, elements)
+        template.render()
+
+
+def test_flextemplate_keep_aspect_ratio(tmp_path):
+    """
+    Tries to render a square image inside a rectangle with keep_aspect_ratio=True.
+    The image should fit the rectangle but should remain a square.
+    """
+    tmpl = [
+        {
+            "name": "box",
+            "type": "B",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 25,
+        },
+        {
+            "name": "img",
+            "type": "I",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 25,
+            "keep_aspect_ratio": True,
+        },
+    ]
+
+    img = qrcode.make("Test keep_aspect_ratio").get_image()
+
+    pdf = FPDF()
+    pdf.add_page()
+    templ1 = FlexTemplate(pdf, tmpl)
+    templ1["img"] = img
+    templ1.render(offsetx=20, offsety=20)
+
+    templ2 = FlexTemplate(pdf)
+    templ2.parse_csv(HERE / "keep_aspect_ratio.csv", delimiter=";")
+    templ2["img"] = img
+    templ2.render(offsetx=20, offsety=50)
+
+    assert_pdf_equal(pdf, HERE / "flextemplate_keep_aspect_ratio.pdf", tmp_path)
+
+
+def test_flextemplate_keep_aspect_ratio_badinput():
+    tmpl = [
+        {
+            "name": "img",
+            "type": "I",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 25,
+            "keep_aspect_ratio": "invalid_type",
+        },
+    ]
+
+    pdf = FPDF()
+    with raises(TypeError):
+        FlexTemplate(pdf, tmpl)

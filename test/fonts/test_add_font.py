@@ -1,10 +1,12 @@
 from os import devnull
+import sys
 from pathlib import Path
 
 import pytest
 
 from fpdf import FPDF
-from test.conftest import assert_pdf_equal
+from fontTools.ttLib import TTCollection, woff2
+from test.conftest import LOREM_IPSUM, assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
 
@@ -33,22 +35,22 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR_and_FPDF_CACHE_MODE():
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR = "/tmp"
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE = 1
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     fpdf.SOME = 1
     assert fpdf.SOME == 1
@@ -58,22 +60,22 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR_and_FPDF_CACHE_MODE():
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR = "/tmp"
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE = 1
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     fpdf.SOME = 1
     assert fpdf.SOME == 1
@@ -92,7 +94,7 @@ def test_add_font_with_str_fname_ok(tmp_path):
 
         for r in record:
             if r.category == DeprecationWarning:
-                assert r.filename == __file__
+                assert_same_file(r.filename, __file__)
 
 
 def test_add_core_fonts():
@@ -109,7 +111,7 @@ def test_add_core_fonts():
         assert not pdf.fonts  # No fonts added, as all of them are core fonts
 
     for r in record:
-        assert r.filename == __file__
+        assert_same_file(r.filename, __file__)
 
 
 def test_render_en_dash(tmp_path):  # issue-166
@@ -185,3 +187,142 @@ def test_font_with_more_than_10_missing_glyphs(caplog):
         "'Ⓣ' (\\u24c9), 'Ⓔ' (\\u24ba), 'Ⓢ' (\\u24c8), "
         "'𝕥' (\\U0001d565), '𝕖' (\\U0001d556), ... (and 7 others)" in caplog.text
     )
+
+
+def test_add_font_woff(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff")
+    pdf.set_font("Noto", size=32)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff.pdf", tmp_path)
+
+
+def test_add_font_woff_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff")
+    pdf.set_font("Noto", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff_hb.pdf", tmp_path)
+
+
+def test_add_font_woff2(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")
+    pdf.set_font("Noto", size=32)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff2.pdf", tmp_path)
+
+
+def test_add_font_woff2_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")
+    pdf.set_font("Noto", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "font_woff2_hb.pdf", tmp_path)
+
+
+def test_add_font_woff2_without_brotli(monkeypatch):
+    monkeypatch.setattr(woff2, "haveBrotli", False, raising=True)
+
+    pdf = FPDF()
+    with pytest.raises(
+        RuntimeError,
+        match=r"^Could not open WOFF2 font\. WOFF2 support requires an external Brotli",
+    ):
+        pdf.add_font("Noto", style="", fname=HERE / "noto-sans-v42-latin-regular.woff2")
+
+
+def test_add_font_collection_all_faces(tmp_path):
+    """
+    This test will render all faces in the NotoSansCJK font collection.
+    This font has multiple faces for the same glyphs, with regional variations
+    for Chinese, Japanese, and Korean.
+    The output PDF will show the glyphs with those slight regional variations.
+    """
+    COLLECTION_FONT = HERE / "noto-cjk-subset.ttc"
+    COLLECTION_TEXT_ALL_FACES = "\u7e9b\u88ef\u8b56\u8c41\u904d\u98ef"
+    pdf = FPDF()
+    pdf.add_page()
+    collection = TTCollection(str(COLLECTION_FONT))
+    face_count = len(collection.fonts)
+    for face_number in range(face_count):
+        family = f"NotoCJKFace{face_number}"
+        pdf.add_font(
+            family=family,
+            style="",
+            fname=COLLECTION_FONT,
+            collection_font_number=face_number,
+        )
+        pdf.set_font("helvetica", size=12)
+        pdf.cell(text=f"Face {face_number}: ")
+        pdf.set_font(family, size=12)
+        pdf.cell(text=COLLECTION_TEXT_ALL_FACES)
+        pdf.ln()
+    assert_pdf_equal(pdf, HERE / "collection_all_faces.pdf", tmp_path)
+
+
+def test_add_font_collection_shaping(tmp_path):
+    COLLECTION_FONT = HERE / "noto-cjk-subset.ttc"
+    COLLECTION_TEXT_ALL_FACES = "\u7e9b\u88ef\u8b56\u8c41\u904d\u98ef"
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_text_shaping(True)
+    collection = TTCollection(str(COLLECTION_FONT))
+    face_count = len(collection.fonts)
+    for face_number in range(face_count):
+        family = f"NotoCJKFace{face_number}"
+        pdf.add_font(
+            family=family,
+            style="",
+            fname=COLLECTION_FONT,
+            collection_font_number=face_number,
+        )
+        pdf.set_font("helvetica", size=12)
+        pdf.cell(text=f"Face {face_number}: ")
+        pdf.set_font(family, size=12)
+        pdf.cell(text=COLLECTION_TEXT_ALL_FACES)
+        pdf.ln()
+    assert_pdf_equal(pdf, HERE / "collection_all_faces_shaping.pdf", tmp_path)
+
+
+SYMBOL_FONT_PATH = Path(r"c:\Windows\Fonts\symbol.ttf")
+
+
+@pytest.mark.skipif(
+    sys.platform not in ("cygwin", "win32"), reason="Windows-only symbol font test"
+)
+@pytest.mark.skipif(not SYMBOL_FONT_PATH.exists(), reason="symbol.ttf not available")
+def test_add_font_symbol(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("MSSymbol", style="", fname=SYMBOL_FONT_PATH)
+    pdf.set_font("MSSymbol", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(
+        w=pdf.epw,
+        text="ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+    )
+    assert_pdf_equal(pdf, HERE / "symbol.pdf", tmp_path)
+
+
+@pytest.mark.skipif(
+    sys.platform not in ("cygwin", "win32"), reason="Windows-only symbol font test"
+)
+@pytest.mark.skipif(not SYMBOL_FONT_PATH.exists(), reason="symbol.ttf not available")
+def test_add_font_symbol_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("MSSymbol", style="", fname=SYMBOL_FONT_PATH)
+    pdf.set_font("MSSymbol", size=32)
+    pdf.set_text_shaping(True)
+    pdf.multi_cell(
+        w=pdf.epw,
+        text="ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+    )
+    assert_pdf_equal(pdf, HERE / "symbol_shaping.pdf", tmp_path)

@@ -202,3 +202,57 @@ def test_glyph_not_on_any_font(caplog):
         "Roboto is missing the following glyphs: "
         "'🆃' (\\U0001f183), '🅴' (\\U0001f174), '🆂' (\\U0001f182)" in caplog.text
     )
+
+
+def test_fallback_font_with_non_alpha_on_fontkey(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Quicksand", fname=HERE / "Quicksand-Regular.otf")
+    pdf.add_font(family="DejaVu-Sans", fname=HERE / "DejaVuSans.ttf")
+    pdf.add_font(family="Twitter Emoji", fname=HERE / "TwitterEmoji.ttf")
+    pdf.add_font(family="Waree", fname=HERE / "Waree.ttf")
+    text = "Hello world / สวัสดีชาวโลก ทดสอบฟอนต์, 😄 😁 😆 😅 ✌"
+    pdf.set_fallback_fonts(["DejaVu-Sans", "Twitter Emoji", "Waree"])
+    pdf.set_font("Quicksand", size=20)
+    pdf.cell(
+        text=text,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+        markdown=True,
+    )
+    pdf.ln()
+    assert_pdf_equal(
+        pdf,
+        HERE / "fallback_font_with_non_alpha_on_fontkey.pdf",
+        tmp_path,
+    )
+
+
+def test_fallback_font_first_text_on_page(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.add_font(family="TwitterEmoji", fname=HERE / "TwitterEmoji.ttf")
+    pdf.set_font("Roboto", size=12)
+    pdf.set_fallback_fonts(["TwitterEmoji"])
+
+    pdf.multi_cell(
+        0,
+        text="😊xxx",
+        border=1,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.multi_cell(
+        0,
+        text="xxx",
+        border=1,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "fallback_font_first_text_on_page.pdf",
+        tmp_path,
+    )

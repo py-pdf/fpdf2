@@ -46,6 +46,8 @@ def test_charmap_first_999_chars(caplog, font_filename, tmp_path):
 
     pdf = FPDF()
     pdf.add_page()
+    # disable color fonts for this test due to color glyph count limit
+    pdf.render_color_fonts = False
     pdf.add_font(fname=font_path)
     pdf.set_font(font_name, size=10)
 

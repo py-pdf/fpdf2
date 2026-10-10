@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fpdf import FPDF
+from fpdf.annotations import AnnotationDict
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
 from fpdf.enums import AnnotationName
 from fpdf.syntax import DestinationXYZ
@@ -84,6 +85,25 @@ def test_goto_action(tmp_path):
     pdf.add_page()
     pdf.text(x=80, y=140, text="Page 2")
     assert_pdf_equal(pdf, HERE / "goto_action.pdf", tmp_path)
+
+
+def test_goto_action_named_destination(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Helvetica", size=24)
+    pdf.add_page()
+    x, y, text = 80, 140, "GoTo action"
+    pdf.text(x=x, y=y, text=text)
+    pdf.add_action(
+        GoToAction(dest="#page2"),
+        x=x,
+        y=y - pdf.font_size,
+        w=pdf.get_string_width(text),
+        h=pdf.font_size,
+    )
+    pdf.add_page()
+    pdf.add_link(y=140, name="page2")
+    pdf.text(x=80, y=140, text="Page 2")
+    assert_pdf_equal(pdf, HERE / "goto_action_named_destination.pdf", tmp_path)
 
 
 def test_goto_remote_action(tmp_path):
@@ -190,3 +210,22 @@ def test_free_text_annotation_width_parameter(tmp_path):
     pdf.set_font_size(12)
     pdf.free_text_annotation(text="This is a free text annotation.", w=80)
     assert_pdf_equal(pdf, HERE / "free_text_annotation_width_parameter.pdf", tmp_path)
+
+
+def test_annotation_numbers_preserve_rounding():
+    annotation = AnnotationDict(
+        subtype="Ink",
+        x=10.0,
+        y=20.1234,
+        width=30.0,
+        height=5.0,
+        border_width=1.0,
+        color=(0.0, 0.123456789012345, 1.0),
+        quad_points=(10.0, 20.1234),
+        ink_list=(10.0, 20.1234),
+    )
+    assert annotation.rect == "[10 15.12 40 20.12]"
+    assert annotation.border == "[0 0 1]"
+    assert annotation.c == "[0 0.123456789012345 1]"
+    assert annotation.quad_points == "[10 20.12]"
+    assert annotation.ink_list == "[[10 20.12]]"

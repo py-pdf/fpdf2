@@ -10,14 +10,27 @@ extend-ignore-identifiers-re = [
     "ue", "UE",
     "FlateDecode",
     "VAI",
+    "^TAI_THAM$",
+    "wdth", # variable font axis name.
+    "^iz$",
 ]
 extend-ignore-re = [
     "loca subsetting",
     "np.arange",
+    '\("a", 53, "ba"\)', # Alphabetic ordered-list marker test case.
 ]
+
+[default.extend-identifiers]
+otTables = "otTables"
 
 [files]
 extend-exclude = [
     "*.pdf",
+    "*.svg",
     "docs/Tutorial-*.md",
+]
+
+[type.md]
+extend-ignore-words-re = [
+    "Suh",
 ]

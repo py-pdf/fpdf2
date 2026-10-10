@@ -4,15 +4,13 @@ import warnings
 from fpdf import FPDF, HTML2FPDF
 from test.conftest import assert_pdf_equal
 
-
 HERE = Path(__file__).resolve().parent
 
 
 def test_html_toc(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """
+    pdf.write_html("""
         <h1>Document title</h1>
         <br><br><br>
         <u>Table of content:</u>
@@ -39,16 +37,14 @@ def test_html_toc(tmp_path):
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
             </section>
         </section>
-        """
-    )
+        """)
     assert_pdf_equal(pdf, HERE / "html_toc.pdf", tmp_path)
 
 
 def test_html_toc_2_pages(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<h1>Document title</h1>
+    pdf.write_html("""<h1>Document title</h1>
         <br><br><br>
         <u>Table of content:</u>
         <br>
@@ -221,22 +217,19 @@ def test_html_toc_2_pages(tmp_path):
         <h2>Subtitle 55</h2>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        """
-    )
+        """)
     assert_pdf_equal(pdf, HERE / "html_toc_2_pages.pdf", tmp_path)
 
 
 def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<toc></toc>
+    pdf.write_html("""<toc></toc>
         <h2>?-1</h2>
         <h3>?-1-1</h3>
         <h1>1</h1>
         <h2>1-1</h2>
-        <h3>1-1-1</h3>"""
-    )
+        <h3>1-1-1</h3>""")
     assert_pdf_equal(pdf, HERE / "html_toc_with_h1_as_2nd_heading.pdf", tmp_path)
 
 
@@ -261,14 +254,12 @@ def test_html_toc_with_custom_rendering(tmp_path):  # issue 240 & 670
     # Ensure no warning is raised:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        pdf.write_html(
-            """<toc></toc>
+        pdf.write_html("""<toc></toc>
         <h1>Level 1</h1>
         <h2>Level 2</h2>
         <h3>Level 3</h3>
         <h4>Level 4</h4>
         <h5>Level 5</h5>
         <h6>Level 6</h6>
-        <p>paragraph</p>"""
-        )
+        <p>paragraph</p>""")
     assert_pdf_equal(pdf, HERE / "html_toc_with_custom_rendering.pdf", tmp_path)

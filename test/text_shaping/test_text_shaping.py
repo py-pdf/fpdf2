@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fpdf import FPDF
+from fpdf.enums import MethodReturnValue
 from fpdf.unicode_script import get_unicode_script, UnicodeScript
 from test.conftest import assert_pdf_equal
 
@@ -179,6 +180,31 @@ def test_text_shaping_and_offset_rendering(tmp_path):  # issue #1075
             pdf.cell(col_width, line_height, f"Cell ({i})")
         pdf.cell(col_width, line_height, f"Cell ({i})")
     assert_pdf_equal(pdf, HERE / "text_shaping_and_offset_rendering.pdf", tmp_path)
+
+
+def test_multi_cell_uses_soft_hyphen_with_text_shaping():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.set_font("Roboto", size=12)
+    pdf.set_text_shaping(
+        use_shaping_engine=True,
+        direction="ltr",
+        script="latn",
+        language="eng",
+    )
+
+    lines = pdf.multi_cell(
+        w=50,
+        text="This is an in\u00adter\u00adna\u00adtion\u00adal\u00adiza\u00adtion example.",
+        dry_run=True,
+        output=MethodReturnValue.LINES,
+    )
+
+    assert lines == [
+        "This is an international-",
+        "ization example.",
+    ]
 
 
 def test_multilingual_string(tmp_path):

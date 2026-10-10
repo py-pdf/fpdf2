@@ -3,7 +3,6 @@ from pathlib import Path
 from fpdf import Align, FPDF
 from test.conftest import assert_pdf_equal
 
-
 HERE = Path(__file__).resolve().parent
 IMAGE_PATH = HERE / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
 SVG_PATH = HERE / "../svg/svg_sources/SVG_logo_fixed_dimensions.svg"

@@ -88,3 +88,7 @@ pip install markdown
 ```python
 {% include "../tutorial/md2pdf_markdown.py" %}
 ```
+
+
+## Text styling, fonts, etc.
+Please refer to the dedicated [HTML](HTML.md) page for information on how to style HTML tags (`<a>`, `<blockquote>`, `<code>`, `<pre>`, `<h1>`...) when using [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), how to configure fonts, the known limitations, etc.

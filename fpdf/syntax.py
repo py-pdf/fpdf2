@@ -60,25 +60,46 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import re, zlib
+# pyright: reportUnknownVariableType=false, reportUnknownMemberType=false, reportAttributeAccessIssue=false
+
+import re
+import zlib
 from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
 from datetime import datetime, timezone
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Mapping,
+    Optional,
+    Protocol,
+    Sequence,
+    TypeAlias,
+    Union,
+    runtime_checkable,
+)
+
+from .util import Number, NumberClass, escape_parens, number_to_str, trim_trailing_zeros
+
+if TYPE_CHECKING:
+    from .drawing import InheritType
+    from .encryption import StandardSecurityHandler
 
 
-def clear_empty_fields(d):
-    return {k: v for k, v in d.items() if v}
+def clear_empty_fields(d: Mapping[str, object]) -> Mapping[str, object]:
+    return {k: v for k, v in d.items() if v or v is False or v == 0}
 
 
 def create_dictionary_string(
-    dict_,
-    open_dict="<<",
-    close_dict=">>",
-    field_join="\n",
-    key_value_join=" ",
-    has_empty_fields=False,
-):
+    dict_: Mapping[str, object],
+    open_dict: str = "<<",
+    close_dict: str = ">>",
+    field_join: str = "\n",
+    key_value_join: str = " ",
+    has_empty_fields: bool = False,
+) -> str:
     """format dictionary as PDF dictionary
 
     @param dict_: dictionary of values to render
@@ -94,28 +115,61 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join(key_value_join.join((k, str(v))) for k, v in dict_.items()),
+            field_join.join(
+                key_value_join.join(
+                    (
+                        k,
+                        (
+                            "null"
+                            if v is None
+                            else (
+                                str(v).lower()
+                                if isinstance(v, bool)
+                                else (
+                                    trim_trailing_zeros(str(v))
+                                    if isinstance(v, float)
+                                    else str(v)
+                                )
+                            )
+                        ),
+                    )
+                )
+                for k, v in dict_.items()
+            ),
             close_dict,
         ]
     )
 
 
-def create_list_string(list_):
+def create_list_string(list_: list[str]) -> str:
     """format list of strings as PDF array"""
     return f"[{' '.join(list_)}]"
 
 
-def iobj_ref(n):
+def iobj_ref(n: int) -> str:
     """format an indirect PDF Object reference from its id number"""
     return f"{n} 0 R"
 
 
-def create_stream(stream, encryption_handler=None, obj_id=None):
+def create_stream(
+    stream: bytearray | bytes | str,
+    encryption_handler: Optional["StandardSecurityHandler"] = None,
+    obj_id: Optional[int] = None,
+) -> str:
     if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, "latin-1")
     if encryption_handler:
+        assert obj_id is not None
         encryption_handler.encrypt(stream, obj_id)
     return "\n".join(["stream", stream, "endstream"])
+
+
+def wrap_in_local_context(draw_commands: list[str]) -> list[str]:
+    """
+    Wrap a series of draw commands (list of strings) in a local context marker, so that changes to
+    draw style only apply to these commands.
+    """
+    return ["q"] + draw_commands + ["Q"]
 
 
 class Raw(str):
@@ -129,7 +183,11 @@ class Name(str):
         b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
     )
 
-    def serialize(self, _security_handler=None, _obj_id=None) -> str:
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         escaped = self.NAME_ESC.sub(
             lambda m: b"#%02X" % m[0][0], self.encode()
         ).decode()
@@ -142,11 +200,11 @@ class PDFObject:
     # * implement serializing
     # Note: several child classes use __slots__ to save up some memory
 
-    def __init__(self):
-        self._id = None
+    def __init__(self) -> None:
+        self._id: Optional[int] = None
 
     @property
-    def id(self):
+    def id(self) -> int:
         if self._id is None:
             raise AttributeError(
                 f"{self.__class__.__name__} has not been assigned an ID yet"
@@ -154,34 +212,41 @@ class PDFObject:
         return self._id
 
     @id.setter
-    def id(self, n):
+    def id(self, n: int) -> None:
         self._id = n
 
     @property
-    def ref(self):
+    def ref(self) -> str:
         return iobj_ref(self.id)
 
-    def serialize(self, obj_dict=None, _security_handler=None):
+    def serialize(
+        self,
+        obj_dict: Optional[Dict[str, object]] = None,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+    ) -> str:
         "Serialize the PDF object as an obj<</>>endobj text block"
-        output = []
+        output: list[str] = []
         output.append(f"{self.id} 0 obj")
         output.append("<<")
         if not obj_dict:
             obj_dict = self._build_obj_dict(_security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
-        content_stream = self.content_stream()
-        if content_stream:
+        # Subclasses return bytes for stream objects.
+        content_stream = self.content_stream()  # pylint: disable=assignment-from-none
+        if content_stream is not None:
             output.append(create_stream(content_stream))
         output.append("endobj")
         return "\n".join(output)
 
     # pylint: disable=no-self-use
-    def content_stream(self):
-        "Subclasses can override this method to indicate the presence of a content stream"
-        return b""
+    def content_stream(self) -> Optional[bytes]:
+        "Return None for no stream; subclasses may return bytes, including an empty stream."
+        return None
 
-    def _build_obj_dict(self, security_handler=None):
+    def _build_obj_dict(
+        self, security_handler: Optional["StandardSecurityHandler"] = None
+    ) -> Dict[str, object]:
         """
         Build the PDF Object associative map to serialize,
         based on this class instance properties.
@@ -199,37 +264,46 @@ class PDFContentStream(PDFObject):
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
     _COMPRESSION_LEVEL = -1
 
-    def __init__(self, contents, compress=False):
+    def __init__(self, contents: bytes | bytearray, compress: bool = False):
         super().__init__()
         self._contents = (
             zlib.compress(contents, level=self._COMPRESSION_LEVEL)
             if compress
-            else contents
+            else bytes(contents)
         )
         self.filter = Name("FlateDecode") if compress else None
         self.length = len(self._contents)
 
     # method override
-    def content_stream(self):
+    def content_stream(self) -> bytes:
         return self._contents
 
     # method override
-    def serialize(self, obj_dict=None, _security_handler=None):
+    def serialize(
+        self,
+        obj_dict: Optional[Dict[str, object]] = None,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+    ) -> str:
         if _security_handler:
             assert not obj_dict
             if not isinstance(self._contents, (bytearray, bytes)):
                 self._contents = self._contents.encode("latin-1")
-            self._contents = _security_handler.encrypt(self._contents, self.id)
+            self._contents = _security_handler.encrypt_stream(self._contents, self.id)
             self.length = len(self._contents)
         return super().serialize(obj_dict, _security_handler)
 
 
-def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
+def build_obj_dict(
+    key_values: Dict[str, object],
+    _security_handler: Optional["StandardSecurityHandler"] = None,
+    _obj_id: Optional[int] = None,
+) -> Dict[str, object]:
     """
     Build the PDF Object associative map to serialize, based on a key-values dict.
     The property names are converted from snake_case to CamelCase,
     and prefixed with a slash character "/".
     """
+
     obj_dict = {}
     for key, value in key_values.items():
         if (
@@ -244,7 +318,7 @@ def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
             value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
             value = value.ref
-        elif hasattr(value, "serialize"):
+        elif hasattr(value, "serialize"):  # pyright: ignore[reportUnknownArgumentType]
             # e.g. PDFArray, PDFString, Name, Destination, Action...
             value = value.serialize(
                 _security_handler=_security_handler, _obj_id=_obj_id
@@ -255,18 +329,19 @@ def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
     return obj_dict
 
 
-def camel_case(snake_case):
+def camel_case(snake_case: str) -> str:
     return "".join(x for x in snake_case.title() if x != "_")
 
 
 class PDFString(str):
     USE_HEX_ENCODING = True
+    encrypt: bool = False
     """
     Setting this to False can reduce the encoded strings size,
     but then there can be a risk of badly encoding some unicode strings - cf. issue #458
     """
 
-    def __new__(cls, content, encrypt=False):
+    def __new__(cls, content: str, encrypt: bool = False) -> "PDFString":
         """
         Args:
             content (str): text
@@ -276,14 +351,18 @@ class PDFString(str):
         self.encrypt = encrypt
         return self
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         if _security_handler and self.encrypt:
-            assert _obj_id
+            assert _obj_id is not None
             return _security_handler.encrypt_string(self, _obj_id)
         try:
             self.encode("ascii")
-            # => this string only contains ASCII characters, no need for special encoding:
-            return f"({self})"
+            # => this string only contains ASCII characters
+            return f"({escape_parens(self)})"
         except UnicodeEncodeError:
             pass
         if self.USE_HEX_ENCODING:
@@ -294,7 +373,9 @@ class PDFString(str):
 
 
 class PDFDate:
-    def __init__(self, date: datetime, with_tz=False, encrypt=False):
+    def __init__(
+        self, date: datetime, with_tz: bool = False, encrypt: bool = False
+    ) -> None:
         """
         Args:
             date (datetime): self-explanatory
@@ -305,10 +386,14 @@ class PDFDate:
         self.with_tz = with_tz
         self.encrypt = encrypt
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"PDFDate({self.date}, with_tz={self.with_tz}, encrypt={self.encrypt})"
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         if self.with_tz:
             assert self.date.tzinfo
             if self.date.tzinfo == timezone.utc:
@@ -324,41 +409,73 @@ class PDFDate:
         return f"({out_str})"
 
 
-class PDFArray(list):
-    def serialize(self, _security_handler=None, _obj_id=None):
+class PDFArray(list[Any]):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
-        elif all(isinstance(elem, (int, float)) for elem in self):
-            serialized_elems = " ".join(str(elem) for elem in self)
+        elif all(isinstance(elem, bool) for elem in self):
+            serialized_elems = " ".join(str(elem).lower() for elem in self)
+        elif all(elem is None for elem in self):
+            serialized_elems = " ".join("null" for _ in self)
+        elif all(
+            isinstance(elem, (int, float)) and not isinstance(elem, bool)
+            for elem in self
+        ):
+            serialized_elems = " ".join(trim_trailing_zeros(str(elem)) for elem in self)
         else:
-            serialized_elems = "\n".join(
-                (
-                    elem.ref
-                    if isinstance(elem, PDFObject)
-                    else elem.serialize(
-                        _security_handler=_security_handler, _obj_id=_obj_id
+            serialized_chunks: list[str] = []
+            for elem in self:
+                if isinstance(elem, PDFObject):
+                    serialized_chunks.append(elem.ref)
+                elif hasattr(elem, "serialize"):
+                    serialized_chunks.append(
+                        elem.serialize(
+                            _security_handler=_security_handler, _obj_id=_obj_id
+                        )
                     )
-                )
-                for elem in self
-            )
+                elif isinstance(elem, bool):
+                    serialized_chunks.append(str(elem).lower())
+                elif isinstance(elem, (int, float)):
+                    serialized_chunks.append(trim_trailing_zeros(str(elem)))
+                elif elem is None:
+                    serialized_chunks.append("null")
+                else:
+                    serialized_chunks.append(str(elem))
+            serialized_elems = "\n".join(serialized_chunks)
         return f"[{serialized_elems}]"
 
 
 # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 class Destination(ABC):
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         raise NotImplementedError
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, top, left=0, zoom="null"):
+    def __init__(
+        self,
+        page: int,
+        top: Optional[float],
+        left: float = 0,
+        zoom: str | float = "null",
+    ) -> None:
         self.page_number = page
         self.top = top
         self.left = left
         self.zoom = zoom
-        self.page_ref = None
+        self.page_ref: Optional[str] = None
 
-    def __eq__(self, dest):
+    def __eq__(self, dest: object) -> bool:
+        if not isinstance(dest, DestinationXYZ):
+            return False
         return (
             self.page_number == dest.page_number
             and self.top == dest.top
@@ -366,19 +483,33 @@ class DestinationXYZ(Destination):
             and self.zoom == dest.zoom
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.page_number, self.top, self.left, self.zoom))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_ref={self.page_ref})'
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         left = round(self.left, 2) if isinstance(self.left, float) else self.left
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref
-        return f"[{self.page_ref} /XYZ {left} {top} {self.zoom}]"
+        return (
+            f"[{self.page_ref} /XYZ {trim_trailing_zeros(str(left))} "
+            f"{trim_trailing_zeros(str(top))} "
+            f"{trim_trailing_zeros(str(self.zoom))}]"
+        )
 
-    def replace(self, page=None, top=None, left=None, zoom=None):
+    def replace(
+        self,
+        page: Optional[int] = None,
+        top: Optional[float] = None,
+        left: Optional[float] = None,
+        zoom: Optional[str | float] = None,
+    ) -> "DestinationXYZ":
         assert (
             not self.page_ref
         ), "DestinationXYZ should not be copied after serialization"
@@ -388,3 +519,78 @@ class DestinationXYZ(Destination):
             left=self.left if left is None else left,
             zoom=self.zoom if zoom is None else zoom,
         )
+
+
+@runtime_checkable
+class PrimitiveSerializable(Protocol):
+    def serialize(self) -> str: ...
+
+
+PDFScalar: TypeAlias = Union[Raw, Name, str, bytes, bool, None, Number, "InheritType"]
+
+PDFPrimitive: TypeAlias = (
+    PDFScalar
+    | Sequence["PDFPrimitive"]
+    | Mapping["Name", "PDFPrimitive"]
+    | PrimitiveSerializable
+)
+
+
+def render_pdf_primitive(primitive: PDFPrimitive) -> Raw:
+    """
+    Render a Python value as a PDF primitive type.
+
+    Container types (tuples/lists and dicts) are rendered recursively. This supports
+    values of the type Name, str, bytes, numbers, booleans, list/tuple, and dict.
+
+    Any custom type can be passed in as long as it provides a `serialize` method that
+    takes no arguments and returns a string. The primitive object is returned directly
+    if it is an instance of the `Raw` class. Otherwise, The existence of the `serialize`
+    method is checked before any other type checking is performed, so, for example, a
+    `dict` subclass with a `serialize` method would be converted using its `pdf_repr`
+    method rather than the built-in `dict` conversion process.
+
+    Args:
+        primitive: the primitive value to convert to its PDF representation.
+
+    Returns:
+        Raw-wrapped str of the PDF representation.
+
+    Raises:
+        ValueError: if a dictionary key is not a Name.
+        TypeError: if `primitive` does not have a known conversion to a PDF
+            representation.
+    """
+
+    if isinstance(primitive, Raw):
+        return primitive
+
+    if isinstance(primitive, PrimitiveSerializable):
+        output = primitive.serialize()
+    elif primitive is None:
+        output = "null"
+    elif isinstance(primitive, str):
+        output = f"({escape_parens(primitive)})"
+    elif isinstance(primitive, bytes):
+        output = f"<{primitive.hex()}>"
+    elif isinstance(primitive, bool):  # has to come before number check
+        output = ["false", "true"][primitive]
+    elif isinstance(primitive, NumberClass):
+        output = number_to_str(primitive)
+    elif isinstance(primitive, (list, tuple)):
+        output = "[" + " ".join(render_pdf_primitive(val) for val in primitive) + "]"
+    elif isinstance(primitive, dict):
+        item_list: list[str] = []
+        for key, val in primitive.items():
+            if not isinstance(key, Name):
+                raise ValueError("dict keys must be Names")
+
+            item_list.append(
+                render_pdf_primitive(key) + " " + render_pdf_primitive(val)
+            )
+
+        output = "<< " + "\n".join(item_list) + " >>"
+    else:
+        raise TypeError(f"cannot produce PDF representation for value {primitive!r}")
+
+    return Raw(output)

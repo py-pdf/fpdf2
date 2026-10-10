@@ -7,45 +7,76 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-# pylint: disable=protected-access
+# pyright: reportAttributeAccessIssue=false, reportUnknownMemberType=false, reportPrivateUsage=false
+
 import logging
+import re
+
+# pylint: disable=protected-access
+from abc import ABC, abstractmethod
 from collections import OrderedDict, defaultdict
 from contextlib import contextmanager
+from datetime import datetime, timezone
+from html import escape as _html_escape
 from io import BytesIO
 
 from fontTools import subset as ftsubset
 
-from .annotations import PDFAnnotation
-from .enums import PDFResourceType, PageLabelStyle, SignatureFlag
-from .enums import OutputIntentSubType
+from .annotations import AnnotationDict, PDFAnnotation
+from .drawing import ImageSoftMask, PaintSoftMask
+from .drawing_primitives import Transform
+from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
-from .line_break import TotalPagesSubstitutionFragment
+from .font_type_3 import Type3Font
+from .fonts import CORE_FONTS, CoreFont, TTFFont
 from .image_datastructures import RasterImageInfo
-from .outline import build_outline_objs
+from .line_break import TotalPagesSubstitutionFragment
+from .outline import OutlineDictionary, OutlineItemDictionary, build_outline_objs
+from .pattern import Gradient, MeshShading, Pattern, Shading
 from .sign import Signature, sign_content
 from .syntax import (
+    DestinationXYZ,
     Name,
     PDFArray,
     PDFContentStream,
     PDFDate,
     PDFObject,
     PDFString,
+    Raw,
     build_obj_dict,
+    create_dictionary_string as pdf_dict,
+    create_list_string as pdf_list,
+    iobj_ref as pdf_ref,
 )
-from .syntax import create_dictionary_string as pdf_dict
-from .syntax import create_list_string as pdf_list
-from .syntax import iobj_ref as pdf_ref
-from .util import int2roman, int_to_letters
+from .util import int2roman, int_to_letters, trim_trailing_zeros
 
 try:
     from endesive import signer
 except ImportError:
     signer = None
 
-from typing import TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generator,
+    ItemsView,
+    Iterator,
+    Literal,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+)
 
 if TYPE_CHECKING:
+    from .drawing import BlendGroup, GraphicsStyle
+    from .encryption import EncryptionDictionary, StandardSecurityHandler
+    from .enums import PageLayout, PageMode
+    from .fonts import PDFFontDescriptor
     from .fpdf import FPDF
+    from .prefs import ViewerPreferences
+    from .transitions import Transition
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,59 +87,177 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 }
 
 
-class ContentWithoutID:
-    def serialize(self, _security_handler=None):
-        pass
+class ContentWithoutID(ABC):
+
+    @abstractmethod
+    def serialize(
+        self, _security_handler: Optional["StandardSecurityHandler"] = None
+    ) -> str:
+        raise NotImplementedError
 
 
 class PDFHeader(ContentWithoutID):
-    def __init__(self, pdf_version):
+    """
+    Emit the PDF file header as required by ISO 32000-1, §7.5.2 “File header”.
+
+    The header consists of:
+      1) A line starting with the literal "%PDF-" followed by the file version
+      2) If the file contains binary data an immediate second line that is a comment
+         starting with "%" and containing at least four bytes with values ≥ 128 (non-ASCII).
+         This helps file-transfer tools treat the content as binary rather than text.
+    """
+
+    def __init__(self, pdf_version: str) -> None:
         self.pdf_version = pdf_version
 
-    # method override
-    def serialize(self, _security_handler=None):
-        return f"%PDF-{self.pdf_version}"
+    def serialize(
+        self, _security_handler: Optional["StandardSecurityHandler"] = None
+    ) -> str:
+        return f"%PDF-{self.pdf_version}\n%éëñ¿"
 
 
 class PDFFont(PDFObject):
-    def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None):
+    def __init__(
+        self,
+        subtype: str,
+        base_font: str,
+        encoding: Optional[str] = None,
+        d_w: Optional[float] = None,
+        w: Optional[str] = None,
+    ) -> None:
         super().__init__()
         self.type = Name("Font")
         self.subtype = Name(subtype)
         self.base_font = Name(base_font)
         self.encoding = Name(encoding) if encoding else None
-        self.d_w = d_w
-        self.w = w
-        self.descendant_fonts = None
-        self.to_unicode = None
-        self.c_i_d_system_info = None
-        self.font_descriptor = None
-        self.c_i_d_to_g_i_d_map = None
+        self.d_w = d_w  # default glyph width
+        self.w = w  # widths list
+        self.descendant_fonts: Optional[PDFArray] = None
+        self.to_unicode: Optional[PDFContentStream] = None
+        self.c_i_d_system_info: Optional[CIDSystemInfo] = None
+        self.font_descriptor: Optional["PDFFontDescriptor"] = None
+        self.c_i_d_to_g_i_d_map: Optional[PDFContentStream] = None
 
 
 class CIDSystemInfo(PDFObject):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.registry = PDFString("Adobe", encrypt=True)
         self.ordering = PDFString("UCS", encrypt=True)
         self.supplement = 0
 
 
+class PDFType3Font(PDFObject):
+    def __init__(self, font3: "Type3Font") -> None:
+        super().__init__()
+        self._font3 = font3
+        self.type = Name("Font")
+        self.name = Name(f"MPDFAA+{font3.base_font.name}")
+        self.subtype = Name("Type3")
+        self.font_b_box = (
+            f"[{self._font3.base_font.ttfont['head'].xMin * self._font3.scale:.0f}"
+            f" {self._font3.base_font.ttfont['head'].yMin * self._font3.scale:.0f}"
+            f" {self._font3.base_font.ttfont['head'].xMax * self._font3.scale:.0f}"
+            f" {self._font3.base_font.ttfont['head'].yMax * self._font3.scale:.0f}]"
+        )
+        self.font_matrix = "[0.001 0 0 0.001 0 0]"
+        self.first_char = min(g.unicode for g in font3.glyphs)
+        self.last_char = max(g.unicode for g in font3.glyphs)
+        self.resources: Optional[str] = None
+        self.to_unicode: Optional[str] = None
+
+    @property
+    def char_procs(self) -> str:
+        return pdf_dict(
+            {f"/{g.glyph_name}": f"{g.obj_id} 0 R" for g in self._font3.glyphs}
+        )
+
+    @property
+    def encoding(self) -> str:
+        return pdf_dict(
+            {
+                Name("/Type"): Name("/Encoding"),
+                Name("/Differences"): self.differences_table(),
+            }
+        )
+
+    @property
+    def widths(self) -> str:
+        sorted_glyphs = sorted(self._font3.glyphs, key=lambda glyph: glyph.unicode)
+        # Find the range of unicode values
+        min_unicode = sorted_glyphs[0].unicode
+        max_unicode = sorted_glyphs[-1].unicode
+
+        # Initialize widths array with zeros
+        widths = [0] * (max_unicode + 1 - min_unicode)
+
+        # Populate the widths array
+        for glyph in sorted_glyphs:
+            widths[glyph.unicode - min_unicode] = round(
+                glyph.glyph_width * self._font3.scale + 0.001
+            )
+        return pdf_list([str(glyph_width) for glyph_width in widths])
+
+    def generate_resources(
+        self,
+        img_objs_per_index: dict[int, "PDFXObject"],
+        gfxstate_objs_per_name: dict[str, "PDFExtGState"],
+        pattern_objs_per_name: dict[str, "Pattern"],
+    ) -> None:
+        resources = "<<"
+        objects = " ".join(
+            f"/I{img} {img_objs_per_index[img].id} 0 R"
+            for img in self._font3.images_used
+        )
+        resources += f"/XObject <<{objects}>>" if len(objects) > 0 else ""
+
+        ext_g_state = " ".join(
+            f"/{name} {gfxstate_obj.id} 0 R"
+            for name, gfxstate_obj in gfxstate_objs_per_name.items()
+            if name in self._font3.graphics_style_used
+        )
+        resources += f"/ExtGState <<{ext_g_state}>>" if len(ext_g_state) > 0 else ""
+
+        pattern = " ".join(
+            f"/{name} {pattern.id} 0 R"
+            for name, pattern in pattern_objs_per_name.items()
+            if name in self._font3.patterns_used
+        )
+        resources += f"/Pattern <<{pattern}>>" if len(pattern) > 0 else ""
+
+        resources += ">>"
+        self.resources = resources
+
+    def differences_table(self) -> str:
+        sorted_glyphs = sorted(self._font3.glyphs, key=lambda glyph: glyph.unicode)
+        return (
+            "["
+            + "\n".join(
+                f"{glyph.unicode} /{glyph.glyph_name}" for glyph in sorted_glyphs
+            )
+            + "]"
+        )
+
+
 class PDFInfo(PDFObject):
     def __init__(
         self,
-        title,
-        subject,
-        author,
-        keywords,
-        creator,
-        producer,
+        title: Optional[str],
+        subject: Optional[str],
+        author: Optional[str],
+        keywords: Optional[str],
+        creator: Optional[str],
+        producer: Optional[str],
         creation_date: PDFDate,
-    ):
+    ) -> None:
         super().__init__()
         self.title = PDFString(title, encrypt=True) if title else None
         self.subject = PDFString(subject, encrypt=True) if subject else None
+        if author and isinstance(author, (list, tuple, set)):
+            author = "; ".join(str(a) for a in author)
         self.author = PDFString(author, encrypt=True) if author else None
+        if keywords and isinstance(keywords, (list, tuple, set)):
+            keywords = ", ".join(str(keyword) for keyword in keywords)
         self.keywords = PDFString(keywords, encrypt=True) if keywords else None
         self.creator = PDFString(creator, encrypt=True) if creator else None
         self.producer = PDFString(producer, encrypt=True) if producer else None
@@ -116,11 +265,15 @@ class PDFInfo(PDFObject):
 
 
 class AcroForm:
-    def __init__(self, fields, sig_flags):
+    def __init__(self, fields: PDFArray, sig_flags: int):
         self.fields = fields
         self.sig_flags = sig_flags
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -131,27 +284,45 @@ class AcroForm:
 
 class PDFCatalog(PDFObject):
     def __init__(
-        self, lang=None, page_layout=None, page_mode=None, viewer_preferences=None
-    ):
+        self,
+        lang: Optional[str] = None,
+        page_layout: Optional["PageLayout"] = None,
+        page_mode: Optional["PageMode"] = None,
+        viewer_preferences: Optional["ViewerPreferences"] = None,
+    ) -> None:
         super().__init__()
         self.type = Name("Catalog")
         self.lang = PDFString(lang) if lang else None
         self.page_layout = page_layout
         self.page_mode = page_mode
         self.viewer_preferences = viewer_preferences
-        self.pages = None  # Required; shall be an indirect reference
-        self.acro_form = None
-        self.open_action = None
-        self.mark_info = None
-        self.metadata = None
-        self.names = None
-        self.outlines = None
-        self.output_intents = None
-        self.struct_tree_root = None
+        self.pages: Optional[PDFPagesRoot] = (
+            None  # Required; shall be an indirect reference
+        )
+        self.acro_form: Optional[AcroForm] = None
+        self.open_action: Optional[str] = None
+        self.mark_info: Optional[str] = None
+        self.metadata: Optional[PDFXmpMetadata] = None
+        self.names: Optional[str] = None
+        self.outlines: Optional[OutlineDictionary] = None
+        self.output_intents: Optional[PDFArray] = None
+        self.struct_tree_root: Optional[PDFObject] = None
+        self.a_f: Optional[str] = None
+        self.page_labels: Optional[str] = None
+        self.o_c_properties: Optional[str] = None
 
 
 class PDFResources(PDFObject):
-    def __init__(self, proc_set, font, x_object, ext_g_state, shading, pattern):
+    def __init__(
+        self,
+        proc_set: Optional[str],
+        font: Optional[str],
+        x_object: Optional[str],
+        ext_g_state: Optional[str],
+        shading: Optional[str],
+        pattern: Optional[str],
+        properties: Optional[str] = None,
+    ) -> None:
         super().__init__()
         self.proc_set = proc_set
         self.font = font
@@ -159,16 +330,34 @@ class PDFResources(PDFObject):
         self.ext_g_state = ext_g_state
         self.shading = shading
         self.pattern = pattern
+        self.properties = properties
+
+
+class PDFOptionalContentGroup(PDFObject):
+    "An Optional Content Group, used to show/hide content on screen or in print."
+
+    def __init__(self, name: str, on_view: bool, on_print: bool) -> None:
+        super().__init__()
+        self.type = Name("OCG")
+        self.name = PDFString(name)
+        # The /Usage entry is applied automatically by the viewer through the
+        # /AS usage-application array declared in the catalog's /OCProperties:
+        view_state = "ON" if on_view else "OFF"
+        print_state = "ON" if on_print else "OFF"
+        self.usage = Raw(
+            f"<< /View << /ViewState /{view_state} >>"
+            f" /Print << /PrintState /{print_state} >> >>"
+        )
 
 
 class PDFFontStream(PDFContentStream):
-    def __init__(self, contents):
+    def __init__(self, contents: bytes) -> None:
         super().__init__(contents=contents, compress=True)
         self.length1 = len(contents)
 
 
 class PDFXmpMetadata(PDFContentStream):
-    def __init__(self, contents):
+    def __init__(self, contents: str) -> None:
         super().__init__(contents=contents.encode("utf-8"))
         self.type = Name("Metadata")
         self.subtype = Name("XML")
@@ -189,20 +378,22 @@ class PDFXObject(PDFContentStream):
         "decode",
         "decode_parms",
         "s_mask",
+        "image_mask",
     )
 
     def __init__(
         self,
-        contents,
-        subtype,
-        width,
-        height,
-        color_space,
-        bits_per_component,
-        img_filter=None,
-        decode=None,
-        decode_parms=None,
-    ):
+        contents: bytes,
+        subtype: str,
+        width: float,
+        height: float,
+        color_space: PDFArray | Name | None,
+        bits_per_component: int,
+        img_filter: Optional[str] = None,
+        decode: Optional[str] = None,
+        decode_parms: Optional[str] = None,
+        image_mask: bool = False,
+    ) -> None:
         super().__init__(contents=contents)
         self.type = Name("XObject")
         self.subtype = Name(subtype)
@@ -213,11 +404,13 @@ class PDFXObject(PDFContentStream):
         self.filter = Name(img_filter)
         self.decode = decode
         self.decode_parms = decode_parms
-        self.s_mask = None
+        self.s_mask: Optional[PDFXObject] = None
+        self.image_mask = True if image_mask else None
 
 
 class PDFICCProfile(PDFContentStream):
-    """holds values for ICC Profile Stream
+    """
+    Holds values for ICC Profile Stream
     Args:
         contents (str): stream content
         n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
@@ -235,9 +428,9 @@ class PDFICCProfile(PDFContentStream):
 
     def __init__(
         self,
-        contents,
-        n,
-        alternate,
+        contents: bytes,
+        n: int,
+        alternate: str,
     ):
         super().__init__(contents=contents, compress=True)
         self.n = n
@@ -245,52 +438,61 @@ class PDFICCProfile(PDFContentStream):
 
 
 class PDFPageLabel:
+    """
+    This will be displayed by some PDF readers to identify pages.
+    """
+
     __slots__ = ("_style", "_prefix", "st")  # RAM usage optimization
 
     def __init__(
-        self, label_style: PageLabelStyle, label_prefix: str, label_start: int
-    ):
-        self._style: PageLabelStyle = label_style
-        self._prefix: str = label_prefix
-        self.st: int = label_start
+        self,
+        label_style: Optional[PageLabelStyle],
+        label_prefix: Optional[str],
+        label_start: Optional[int],
+    ) -> None:
+        self._style: Optional[PageLabelStyle] = label_style
+        self._prefix: Optional[str] = label_prefix
+        self.st: Optional[int] = label_start
 
     @property
-    def s(self) -> Name:
+    def s(self) -> Optional[Name]:
         return Name(self._style.value) if self._style else None
 
     @property
-    def p(self) -> PDFString:
+    def p(self) -> Optional[PDFString]:
         return PDFString(self._prefix) if self._prefix else None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"PDFPageLabel({self._style}, {self._prefix}, {self.st})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         ret = self._prefix if self._prefix else ""
         if self._style:
             if self._style == PageLabelStyle.NUMBER:
                 ret += str(self.st)
             elif self._style == PageLabelStyle.UPPER_ROMAN:
-                ret += int2roman(self.st)
+                ret += int2roman(self.st or 1)
             elif self._style == PageLabelStyle.LOWER_ROMAN:
-                ret += int2roman(self.st).lower()
+                ret += int2roman(self.st or 1).lower()
             elif self._style == PageLabelStyle.UPPER_LETTER:
-                ret += int_to_letters(self.st - 1)
+                start = (self.st or 1) - 1
+                ret += int_to_letters(start)
             elif self._style == PageLabelStyle.LOWER_LETTER:
-                ret += int_to_letters(self.st - 1).lower()
+                start = (self.st or 1) - 1
+                ret += int_to_letters(start).lower()
         return ret
 
-    def serialize(self) -> dict:
+    def serialize(self) -> dict[str, Any]:
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})
 
-    def get_style(self) -> PageLabelStyle:
+    def get_style(self) -> Optional[PageLabelStyle]:
         return self._style
 
     def get_prefix(self) -> str:
-        return self._prefix
+        return self._prefix or ""
 
     def get_start(self) -> int:
-        return self.st
+        return self.st or 1
 
 
 class PDFPage(PDFObject):
@@ -315,45 +517,54 @@ class PDFPage(PDFObject):
 
     def __init__(
         self,
-        duration,
-        transition,
-        contents,
-        index,
+        duration: Optional[float],
+        transition: Optional["Transition"],
+        contents: bytearray | PDFContentStream,
+        index: int,
     ):
         super().__init__()
         self.type = Name("Page")
         self.contents = contents
         self.dur = duration if duration else None
         self.trans = transition
-        self.annots = PDFArray()  # list of PDFAnnotation
-        self.group = None
-        self.media_box = None
-        self.struct_parents = None
-        self.resources = None  # must always be set before calling .serialize()
-        self.parent = None  # must always be set before calling .serialize()
+        self.annots: Optional[PDFArray] = PDFArray()  # list of PDFAnnotation
+        self.group: Optional[str] = None
+        self.media_box: Optional[str] = None
+        self.struct_parents: Optional[int] = None
+        self.resources: Optional[PDFResources] = (
+            None  # must always be set before calling .serialize()
+        )
+        self.parent: Optional[PDFPagesRoot] = (
+            None  # must always be set before calling .serialize()
+        )
         # Useful properties that will not be serialized in the final PDF document:
         self._index = index
-        self._width_pt, self._height_pt = None, None
-        self._page_label: PDFPageLabel = None
+        self._width_pt: Optional[float] = None
+        self._height_pt: Optional[float] = None
+        self._page_label: Optional[PDFPageLabel] = None
         self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
-    def index(self):
+    def index(self) -> int:
         return self._index
 
-    def set_index(self, i):
+    def set_index(self, i: int) -> None:
         self._index = i
 
-    def dimensions(self):
+    def dimensions(self) -> tuple[float, float]:
         "Return a pair (width, height) in the unit specified to FPDF constructor"
+        if self._width_pt is None or self._height_pt is None:
+            raise ValueError("Page dimensions are null")
         return self._width_pt, self._height_pt
 
-    def set_dimensions(self, width_pt, height_pt):
+    def set_dimensions(self, width_pt: float, height_pt: float) -> None:
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
 
     def set_page_label(
-        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
-    ):
+        self,
+        previous_page_label: Optional[PDFPageLabel],
+        page_label: Optional[PDFPageLabel],
+    ) -> None:
         if (
             previous_page_label
             and page_label
@@ -364,7 +575,7 @@ class PDFPage(PDFObject):
             page_label.st = previous_page_label.get_start() + 1
 
         if page_label:
-            if not page_label.get_start():
+            if page_label.st is None or page_label.st == 0:
                 page_label.st = 1
 
         if previous_page_label and not page_label:
@@ -376,53 +587,68 @@ class PDFPage(PDFObject):
 
         self._page_label = page_label
 
-    def get_page_label(self) -> PDFPageLabel:
+    def get_page_label(self) -> Optional[PDFPageLabel]:
         return self._page_label
 
     def get_label(self) -> str:
         return str(self.index()) if not self._page_label else str(self._page_label)
 
-    def get_text_substitutions(self):
+    def get_text_substitutions(self) -> Sequence[TotalPagesSubstitutionFragment]:
         return self._text_substitution_fragments
 
-    def add_text_substitution(self, fragment):
+    def add_text_substitution(self, fragment: TotalPagesSubstitutionFragment) -> None:
         self._text_substitution_fragments.append(fragment)
+
+    def add_annotation(self, annotation: AnnotationDict | PDFAnnotation) -> None:
+        if self.annots is None:
+            self.annots = PDFArray()
+        self.annots.append(annotation)
 
 
 class PDFPagesRoot(PDFObject):
-    def __init__(self, count, media_box):
+    def __init__(self, count: int, media_box: str) -> None:
         super().__init__()
         self.type = Name("Pages")
         self.count = count
         self.media_box = media_box
-        self.kids = None  # must always be set before calling .serialize()
+        self.kids: Optional[PDFArray] = (
+            None  # must always be set before calling .serialize()
+        )
 
 
 class PDFExtGState(PDFObject):
-    def __init__(self, dict_as_str):
+    def __init__(self, dict_as_str: str) -> None:
         super().__init__()
         self._dict_as_str = dict_as_str
 
     # method override
-    def serialize(self, obj_dict=None, _security_handler=None):
+    def serialize(
+        self,
+        obj_dict: Optional[dict[str, Any]] = None,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+    ) -> str:
         return f"{self.id} 0 obj\n{self._dict_as_str}\nendobj"
 
 
 class PDFXrefAndTrailer(ContentWithoutID):
     "Cross-reference table & file trailer"
 
-    def __init__(self, output_builder):
+    def __init__(self, output_builder: "OutputProducer") -> None:
         self.output_builder = output_builder
         self.count = output_builder.obj_id + 1
         # Must be set before the call to serialize():
-        self.catalog_obj = None
-        self.info_obj = None
-        self.encryption_obj = None
+        self.catalog_obj: Optional[PDFCatalog] = None
+        self.info_obj: Optional[PDFInfo] = None
+        self.encryption_obj: Optional["EncryptionDictionary"] = None
 
-    def serialize(self, _security_handler=None):
+    def serialize(
+        self, _security_handler: Optional["StandardSecurityHandler"] = None
+    ) -> str:
+        if self.catalog_obj is None:
+            raise FPDFException("Invalid state for XREF production.")
         builder = self.output_builder
         startxref = str(len(builder.buffer))
-        out = []
+        out: list[str] = []
         out.append("xref")
         out.append(f"0 {self.count}")
         out.append("0000000000 65535 f ")
@@ -432,16 +658,18 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append("<<")
         out.append(f"/Size {self.count}")
         out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
-        out.append(f"/Info {pdf_ref(self.info_obj.id)}")
+        if self.info_obj:
+            out.append(f"/Info {pdf_ref(self.info_obj.id)}")
         fpdf = builder.fpdf
         if self.encryption_obj:
             out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
-            file_id = fpdf._security_handler.file_id
+            assert fpdf._security_handler is not None
+            file_id: Optional[str | Literal[-1]] = fpdf._security_handler.file_id
         else:
             file_id = fpdf.file_id()
             if file_id == -1:
                 file_id = fpdf._default_file_id(builder.buffer)
-        if file_id:
+        if file_id is not None:
             out.append(f"/ID [{file_id}]")
         out.append(">>")
         out.append("startxref")
@@ -451,7 +679,8 @@ class PDFXrefAndTrailer(ContentWithoutID):
 
 
 class OutputIntentDictionary:
-    """The optional OutputIntents (PDF 1.4) entry in the document
+    """
+    The optional OutputIntents (PDF 1.4) entry in the document
     catalog dictionary holds an array of output intent dictionaries,
     each describing the colour reproduction characteristics of a possible
     output device.
@@ -484,12 +713,12 @@ class OutputIntentDictionary:
     def __init__(
         self,
         subtype: "OutputIntentSubType | str",
-        output_condition_identifier: str,
-        output_condition: str = None,
-        registry_name: str = None,
-        dest_output_profile: PDFICCProfile = None,
-        info: str = None,
-    ):
+        output_condition_identifier: Optional[str],
+        output_condition: Optional[str] = None,
+        registry_name: Optional[str] = None,
+        dest_output_profile: Optional[PDFICCProfile] = None,
+        info: Optional[str] = None,
+    ) -> None:
         self.type = Name("OutputIntent")
         self.s = Name(OutputIntentSubType.coerce(subtype).value)
         self.output_condition_identifier = (
@@ -508,7 +737,11 @@ class OutputIntentDictionary:
         )
         self.info = PDFString(info) if info else None
 
-    def serialize(self, _security_handler=None, _obj_id=None):
+    def serialize(
+        self,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+        _obj_id: Optional[int] = None,
+    ) -> str:
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
             _security_handler=_security_handler,
@@ -517,64 +750,280 @@ class OutputIntentDictionary:
         return pdf_dict(obj_dict)
 
 
+ResourceTypes = Union[str, int, Name, "Gradient", "Pattern", "Shading", "MeshShading"]
+
+
 class ResourceCatalog:
     "Manage the indexing of resources and association to the pages they are used"
 
-    def __init__(self):
-        self.resources = defaultdict(dict)
-        self.resources_per_page = defaultdict(set)
+    GS_REGEX = re.compile(r"/(GS\d+) gs")
+    IMG_REGEX = re.compile(r"/I(\d+) Do")
+    PATTERN_FILL_REGEX = re.compile(r"/(P\d+)\s+scn")
+    PATTERN_STROKE_REGEX = re.compile(r"/(P\d+)\s+SCN")
+    FONT_REGEX = re.compile(r"/F(\d+)\s+[-+]?\d+(?:\.\d+)?\s+Tf")
 
-    def add(self, resource_type: PDFResourceType, resource, page_number: int):
-        if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADDING):
+    def __init__(self) -> None:
+        self.resources: dict[PDFResourceType, dict[ResourceTypes, str]] = defaultdict(
+            dict
+        )
+        self.resources_per_page: dict[
+            tuple[int, PDFResourceType], set[ResourceTypes]
+        ] = defaultdict(set)
+        self.graphics_styles: dict[str, Name] = OrderedDict()
+        self.soft_mask_xobjects: list[PDFContentStream] = []
+        self.form_xobjects: list[tuple[int, PDFContentStream]] = []
+        self.last_reserved_object_id: int = 0
+        self.font_registry: dict[str, CoreFont | TTFFont] = {}
+        self.next_xobject_index: int = 1
+        # Optional Content Groups, keyed by resource name (e.g. "OC1"):
+        self.optional_content_groups: "OrderedDict[str, dict[str, object]]" = (
+            OrderedDict()
+        )
+        self._ocg_names_by_state: dict[tuple[bool, bool], str] = {}
+
+    def add(
+        self,
+        resource_type: PDFResourceType,
+        resource: ResourceTypes,
+        page_number: Optional[int],
+    ) -> Optional[str]:
+        if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADING):
             registry = self.resources[resource_type]
+            prefix = self._get_prefix(resource_type)
+
             if resource not in registry:
-                registry[resource] = (
-                    f"{self._get_prefix(resource_type)}{len(registry) + 1}"
+                registry[resource] = f"{prefix}{len(registry) + 1}"
+            if page_number is not None:
+                self.resources_per_page[(page_number, resource_type)].add(
+                    registry[resource]
                 )
-            self.resources_per_page[(page_number, resource_type)].add(
-                registry[resource]
-            )
-            return registry[resource]
+            return str(registry[resource])
+
+        if (
+            resource_type == PDFResourceType.X_OBJECT
+            and isinstance(resource, int)
+            and resource >= self.next_xobject_index
+        ):
+            self.next_xobject_index = resource + 1
+
+        if TYPE_CHECKING:
+            assert page_number is not None
         self.resources_per_page[(page_number, resource_type)].add(resource)
         return None
 
-    def get_items(self, resource_type: PDFResourceType):
+    def register_graphics_style(self, style: "GraphicsStyle") -> Optional[Name]:
+        """
+        Graphics style can be added without associating to a page number right away,
+        like when rendering a svg image.
+        The method that adds image to the page will call the add method for the page association.
+        """
+        style_dict: Optional[Raw] = style.serialize()
+        if style_dict is None:  # empty style does not need an entry
+            return None
+        style_str = str(style_dict)
+
+        if style_str not in self.graphics_styles:
+            name = Name(
+                f"{self._get_prefix(PDFResourceType.EXT_G_STATE)}{len(self.graphics_styles)}"
+            )
+            self.graphics_styles[style_str] = name
+
+        return self.graphics_styles[style_str]
+
+    def add_optional_content_group(
+        self, on_view: bool, on_print: bool, label: str, page_number: int
+    ) -> str:
+        """
+        Register an Optional Content Group for the given visibility and associate
+        it with a page. Groups sharing the same visibility are reused.
+        Returns the resource name (e.g. "OC1") to reference in a /OC marked sequence.
+        """
+        state = (on_view, on_print)
+        name = self._ocg_names_by_state.get(state)
+        if name is None:
+            name = f"OC{len(self.optional_content_groups) + 1}"
+            self.optional_content_groups[name] = {
+                "on_view": on_view,
+                "on_print": on_print,
+                "label": label,
+            }
+            self._ocg_names_by_state[state] = name
+        self.resources_per_page[(page_number, PDFResourceType.PROPERTIES)].add(name)
+        return name
+
+    def register_soft_mask(self, soft_mask: PaintSoftMask | ImageSoftMask) -> int:
+        """Register a soft mask xobject and return its object id"""
+        self.last_reserved_object_id += 1
+        xobject = soft_mask_path_to_xobject(soft_mask, self)
+        xobject.id = self.last_reserved_object_id
+        self.soft_mask_xobjects.append(xobject)
+        return xobject.id
+
+    def register_blend_form(self, blend_group: "BlendGroup") -> int:
+        """Register a blend group Form XObject and return its resource index."""
+        xobject = blend_group_to_xobject(blend_group, self)
+        index = self.next_xobject_index
+        self.next_xobject_index += 1
+        self.form_xobjects.append((index, xobject))
+        return index
+
+    def scan_stream(self, rendered: str) -> set[tuple[PDFResourceType, str]]:
+        """Parse a content stream and return discovered resources"""
+        found: set[tuple[PDFResourceType, str]] = set()
+
+        for m in self.GS_REGEX.finditer(rendered):
+            found.add((PDFResourceType.EXT_G_STATE, m.group(1)))
+
+        for m in self.IMG_REGEX.finditer(rendered):
+            found.add((PDFResourceType.X_OBJECT, m.group(1)))
+
+        for m in self.PATTERN_FILL_REGEX.finditer(rendered):
+            found.add((PDFResourceType.PATTERN, m.group(1)))
+
+        for m in self.PATTERN_STROKE_REGEX.finditer(rendered):
+            found.add((PDFResourceType.PATTERN, m.group(1)))
+
+        for m in self.FONT_REGEX.finditer(rendered):
+            found.add((PDFResourceType.FONT, m.group(1)))
+
+        return found
+
+    def index_stream_resources(self, rendered: str, page_number: int) -> None:
+        """
+        Scan a rendered content stream and register resources used on the given page.
+        Currently indexes:
+          - ExtGState invocations: '/GSn gs'
+          - Image XObjects: '/In Do'
+        """
+        for resource_type, resource in self.scan_stream(rendered):
+            if resource_type == PDFResourceType.PATTERN:
+                self.resources_per_page[(page_number, PDFResourceType.PATTERN)].add(
+                    resource
+                )
+            else:
+                self.add(resource_type, resource, page_number)
+
+    def get_items(
+        self, resource_type: PDFResourceType
+    ) -> ItemsView[ResourceTypes, str]:
         return self.resources[resource_type].items()
 
-    def get_resources_per_page(self, page_number: int, resource_type: PDFResourceType):
+    def get_resources_per_page(
+        self, page_number: int, resource_type: PDFResourceType
+    ) -> set[ResourceTypes]:
         return self.resources_per_page[(page_number, resource_type)]
 
-    def get_used_resources(self, resource_type: PDFResourceType):
-        unique = set()
+    def get_used_resources(self, resource_type: PDFResourceType) -> set[ResourceTypes]:
+        unique: set[ResourceTypes] = set()
         for (_, rtype), resource in self.resources_per_page.items():
             if rtype == resource_type:
                 unique.update(resource)
         return unique
 
     @classmethod
-    def _get_prefix(cls, resource_type: PDFResourceType):
+    def _get_prefix(cls, resource_type: PDFResourceType) -> str:
+        if resource_type == PDFResourceType.EXT_G_STATE:
+            return "GS"
         if resource_type == PDFResourceType.PATTERN:
             return "P"
-        if resource_type == PDFResourceType.SHADDING:
+        if resource_type == PDFResourceType.SHADING:
             return "Sh"
         raise ValueError(f"No prefix for resource type {resource_type}")
+
+    def get_font_from_family(
+        self, font_family: str, font_style: str = ""
+    ) -> CoreFont | TTFFont:
+        """
+        Resolve a family+style to a concrete font instance from the font registry.
+        Behavior:
+          - Exact match (family.lower() + style.upper()) in registry: return it
+          - If `family` names a core font: add CoreFont to registry (if missing) and return it
+          - If `family` is an alias/generic: translate to a core font, add to registry (if missing), and return it
+          - Otherwise: raise KeyError
+
+        Notes:
+          - For Symbol/ZapfDingbats, style is forced to "" (they don't support B/I).
+        """
+        if not font_family:
+            raise KeyError("Empty font family")
+
+        style = "".join(sorted(font_style.upper()))
+
+        alias = {
+            # sans
+            "sans-serif": "helvetica",
+            "sans serif": "helvetica",
+            "arial": "helvetica",
+            "verdana": "helvetica",
+            "tahoma": "helvetica",
+            "segoe ui": "helvetica",
+            # serif
+            "serif": "times",
+            "times": "times",
+            "times new roman": "times",
+            "georgia": "times",
+            "cambria": "times",
+            "garamond": "times",
+            # mono
+            "monospace": "courier",
+            "courier": "courier",
+            "courier new": "courier",
+            "consolas": "courier",
+            "monaco": "courier",
+            # symbol
+            "symbol": "symbol",
+            "zapfdingbats": "zapfdingbats",
+            "zapf dingbats": "zapfdingbats",
+        }
+
+        for candidate in font_family.strip().strip("'\"").split(","):
+            family = candidate.strip().strip("'\"").lower()
+
+            # 1) Exact match
+            fontkey = f"{family}{style}"
+            if fontkey in self.font_registry:
+                return self.font_registry[fontkey]
+
+            # 2) Core-family direct hit?
+            if family in CORE_FONTS:
+                core_style = "" if family in {"symbol", "zapfdingbats"} else style
+                key = f"{family}{core_style}"
+                if key not in self.font_registry:
+                    i = len(self.font_registry) + 1
+                    self.font_registry[key] = CoreFont(i, key, core_style)
+                return self.font_registry[key]
+
+            # 3) Alias / generic mapping to core font
+            mapped = alias.get(family)
+            if mapped:
+                core_style = "" if mapped in {"symbol", "zapfdingbats"} else style
+                key = f"{mapped}{core_style}"
+                if key not in self.font_registry:
+                    i = len(self.font_registry) + 1
+                    self.font_registry[key] = CoreFont(i, key, core_style)
+                return self.font_registry[key]
+
+        # 4) Fail: do not return anything
+        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
 
 
 class OutputProducer:
     "Generates the final bytearray representing the PDF document, based on a FPDF instance."
 
-    def __init__(self, fpdf: "FPDF"):
+    def __init__(self, fpdf: "FPDF") -> None:
         self.fpdf = fpdf
-        self.pdf_objs = []
-        self.iccp_i_to_pdf_i = {}
-        self.obj_id = 0  # current PDF object number
+        self.pdf_objs: list[PDFObject | ContentWithoutID] = []
+        self.iccp_i_to_pdf_i: dict[int, int] = {}
+        self.obj_id: int = (
+            fpdf._resource_catalog.last_reserved_object_id
+        )  # current PDF object number
         # array of PDF object offsets in self.buffer, used to build the xref table:
-        self.offsets = {}
-        self.trace_labels_per_obj_id = {}
-        self.sections_size_per_trace_label = defaultdict(int)
-        self.buffer = bytearray()  # resulting output buffer
+        self.offsets: dict[int, int] = {}
+        self.trace_labels_per_obj_id: dict[int, str] = {}
+        self.sections_size_per_trace_label: dict[str, int] = defaultdict(int)
+        self.buffer: bytearray = bytearray()  # resulting output buffer
 
-    def bufferize(self):
+    def bufferize(self) -> bytearray:
         """
         This method alters the target FPDF instance
         by assigning IDs to all PDF objects,
@@ -582,16 +1031,16 @@ class OutputProducer:
         """
         fpdf = self.fpdf
 
-        # 1. Setup - Insert all PDF objects
+        # 1. setup - Insert all PDF objects
         #    and assign unique consecutive numeric IDs to all of them
 
-        if fpdf._security_handler:
+        if fpdf._security_handler is not None:
             # get the file_id and generate passwords needed to encrypt streams and strings
-            file_id = fpdf.file_id()
+            file_id: Optional[str | Literal[-1]] = fpdf.file_id()
             if file_id == -1:
                 # no custom file id - use default file id so encryption passwords can be generated
                 file_id = fpdf._default_file_id(bytearray(0x00))
-            fpdf._security_handler.generate_passwords(file_id)
+            fpdf._security_handler.generate_passwords(str(file_id))
 
         pdf_version = fpdf.pdf_version
         if (
@@ -604,13 +1053,18 @@ class OutputProducer:
         catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
         sig_annotation_obj = self._add_annotations_as_objects()
+        self._add_annotation_appearance_streams()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
+            self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
+        self._add_optional_content_groups(catalog_obj)
         self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
-        info_obj = self._add_info()
+        info_obj = None
+        if not fpdf._compliance:
+            info_obj = self._add_info()
         encryption_obj = self._add_encryption()
 
         xref = PDFXrefAndTrailer(self)
@@ -627,15 +1081,20 @@ class OutputProducer:
             struct_tree_root_obj=struct_tree_root_obj,
             outline_dict_obj=outline_dict_obj,
         )
-        dests = []
+        dests: list[DestinationXYZ] = []
         for page_obj in page_objs:
             page_obj.parent = pages_root_obj
+            assert isinstance(page_obj.annots, PDFArray)
             for annot in page_obj.annots:
-                page_dests = []
+                page_dests: list[DestinationXYZ] = []
                 if annot.dest:
-                    page_dests.append(annot.dest)
+                    # Only add to page_dests if it's a Destination object (not a string/PDFString)
+                    if hasattr(annot.dest, "page_number"):
+                        page_dests.append(annot.dest)
                 if annot.a and hasattr(annot.a, "dest"):
-                    page_dests.append(annot.a.dest)
+                    # Only add to page_dests if it's a Destination object (not a string/PDFString)
+                    if hasattr(annot.a.dest, "page_number"):
+                        page_dests.append(annot.a.dest)
                 for dest in page_dests:
                     if dest.page_number > len(page_objs):
                         raise ValueError(
@@ -646,10 +1105,15 @@ class OutputProducer:
                 # Avoid serializing an empty PDFArray:
                 page_obj.annots = None
         for outline_item in outline_items:
-            dests.append(outline_item.dest)
+            if outline_item.dest is not None:
+                dests.append(outline_item.dest)
         # Assigning the .page_ref property of all Destination objects:
         for dest in dests:
-            dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
+            dest.page_ref = pdf_ref(
+                page_objs[
+                    dest.page_number - 1
+                ].id  # pyright: ignore[reportUnknownArgumentType]
+            )
         for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
         xref.catalog_obj = catalog_obj
@@ -682,7 +1146,7 @@ class OutputProducer:
 
         if fpdf._sign_key:
             self.buffer = sign_content(
-                signer,
+                signer,  # pyright: ignore[reportArgumentType]
                 self.buffer,
                 fpdf._sign_key,
                 fpdf._sign_cert,
@@ -692,7 +1156,7 @@ class OutputProducer:
             )
         return self.buffer
 
-    def _out(self, data):
+    def _out(self, data: bytes | bytearray | str) -> None:
         "Append data to the buffer"
         if not isinstance(data, bytes):
             if not isinstance(data, str):
@@ -700,7 +1164,9 @@ class OutputProducer:
             data = data.encode("latin1")
         self.buffer += data + b"\n"
 
-    def _add_pdf_obj(self, pdf_obj, trace_label=None):
+    def _add_pdf_obj(
+        self, pdf_obj: PDFObject, trace_label: Optional[str] = None
+    ) -> int:
         self.obj_id += 1
         pdf_obj.id = self.obj_id
         self.pdf_objs.append(pdf_obj)
@@ -708,7 +1174,7 @@ class OutputProducer:
             self.trace_labels_per_obj_id[self.obj_id] = trace_label
         return self.obj_id
 
-    def _add_pages_root(self):
+    def _add_pages_root(self) -> PDFPagesRoot:
         fpdf = self.fpdf
         pages_root_obj = PDFPagesRoot(
             count=fpdf.pages_count,
@@ -717,7 +1183,7 @@ class OutputProducer:
         self._add_pdf_obj(pages_root_obj)
         return pages_root_obj
 
-    def _iter_pages_in_order(self):
+    def _iter_pages_in_order(self) -> Iterator[PDFPage]:
         for page_index in range(1, self.fpdf.pages_count + 1):
             page_obj = self.fpdf.pages[page_index]
             # Defensive check:
@@ -726,11 +1192,11 @@ class OutputProducer:
             ), f"{page_obj.index()=} != {page_index=}"
             yield page_obj
 
-    def _add_pages(self, _slice=slice(0, None)):
+    def _add_pages(self, _slice: slice = slice(0, None)) -> list[PDFPage]:
         fpdf = self.fpdf
-        page_objs = []
+        page_objs: list[PDFPage] = []
         for page_obj in list(self._iter_pages_in_order())[_slice]:
-            if fpdf.pdf_version > "1.3":
+            if fpdf.pdf_version > "1.3" and fpdf.allow_images_transparency:
                 page_obj.group = pdf_dict(
                     {"/Type": "/Group", "/S": "/Transparency", "/CS": "/DeviceRGB"},
                     field_join=" ",
@@ -741,6 +1207,7 @@ class OutputProducer:
             page_objs.append(page_obj)
 
             # Extracting the page contents to insert it as a content stream:
+            assert isinstance(page_obj.contents, bytearray)
             cs_obj = PDFContentStream(
                 contents=page_obj.contents, compress=fpdf.compress
             )
@@ -749,9 +1216,10 @@ class OutputProducer:
 
         return page_objs
 
-    def _add_annotations_as_objects(self):
+    def _add_annotations_as_objects(self) -> Optional[PDFAnnotation]:
         sig_annotation_obj = None
         for page_obj in self.fpdf.pages.values():
+            assert isinstance(page_obj.annots, PDFArray)
             for annot_obj in page_obj.annots:
                 if isinstance(annot_obj, PDFAnnotation):  # distinct from AnnotationDict
                     self._add_pdf_obj(annot_obj)
@@ -762,11 +1230,101 @@ class OutputProducer:
                         sig_annotation_obj = annot_obj
         return sig_annotation_obj
 
-    def _add_fonts(self):
-        font_objs_per_index = {}
+    def _add_annotation_appearance_streams(self) -> None:
+        """Build a normal appearance stream (/AP << /N ... >>) for every annotation
+        that requested one. The appearance is a Form XObject whose content stream is
+        the bytes stored on the annotation; an empty stream yields a blank appearance,
+        which portably hides the annotation's default icon - cf. issue #561."""
+        for page_obj in self.fpdf.pages.values():
+            assert isinstance(page_obj.annots, PDFArray)
+            for annot_obj in page_obj.annots:
+                appearance_stream = getattr(annot_obj, "_appearance_stream", None)
+                if appearance_stream is None:
+                    continue
+                width, height = annot_obj._appearance_bbox
+                xobject = PDFContentStream(contents=appearance_stream)
+                xobject.type = Name("XObject")  # type: ignore[attr-defined]
+                xobject.subtype = Name("Form")  # type: ignore[attr-defined]
+                xobject.b_box = PDFArray(  # type: ignore[attr-defined]
+                    [0, 0, round(width, 2), round(height, 2)]
+                )
+                self._add_pdf_obj(xobject, "annotations")
+                annot_obj.a_p = Raw(f"<< /N {xobject.ref} >>")
+
+    def _add_fonts(
+        self,
+        image_objects_per_index: dict[int, PDFXObject],
+        gfxstate_objs_per_name: dict[str, PDFExtGState],
+        pattern_objs_per_name: dict[str, "Pattern"],
+    ) -> dict[int, PDFFont | PDFType3Font]:
+        font_objs_per_index: dict[int, PDFFont | PDFType3Font] = {}
         for font in sorted(self.fpdf.fonts.values(), key=lambda font: font.i):
+
+            # type 3 font
+            if isinstance(font, TTFFont) and font.color_font:
+                if font.subset._next > 0xFF:
+                    raise FPDFException(
+                        "Type 3 fonts with color glyphs are not supported is more than 255 glyphs are rendered. "
+                        "set FPDF.render_color_fonts=False or use less color glyphs."
+                    )
+                for color_glyph in font.color_font.glyphs:
+                    color_glyph.obj_id = self._add_pdf_obj(
+                        PDFContentStream(
+                            contents=color_glyph.glyph.encode("latin-1"),
+                            compress=self.fpdf.compress,
+                        ),
+                        "fonts",
+                    )
+                bfChar: list[str] = []
+
+                for glyph, code_mapped in font.subset.items():
+                    if (
+                        glyph is None
+                        or not isinstance(glyph.unicode, tuple)
+                        or len(glyph.unicode) == 0
+                    ):
+                        continue
+                    bfChar.append(
+                        f'<{code_mapped:02X}> <{"".join(chr(code).encode("utf-16-be").hex().upper() for code in glyph.unicode)}>\n'
+                    )
+
+                to_unicode_obj = PDFContentStream(
+                    (
+                        "/CIDInit /ProcSet findresource begin\n"
+                        "12 dict begin\n"
+                        "begincmap\n"
+                        "/CIDSystemInfo\n"
+                        "<</Registry (Adobe)\n"
+                        "/Ordering (UCS)\n"
+                        "/Supplement 0\n"
+                        ">> def\n"
+                        "/CMapName /Adobe-Identity-UCS def\n"
+                        "/CMapType 2 def\n"
+                        "1 begincodespacerange\n"
+                        "<00> <FF>\n"
+                        "endcodespacerange\n"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
+                        "endcmap\n"
+                        "CMapName currentdict /CMap defineresource pop\n"
+                        "end\n"
+                        "end"
+                    ).encode("latin-1")
+                )
+                self._add_pdf_obj(to_unicode_obj, "fonts")
+
+                t3_font_obj = PDFType3Font(font.color_font)
+                t3_font_obj.to_unicode = pdf_ref(to_unicode_obj.id)
+                t3_font_obj.generate_resources(
+                    image_objects_per_index,
+                    gfxstate_objs_per_name,
+                    pattern_objs_per_name,
+                )
+                self._add_pdf_obj(t3_font_obj, "fonts")
+                font_objs_per_index[font.i] = t3_font_obj
+                continue
+
             # Standard font
-            if font.type == "core":
+            if isinstance(font, CoreFont):
                 encoding = (
                     "WinAnsiEncoding"
                     if font.name not in ("Symbol", "ZapfDingbats")
@@ -777,7 +1335,7 @@ class OutputProducer:
                 )
                 self._add_pdf_obj(core_font_obj, "fonts")
                 font_objs_per_index[font.i] = core_font_obj
-            elif font.type == "TTF":
+            elif isinstance(font, TTFFont):
                 fontname = f"MPDFAA+{font.name}"
 
                 # 1. get all glyphs in PDF
@@ -818,7 +1376,6 @@ class OutputProducer:
                     "SVG ",  # SVG table
                     "CPAL",  # Color Palette table
                     "COLR",  # Color table
-                    "fvar",  # Font Variations table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
@@ -831,9 +1388,10 @@ class OutputProducer:
                 # take the glyph associated with it
                 # and then associate to the new code the glyph associated with the old code
 
-                code_to_glyph = {
+                code_to_glyph: dict[int, int] = {
                     char_id: font.ttfont.getGlyphID(glyph.glyph_name)
                     for glyph, char_id in font.subset.items()
+                    if glyph is not None
                 }
 
                 # 4. return the ttfile
@@ -851,13 +1409,43 @@ class OutputProducer:
                 self._add_pdf_obj(composite_font_obj, "fonts")
                 font_objs_per_index[font.i] = composite_font_obj
 
-                # A CIDFont whose glyph descriptions are based on
-                # TrueType font technology
+                # A CIDFont whose glyph descriptions are based on TrueType or CFF technology
+                is_cff_cid = font.is_cff and font.is_cid_keyed
+                if is_cff_cid and "CFF " in font.ttfont:
+                    ttfontstream = font.ttfont["CFF "].compile(font.ttfont)
+                code_to_cid: Optional[dict[int, int]] = None
+                cid_widths: Optional[dict[int, int]] = None
+                if is_cff_cid:
+                    code_to_cid = {}
+                    cid_widths = {}
+                    for glyph, code_mapped in font.subset.items():
+                        if glyph is None:
+                            continue
+                        if (
+                            glyph.glyph_name.startswith("cid")
+                            and glyph.glyph_name[3:].isdigit()
+                        ):
+                            cid = int(glyph.glyph_name[3:])
+                        else:
+                            cid = glyph.glyph_id
+                        if cid > 0xFFFF:
+                            LOGGER.warning(
+                                "Glyph CID %s exceeds 0xFFFF and cannot be encoded in a 2-byte CID font: %s",
+                                cid,
+                                font.fontkey,
+                            )
+                            continue
+                        code_to_cid[code_mapped] = cid
+                        cid_widths[cid] = glyph.glyph_width
                 cid_font_obj = PDFFont(
-                    subtype="CIDFontType2",
+                    subtype="CIDFontType0" if is_cff_cid else "CIDFontType2",
                     base_font=fontname,
                     d_w=font.desc.missing_width,
-                    w=_tt_font_widths(font),
+                    w=(
+                        _cid_font_widths(cid_widths)
+                        if is_cff_cid and cid_widths
+                        else _tt_font_widths(font)
+                    ),
                 )
                 self._add_pdf_obj(cid_font_obj, "fonts")
                 composite_font_obj.descendant_fonts = PDFArray([cid_font_obj])
@@ -868,7 +1456,7 @@ class OutputProducer:
                 # allows searching the file and copying text from it.
                 bfChar = []
 
-                def format_code(unicode):
+                def format_code(unicode: int) -> str:
                     if unicode > 0xFFFF:
                         # Calculate surrogate pair
                         code_high = 0xD800 | (unicode - 0x10000) >> 10
@@ -877,38 +1465,89 @@ class OutputProducer:
                     return f"{unicode:04X}"
 
                 for glyph, code_mapped in font.subset.items():
-                    if len(glyph.unicode) == 0:
+                    if (
+                        glyph is None
+                        or not isinstance(glyph.unicode, tuple)
+                        or len(glyph.unicode) == 0
+                    ):
                         continue
                     bfChar.append(
                         f'<{code_mapped:04X}> <{"".join(format_code(code) for code in glyph.unicode)}>\n'
                     )
 
                 to_unicode_obj = PDFContentStream(
-                    "/CIDInit /ProcSet findresource begin\n"
-                    "12 dict begin\n"
-                    "begincmap\n"
-                    "/CIDSystemInfo\n"
-                    "<</Registry (Adobe)\n"
-                    "/Ordering (UCS)\n"
-                    "/Supplement 0\n"
-                    ">> def\n"
-                    "/CMapName /Adobe-Identity-UCS def\n"
-                    "/CMapType 2 def\n"
-                    "1 begincodespacerange\n"
-                    "<0000> <FFFF>\n"
-                    "endcodespacerange\n"
-                    f"{len(bfChar)} beginbfchar\n"
-                    f"{''.join(bfChar)}"
-                    "endbfchar\n"
-                    "endcmap\n"
-                    "CMapName currentdict /CMap defineresource pop\n"
-                    "end\n"
-                    "end"
+                    (
+                        "/CIDInit /ProcSet findresource begin\n"
+                        "12 dict begin\n"
+                        "begincmap\n"
+                        "/CIDSystemInfo\n"
+                        "<</Registry (Adobe)\n"
+                        "/Ordering (UCS)\n"
+                        "/Supplement 0\n"
+                        ">> def\n"
+                        "/CMapName /Adobe-Identity-UCS def\n"
+                        "/CMapType 2 def\n"
+                        "1 begincodespacerange\n"
+                        "<0000> <FFFF>\n"
+                        "endcodespacerange\n"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
+                        "endcmap\n"
+                        "CMapName currentdict /CMap defineresource pop\n"
+                        "end\n"
+                        "end"
+                    ).encode("latin-1")
                 )
                 self._add_pdf_obj(to_unicode_obj, "fonts")
                 composite_font_obj.to_unicode = to_unicode_obj
 
+                if is_cff_cid and code_to_cid:
+                    registry = "Adobe"
+                    ordering = "Identity"
+                    supplement = 0
+                    if font.cff_ros:
+                        registry, ordering, supplement = font.cff_ros
+                    cid_mapping = [
+                        f"<{code:04X}> {cid}\n"
+                        for code, cid in sorted(code_to_cid.items())
+                    ]
+                    encoding_cmap_obj = PDFContentStream(
+                        (
+                            "/CIDInit /ProcSet findresource begin\n"
+                            "12 dict begin\n"
+                            "begincmap\n"
+                            "/CIDSystemInfo\n"
+                            f"<</Registry ({registry})\n"
+                            f"/Ordering ({ordering})\n"
+                            f"/Supplement {supplement}\n"
+                            ">> def\n"
+                            f"/CMapName /{registry}-{ordering}-UCS def\n"
+                            "/CMapType 2 def\n"
+                            "1 begincodespacerange\n"
+                            "<0000> <FFFF>\n"
+                            "endcodespacerange\n"
+                            f"{_build_cmap_blocks(cid_mapping, 'cidchar')}"
+                            "endcmap\n"
+                            "CMapName currentdict /CMap defineresource pop\n"
+                            "end\n"
+                            "end"
+                        ).encode("latin-1")
+                    )
+                    encoding_cmap_obj.type = Name("CMap")  # type: ignore[attr-defined]
+                    encoding_cmap_obj.c_map_name = Name(  # type: ignore[attr-defined]
+                        f"{registry}-{ordering}-UCS"
+                    )
+                    encoding_cmap_obj.c_i_d_system_info = Raw(  # type: ignore[attr-defined]
+                        f"<< /Registry ({registry}) /Ordering ({ordering}) /Supplement {supplement} >>"
+                    )
+                    self._add_pdf_obj(encoding_cmap_obj, "fonts")
+                    composite_font_obj.encoding = encoding_cmap_obj  # type: ignore[assignment]
+
                 cid_system_info_obj = CIDSystemInfo()
+                if is_cff_cid and font.cff_ros:
+                    registry, ordering, supplement = font.cff_ros
+                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
+                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
+                    cid_system_info_obj.supplement = supplement
                 self._add_pdf_obj(cid_system_info_obj, "fonts")
                 cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
@@ -917,24 +1556,49 @@ class OutputProducer:
                 self._add_pdf_obj(font_descriptor_obj, "fonts")
                 cid_font_obj.font_descriptor = font_descriptor_obj
 
-                # Embed CIDToGIDMap
-                # A specification of the mapping from CIDs to glyph indices
-                cid_to_gid_map = ["\x00"] * 256 * 256 * 2
-                for cc, glyph in code_to_glyph.items():
-                    cid_to_gid_map[cc * 2] = chr(glyph >> 8)
-                    cid_to_gid_map[cc * 2 + 1] = chr(glyph & 0xFF)
-                cid_to_gid_map = "".join(cid_to_gid_map)
+                if not is_cff_cid:
+                    # Embed CIDToGIDMap
+                    # A specification of the mapping from CIDs to glyph indices
+                    cid_to_gid_list = ["\x00"] * 256 * 256 * 2
+                    for cc, glyph_i in code_to_glyph.items():
+                        cid_to_gid_list[cc * 2] = chr(glyph_i >> 8)
+                        cid_to_gid_list[cc * 2 + 1] = chr(glyph_i & 0xFF)
+                    cid_to_gid_map = "".join(cid_to_gid_list)
 
-                # manage binary data as latin1 until PEP461-like function is implemented
-                cid_to_gid_map_obj = PDFContentStream(
-                    contents=cid_to_gid_map.encode("latin1"), compress=True
-                )
-                self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
-                cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
+                    # manage binary data as latin1 until PEP461-like function is implemented
+                    cid_to_gid_map_obj = PDFContentStream(
+                        contents=cid_to_gid_map.encode("latin1"), compress=True
+                    )
+                    self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
+                    cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
+
+                compliance = self.fpdf._compliance
+                if compliance and compliance.profile == "PDFA" and compliance.part == 1:
+                    # PDF/A-1 requires a CIDSet identifying the CIDs present in
+                    # the embedded font subset (veraPDF rule 6.3.5-3). It is
+                    # optional in later parts and deprecated since PDF 2.0.
+                    cids_present = {0}
+                    if is_cff_cid and code_to_cid:
+                        cids_present.update(code_to_cid.values())
+                    else:
+                        cids_present.update(code_to_glyph)
+                    cid_set = bytearray(max(cids_present) // 8 + 1)
+                    for cid in cids_present:
+                        cid_set[cid // 8] |= 0x80 >> (cid % 8)
+                    cid_set_obj = PDFContentStream(
+                        contents=bytes(cid_set), compress=True
+                    )
+                    self._add_pdf_obj(cid_set_obj, "fonts")
+                    font_descriptor_obj.c_i_d_set = cid_set_obj  # type: ignore[attr-defined]
 
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
+                if is_cff_cid:
+                    font_file_cs_obj.subtype = Name("CIDFontType0C")  # type: ignore[attr-defined]
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
-                font_descriptor_obj.font_file2 = font_file_cs_obj
+                if is_cff_cid:
+                    font_descriptor_obj.font_file3 = font_file_cs_obj  # type: ignore[attr-defined]
+                else:
+                    font_descriptor_obj.font_file2 = font_file_cs_obj  # type: ignore[attr-defined]
 
                 font.subset.pick.cache_clear()
                 font.subset.get_glyph.cache_clear()
@@ -942,21 +1606,21 @@ class OutputProducer:
 
         return font_objs_per_index
 
-    def _add_images(self):
-        img_objs_per_index = {}
+    def _add_images(self) -> dict[int, PDFXObject]:
+        img_objs_per_index: dict[int, PDFXObject] = {}
         for img in sorted(
-            self.fpdf.image_cache.images.values(), key=lambda img: img["i"]
+            self.fpdf.image_cache.images.values(), key=lambda img: cast(int, img["i"])
         ):
-            if img["usages"] > 0:
-                img_objs_per_index[img["i"]] = self._add_image(img)
+            if cast(int, img["usages"]) > 0:
+                img_objs_per_index[cast(int, img["i"])] = self._add_image(img)
         return img_objs_per_index
 
-    def _ensure_iccp(self, img_info):
+    def _ensure_iccp(self, img_info: dict[str, object]) -> int:
         """
         Returns the PDF object of the ICC profile indexed iccp_i in the FPDF object.
         Adds it if not present.
         """
-        iccp_i = img_info["iccp_i"]
+        iccp_i = cast(int, img_info["iccp_i"])
         if iccp_i in self.iccp_i_to_pdf_i:
             return self.iccp_i_to_pdf_i[iccp_i]
         iccp_content = None
@@ -967,19 +1631,22 @@ class OutputProducer:
         assert iccp_content is not None
         # Note: n should be 4 if the profile ColorSpace is CMYK
         iccp_obj = PDFICCProfile(
-            contents=iccp_content, n=img_info["dpn"], alternate=img_info["cs"]
+            contents=iccp_content,
+            n=cast(int, img_info["dpn"]),
+            alternate=cast(str, img_info["cs"]),
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")
         self.iccp_i_to_pdf_i[iccp_i] = iccp_pdf_i
         return iccp_pdf_i
 
-    def _add_image(self, info):
-        color_space = Name(info["cs"])
+    def _add_image(self, info: dict[str, object]) -> PDFXObject:
+        image_mask = bool(info.get("image_mask"))
+        color_space: Name | PDFArray | None = None if image_mask else Name(info["cs"])
         decode = None
-        iccp_i = info.get("iccp_i")
+        iccp_i = None if image_mask else info.get("iccp_i")
         if color_space == "Indexed":
             color_space = PDFArray(
-                ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]
+                ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]  # type: ignore[arg-type]
             )
         elif iccp_i is not None:
             iccp_pdf_i = self._ensure_iccp(info)
@@ -987,23 +1654,26 @@ class OutputProducer:
         elif color_space == "DeviceCMYK":
             if info["inverted"] is True:
                 decode = "[1 0 1 0 1 0 1 0]"
+        if "decode" in info:
+            decode = cast(str, info["decode"])
 
         decode_parms = f"<<{info['dp']} /BitsPerComponent {info['bpc']}>>"
         img_obj = PDFXObject(
             subtype="Image",
-            contents=info["data"],
-            width=info["w"],
-            height=info["h"],
+            contents=cast(bytes, info["data"]),
+            width=cast(int, info["w"]),
+            height=cast(int, info["h"]),
             color_space=color_space,
-            bits_per_component=info["bpc"],
-            img_filter=info["f"],
+            bits_per_component=cast(int, info["bpc"]),
+            img_filter=cast(str, info["f"]),
             decode=decode,
             decode_parms=decode_parms,
+            image_mask=image_mask,
         )
-        self._add_pdf_obj(img_obj, "images")
+        info["obj_id"] = self._add_pdf_obj(img_obj, "images")
 
         # Soft mask
-        if self.fpdf.allow_images_transparency and "smask" in info:
+        if self.fpdf.allow_images_transparency and "smask" in info and not image_mask:
             dp = f"/Predictor 15 /Colors 1 /Columns {info['w']}"
             img_obj.s_mask = self._add_image(
                 {
@@ -1018,50 +1688,152 @@ class OutputProducer:
             )
 
         # Palette
-        if "/Indexed" in color_space:
+        if isinstance(color_space, PDFArray) and "/Indexed" in color_space:
+            assert isinstance(img_obj.color_space, PDFArray)
             pal_cs_obj = PDFContentStream(
-                contents=info["pal"], compress=self.fpdf.compress
+                contents=cast(bytes, info["pal"]), compress=self.fpdf.compress
             )
             self._add_pdf_obj(pal_cs_obj, "images")
             img_obj.color_space.append(pdf_ref(pal_cs_obj.id))
 
         return img_obj
 
-    def _add_gfxstates(self):
-        gfxstate_objs_per_name = OrderedDict()
-        for state_dict, name in self.fpdf._drawing_graphics_state_registry.items():
+    def _add_gfxstates(self) -> dict[str, PDFExtGState]:
+        gfxstate_objs_per_name: dict[str, PDFExtGState] = OrderedDict()
+        for state_dict, name in self.fpdf._resource_catalog.graphics_styles.items():
             gfxstate_obj = PDFExtGState(state_dict)
             self._add_pdf_obj(gfxstate_obj, "gfxstate")
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
 
-    def _add_shadings(self):
-        shading_objs_per_name = OrderedDict()
+    def _add_optional_content_groups(self, catalog_obj: PDFCatalog) -> None:
+        "Create the OCG objects and the catalog's /OCProperties configuration."
+        resource_catalog = self.fpdf._resource_catalog
+        self._ocg_objs_per_name: "OrderedDict[str, PDFOptionalContentGroup]" = (
+            OrderedDict()
+        )
+        for name, spec in resource_catalog.optional_content_groups.items():
+            ocg_obj = PDFOptionalContentGroup(
+                name=str(spec["label"]),
+                on_view=bool(spec["on_view"]),
+                on_print=bool(spec["on_print"]),
+            )
+            self._add_pdf_obj(ocg_obj, "optional_content_groups")
+            self._ocg_objs_per_name[name] = ocg_obj
+        if not self._ocg_objs_per_name:
+            return
+        all_refs = " ".join(obj.ref for obj in self._ocg_objs_per_name.values())
+        on_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        off_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if not resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        catalog_obj.o_c_properties = Raw(
+            f"<< /OCGs [{all_refs}]"
+            f" /D << /ON [{on_refs}] /OFF [{off_refs}]"
+            f" /BaseState /ON /Order [{all_refs}]"
+            f" /AS [ << /Event /View /OCGs [{all_refs}] /Category [/View] >>"
+            f" << /Event /Print /OCGs [{all_refs}] /Category [/Print] >> ] >> >>"
+        )
+
+    def _add_soft_masks(
+        self,
+        gfxstate_objs_per_name: dict[str, PDFExtGState],
+        pattern_objs_per_name: dict[str, "Pattern"],
+        img_objs_per_index: dict[int, PDFXObject],
+    ) -> None:
+        """Append soft-mask Form XObjects after patterns exist so we can resolve /Pattern ids."""
+        for soft_mask in self.fpdf._resource_catalog.soft_mask_xobjects:
+            soft_mask.resources = soft_mask._path.get_resource_dictionary(  # type: ignore[attr-defined]
+                gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
+            )
+            self.pdf_objs.append(soft_mask)
+
+    def _register_form_xobject_placeholders(
+        self, img_objs_per_index: dict[int, PDFXObject]
+    ) -> None:
+        """Ensure isolated blend forms are part of the XObject set before other resources rely on them."""
+        for index, xobject in self.fpdf._resource_catalog.form_xobjects:
+            if not getattr(xobject, "_registered", False):
+                self._add_pdf_obj(xobject, "images")
+                xobject._registered = True  # type: ignore[attr-defined]
+            img_objs_per_index.setdefault(index, xobject)  # type: ignore[arg-type]
+
+    def _finalize_form_xobjects(
+        self,
+        img_objs_per_index: dict[int, PDFXObject],
+        gfxstate_objs_per_name: dict[str, PDFExtGState],
+        pattern_objs_per_name: dict[str, Pattern],
+        shading_objs_per_name: dict[str, Shading | MeshShading],
+        font_objs_per_index: dict[int, PDFFont | PDFType3Font],
+    ) -> None:
+        """Populate resource dictionaries for isolated blend Form XObjects."""
+        for _, xobject in self.fpdf._resource_catalog.form_xobjects:
+            blend_group = getattr(xobject, "_blend_group", None)
+            if blend_group is not None:
+                xobject.resources = blend_group.get_resource_dictionary(  # type: ignore[attr-defined]
+                    gfxstate_objs_per_name,
+                    pattern_objs_per_name,
+                    shading_objs_per_name,
+                    font_objs_per_index,
+                    img_objs_per_index,
+                )
+
+    def _add_shadings(self) -> dict[str, Shading | MeshShading]:
+        shading_objs_per_name: dict[str, Shading | MeshShading] = OrderedDict()
         for shading, name in self.fpdf._resource_catalog.get_items(
-            PDFResourceType.SHADDING
+            PDFResourceType.SHADING
         ):
-            for function in shading.functions:
+            assert isinstance(shading, (Gradient, Shading, MeshShading))
+            for function in shading.get_functions():
                 self._add_pdf_obj(function, "function")
-            shading_obj = shading.get_shading_object()
+            shading_obj: Shading | MeshShading = shading.get_shading_object()
             self._add_pdf_obj(shading_obj, "shading")
             shading_objs_per_name[name] = shading_obj
         return shading_objs_per_name
 
-    def _add_patterns(self):
-        pattern_objs_per_name = OrderedDict()
+    def _add_patterns(self) -> dict[str, Pattern]:
+        pattern_objs_per_name: dict[str, Pattern] = OrderedDict()
         for pattern, name in self.fpdf._resource_catalog.get_items(
             PDFResourceType.PATTERN
         ):
+            assert isinstance(pattern, Pattern)
             self._add_pdf_obj(pattern, "pattern")
             pattern_objs_per_name[name] = pattern
+            if pattern.get_apply_page_ctm():
+                pattern.set_matrix(
+                    pattern.get_matrix()
+                    @ Transform.translation(0, -self.fpdf.h)
+                    .scale(x=1, y=-1)
+                    .scale(self.fpdf.k)
+                )
+
         return pattern_objs_per_name
 
-    def _insert_resources(self, page_objs):
-        font_objs_per_index = self._add_fonts()
+    def _insert_resources(self, page_objs: list[PDFPage]) -> None:
         img_objs_per_index = self._add_images()
+        self._register_form_xobject_placeholders(img_objs_per_index)
         gfxstate_objs_per_name = self._add_gfxstates()
-        shading_objs_per_name = self._add_shadings()
         pattern_objs_per_name = self._add_patterns()
+        font_objs_per_index = self._add_fonts(
+            img_objs_per_index, gfxstate_objs_per_name, pattern_objs_per_name
+        )
+        shading_objs_per_name = self._add_shadings()
+        self._finalize_form_xobjects(
+            img_objs_per_index,
+            gfxstate_objs_per_name,
+            pattern_objs_per_name,
+            shading_objs_per_name,
+            font_objs_per_index,
+        )
+        self._add_soft_masks(
+            gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
+        )
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
@@ -1070,19 +1842,20 @@ class OutputProducer:
                 gfxstate_objs_per_name,
                 shading_objs_per_name,
                 pattern_objs_per_name,
+                self._ocg_objs_per_name,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
         else:
             for page_number, page_obj in enumerate(page_objs, start=1):
                 page_font_objs_per_index = {
-                    font_id: font_objs_per_index[font_id]
+                    int(font_id): font_objs_per_index[int(font_id)]  # type: ignore[arg-type]
                     for font_id in self.fpdf._resource_catalog.get_resources_per_page(
                         page_number, PDFResourceType.FONT
                     )
                 }
                 page_img_objs_per_index = {
-                    img_id: img_objs_per_index[img_id]
+                    int(img_id): img_objs_per_index[int(img_id)]  # type: ignore[arg-type]
                     for img_id in self.fpdf._resource_catalog.get_resources_per_page(
                         page_number, PDFResourceType.X_OBJECT
                     )
@@ -1096,34 +1869,43 @@ class OutputProducer:
                     )
                 }
                 page_shading_objs_per_name = {
-                    shading_name: shading_objs_per_name[shading_name]
+                    str(shading_name): shading_objs_per_name[str(shading_name)]
                     for shading_name in self.fpdf._resource_catalog.get_resources_per_page(
-                        page_number, PDFResourceType.SHADDING
+                        page_number, PDFResourceType.SHADING
                     )
                 }
                 page_pattern_objs_per_name = {
-                    pattern_name: pattern_objs_per_name[pattern_name]
+                    str(pattern_name): pattern_objs_per_name[str(pattern_name)]
                     for pattern_name in self.fpdf._resource_catalog.get_resources_per_page(
                         page_number, PDFResourceType.PATTERN
                     )
                 }
+                page_properties_objs_per_name = {
+                    str(ocg_name): self._ocg_objs_per_name[str(ocg_name)]
+                    for ocg_name in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.PROPERTIES
+                    )
+                }
+
                 page_obj.resources = self._add_resources_dict(
                     page_font_objs_per_index,
                     page_img_objs_per_index,
                     page_gfxstate_objs_per_name,
                     page_shading_objs_per_name,
                     page_pattern_objs_per_name,
+                    page_properties_objs_per_name,
                 )
 
     def _add_resources_dict(
         self,
-        font_objs_per_index,
-        img_objs_per_index,
-        gfxstate_objs_per_name,
-        shading_objs_per_name,
-        pattern_objs_per_name,
-    ):
-        # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
+        font_objs_per_index: dict[int, PDFFont | PDFType3Font],
+        img_objs_per_index: dict[int, PDFXObject],
+        gfxstate_objs_per_name: dict[str, PDFExtGState],
+        shading_objs_per_name: dict[str, Shading | MeshShading],
+        pattern_objs_per_name: dict[str, Pattern],
+        properties_objs_per_name: Optional[dict[str, "PDFOptionalContentGroup"]] = None,
+    ) -> PDFResources:
+        # From section 10.1, "Procedure sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
         # > For compatibility with existing consumer applications,
         # > PDF producer applications should continue to specify procedure sets
@@ -1170,6 +1952,15 @@ class OutputProducer:
                 }
             )
 
+        properties = None
+        if properties_objs_per_name:
+            properties = pdf_dict(
+                {
+                    f"/{name}": pdf_ref(ocg_obj.id)
+                    for name, ocg_obj in sorted(properties_objs_per_name.items())
+                }
+            )
+
         resources_obj = PDFResources(
             proc_set=proc_set,
             font=font,
@@ -1177,11 +1968,12 @@ class OutputProducer:
             ext_g_state=ext_g_state,
             shading=shading,
             pattern=pattern,
+            properties=properties,
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj
 
-    def _add_structure_tree(self):
+    def _add_structure_tree(self) -> Optional[PDFObject]:
         "Builds a Structure Hierarchy, including image alternate descriptions"
         if self.fpdf.struct_builder.empty():
             return None
@@ -1192,36 +1984,133 @@ class OutputProducer:
             self._add_pdf_obj(pdf_obj, "structure_tree")
         return struct_tree_root_obj
 
-    def _add_document_outline(self):
+    def _add_document_outline(
+        self,
+    ) -> tuple[Optional[OutlineDictionary], Sequence[OutlineItemDictionary]]:
         if not self.fpdf._outline:
             return None, ()
-        outline_dict_obj, outline_items = None, []
+        outline_dict_obj: Optional[OutlineDictionary] = None
+        outline_items: list[OutlineItemDictionary] = []
         for pdf_obj in build_outline_objs(self.fpdf._outline):
-            if outline_dict_obj is None:
+            if isinstance(pdf_obj, OutlineDictionary):
                 outline_dict_obj = pdf_obj
             else:
                 outline_items.append(pdf_obj)
             self._add_pdf_obj(pdf_obj, "document_outline")
         return outline_dict_obj, outline_items
 
-    def _add_xmp_metadata(self):
-        if not self.fpdf.xmp_metadata:
+    def _add_xmp_metadata(self) -> Optional[PDFXmpMetadata]:
+        # Prefer explicitly provided XMP (user-supplied inner <x:xmpmeta/> without xpacket):
+        xmp_src = self.fpdf.xmp_metadata
+        # If not provided but a PDF/A document is being created, synthesize it:
+        if not xmp_src and self.fpdf._compliance:
+            xmp_src = self._build_xmp_from_info()
+        if not xmp_src:
             return None
-        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'
+        xpacket = f'<?xpacket begin="{chr(0xFEFF)}" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{xmp_src}\n<?xpacket end="w"?>\n'
         pdf_obj = PDFXmpMetadata(xpacket)
         self._add_pdf_obj(pdf_obj)
         return pdf_obj
 
-    def _add_info(self):
+    def _build_xmp_from_info(self) -> str:
+        title = getattr(self.fpdf, "title", None) or ""
+        subject = getattr(self.fpdf, "subject", None) or ""
+        author = getattr(self.fpdf, "author", None) or ""
+        if author and isinstance(author, str):
+            author = [author]
+        keywords = getattr(self.fpdf, "keywords", None) or ""
+        if keywords and isinstance(keywords, str):
+            keywords = [keywords]
+        creator_tool = getattr(self.fpdf, "creator", None) or ""
+        producer = getattr(self.fpdf, "producer", None) or ""
+        cdate = getattr(self.fpdf, "creation_date", None)
+        creation_date_utc = None
+        if isinstance(cdate, datetime):
+            creation_date_utc = cdate if cdate.tzinfo else cdate.astimezone()
+            creation_date_utc = creation_date_utc.astimezone(timezone.utc)
+        pdfa = self.fpdf._compliance
+
+        # Escape for XML attributes/PCDATA:
+        def esc(s: str) -> str:
+            """Return XML-escaped text suitable for XMP (attributes or text nodes)."""
+            value = "" if s is None else _html_escape(str(s), quote=True)
+            return value.replace("'", "&apos;")
+
+        # XMP times are ISO 8601 (e.g., 2025-09-01T12:34:56+02:00):
+        EPOCH = datetime(1969, 12, 31, 19, 0, 0, tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        if creation_date_utc == EPOCH:
+            xmp_create = EPOCH.isoformat(timespec="seconds")
+            xmp_modify = EPOCH.isoformat(timespec="seconds")
+        else:
+            create_dt = creation_date_utc or now
+            xmp_create = create_dt.isoformat(timespec="seconds")
+            xmp_modify = now.isoformat(timespec="seconds")
+        # Build a single Description that includes everything + pdfaid if requested:
+        parts = [
+            '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="fpdf2">',
+            "  <rdf:RDF",
+            '    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"',
+            '    xmlns:dc="http://purl.org/dc/elements/1.1/"',
+            '    xmlns:xmp="http://ns.adobe.com/xap/1.0/"',
+            '    xmlns:pdf="http://ns.adobe.com/pdf/1.3/"',
+            '    xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">',
+            '    <rdf:Description rdf:about=""',
+        ]
+        # attributes block (xmp, pdf, pdfaid)
+        if creator_tool:
+            parts.append(f'        xmp:CreatorTool="{esc(creator_tool)}"')
+        if xmp_create:
+            parts.append(f'        xmp:CreateDate="{esc(xmp_create)}"')
+            parts.append(f'        xmp:ModifyDate="{esc(xmp_modify)}"')
+            parts.append(f'        xmp:MetadataDate="{esc(xmp_modify)}"')
+        if producer:
+            parts.append(f'        pdf:Producer="{esc(producer)}"')
+        if keywords:
+            keyword_list = ",".join(keywords)
+            parts.append(f'        pdf:Keywords="{esc(keyword_list)}"')
+        parts.append("      >")
+        # nested elements (Lang Alt / Seqs)
+        if pdfa:
+            parts.append(f"      <pdfaid:part>{int(pdfa.part)}</pdfaid:part>")
+            if pdfa.conformance:
+                parts.append(
+                    f"      <pdfaid:conformance>{esc(pdfa.conformance)}</pdfaid:conformance>"
+                )
+            if pdfa.part == 4:
+                parts.append("      <pdfaid:rev>2020</pdfaid:rev>")
+        if title:
+            parts += [
+                "      <dc:title><rdf:Alt>",
+                '        <rdf:li xml:lang="x-default">' + esc(title) + "</rdf:li>",
+                "      </rdf:Alt></dc:title>",
+            ]
+        if subject:
+            parts += [
+                "      <dc:description><rdf:Alt>",
+                '        <rdf:li xml:lang="x-default">' + esc(subject) + "</rdf:li>",
+                "      </rdf:Alt></dc:description>",
+            ]
+        if author:
+            parts.append("      <dc:creator><rdf:Seq>")
+            for a in author:
+                parts.append(f"        <rdf:li>{esc(a)}</rdf:li>")
+            parts.append("      </rdf:Seq></dc:creator>")
+        parts += [
+            "    </rdf:Description>",
+            "  </rdf:RDF>",
+            "</x:xmpmeta>",
+        ]
+        return "\n".join(parts)
+
+    def _add_info(self) -> PDFInfo:
         fpdf = self.fpdf
-        creation_date = None
-        if fpdf.creation_date:
-            try:
-                creation_date = PDFDate(fpdf.creation_date, with_tz=True, encrypt=True)
-            except Exception as error:
-                raise FPDFException(
-                    f"Could not format date: {fpdf.creation_date}"
-                ) from error
+        try:
+            creation_date = PDFDate(fpdf.creation_date, with_tz=True, encrypt=True)
+        except Exception as error:
+            raise FPDFException(
+                f"Could not format date: {fpdf.creation_date}"
+            ) from error
         info_obj = PDFInfo(
             title=fpdf.title,
             subject=getattr(fpdf, "subject", None),
@@ -1234,7 +2123,7 @@ class OutputProducer:
         self._add_pdf_obj(info_obj)
         return info_obj
 
-    def _add_encryption(self):
+    def _add_encryption(self) -> Optional["EncryptionDictionary"]:
         if self.fpdf._security_handler:
             encryption_handler = self.fpdf._security_handler
             pdf_obj = encryption_handler.get_encryption_obj()
@@ -1242,7 +2131,7 @@ class OutputProducer:
             return pdf_obj
         return None
 
-    def _add_output_intents(self):
+    def _add_output_intents(self) -> Optional[PDFArray]:
         """should be added in _add_catalog"""
         output_intents = self.fpdf.output_intents
         if not output_intents:
@@ -1252,7 +2141,7 @@ class OutputProducer:
                 self._add_pdf_obj(output_intent.dest_output_profile)
         return PDFArray(output_intents)
 
-    def _add_catalog(self):
+    def _add_catalog(self) -> PDFCatalog:
         fpdf = self.fpdf
         catalog_obj = PDFCatalog(
             lang=getattr(fpdf, "lang", None),
@@ -1267,14 +2156,14 @@ class OutputProducer:
 
     def _finalize_catalog(
         self,
-        catalog_obj,
-        pages_root_obj,
-        first_page_obj,
-        sig_annotation_obj,
-        xmp_metadata_obj,
-        struct_tree_root_obj,
-        outline_dict_obj,
-    ):
+        catalog_obj: PDFCatalog,
+        pages_root_obj: PDFPagesRoot,
+        first_page_obj: PDFPage,
+        sig_annotation_obj: Optional[PDFAnnotation],
+        xmp_metadata_obj: Optional[PDFXmpMetadata],
+        struct_tree_root_obj: Optional[PDFObject],
+        outline_dict_obj: Optional[OutlineDictionary],
+    ) -> None:
         fpdf = self.fpdf
         catalog_obj.pages = pages_root_obj
         catalog_obj.struct_tree_root = struct_tree_root_obj
@@ -1296,24 +2185,63 @@ class OutputProducer:
                 "/XYZ",
                 "null",
                 "null",
-                str(fpdf.zoom_mode / 100),
+                str(cast(float, fpdf.zoom_mode) / 100),
             ]
         catalog_obj.open_action = pdf_list(zoom_config)
         if struct_tree_root_obj:
             catalog_obj.mark_info = pdf_dict({"/Marked": "true"})
-        if fpdf.embedded_files:
-            file_spec_names = [
-                f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().serialize()}"
-                for embedded_file in fpdf.embedded_files
-                if embedded_file.globally_enclosed
-            ]
-            catalog_obj.names = pdf_dict(
-                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
-            )
+        if fpdf.embedded_files or fpdf.named_destinations:
+            names_dict_entries: dict[str, str] = {}
+
+            if fpdf.embedded_files:
+                file_spec_names = [
+                    f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().ref}"
+                    for embedded_file in fpdf.embedded_files
+                ]
+                names_dict_entries["/EmbeddedFiles"] = pdf_dict(
+                    {"/Names": pdf_list(file_spec_names)}
+                )
+                global_file_specs = [
+                    pdf_ref(ef.file_spec().id)
+                    for ef in self.fpdf.embedded_files
+                    if ef.globally_enclosed()
+                ]
+                if global_file_specs:
+                    catalog_obj.a_f = pdf_list(global_file_specs)
+
+            if fpdf.named_destinations:
+                # Create a list of name/destination pairs for the Dests name tree
+                dests_names: list[str] = []
+                for name, dest in fpdf.named_destinations.items():
+                    # Check if this is a placeholder destination (page 0)
+                    if dest.page_number == 0:
+                        raise FPDFException(
+                            f"Named destination '{name}' was referenced but never set with set_link(name=...)"
+                        )
+
+                    # Ensure the destination's page_ref is set
+                    if not hasattr(dest, "page_ref") or not dest.page_ref:
+                        assert dest.page_number is not None
+                        page_index = dest.page_number - 1
+                        if 0 <= page_index < len(fpdf.pages):
+                            dest.page_ref = pdf_ref(fpdf.pages[dest.page_number].id)
+
+                    # Add name and destination to the Dests list
+                    dests_names.append(
+                        f"{PDFString(name, encrypt=True).serialize(_security_handler=fpdf._security_handler, _obj_id=catalog_obj.id)} {dest.serialize()}"
+                    )
+
+                if dests_names:
+                    names_dict_entries["/Dests"] = pdf_dict(
+                        {"/Names": pdf_list(sorted(dests_names))}
+                    )
+
+            catalog_obj.names = pdf_dict(names_dict_entries)
+
         page_labels = [
-            f"{i} {pdf_dict(page.get_page_label().serialize())}"
+            f"{i} {pdf_dict(label.serialize())}"
             for i, page in enumerate(self._iter_pages_in_order())
-            if page.get_page_label()
+            if (label := page.get_page_label()) is not None
         ]
         if page_labels and not fpdf.pages[1].get_page_label():
             # If page labels are used, an entry for sequence 0 is mandatory
@@ -1324,12 +2252,12 @@ class OutputProducer:
             )
 
     @contextmanager
-    def _trace_size(self, label):
+    def _trace_size(self, label: str) -> Generator[None, None, None]:
         prev_size = len(self.buffer)
         yield
         self.sections_size_per_trace_label[label] += len(self.buffer) - prev_size
 
-    def _log_final_sections_sizes(self):
+    def _log_final_sections_sizes(self) -> None:
         LOGGER.debug("Final size summary of the biggest document sections:")
         for label, section_size in self.sections_size_per_trace_label.items():
             LOGGER.debug("- %s: %s", label, _sizeof_fmt(section_size))
@@ -1337,14 +2265,14 @@ class OutputProducer:
 
 def stream_content_for_raster_image(
     info: RasterImageInfo,
-    x,
-    y,
-    w,
-    h,
-    keep_aspect_ratio=False,
-    scale=1,
-    pdf_height_to_flip=None,
-):
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    keep_aspect_ratio: bool = False,
+    scale: float = 1,
+    pdf_height_to_flip: Optional[float] = None,
+) -> str:
     if keep_aspect_ratio:
         x, y, w, h = info.scale_inside_box(x, y, w, h)
     if pdf_height_to_flip:
@@ -1360,44 +2288,59 @@ def stream_content_for_raster_image(
     )
 
 
-def _tt_font_widths(font):
-    rangeid = 0
-    range_ = {}
-    range_interval = {}
-    prevcid = -2
-    prevwidth = -1
-    interval = False
+def _build_cmap_blocks(
+    entries: list[str], operator: Literal["bfchar", "cidchar"]
+) -> str:
+    """Limit CMap mapping blocks to 100 entries (Adobe Technical Note #5014)."""
+    blocks: list[str] = []
+    for start in range(0, len(entries), 100):
+        chunk = entries[start : start + 100]
+        blocks.append(f"{len(chunk)} begin{operator}\n{''.join(chunk)}end{operator}\n")
+    return "".join(blocks)
 
-    # Glyphs sorted by mapped character id
-    glyphs = dict(sorted(font.subset.items(), key=lambda item: item[1]))
 
-    for glyph in glyphs:
-        cid_mapped = glyphs[glyph]
-        if cid_mapped == (prevcid + 1):
-            if glyph.glyph_width == prevwidth:
-                if glyph.glyph_width == range_[rangeid][0]:
-                    range_.setdefault(rangeid, []).append(glyph.glyph_width)
+def _tt_font_widths(font: TTFFont) -> str:
+    cid_widths = {
+        cid: glyph.glyph_width
+        for glyph, cid in font.subset.items()
+        if glyph is not None
+    }
+    return _cid_font_widths(cid_widths)
+
+
+def _cid_font_widths(cid_widths: dict[int, int]) -> str:
+    rangeid: int = 0
+    range_: dict[int, list[int]] = {}
+    range_interval: dict[int, bool] = {}
+    prevcid: int = -2
+    prevwidth: int = -1
+    interval: bool = False
+
+    for cid, width in sorted(cid_widths.items()):
+        if cid == (prevcid + 1):
+            if width == prevwidth:
+                if width == range_[rangeid][0]:
+                    range_.setdefault(rangeid, []).append(width)
                 else:
                     range_[rangeid].pop()
-                    # new range
                     rangeid = prevcid
-                    range_[rangeid] = [prevwidth, glyph.glyph_width]
+                    range_[rangeid] = [prevwidth, width]
                 interval = True
                 range_interval[rangeid] = True
             else:
                 if interval:
-                    # new range
-                    rangeid = cid_mapped
-                    range_[rangeid] = [glyph.glyph_width]
+                    rangeid = cid
+                    range_[rangeid] = [width]
                 else:
-                    range_[rangeid].append(glyph.glyph_width)
+                    range_[rangeid].append(width)
                 interval = False
         else:
-            rangeid = cid_mapped
-            range_[rangeid] = [glyph.glyph_width]
+            rangeid = cid
+            range_[rangeid] = [width]
             interval = False
-        prevcid = cid_mapped
-        prevwidth = glyph.glyph_width
+        prevcid = cid
+        prevwidth = width
+
     prevk = -1
     nextk = -1
     prevint = False
@@ -1419,7 +2362,7 @@ def _tt_font_widths(font):
             nextk -= 1
         else:
             prevint = False
-    w = []
+    w: list[str] = []
     for k, ws in sorted(range_.items()):
         if len(set(ws)) == 1:
             w.append(f" {k} {k + len(ws) - 1} {ws[0]}")
@@ -1428,15 +2371,47 @@ def _tt_font_widths(font):
     return f"[{''.join(w)}]"
 
 
-def _dimensions_to_mediabox(dimensions):
+def _dimensions_to_mediabox(dimensions: tuple[float, float]) -> str:
     width_pt, height_pt = dimensions
-    return f"[0 0 {width_pt:.2f} {height_pt:.2f}]"
+    return (
+        f"[0 0 {trim_trailing_zeros(f'{width_pt:.2f}')} "
+        f"{trim_trailing_zeros(f'{height_pt:.2f}')}]"
+    )
 
 
-def _sizeof_fmt(num, suffix="B"):
+def _sizeof_fmt(num: float, suffix: str = "B") -> str:
     # Recipe from: https://stackoverflow.com/a/1094933/636849
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
         if abs(num) < 1024:
             return f"{num:3.1f}{unit}{suffix}"
         num /= 1024
     return f"{num:.1f}Yi{suffix}"
+
+
+def soft_mask_path_to_xobject(
+    path: PaintSoftMask | ImageSoftMask, resource_catalog: ResourceCatalog
+) -> PDFContentStream:
+    """Converts a PaintedSoftMask into a PDF XObject Form suitable for use as a soft mask."""
+    xobject = PDFContentStream(contents=path.render(resource_catalog).encode("latin-1"))
+    xobject._path = path  # type: ignore[attr-defined]
+    xobject.type = Name("XObject")  # type: ignore[attr-defined]
+    xobject.subtype = Name("Form")  # type: ignore[attr-defined]
+    xobject.b_box = PDFArray(path.get_bounding_box())  # type: ignore[attr-defined]
+    xobject.group = "<</S /Transparency /CS /DeviceGray /I true /K false>>"  # type: ignore[attr-defined]
+    return xobject
+
+
+def blend_group_to_xobject(
+    group: "BlendGroup", resource_catalog: ResourceCatalog
+) -> PDFContentStream:
+    """Convert a blend group into a Form XObject with an isolated transparency group."""
+    stream = group.render(resource_catalog)
+    xobject = PDFContentStream(contents=stream.encode("latin-1"))
+    xobject._blend_group = group  # type: ignore[attr-defined]
+    xobject._registered = False  # type: ignore[attr-defined]
+    xobject.type = Name("XObject")  # type: ignore[attr-defined]
+    xobject.subtype = Name("Form")  # type: ignore[attr-defined]
+    bbox = group.get_bounding_box()
+    xobject.b_box = PDFArray(bbox)  # type: ignore[attr-defined]
+    xobject.group = "<</S /Transparency /CS /DeviceRGB /I true>>"  # type: ignore[attr-defined]
+    return xobject

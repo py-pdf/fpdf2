@@ -157,13 +157,13 @@ def test_template_nominal_csv(tmp_path):
     """Same data as in docs/Templates.md
     The numeric_text tests for a regression."""
     tmpl = Template(format="A4", title="Sample Invoice")
-    tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
+    tmpl.parse_csv(HERE / "template_definition.csv", delimiter=";")
     tmpl.add_page()
     tmpl["empty_fields"] = "empty"
     assert_pdf_equal(tmpl, HERE / "template_nominal_csv.pdf", tmp_path)
 
     tmpl = Template(format="A4", title="Sample Invoice")
-    tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";", encoding="utf-8")
+    tmpl.parse_csv(HERE / "template_definition.csv", delimiter=";", encoding="utf-8")
     tmpl.add_page()
     tmpl["empty_fields"] = "empty"
     assert_pdf_equal(tmpl, HERE / "template_nominal_csv.pdf", tmp_path)
@@ -172,7 +172,7 @@ def test_template_nominal_csv(tmp_path):
 def test_template_multipage(tmp_path):
     """Testing a Template() populating several pages."""
     tmpl = Template(format="A4", title="Sample Invoice")
-    tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
+    tmpl.parse_csv(HERE / "template_definition.csv", delimiter=";")
     tmpl.add_page()
     tmpl["name0"] = "Joe Doe"
     tmpl["title0"] = "Director"

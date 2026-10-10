@@ -2,8 +2,6 @@
 
 This page has summary information about developing the fpdf2 library.
 
-[TOC]
-
 ## Repository structure
 
 * `.github/` - GitHub Actions configuration
@@ -22,6 +20,48 @@ This page has summary information about developing the fpdf2 library.
 * `tox.ini` - configuration for [Tox](https://tox.readthedocs.io/en/latest/)
 * `.banditrc.yml` - configuration for [bandit](https://pypi.org/project/bandit/)
 * `.pylintrc` - configuration for [Pylint](http://pylint.pycqa.org/en/latest/)
+
+### Deprecation policy
+
+We aim to keep public behaviour stable for as long as possible, so removals go through a staged process.
+
+**Method deprecation**
+- Document the deprecation directly in the docstring using a `.. deprecated::` directive.
+- Emit a `DeprecationWarning`, while still executing a compatible code path when feasible.
+- Example (from `fpdf/fpdf.py`):
+
+  ```python
+  def set_doc_option(self, opt, value):
+      """
+      Defines a document option.
+
+      Args:
+          opt (str): name of the option to set
+          value (str): option value
+
+      .. deprecated:: 2.4.0
+          Simply set the `FPDF.core_fonts_encoding` property as a replacement.
+      """
+      warnings.warn(
+          (
+              "set_doc_option() is deprecated since v2.4.0 "
+              "and will be removed in a future release. "
+              "Simply set the `.core_fonts_encoding` property as a replacement."
+          ),
+          DeprecationWarning,
+          stacklevel=get_stack_level(),
+      )
+      if opt != "core_fonts_encoding":
+          raise FPDFException(f'Unknown document option "{opt}"')
+      self.core_fonts_encoding = value
+  ```
+
+**Parameter deprecation**
+- Step 1: Mark the parameter as deprecated in the documentation and emit a warning when it is supplied.
+- Step 2: After a few releases, add the `@deprecated_parameter()` decorator so that the argument disappears from the public signature and linters/IDEs flag its usage.
+- Step 3: Remove support for the parameter entirely, once it is safe with respect to backwards compatibility.
+
+We try to leave generous time between these steps and only delete behaviour when absolutely necessary.
 
 ## Installing fpdf2 from a local git repository
 ```
@@ -53,6 +93,19 @@ In case of special "false positive" cases,
 checks can be disabled locally with `#pylint disable=XXX` code comments,
 or globally through the `.pylintrc` file.
 
+## Static typing
+Strict typing is enforced in CI with `mypy` and `pyright` (see `pyproject.toml`). Run them locally before pushing, or enable the pre-commit hook so they run automatically:
+```
+pip install fpdf2[dev]
+mypy
+pyright
+```
+
+General guidelines:
+- Use `# type: ignore[...]` sparingly
+- Prefer real types over `Any`
+- Keep casts to unavoidable spots
+
 ## Pre-commit hook
 This project uses `git` **pre-commit hooks**: https://pre-commit.com
 
@@ -73,7 +126,7 @@ pre-commit install
 
 ### Running tests
 To run tests, `cd` into `fpdf2` repository, install the dependencies using
-`pip install -r test/requirements.txt`,  and run `pytest`.
+`pip install .[dev,test]`, and run `pytest`.
 
 You may also need to install [SWIG](https://swig.org/index.html) and [Ghostscript](https://www.ghostscript.com/),
 because they are dependencies for `camelot`, a library for table extraction in PDF that we test in `test/table/test_table_extraction.py`.
@@ -85,7 +138,7 @@ You can run a single test by executing: `pytest -k function_name`.
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
 It is self-documented in the `tox.ini` file in the repository.
 To run tests for all versions of Python, simply run `tox`.
-If you do not want to run tests for all versions of python, run `tox -e py39`
+If you do not want to run tests for all versions of python, run `tox -e py313`
 (or your version of Python).
 
 ### Why is a test failing?
@@ -215,6 +268,10 @@ for the Python dependencies / GitHub Actions / NPM dependencies that we use.
 Its configuration file is [renovate.json](https://github.com/py-pdf/fpdf2/blob/master/renovate.json),
 and the full tool documentation is there: [docs.renovatebot.com](https://docs.renovatebot.com/).
 
+To debug issues with Renovate, it can be useful to invoke it locally using Docker, like this:
+
+    docker run -e LOG_LEVEL=debug docker.io/renovate/renovate:41-full --dry-run --token "$GITHUB_OAUTH_TOKEN" py-pdf/fpdf2
+
 We also use [zizmor](https://woodruffw.github.io/zizmor/) as a GitHub Action
 to perform static analysis on our pipeline definition files.
 
@@ -227,12 +284,13 @@ In order to use `zizmor` locally:
 Installation is relatively straightforward ([read the docs](https://github.com/crate-ci/typos?tab=readme-ov-file#install)).
 
 This tool is invoked in the [pre-commit hooks](#pre-commit-hook) and in our CI pipeline.
+
 If it fails, you should either:
 
 * auto-fix the errors detected by invoking `typos --write-changes`
 * add an exclusion rule to `.typos.toml`
 
-### Release checklist
+## Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
 Also (optional, once every year), update `contributors/contributors-map-small.png` based on <https://py-pdf.github.io/fpdf2/contributors.html>
@@ -294,6 +352,17 @@ qpdf --qdf doc.pdf doc-qdf.pdf
 ```
 
 This is extremely useful to peek into the PDF document structure.
+
+### pdf-parser.py
+* [pdf-parser.py autonomous script on GitHub](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py)
+* [Documentation page on Didier Stevens blog](https://blog.didierstevens.com/programs/pdf-tools/)
+
+Usages examples :
+
+* display some stats on a PDF document: `pdf-parser.py file.pdf -a`
+* display a PDF document full structure: `pdf-parser.py file.pdf`
+* select only `Javascript` elements: `pdf-parser.py file.pdf -s Javascript`
+* extract a font file from object 9 in a PDF file: `pdf-parser.py file.pdf --object 9 --filter --dump dumped-9.ttf`
 
 ### pdfly
 `pdfly` is a very handy CLI tool to manipulate PDF files: [py-pdf/pdfly](https://github.com/py-pdf/pdfly?tab=readme-ov-file#usage).

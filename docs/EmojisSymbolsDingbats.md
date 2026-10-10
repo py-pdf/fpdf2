@@ -1,8 +1,6 @@
-# Emojis, Symbols & Dingbats #
+# Emojis, Symbols & Dingbats
 
-[TOC]
-
-## Emojis ##
+## Emojis
 
 Displaying emojis requires the use of a [Unicode](Unicode.md) font file.
 Here is an example using the [DejaVu](https://dejavu-fonts.github.io) font:
@@ -24,9 +22,14 @@ This code produces this PDF file: [fonts_emoji_glyph.pdf](https://github.com/py-
 
 Another font supporting emojis is: [twemoji](https://github.com/13rac1/twemoji-color-font)
 
-!!! warning "`fpdf2` currently **does not support color emojis** (= CBDT/CBLC fonts), but we are actively working on adding support for them 🙂[ _cf._ issue #224](https://github.com/py-pdf/fpdf2/issues/224)"
+## Color fonts and emojis
+A wide variety of color fonts are supported - SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1. If a loaded font provides color glyphs, `fpdf2` will render them automatically.
 
-## Symbols ##
+Bitmap-only fonts using EBDT/EBLC (for example, monochrome or grayscale bitmap strikes) are also supported. These are rendered using the current text color, with grayscale values applied as alpha.
+
+To always draw emoji as outline/monochrome even if the font includes color glyphs, set: `FPDF.render_color_fonts = False`
+
+## Symbols
 
 The **Symbol** font is one of the built-in fonts in the PDF format.
 Hence you can include its symbols very easily:
@@ -52,7 +55,7 @@ This results in:
 The following table will help you find which characters map to which symbol: [symbol.pdf](symbol.pdf).
 For reference, it was built using this script: [symbol.py](symbol.py).
 
-## Dingbats ##
+## Dingbats
 
 The **ZapfDingbats** font is one of the built-in fonts in the PDF format.
 Hence you can include its [dingbats](https://en.wikipedia.org/wiki/Dingbat) very easily:
@@ -73,6 +76,6 @@ This results in:
 The following table will help you find which characters map to which dingbats: [zapfdingbats.pdf](zapfdingbats.pdf).
 For reference, it was built using this script: [zapfdingbats.py](zapfdingbats.py).
 
-## Fallback fonts ##
+## Fallback fonts
 
 If you need to mix special characters and emojis within normal text, it is possible to specify alternative fonts for FPDF to use as fallback fonts. See an example of use [Here](Unicode.md#fallback-fonts)

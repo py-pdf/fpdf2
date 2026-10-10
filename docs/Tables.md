@@ -294,6 +294,37 @@ Result:
 
 ![](table_with_single_top_line_layout.jpg)
 
+It is also possible to create a custom border layout, controlling thickness, color, and dash pattern:
+```python
+from fpdf.table import TableBordersLayout, TableBorderStyle, TableCellStyle
+
+gray = (150, 150, 150)
+red = (255, 0, 0)
+custom_layout = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=(
+            True if col_num == 0
+            else TableBorderStyle(color=(150, 150, 150), dash=2) if col_num == 2
+            else False
+        ),        bottom=True if row_num == num_rows - 1 else False,
+        right=True if col_num == num_cols - 1 else False,
+        top=(
+            True if row_num == 0
+            else TableBorderStyle(thickness=1) if row_num == num_heading_rows
+            else TableBorderStyle(color=red, dash=2)
+        ),
+    )
+)
+
+with pdf.table(borders_layout=custom_layout) as table:
+    ...
+```
+
+Result:
+
+![](table-with-custom-border-layout.jpg)
+
+
 All the possible layout values are described
 there: [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
@@ -488,26 +519,26 @@ with pdf.table(text_align="CENTER") as table:
     row = table.row()
     row.cell("A1", colspan=2, rowspan=3)
     row.cell("C1", colspan=2)
-    
+
     row = table.row()
     row.cell("C2", colspan=2, rowspan=2)
-    
+
     row = table.row()
     # all columns of this row are spanned by previous rows
-    
+
     row = table.row()
     row.cell("A4", colspan=4)
-    
+
     row = table.row()
     row.cell("A5", colspan=2)
     row.cell("C5")
     row.cell("D5")
-    
+
     row = table.row()
     row.cell("A6")
     row.cell("B6", colspan=2, rowspan=2)
     row.cell("D6", rowspan=2)
-    
+
     row = table.row()
     row.cell("A7")
 ...
@@ -569,7 +600,7 @@ We have dedicated pages about those topics:
 
 ## Using write_html
 
-Tables can also be defined in HTML using [`FPDF.write_html`](HTML.md).
+Tables can also be defined in HTML using [`FPDF.write_html`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html).
 With the same `data` as above, and column widths defined as percent of the effective width:
 
 ```python

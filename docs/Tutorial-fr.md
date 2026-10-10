@@ -2,8 +2,6 @@
 
 Documentation complète des méthodes : [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - Exemple minimal ##
 
 Commençons par un exemple classique :
@@ -138,7 +136,7 @@ Il montrera également plusieurs façons d'utiliser différents styles de texte 
 ```
 
 [PDF créé dans ce tutoriel](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 La nouvelle méthode présentée ici pour imprimer du texte est [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Elle est très similaire à [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Les principales différences sont les suivantes :
 
@@ -155,3 +153,39 @@ Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilis�
 Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Cette méthode a la possibilité de transmettre un lien comme l'un de ses arguments. Le lien peut être interne ou externe.
 
 Comme alternative, une autre option pour changer le style de police et ajouter des liens est d'utiliser la méthode `write_html()`. Celle-ci permet de lire du HTML pour produire du texte, changer le style de police ou encore ajouter des liens.
+
+## Tuto 7 - Création de documents PDF/A
+
+**Nouveau dans** :octicons-tag-24: **2.8.3**
+
+### Normes PDF/A
+
+**PDF/A-1** est basé sur la spécification PDF 1.4. Toutes les ressources (images, graphiques, polices) doivent être incorporées dans le document. La gestion des couleurs doit être spécifiée de manière indépendante de la plateforme avec des profils ICC, et les métadonnées du document doivent être fournies avec des métadonnées XMP.
+
+**PDF/A-2** est basé sur la spécification PDF 1.7. Il permet la compression avec JPEG2000, les éléments transparents, les polices OpenType et les signatures numériques.
+
+La seule extension pour **PDF/A-3** est la possibilité d'incorporer n'importe quel fichier possible.
+
+### Classes de conformité
+
+**Niveau A (accessible)** englobe toutes les exigences de la norme, y compris la cartographie de la structure du contenu et l'ordre de lecture correct du contenu du document. Le contenu textuel doit être extractible et la structure doit refléter la séquence de lecture naturelle.
+
+**Niveau B (basique)** garantit une reproductibilité visuelle claire du contenu. Le niveau B est généralement plus facile à générer que le niveau A, mais il ne garantit pas une extraction de texte ou une capacité de recherche à 100 %. La réutilisation sans problème du contenu n'est pas nécessairement garantie.
+
+Pour y parvenir, voici un petit exemple :
+```python
+{% include "../tutorial/tuto7.py" %}
+```
+
+**PDF résultant :** [tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
+
+
+Des outils comme [VeraPDF](https://verapdf.org/) peuvent vérifier la conformité des documents PDF produits :
+```bash
+verapdf --format text -v tutorial/tuto7.pdf
+```
+
+Produit en sortie textuelle :
+```
+PASS fpdf2/tutorial/tuto7.pdf 3b
+```

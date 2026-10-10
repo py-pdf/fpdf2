@@ -7,18 +7,22 @@ in non-backward-compatible ways.
 """
 
 import contextlib
-from functools import wraps
 import inspect
 import os.path
 import warnings
+from functools import wraps
 from types import ModuleType
+from typing import Any, Callable, Iterable, ParamSpec, TypeVar
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
-def support_deprecated_txt_arg(fn):
+def support_deprecated_txt_arg(fn: Callable[P, R]) -> Callable[P, R]:
     """Decorator converting `txt=` arguments into `text=` arguments"""
 
     @wraps(fn)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         txt_value = kwargs.pop("txt", None)
         if txt_value is not None:
             if "text" in kwargs:
@@ -29,20 +33,45 @@ def support_deprecated_txt_arg(fn):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-        return fn(self, *args, **kwargs)
+        return fn(*args, **kwargs)
 
     return wrapper
 
 
+def deprecated_parameter(
+    parameters: Iterable[tuple[str, str]],
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """Decorator removing deprecated keyword arguments from a function call."""
+
+    deprecated_info = tuple(parameters)
+    _sentinel = object()
+
+    def decorator(fn: Callable[P, R]) -> Callable[P, R]:
+        @wraps(fn)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            for name, version in deprecated_info:
+                if kwargs.pop(name, _sentinel) is not _sentinel:
+                    warnings.warn(
+                        f'"{name}" parameter is deprecated since v{version} and will be removed in a future release',
+                        DeprecationWarning,
+                        stacklevel=get_stack_level(),
+                    )
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class WarnOnDeprecatedModuleAttributes(ModuleType):
-    def __call__(self):
+    def __call__(self) -> None:
         raise TypeError(
             "You tried to instantied the fpdf module."
             " You probably want to import the FPDF class instead:"
             " from fpdf import FPDF"
         )
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         if name in ("FPDF_CACHE_DIR", "FPDF_CACHE_MODE"):
             warnings.warn(
                 (
@@ -56,7 +85,7 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
             return None
         return super().__getattribute__(name)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         if name in ("FPDF_CACHE_DIR", "FPDF_CACHE_MODE"):
             warnings.warn(
                 (

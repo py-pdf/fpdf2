@@ -3,7 +3,6 @@ from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode
 
-
 with open("countries.txt", encoding="utf8") as csv_file:
     data = list(csv.reader(csv_file, delimiter=","))
 

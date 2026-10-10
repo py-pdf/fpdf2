@@ -2,8 +2,6 @@
 
 Method গুলোর সম্পূর্ণ ডকুমেন্টেশন: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[ TOC ]
-
 ## টিউটোরিয়াল ১ - সংক্ষিপ্ত উদাহরণ ##
 
 একটি ক্লাসিক উদাহরণ দিয়ে শুরু করা যাক:
@@ -183,7 +181,7 @@ English versions:
 ```
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 লিখার প্রিন্ট করার নতুন মেথড এখানে দেখানো হলো - 
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

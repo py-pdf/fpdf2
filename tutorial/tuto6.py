@@ -1,6 +1,5 @@
 from fpdf import FPDF
 
-
 pdf = FPDF()
 
 # First page:

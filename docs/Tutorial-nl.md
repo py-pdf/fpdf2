@@ -2,8 +2,6 @@
 
 Methoden volledige documentatie: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - Minimaal voorbeeld ##
 
 Eerste, het klassieke voorbeeld:
@@ -200,7 +198,7 @@ Het laat ook verschillende manieren zien waarop we verschillende tekststijlen ku
 ```
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 De nieuwe methode die hier wordt getoond om tekst af te drukken is
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

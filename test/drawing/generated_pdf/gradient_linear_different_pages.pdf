@@ -1,0 +1,144 @@
+%PDF-1.4
+%יכס¿
+1 0 obj
+<<
+/Count 2
+/Kids [3 0 R
+5 0 R]
+/MediaBox [0 0 595.28 841.89]
+/Type /Pages
+>>
+endobj
+2 0 obj
+<<
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+/Pages 1 0 R
+/Type /Catalog
+>>
+endobj
+3 0 obj
+<<
+/Contents 4 0 R
+/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>
+/Parent 1 0 R
+/Resources 12 0 R
+/Type /Page
+>>
+endobj
+4 0 obj
+<<
+/Length 100
+>>
+stream
+2 J
+0.57 w
+q 1 0 0 -1 0 841.89 cm /GS0 gs [] 0 d q /Pattern cs /P1 scn 0 0 m 60 100 220 70 re f Q Q
+
+endstream
+endobj
+5 0 obj
+<<
+/Contents 6 0 R
+/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>
+/Parent 1 0 R
+/Resources 13 0 R
+/Type /Page
+>>
+endobj
+6 0 obj
+<<
+/Length 100
+>>
+stream
+2 J
+0.57 w
+q 1 0 0 -1 0 841.89 cm /GS0 gs [] 0 d q /Pattern cs /P2 scn 0 0 m 60 100 220 70 re f Q Q
+
+endstream
+endobj
+7 0 obj
+<< /Type /ExtGState
+/LW 0.567 >>
+endobj
+8 0 obj
+<<
+/Matrix [220 0 0 -70 60 741.89]
+/PatternType 2
+/Shading 11 0 R
+/Type /Pattern
+>>
+endobj
+9 0 obj
+<<
+/Matrix [220 0 0 -70 60 741.89]
+/PatternType 2
+/Shading 11 0 R
+/Type /Pattern
+>>
+endobj
+10 0 obj
+<<
+/C0 [0.13333333]
+/C1 [0.93333333]
+/Domain [0 1]
+/FunctionType 2
+/N 1
+>>
+endobj
+11 0 obj
+<<
+/AntiAlias true
+/ColorSpace /DeviceGray
+/Coords [0 0 1 0]
+/Extend [false false]
+/Function 10 0 R
+/ShadingType 2
+>>
+endobj
+12 0 obj
+<<
+/ExtGState <</GS0 7 0 R>>
+/Pattern <</P1 8 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+>>
+endobj
+13 0 obj
+<<
+/ExtGState <</GS0 7 0 R>>
+/Pattern <</P2 9 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+>>
+endobj
+14 0 obj
+<<
+/CreationDate (D:19691231190000Z)
+>>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000108 00000 n 
+0000000211 00000 n 
+0000000348 00000 n 
+0000000499 00000 n 
+0000000636 00000 n 
+0000000787 00000 n 
+0000000835 00000 n 
+0000000934 00000 n 
+0000001033 00000 n 
+0000001124 00000 n 
+0000001258 00000 n 
+0000001375 00000 n 
+0000001492 00000 n 
+trailer
+<<
+/Size 15
+/Root 2 0 R
+/Info 14 0 R
+/ID [<05E0A7D3EC0B5D5AEC162A17CBD593E0><05E0A7D3EC0B5D5AEC162A17CBD593E0>]
+>>
+startxref
+1548
+%%EOF

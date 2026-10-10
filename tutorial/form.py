@@ -79,7 +79,7 @@ class Form:
         italic=False,
         underline=False,
         align="",
-        **__
+        **__,
     ):
         if text:
             font = font.strip().lower()

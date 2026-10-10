@@ -1,10 +1,9 @@
 from pathlib import Path
 
 from fpdf import FPDF, FPDFException
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, assert_same_file
 
 import pytest
-
 
 HERE = Path(__file__).resolve().parent
 
@@ -134,7 +133,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
             for r in record:
                 if r.category == DeprecationWarning:
-                    assert r.filename == __file__
+                    assert_same_file(r.filename, __file__)
 
             no_of_lines_in_cell = len(result)
             if no_of_lines_in_cell > max_no_of_lines_in_cell:
@@ -225,7 +224,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
     for r in record:
         if r.category == DeprecationWarning:
-            assert r.filename == __file__
+            assert_same_file(r.filename, __file__)
 
     assert_pdf_equal(
         pdf, HERE / "multi_cell_table_unbreakable_with_split_only.pdf", tmp_path

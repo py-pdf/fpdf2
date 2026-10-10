@@ -5,8 +5,7 @@ import pytest
 from fpdf import FPDF, FPDFException
 from fpdf.enums import MethodReturnValue, YPos
 
-from test.conftest import assert_pdf_equal, LOREM_IPSUM
-
+from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
@@ -30,6 +29,24 @@ LONG_TEXT = (
     " which she had been busy getting as soon as he started into this speech) ... thank you ... (resuming normal breezy voice) ... I don't know."
     " Our only clue is this portion of wolf's clothing which the killer sheep ..."
 )
+
+
+def test_multi_cell_page_break_with_fill(tmp_path):
+    # Tests condition from issue #1471
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("times")
+    pdf.set_fill_color(240)
+
+    pdf.multi_cell(
+        fill=True,
+        w=0,
+        text=LOREM_IPSUM * 7,
+        padding=[2, 0, 0, 0],  # top, right, bottom, left
+    )
+
+    assert pdf.page_no() > 1, "Must be more than one page to test page break"
+    assert_pdf_equal(pdf, HERE / "multi_cell_page_break_with_fill.pdf", tmp_path)
 
 
 def test_multi_cell_without_any_font_set():
@@ -275,7 +292,7 @@ def test_multi_cell_split_only():  # discussion 314
             pdf.multi_cell(w=0, h=LINE_HEIGHT, text=text, split_only=True) == expected
         )
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
 
 def test_multi_cell_with_empty_contents(tmp_path):  # issue 349

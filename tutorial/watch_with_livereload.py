@@ -10,7 +10,6 @@ from fpdf import FPDF
 from livereload.watcher import get_watcher_class
 from xreload import xreload
 
-
 OUT_FILEPATH = "fpdf2-demo.pdf"
 
 

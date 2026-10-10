@@ -33,7 +33,7 @@ The same month, Georg Mischler ([@gmischler](https://github.com/gmischler)) and 
 
 ## Compatibility between PyFPDF & fpdf2 ##
 
-`fpdf2` aims to be fully compatible with PyFPDF code.
+`fpdf2` aims to be fully compatible with PyFPDF original code (`fpdf==1.7.2`).
 
 The notable exceptions are:
 
@@ -41,9 +41,14 @@ The notable exceptions are:
 * the font caching mechanism, that used the `pickle` module, has been **removed**, for security reasons, and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/py-pdf/fpdf2/issues/345).
 * [Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template) elements now have a **transparent background** by default, instead of white
 
-Some features are also **deprecated**. As of version 2.7.5 they **still work** but **generate a warning** when used:
+Additionally, HTML rendering is not guaranteed to be identical regarding whitespace,
+especially since version 2.7.6 and the new set of classes introduced to manage text flow: [Text Flow Regions](TextRegion.md)
+
+Some features are also **deprecated**.
+As of version 2.8.4 they **still work** but **generate a warning** when used:
 
 * ⚠️ [FPDF.rotate()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.rotate) can produce malformed PDFs: use [FPDF.rotation()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.rotation) instead
+* font aliases (`Arial` → `Helvetica`, `CourierNew` → `Courier`, `TimesNewRoman` → `Times`)
 * [FPDF.set_doc_option()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_doc_option): simply set the `.core_fonts_encoding` property as a replacement
 * [FPDF.dashed_line()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.dashed_line): use [FPDF.set_dash_pattern()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern) and the normal drawing operations instead
 * the `font_cache_dir` parameter of [FPDF() constructor](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF), that is currently ignored
@@ -56,6 +61,7 @@ Some features are also **deprecated**. As of version 2.7.5 they **still work** b
 * the `infile` parametyer of [Template() constructor](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template), that is currently ignored
 * the parameters `x/y/w/h` of `code39` elements provided to the [`Template` system](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template): please use `x1/y1/y2/size` instead
 * the `dest` parameter of [Template.render()](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template.render), that is currently ignored
+* to improve naming consistency, the `txt` parameters of `FPDF.cell()`, `FPDF.multi_cell()`, `FPDF.text()` & `FPDF.write()` have been renamed to `text`
 
 Note that `DeprecationWarning` messages are not displayed by Python by default.
 To get warned about deprecated features used in your code, you must execute your scripts with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W)), or enable them programmatically with `warnings.simplefilter('default', DeprecationWarning)`.

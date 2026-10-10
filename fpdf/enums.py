@@ -1,7 +1,25 @@
-from enum import Enum, IntEnum, Flag, IntFlag
+import abc
+from dataclasses import dataclass
+from enum import Enum, Flag, IntEnum, IntFlag, auto
 from sys import intern
+from typing import (
+    TYPE_CHECKING,
+    ClassVar,
+    Optional,
+    Protocol,
+    Type,
+    TypeAlias,
+    TypeVar,
+    Union,
+    cast,
+)
 
-from .syntax import Name
+from .drawing_primitives import convert_to_device_color
+from .syntax import Name, wrap_in_local_context
+
+if TYPE_CHECKING:
+    from .drawing_primitives import Color, DeviceCMYK, DeviceGray, DeviceRGB
+    from .fpdf import FPDF
 
 
 class SignatureFlag(IntEnum):
@@ -15,11 +33,29 @@ class SignatureFlag(IntEnum):
     """
 
 
+class ResourceAccessPolicy(Flag):
+    "Defines which external and local resources fpdf2 may load implicitly."
+
+    NONE = 0
+    LOCAL_FILES = auto()
+    REMOTE_PUBLIC = auto()
+    REMOTE_PRIVATE = auto()
+
+    REMOTE_ALL = REMOTE_PUBLIC | REMOTE_PRIVATE
+    ALL = LOCAL_FILES | REMOTE_ALL
+    DEFAULT = LOCAL_FILES | REMOTE_PUBLIC
+
+
+E = TypeVar("E", bound="CoerciveEnum")
+IE = TypeVar("IE", bound="CoerciveIntEnum")
+IF = TypeVar("IF", bound="CoerciveIntFlag")
+
+
 class CoerciveEnum(Enum):
     "An enumeration that provides a helper to coerce strings into enumeration members."
 
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls: Type[E], value: E | str, case_sensitive: bool = False) -> E:
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -64,7 +100,7 @@ class CoerciveIntEnum(IntEnum):
     """
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls: Type[IE], value: IE | str | int) -> IE:
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -106,7 +142,7 @@ class CoerciveIntFlag(IntFlag):
     """
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls: Type[IF], value: IF | str | int) -> IF:
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -194,14 +230,17 @@ class Align(CoerciveEnum):
     J = intern("JUSTIFY")
     "Justify text"
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union["Align", str], case_sensitive: bool = False
+    ) -> "Align":
         if value == "":
             return cls.L
         if isinstance(value, str):
             value = value.upper()
-        return super(cls, cls).coerce(value)
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )
 
 
 class VAlign(CoerciveEnum):
@@ -217,12 +256,15 @@ class VAlign(CoerciveEnum):
     B = intern("BOTTOM")
     "Place text at the bottom of the cell, but obey the cells padding"
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union["VAlign", str], case_sensitive: bool = False
+    ) -> "VAlign":
         if value == "":
             return cls.M
-        return super(cls, cls).coerce(value)
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )
 
 
 class TextEmphasis(CoerciveIntFlag):
@@ -249,21 +291,21 @@ class TextEmphasis(CoerciveIntFlag):
     "Strikethrough"
 
     @property
-    def style(self):
+    def style(self) -> str:
         return "".join(
             name for name, value in self.__class__.__members__.items() if value & self
         )
 
-    def add(self, value: "TextEmphasis"):
+    def add(self, value: "TextEmphasis") -> "TextEmphasis":
         return self | value
 
-    def remove(self, value: "TextEmphasis"):
+    def remove(self, value: "TextEmphasis") -> "TextEmphasis":
         return TextEmphasis.coerce(
             "".join(s for s in self.style if s not in value.style)
         )
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value: Union["TextEmphasis", str, int]) -> "TextEmphasis":
         if isinstance(value, str):
             if value == "":
                 return cls.NONE
@@ -294,31 +336,6 @@ class MethodReturnValue(CoerciveIntFlag):
 
     HEIGHT = 4
     "The method will return how much vertical space was used"
-
-
-class TableBordersLayout(CoerciveEnum):
-    "Defines how to render table borders"
-
-    ALL = intern("ALL")
-    "Draw all table cells borders"
-
-    NONE = intern("NONE")
-    "Draw zero cells border"
-
-    INTERNAL = intern("INTERNAL")
-    "Draw only internal horizontal & vertical borders"
-
-    MINIMAL = intern("MINIMAL")
-    "Draw only the top horizontal border, below the headings, and internal vertical borders"
-
-    HORIZONTAL_LINES = intern("HORIZONTAL_LINES")
-    "Draw only horizontal lines"
-
-    NO_HORIZONTAL_LINES = intern("NO_HORIZONTAL_LINES")
-    "Draw all cells border except horizontal lines, after the headings"
-
-    SINGLE_TOP_LINE = intern("SINGLE_TOP_LINE")
-    "Draw only the top horizontal border, below the headings"
 
 
 class CellBordersLayout(CoerciveIntFlag):
@@ -359,25 +376,25 @@ class CellBordersLayout(CoerciveIntFlag):
     "Inherits the border layout from the table borders layout"
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value: Union["CellBordersLayout", str, int]) -> "CellBordersLayout":
         if isinstance(value, int) and value > 16:
             raise ValueError("INHERIT cannot be combined with other values")
         return super().coerce(value)
 
-    def __and__(self, value):
+    def __and__(self, value: int) -> "CellBordersLayout":
         value = super().__and__(value)
         if value > 16:
             raise ValueError("INHERIT cannot be combined with other values")
         return value
 
-    def __or__(self, value):
+    def __or__(self, value: int) -> "CellBordersLayout":
         value = super().__or__(value)
         if value > 16:
             raise ValueError("INHERIT cannot be combined with other values")
         return value
 
-    def __str__(self):
-        border_str = []
+    def __str__(self) -> str:
+        border_str: list[str] = []
         if self & CellBordersLayout.LEFT:
             border_str.append("L")
         if self & CellBordersLayout.RIGHT:
@@ -387,6 +404,608 @@ class CellBordersLayout(CoerciveIntFlag):
         if self & CellBordersLayout.BOTTOM:
             border_str.append("B")
         return "".join(border_str) if border_str else "NONE"
+
+
+@dataclass
+class TableBorderStyle:
+    """A helper class for drawing one border of a table
+
+    Attributes:
+        thickness: The thickness of the border. If None use default. If <= 0 don't draw the border.
+        color: The color of the border. If None use default.
+    """
+
+    thickness: Optional[float] = None
+    color: Union[
+        int, tuple[int, int, int], "DeviceRGB", "DeviceGray", "DeviceCMYK", None
+    ] = None
+    dash: Optional[float] = None
+    gap: float = 0.0
+    phase: float = 0.0
+
+    @staticmethod
+    def from_bool(should_draw: Union[bool, "TableBorderStyle"]) -> "TableBorderStyle":
+        """
+        From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object
+        """
+        if isinstance(should_draw, TableBorderStyle):
+            return should_draw  # don't change specified TableBorderStyle
+        if should_draw:
+            return TableBorderStyle()  # keep default stroke
+        return TableBorderStyle(thickness=0.0)  # don't draw the border
+
+    def _changes_thickness(self, pdf: "FPDF") -> bool:
+        """Return True if this style changes the thickness of the draw command, False otherwise"""
+        return (
+            self.thickness is not None
+            and self.thickness > 0.0
+            and self.thickness != pdf.line_width
+        )
+
+    def _changes_color(self, pdf: "FPDF") -> bool:
+        """Return True if this style changes the color of the draw command, False otherwise"""
+        return self.color is not None and self.color != pdf.draw_color
+
+    @property
+    def dash_dict(self) -> dict[str, Optional[float]]:
+        """Return dict object specifying dash in the same format as the pdf object"""
+        return {"dash": self.dash, "gap": self.gap, "phase": self.phase}
+
+    def _changes_dash(self, pdf: "FPDF") -> bool:
+        """Return True if this style changes the dash of the draw command, False otherwise"""
+        return self.dash is not None and self.dash_dict != pdf.dash_pattern
+
+    def changes_stroke(self, pdf: "FPDF") -> bool:
+        """Return True if this style changes the any aspect of the draw command, False otherwise"""
+        return self.should_render() and (
+            self._changes_color(pdf)
+            or self._changes_thickness(pdf)
+            or self._changes_dash(pdf)
+        )
+
+    def should_render(self) -> bool:
+        """Return True if this style produces a visible stroke, False otherwise"""
+        return self.thickness is None or self.thickness > 0.0
+
+    def _get_change_thickness_command(
+        self, scale: float, pdf: Optional["FPDF"] = None
+    ) -> list[str]:
+        """Return list with string for the draw command to change thickness (empty if no change)"""
+        thickness = self.thickness if pdf is None else pdf.line_width
+        return [] if thickness is None else [f"{thickness * scale:.2f} w"]
+
+    def _get_change_line_color_command(self, pdf: Optional["FPDF"] = None) -> list[str]:
+        """Return list with string for the draw command to change color (empty if no change)"""
+        if pdf is None:
+            color = self.color
+        else:
+            color = pdf.draw_color
+        return (
+            []
+            if color is None
+            else [convert_to_device_color(color).serialize().upper()]
+        )
+
+    def _get_change_dash_command(
+        self, scale: float, pdf: Optional["FPDF"] = None
+    ) -> list[str]:
+        """Return list with string for the draw command to change dash (empty if no change)"""
+        dash_dict = self.dash_dict if pdf is None else pdf.dash_pattern
+        dash, gap, phase = dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]
+        if dash is None:
+            return []
+        if dash <= 0:
+            return ["[] 0 d"]
+        assert phase is not None
+        if gap is None or gap <= 0:
+            return [f"[{dash * scale:.3f}] {phase * scale:.3f} d"]
+        return [f"[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d"]
+
+    def get_change_stroke_commands(self, scale: float) -> list[str]:
+        """Return list of strings for the draw command to change stroke (empty if no change)"""
+        return (
+            self._get_change_dash_command(scale)
+            + self._get_change_line_color_command()
+            + self._get_change_thickness_command(scale)
+        )
+
+    @staticmethod
+    def get_line_command(x1: float, y1: float, x2: float, y2: float) -> list[str]:
+        """Return list with string for the command to draw a line at the specified endpoints"""
+        return [f"{x1:.2f} {y1:.2f} m {x2:.2f} {y2:.2f} l S"]
+
+    def get_draw_commands(
+        self, pdf: "FPDF", x1: float, y1: float, x2: float, y2: float
+    ) -> list[str]:
+        """
+        Get draw commands for this section of a cell border. x and y are presumed to be already
+        shifted and scaled.
+        """
+        if not self.should_render():
+            return []
+
+        if self.changes_stroke(pdf):
+            draw_commands = self.get_change_stroke_commands(
+                scale=pdf.k
+            ) + self.get_line_command(x1, y1, x2, y2)
+            # wrap in local context to prevent stroke changes from affecting later rendering
+            return wrap_in_local_context(draw_commands)
+        return self.get_line_command(x1, y1, x2, y2)
+
+
+@dataclass
+class TableCellStyle:
+    """A helper class for drawing all the borders of one cell in a table
+
+    Attributes:
+        left: bool or TableBorderStyle specifying the style of the cell's left border
+        bottom: bool or TableBorderStyle specifying the style of the cell's bottom border
+        right: bool or TableBorderStyle specifying the style of the cell's right border
+        top: bool or TableBorderStyle specifying the style of the cell's top border
+    """
+
+    left: bool | TableBorderStyle = False
+    bottom: bool | TableBorderStyle = False
+    right: bool | TableBorderStyle = False
+    top: bool | TableBorderStyle = False
+
+    def _get_common_border_style(self) -> Optional[bool | TableBorderStyle]:
+        """Return bool or TableBorderStyle if all borders have the same style, otherwise None"""
+        if all(
+            isinstance(border, bool)
+            for border in [self.left, self.bottom, self.right, self.top]
+        ):
+            if all(border for border in [self.left, self.bottom, self.right, self.top]):
+                return True
+            if all(
+                not border for border in [self.left, self.bottom, self.right, self.top]
+            ):
+                return False
+        elif all(
+            isinstance(border, TableBorderStyle)
+            for border in [self.left, self.bottom, self.right, self.top]
+        ):
+            common = self.left
+            if all(border == common for border in [self.bottom, self.right, self.top]):
+                return common
+        return None
+
+    @staticmethod
+    def get_change_fill_color_command(color: Union["Color", str]) -> list[str]:
+        """Return list with string for command to change device color (empty list if no color)"""
+        return (
+            []
+            if color is None
+            else [convert_to_device_color(color).serialize().lower()]
+        )
+
+    def get_draw_commands(
+        self,
+        pdf: "FPDF",
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        fill_color: Optional[Union["Color", str]] = None,
+    ) -> list[str]:
+        """
+        Get list of primitive commands to draw the cell border for this cell, and fill it with the
+        given fill color.
+        """
+        # y top to bottom instead of bottom to top
+        y1 = pdf.h - y1
+        y2 = pdf.h - y2
+        # scale coordinates and thickness
+        scale = pdf.k
+        x1 *= scale
+        y1 *= scale
+        x2 *= scale
+        y2 *= scale
+
+        common_border_style = self._get_common_border_style()
+        draw_commands, needs_wrap = (
+            self._draw_when_no_common_style(x1, y1, x2, y2, pdf, fill_color)
+            if common_border_style is None
+            else (
+                self._draw_with_no_border(x1, y1, x2, y2, pdf, fill_color)
+                if common_border_style is False
+                else self._draw_all_borders_the_same(
+                    x1, y1, x2, y2, pdf, fill_color, scale, common_border_style
+                )
+            )
+        )
+
+        if needs_wrap:
+            draw_commands = wrap_in_local_context(draw_commands)
+
+        return draw_commands
+
+    def _draw_when_no_common_style(
+        self,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        pdf: "FPDF",
+        fill_color: Optional[Union["Color", str]],
+    ) -> tuple[list[str], bool]:
+        """Get draw commands for case when some of the borders have different styles"""
+        needs_wrap = False
+        draw_commands: list[str] = []
+        if fill_color is not None:
+            # draw fill with no box
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re f")
+        # draw the individual borders
+        draw_commands.extend(
+            TableBorderStyle.from_bool(self.left).get_draw_commands(pdf, x1, y2, x1, y1)
+            + TableBorderStyle.from_bool(self.bottom).get_draw_commands(
+                pdf, x1, y2, x2, y2
+            )
+            + TableBorderStyle.from_bool(self.right).get_draw_commands(
+                pdf, x2, y2, x2, y1
+            )
+            + TableBorderStyle.from_bool(self.top).get_draw_commands(
+                pdf, x1, y1, x2, y1
+            )
+        )
+        return draw_commands, needs_wrap
+
+    def _draw_with_no_border(
+        self,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        pdf: "FPDF",
+        fill_color: Optional[Union["Color", str]],
+    ) -> tuple[list[str], bool]:
+        """Get draw commands for case when all of the borders are off / not drawn"""
+        needs_wrap = False
+        draw_commands: list[str] = []
+        if fill_color is not None:
+            # draw fill with no box
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re f")
+        return draw_commands, needs_wrap
+
+    def _draw_all_borders_the_same(
+        self,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        pdf: "FPDF",
+        fill_color: Optional[Union["Color", str]],
+        scale: float,
+        common_border_style: Optional[TableBorderStyle | bool],
+    ) -> tuple[list[str], bool]:
+        """Get draw commands for case when all the borders have the same style"""
+        needs_wrap = False
+        draw_commands: list[str] = []
+        # all borders are the same
+        if isinstance(
+            common_border_style, TableBorderStyle
+        ) and common_border_style.changes_stroke(pdf):
+            # the border styles aren't default, so
+            draw_commands.extend(common_border_style.get_change_stroke_commands(scale))
+            needs_wrap = True
+        if fill_color is not None:
+            # draw filled rectangle
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re B")
+        else:
+            # draw empty rectangle
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re S")
+        return draw_commands, needs_wrap
+
+    def override_cell_border(self, cell_border: CellBordersLayout) -> "TableCellStyle":
+        """Allow override by CellBordersLayout mechanism"""
+        return (
+            self
+            if cell_border == CellBordersLayout.INHERIT
+            else TableCellStyle(  # translate cell_border into equivalent TableCellStyle
+                left=bool(cell_border & CellBordersLayout.LEFT),
+                bottom=bool(cell_border & CellBordersLayout.BOTTOM),
+                right=bool(cell_border & CellBordersLayout.RIGHT),
+                top=bool(cell_border & CellBordersLayout.TOP),
+            )
+        )
+
+    def draw_cell_border(
+        self,
+        pdf: "FPDF",
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        fill_color: Optional[Union["Color", str]] = None,
+    ) -> None:
+        """
+        Draw the cell border for this cell, and fill it with the given fill color.
+        """
+        pdf._out(  # pylint: disable=protected-access # pyright: ignore[reportPrivateUsage]
+            " ".join(self.get_draw_commands(pdf, x1, y1, x2, y2, fill_color=fill_color))
+        )
+
+
+class TableBordersLayout(abc.ABC):
+    """
+    Customizable class for setting the drawing style of cell borders for the whole table.
+    cell_style_getter is an abstract method that derived classes must implement. All current classes
+    do not use self, but it is available in case a very complicated derived class needs to refer to
+    stored internal data.
+
+    Standard TableBordersLayouts are available as static members of this class
+
+    Attributes:
+        cell_style_getter: a callable that takes row_num, column_num,
+            num_heading_rows, num_rows, num_columns; and returns the drawing style of
+            the cell border (as a TableCellStyle object)
+        ALL: static TableBordersLayout that draws all table cells borders
+        NONE: static TableBordersLayout that draws no table cells borders
+        INTERNAL: static TableBordersLayout that draws only internal horizontal & vertical borders
+        MINIMAL: static TableBordersLayout that draws only the top horizontal border, below the
+            headings, and internal vertical borders
+        HORIZONTAL_LINES: static TableBordersLayout that draws only horizontal lines
+        NO_HORIZONTAL_LINES: static TableBordersLayout that draws all cells border except interior
+            horizontal lines after the headings
+        SINGLE_TOP_LINE: static TableBordersLayout that draws only the top horizontal border, below
+            the headings
+    """
+
+    ALL: ClassVar["TableBordersLayout"]
+    NONE: ClassVar["TableBordersLayout"]
+    INTERNAL: ClassVar["TableBordersLayout"]
+    MINIMAL: ClassVar["TableBordersLayout"]
+    HORIZONTAL_LINES: ClassVar["TableBordersLayout"]
+    NO_HORIZONTAL_LINES: ClassVar["TableBordersLayout"]
+    SINGLE_TOP_LINE: ClassVar["TableBordersLayout"]
+
+    @abc.abstractmethod
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        """Specify the desired TableCellStyle for the given position in the table
+
+        Args:
+            row_idx: the 0-based index of the row in the table
+            col_idx: the 0-based logical index of the cell in the row. If colspan > 1, this indexes
+                into non-null cells. e.g. if there are two cells with colspan = 3, then col_idx will
+                be 0 or 1
+            col_pos: the 0-based physical position of the cell in the row. If colspan > 1, this
+                indexes into all cells including null ones. e.g. e.g. if there are two cells with
+                colspan = 3, then col_pos will be 0 or 3
+            num_heading_rows: the number of rows in the table heading
+            num_rows: the total number of rows in the table
+            num_col_idx: the number of non-null cells. e.g. if there are two cells with colspan = 3,
+                then num_col_idx = 2
+            num_col_pos: the full width of the table in physical cells. e.g. if there are two cells
+                with colspan = 3, then num_col_pos = 6
+        Returns:
+            TableCellStyle for the given position in the table
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def coerce(cls, value: Union["TableBordersLayout", str]) -> "TableBordersLayout":
+        """
+        Attempt to coerce `value` into a member of this class.
+
+        If value is already a member of this enumeration it is returned unchanged.
+        Otherwise, if it is a string, attempt to convert it as an enumeration value. If
+        that fails, attempt to convert it (case insensitively, by upcasing) as an
+        enumeration name.
+
+        If all different conversion attempts fail, an exception is raised.
+
+        Args:
+            value (Enum, str): the value to be coerced.
+
+        Raises:
+            ValueError: if `value` is a string but neither a member by name nor value.
+            TypeError: if `value`'s type is neither a member of the enumeration nor a
+                string.
+        """
+
+        if isinstance(value, cls):
+            return value
+
+        if isinstance(value, str):
+            try:
+                coerced_value = getattr(cls, value.upper())
+                if isinstance(coerced_value, cls):
+                    return coerced_value
+            except ValueError:
+                pass
+
+        raise ValueError(f"{value} is not a valid {cls.__name__}")
+
+
+class TableBordersLayoutAll(TableBordersLayout):
+    """Class for drawing all cell borders"""
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(left=True, bottom=True, right=True, top=True)
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.ALL = TableBordersLayoutAll()
+
+
+class TableBordersLayoutNone(TableBordersLayout):
+    """Class for drawing zero cell borders"""
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(left=False, bottom=False, right=False, top=False)
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.NONE = TableBordersLayoutNone()
+
+
+class TableBordersLayoutInternal(TableBordersLayout):
+    """Class to draw only internal horizontal & vertical borders"""
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(
+            left=col_idx > 0,
+            bottom=row_idx < num_rows - 1,
+            right=col_idx < num_col_idx - 1,
+            top=row_idx > 0,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.INTERNAL = TableBordersLayoutInternal()
+
+
+class TableBordersLayoutMinimal(TableBordersLayout):
+    """
+    Class to draw only the top horizontal border, below the headings, and internal vertical borders
+    """
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(
+            left=col_idx > 0,
+            bottom=row_idx < num_heading_rows,
+            right=col_idx < num_col_idx - 1,
+            top=0 < row_idx <= num_heading_rows,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.MINIMAL = TableBordersLayoutMinimal()
+
+
+class TableBordersLayoutHorizontalLines(TableBordersLayout):
+    """Class to draw only horizontal lines"""
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(
+            left=False,
+            bottom=row_idx < num_rows - 1,
+            right=False,
+            top=row_idx > 0,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.HORIZONTAL_LINES = TableBordersLayoutHorizontalLines()
+
+
+class TableBordersLayoutNoHorizontalLines(TableBordersLayout):
+    """Class to draw all cells border except interior horizontal lines after the headings"""
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(
+            left=True,
+            bottom=row_idx == num_rows - 1,
+            right=True,
+            top=row_idx <= num_heading_rows,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.NO_HORIZONTAL_LINES = TableBordersLayoutNoHorizontalLines()
+
+
+class TableBordersLayoutSingleTopLine(TableBordersLayout):
+    """Class to draw a single top line"""
+
+    def cell_style_getter(
+        self,
+        row_idx: int,
+        col_idx: int,
+        col_pos: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_col_idx: int,
+        num_col_pos: int,
+    ) -> TableCellStyle:
+        return TableCellStyle(
+            left=False, bottom=row_idx <= num_heading_rows - 1, right=False, top=False
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.SINGLE_TOP_LINE = TableBordersLayoutSingleTopLine()
+
+
+class CellFillProtocol(Protocol):
+    """Protocol for custom table cell fill mode classes"""
+
+    def should_fill_cell(self, i: int, j: int) -> bool: ...
+
+
+TableCellFillModeType: TypeAlias = "TableCellFillMode | CellFillProtocol"
 
 
 class TableCellFillMode(CoerciveEnum):
@@ -410,26 +1029,28 @@ class TableCellFillMode(CoerciveEnum):
     EVEN_COLUMNS = intern("EVEN_COLUMNS")
     "Fill only table cells in even columns"
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
-        "Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)"
+    def coerce(  # type: ignore[override]
+        cls,
+        value: Union[TableCellFillModeType, str],
+        case_sensitive: bool = False,
+    ) -> TableCellFillModeType:
         if callable(getattr(value, "should_fill_cell", None)):
-            return value
-        return super().coerce(value)
+            return cast(CellFillProtocol, value)
+        return super().coerce(value, case_sensitive)  # type: ignore[arg-type] # pyright: ignore[reportArgumentType]
 
-    def should_fill_cell(self, i, j):
-        if self is self.NONE:
+    def should_fill_cell(self, i: int, j: int) -> bool:
+        if self is TableCellFillMode.NONE:
             return False
-        if self is self.ALL:
+        if self is TableCellFillMode.ALL:
             return True
-        if self is self.ROWS:
+        if self is TableCellFillMode.ROWS:
             return i % 2 == 1
-        if self is self.COLUMNS:
+        if self is TableCellFillMode.COLUMNS:
             return j % 2 == 1
-        if self is self.EVEN_ROWS:
+        if self is TableCellFillMode.EVEN_ROWS:
             return i % 2 == 0
-        if self is self.EVEN_COLUMNS:
+        if self is TableCellFillMode.EVEN_COLUMNS:
             return j % 2 == 0
         raise NotImplementedError
 
@@ -472,25 +1093,28 @@ class RenderStyle(CoerciveEnum):
     "Draw lines and fill areas"
 
     @property
-    def operator(self):
-        return {self.D: "S", self.F: "f", self.DF: "B"}[self]
+    def operator(self) -> str:
+        return {RenderStyle.D: "S", RenderStyle.F: "f", RenderStyle.DF: "B"}[self]
 
     @property
-    def is_draw(self):
-        return self in (self.D, self.DF)
+    def is_draw(self) -> bool:
+        return self in (RenderStyle.D, RenderStyle.DF)
 
     @property
-    def is_fill(self):
-        return self in (self.F, self.DF)
+    def is_fill(self) -> bool:
+        return self in (RenderStyle.F, RenderStyle.DF)
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union["RenderStyle", str], case_sensitive: bool = False
+    ) -> "RenderStyle":
         if not value:
             return cls.D
         if value == "FD":
             value = "DF"
-        return super(cls, cls).coerce(value)
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )
 
 
 class TextMode(CoerciveIntEnum):
@@ -697,6 +1321,46 @@ class BlendMode(CoerciveEnum):
     """
 
 
+class CompositingOperation(CoerciveEnum):
+    "An enumeration of Porter-Duff compositing operations."
+
+    CLEAR = Name("Clear")
+    """ Draw nothing """
+
+    SOURCE = Name("Source")
+    """ Draw the source only """
+
+    DESTINATION = Name("Destination")
+    """ Draw the destination only """
+
+    SOURCE_OVER = Name("SourceOver")
+    """The source is drawn over the destination (backdrop)."""
+
+    DESTINATION_OVER = Name("DestinationOver")
+    """The destination (backdrop) is drawn over the source."""
+
+    SOURCE_IN = Name("SourceIn")
+    """Only the part of the source that overlaps with the destination is drawn. The rest is discarded."""
+
+    DESTINATION_IN = Name("DestinationIn")
+    """Only the part of the destination that overlaps with the source is drawn. The rest is discarded."""
+
+    SOURCE_OUT = Name("SourceOut")
+    """Only the part of the source that does not overlap the destination is drawn."""
+
+    DESTINATION_OUT = Name("DestinationOut")
+    """Only the part of the destination that does not overlap the source is drawn."""
+
+    SOURCE_ATOP = Name("SourceAtop")
+    """The part of the source that overlaps the destination is drawn over the destination. The rest of the source is discarded."""
+
+    DESTINATION_ATOP = Name("DestinationAtop")
+    """The part of the destination that overlaps the source is drawn over the source. The rest of the destination is discarded."""
+
+    XOR = Name("XOR")
+    """Only the parts of the source and destination that do not overlap are drawn."""
+
+
 class AnnotationFlag(CoerciveIntEnum):
     INVISIBLE = 1
     """
@@ -746,6 +1410,16 @@ class FileAttachmentAnnotationName(CoerciveEnum):
     PUSH_PIN = Name("PushPin")
     GRAPH_PUSH_PIN = Name("GraphPushPin")
     PAPERCLIP_TAG = Name("PaperclipTag")
+
+
+class FileAttachmentAppearance(CoerciveEnum):
+    "How a file attachment annotation is displayed on the page"
+
+    DEFAULT = "DEFAULT"
+    "Display the icon selected by the annotation name (the default)"
+
+    HIDDEN = "HIDDEN"
+    "Give the annotation an empty appearance stream so no icon is drawn"
 
 
 class IntersectionRule(CoerciveEnum):
@@ -919,6 +1593,7 @@ class PDFStyleKeys(Enum):
     STROKE_JOIN_STYLE = Name("LJ")
     STROKE_MITER_LIMIT = Name("ML")
     STROKE_DASH_PATTERN = Name("D")  # array of array, number, e.g. [[1 1] 0]
+    SOFT_MASK = Name("SMask")
 
 
 class Corner(CoerciveEnum):
@@ -986,15 +1661,16 @@ class AccessPermission(IntFlag):
     "Print document at the highest resolution"
 
     @classmethod
-    def all(cls):
+    def all(cls) -> int:
         "All flags enabled"
         result = 0
         for permission in list(AccessPermission):
-            result = result | permission
+            access_permission = permission
+            result = result | access_permission.value
         return result
 
     @classmethod
-    def none(cls):
+    def none(cls) -> int:
         "All flags disabled"
         return 0
 
@@ -1084,20 +1760,141 @@ class PageOrientation(CoerciveEnum):
     PORTRAIT = intern("P")
     LANDSCAPE = intern("L")
 
-    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value):
+    def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls, value: Union["PageOrientation", str], case_sensitive: bool = False
+    ) -> "PageOrientation":
         if isinstance(value, str):
             value = value.upper()
-        return super(cls, cls).coerce(value)
+        return super(cls, cls).coerce(
+            value, case_sensitive  # pyright: ignore[reportArgumentType]
+        )
 
 
 class PDFResourceType(Enum):
     EXT_G_STATE = intern("ExtGState")
     COLOR_SPACE = intern("ColorSpace")
     PATTERN = intern("Pattern")
-    SHADDING = intern("Shading")
+    SHADING = intern("Shading")
     X_OBJECT = intern("XObject")
     FONT = intern("Font")
     PROC_SET = intern("ProcSet")
     PROPERTIES = intern("Properties")
+
+
+class GradientUnits(CoerciveEnum):
+    "Specifies the coordinate system for gradients."
+
+    OBJECT_BOUNDING_BOX = "objectBoundingBox"
+    " Coordinates are expressed as fractions of the painted object's bounding box (0..1 in each axis)."
+
+    USER_SPACE_ON_USE = "userSpaceOnUse"
+    " Coordinates are in the current page space."
+
+
+class GradientSpreadMethod(CoerciveEnum):
+    "Specifies how to fill the area outside the gradient's start and end points."
+
+    PAD = "pad"
+    " The color at the start or end of the gradient is extended to fill the area before or after the gradient."
+
+    REFLECT = "reflect"
+    " The gradient pattern is repeated in reverse order (mirrored) to fill the area before or after the gradient."
+
+    REPEAT = "repeat"
+    " The gradient pattern is repeated in the same order to fill the area before or after the gradient."
+
+
+class DocumentCompliance(Enum):
+    """
+    Type of compliance enforcement that can be applied to a document.
+    Limited to PDF/A at the moment, but extendable to other standards like:
+        - PDF/E (Engineering PDFs)
+        - PDF/UA (PDF Universal Accessibility)
+        - PDF/X (Graphics Exchange PDFs)
+    """
+
+    PDFA_1B = ("PDFA", 1, "B")
+    PDFA_2B = ("PDFA", 2, "B")
+    PDFA_2U = ("PDFA", 2, "U")
+    PDFA_3B = ("PDFA", 3, "B")
+    PDFA_3U = ("PDFA", 3, "U")
+    PDFA_4 = ("PDFA", 4, None)
+    PDFA_4E = ("PDFA", 4, "E")
+    PDFA_4F = ("PDFA", 4, "F")
+
+    @property
+    def profile(self) -> str:
+        return str(self.value[0])
+
+    @property
+    def part(self) -> int:
+        return int(self.value[1])
+
+    @property
+    def conformance(self) -> Optional[str]:
+        return str(self.value[2]) if self.value[2] is not None else None
+
+    @property
+    def label(self) -> str:
+        profile = "PDF/A" if self.profile == "PDFA" else self.profile
+        return f"{profile}-{self.part}{self.conformance if self.conformance else ''}"
+
+    def __str__(self) -> str:
+        return (
+            f"{self.profile}_{self.part}{self.conformance if self.conformance else ''}"
+        )
+
+    @classmethod
+    def coerce(cls, value: Union["DocumentCompliance", str]) -> "DocumentCompliance":
+        if isinstance(value, cls):
+            return value
+        if isinstance(value, str):
+            key = value.upper()
+            for m in cls:
+                if m.name.upper() == key:  # PDFA_2U
+                    return m
+                if m.label.upper() == key:  # PDF/A-2U
+                    return m
+        raise ValueError(f"Cannot coerce {value!r} to {cls.__name__}")
+
+
+class AssociatedFileRelationship(CoerciveEnum):
+    """Represents the association between an embedded file and the content on the PDF"""
+
+    SOURCE = intern("Source")
+    "The file is the original source material of the content"
+
+    DATA = intern("Data")
+    """
+    The file has the information used to produce the associated object.
+    e.g.: the data used to produce a table or a graph
+    """
+
+    ALTERNATIVE = intern("Alternative")
+    "The file has an alternative representation of the content"
+
+    SUPPLEMENT = intern("Supplement")
+    """
+    The file has a supplemental representation of the original source
+    or data that may be more easily consumable
+    """
+
+    ENCRYPTED_PAYLOAD = intern("EncryptedPayload")
+    """
+    The file is an encrypted payload document that should be displayed
+    to the user if the PDF processor has the cryptographic filter
+    needed to decrypt the document
+    """
+
+    FORM_DATA = intern("FormData")
+    "The file has the data associated with the interactive form in this document"
+
+    SCHEMA = intern("Schema")
+    "The file is a schema definition for the associated object"
+
+    UNSPECIFIED = intern("Unspecified")
+    """
+    Shall be used when the relationship is not known
+    or cannot be described using one of the other values
+    """
