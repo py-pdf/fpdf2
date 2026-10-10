@@ -343,6 +343,12 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
         return 0.0
 
 
+def _parse_html_span(val: str | None) -> int:
+    """Parse a colspan / rowspan attribute like browsers do: an invalid value or one below 1 means 1."""
+    match = re.match(r"\s*(\d+)", val or "")
+    return max(int(match.group(1)), 1) if match else 1
+
+
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
@@ -711,8 +717,8 @@ class HTML2FPDF(HTMLParser):
             if bgcolor_str is None and self.tr is not None:
                 bgcolor_str = self.tr.get("bgcolor")
             bgcolor = color_as_decimal(bgcolor_str)
-            colspan = int(self.td_th.get("colspan") or "1")
-            rowspan = int(self.td_th.get("rowspan") or "1")
+            colspan = _parse_html_span(self.td_th.get("colspan"))
+            rowspan = _parse_html_span(self.td_th.get("rowspan"))
             emphasis = 0
             if self.td_th.get("b"):
                 emphasis |= TextEmphasis.B
@@ -1371,8 +1377,8 @@ class HTML2FPDF(HTMLParser):
                     self.td_th.get("bgcolor") or self.tr.get("bgcolor", None)
                 )
                 style = FontFace(fill_color=bgcolor) if bgcolor else None
-                colspan = int(self.td_th.get("colspan", "1"))
-                rowspan = int(self.td_th.get("rowspan", "1"))
+                colspan = _parse_html_span(self.td_th.get("colspan"))
+                rowspan = _parse_html_span(self.td_th.get("rowspan"))
                 self.table_row.cell(
                     text="", style=style, colspan=colspan, rowspan=rowspan
                 )

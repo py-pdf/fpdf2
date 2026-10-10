@@ -481,3 +481,21 @@ def test_html_table_invalid_or_zero_widths(table_content):
     html = f"<table>{table_content}</table>"
     pdf.write_html(html)
     assert len(pdf.pages) == 1
+
+
+@pytest.mark.parametrize("span", ["colspan", "rowspan"])
+@pytest.mark.parametrize("value", ["x", "-1", "0", ""])
+def test_html_table_invalid_span_counts_as_one(tmp_path, span, value):
+    "Like browsers, an invalid colspan or rowspan, or one below 1, spans a single cell."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        f'<table><tr><td {span}="{value}">a</td><td>b</td></tr>'
+        "<tr><td>c</td><td>d</td></tr></table>"
+    )
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(
+        "<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>"
+    )
+    assert_pdf_equal(pdf, expected, tmp_path)
