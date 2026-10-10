@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python 3.14 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: 3.14
+          python-version: 3.15
       - name: Install system dependencies ⚙️
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
       - name: Check all PDF reference files used in tests ☑
@@ -49,7 +49,7 @@ jobs:
       - name: Set up Python 3.13 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
+          python-version: 3.15 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -210,7 +210,7 @@ jobs:
       - name: Set up Python 3.14 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: 3.14
+          python-version: 3.15
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -274,7 +274,7 @@ jobs:
       - name: Set up Python 3.14 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.14'
+          python-version: '3.15'
       - name: Build distributions for Pypi 🏗️
         id: build
         run: |
