@@ -29,7 +29,6 @@ from typing import (
     Any,
     BinaryIO,
     Callable,
-    cast,
     Generator,
     Iterator,
     Literal,
@@ -4401,13 +4400,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     def _preload_bidirectional_text(
-        self, text: str, markdown: bool
+        self,
+        text: str,
+        markdown: bool,
+        _initial_emphasis: Optional[tuple[bool, bool, bool, bool]] = None,
     ) -> Sequence[Fragment]:
         """ "
         Break the text into bidirectional segments and preload font styles for each fragment
         """
         if not self.text_shaping:
-            return self._preload_font_styles(text, markdown)
+            return self._preload_font_styles(text, markdown, _initial_emphasis)
         paragraph_direction = (
             self.text_shaping["direction"]
             if self.text_shaping["direction"]
@@ -4422,7 +4424,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             alias=self.str_alias_nb_pages,
         )
         directional_segments = paragraph.get_bidi_fragments()
-        emphasis = (
+        emphasis = _initial_emphasis or (
             "B" in self.font_style,
             "I" in self.font_style,
             self.strikethrough,
@@ -5177,48 +5179,41 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text = self.normalize_text(text)
         normalized_string = text.replace("\r", "")
 
-        if markdown and self.MARKDOWN_BULLET_REGEX.search(normalized_string):
-            return self._render_markdown_list(
-                normalized_string,
-                w=maximum_allowed_width,
-                h=h,
-                align=align,
-                fill=fill,
-                link=link,
-                new_x=new_x,
-                new_y=new_y,
-                max_line_height=max_line_height,
-                print_sh=print_sh,
-                wrapmode=wrapmode,
-                output=output,
-                center=center,
-                padding=padding,
-            )
-
-        styled_text_fragments = (
-            self._preload_bidirectional_text(normalized_string, markdown)
-            if self.text_shaping
-            else self._preload_font_styles(normalized_string, markdown)
-        )
-
         prev_current_font = self.current_font
         prev_font_style = self.font_style
         prev_underline = self.underline
         total_height: float = 0
 
         text_lines: list[TextLine] = []
-        multi_line_break = MultiLineBreak(
-            styled_text_fragments,
-            maximum_allowed_width,
-            clearance_margins,
-            align=align,
-            print_sh=print_sh,
-            wrapmode=wrapmode,
-        )
-        text_line = multi_line_break.get_line()
-        while (text_line) is not None:
-            text_lines.append(text_line)
+        list_offsets: list[float] = []
+        list_bullets: list[bool] = []
+        if markdown and self.MARKDOWN_BULLET_REGEX.search(normalized_string):
+            text_lines, list_offsets, list_bullets = self._break_markdown_list(
+                normalized_string,
+                maximum_allowed_width,
+                clearance_margins,
+                align,
+                print_sh,
+                wrapmode,
+            )
+        else:
+            styled_text_fragments = (
+                self._preload_bidirectional_text(normalized_string, markdown)
+                if self.text_shaping
+                else self._preload_font_styles(normalized_string, markdown)
+            )
+            multi_line_break = MultiLineBreak(
+                styled_text_fragments,
+                maximum_allowed_width,
+                clearance_margins,
+                align=align,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+            )
             text_line = multi_line_break.get_line()
+            while text_line is not None:
+                text_lines.append(text_line)
+                text_line = multi_line_break.get_line()
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -5269,6 +5264,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     self.fill_color if fill else None,
                 )
             is_last_line = text_line_index == len(text_lines) - 1
+            list_x = self.x
+            offset = list_offsets[text_line_index] if list_offsets else 0
+            if list_bullets and list_bullets[text_line_index]:
+                if align == Align.X:
+                    self.x -= w / 2
+                self.cell(
+                    w=offset,
+                    h=line_height,
+                    text=" • " if self.is_ttf_font else " - ",
+                    new_x=XPos.LEFT,
+                    new_y=YPos.TOP,
+                )
+                self.x = list_x
+            self.x += offset / 2 if align == Align.X else offset
             self._render_styled_text_line(
                 text_line,
                 h=line_height,
@@ -5280,6 +5289,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 padding=Padding(0, padding.right, 0, padding.left),
                 prevent_font_change=markdown,
             )
+            if list_offsets and (not is_last_line or new_x == XPos.LEFT):
+                self.x = list_x
             total_height += line_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
@@ -5330,132 +5341,60 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return return_value[0]
         return return_value  # type: ignore[return-value]
 
-    def _render_markdown_list(
+    def _break_markdown_list(
         self,
-        normalized_string: str,
-        w: float,
-        h: float,
+        text: str,
+        width: float,
+        clearance_margins: list[float],
         align: Align,
-        fill: bool,
-        link: Optional[int | str],
-        new_x: XPos,
-        new_y: YPos,
-        max_line_height: Optional[float],
         print_sh: bool,
         wrapmode: WrapMode,
-        output: str | MethodReturnValue,
-        center: bool,
-        padding: Padding,
-    ) -> "MultiCellResult":
-        output_enum = MethodReturnValue.coerce(output)
-        if output_enum & MethodReturnValue.LINES:
-            # Fallback: strip bullet prefixes and render as plain text
-            plain_lines = []
-            for line in normalized_string.split("\n"):
-                m = self.MARKDOWN_BULLET_REGEX.match(line)
-                if m:
-                    plain_lines.append(line[m.end() :])
-                else:
-                    plain_lines.append(line)
-            return self.multi_cell(
-                w=w,
-                h=h,
-                text="\n".join(plain_lines),
-                align=align,
-                fill=fill,
-                link=link,
-                markdown=True,
-                print_sh=print_sh,
-                new_x=new_x,
-                new_y=new_y,
-                max_line_height=max_line_height,
-                wrapmode=wrapmode,
-                output=output,
-                center=center,
-                padding=0,  # padding already applied by outer multi_cell
+    ) -> tuple[list[TextLine], list[float], list[bool]]:
+        """Break list items with hanging indentation, before rendering the block."""
+        text_lines: list[TextLine] = []
+        offsets: list[float] = []
+        bullets: list[bool] = []
+        emphasis = (
+            "B" in self.font_style,
+            "I" in self.font_style,
+            bool(self.strikethrough),
+            bool(self.underline),
+        )
+        paragraphs = text.split("\n")
+        for index, raw_paragraph in enumerate(paragraphs):
+            paragraph = raw_paragraph
+            marker = self.MARKDOWN_BULLET_REGEX.match(paragraph)
+            offset = self.MARKDOWN_BULLET_INDENT if marker else 0
+            if marker:
+                paragraph = paragraph[marker.end() :]
+            empty_last = not paragraph and index == len(paragraphs) - 1
+            if index < len(paragraphs) - 1 or empty_last:
+                paragraph += "\n"
+            fragments = (
+                self._preload_bidirectional_text(paragraph, True, emphasis)
+                if self.text_shaping
+                else self._preload_font_styles(paragraph, True, emphasis)
             )
-        bullet_char = "\u2022" if self.is_ttf_font else "-"
-        indent = self.MARKDOWN_BULLET_INDENT
-        lines = normalized_string.split("\n")
-        page_break_triggered = False
-        total_height = 0.0
-
-        for i, line in enumerate(lines):
-            is_last = i == len(lines) - 1
-            cur_new_x = new_x if is_last else XPos.LEFT
-            cur_new_y = new_y if is_last else YPos.NEXT
-            m = self.MARKDOWN_BULLET_REGEX.match(line)
-            if m:
-                item_text = line[m.end() :]
-                # Render bullet prefix
-                bullet_x = self.x
-                self.cell(
-                    w=indent,
-                    h=h,
-                    text=f" {bullet_char} ",
-                    new_x=XPos.RIGHT,
-                    new_y=YPos.TOP,
-                )
-                # Render item text indented, with markdown support
-                result = self.multi_cell(
-                    w=w - indent,
-                    h=h,
-                    text=item_text,
-                    align=align,
-                    fill=fill,
-                    link=link,
-                    markdown=True,
-                    print_sh=print_sh,
-                    new_x=cur_new_x,
-                    new_y=cur_new_y,
-                    max_line_height=max_line_height,
-                    wrapmode=wrapmode,
-                    output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
-                    center=center,
-                    padding=padding,
-                )
-                pb, ht = cast("tuple[bool, float]", result)
-                if pb:
-                    page_break_triggered = True
-                total_height += ht
-                if not is_last:
-                    self.x = bullet_x
-            else:
-                if line:
-                    result = self.multi_cell(
-                        w=w,
-                        h=h,
-                        text=line,
-                        align=align,
-                        fill=fill,
-                        link=link,
-                        markdown=True,
-                        print_sh=print_sh,
-                        new_x=cur_new_x,
-                        new_y=cur_new_y,
-                        max_line_height=max_line_height,
-                        wrapmode=wrapmode,
-                        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
-                        center=center,
-                        padding=padding,
-                    )
-                    pb, ht = cast("tuple[bool, float]", result)
-                    if pb:
-                        page_break_triggered = True
-                    total_height += ht
-                else:
-                    # Empty line - just move down
-                    self.ln(h)
-                    total_height += h
-
-        return_value = ()
-        if output_enum & MethodReturnValue.PAGE_BREAK:
-            return_value += (page_break_triggered,)  # type: ignore[assignment]
-        if output_enum & MethodReturnValue.HEIGHT:
-            return_value += (total_height,)  # type: ignore[assignment]
-        if len(return_value) == 1:
-            return return_value[0]
-        return return_value  # type: ignore[return-value]
+            emphasis = getattr(self, "_markdown_emphasis", emphasis)
+            line_break = MultiLineBreak(
+                fragments,
+                width - offset,
+                clearance_margins,
+                align=align,
+                print_sh=print_sh,
+                wrapmode=wrapmode,
+            )
+            first_line = True
+            line = line_break.get_line()
+            while line is not None:
+                if empty_last:
+                    line = line._replace(trailing_nl=False)
+                text_lines.append(line)
+                offsets.append(offset)
+                bullets.append(bool(marker) and first_line)
+                first_line = False
+                line = line_break.get_line()
+        return text_lines, offsets, bullets
 
     @check_page
     @support_deprecated_txt_arg
