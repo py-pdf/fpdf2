@@ -1900,6 +1900,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "RavSinghChandan",
+      "name": "Chandan Kumar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/99543778?v=4",
+      "profile": "https://portfolio-app-alpha-lyart.vercel.app/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
