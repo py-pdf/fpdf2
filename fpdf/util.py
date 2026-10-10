@@ -263,9 +263,12 @@ def int2roman(n: int) -> str:
 
 def int_to_letters(n: int) -> str:
     "Convert an integer to a letter value (A to Z for the first 26, then AA to ZZ, and so on)"
-    if n > 25:
-        return int_to_letters(int((n / 26) - 1)) + int_to_letters(n % 26)
-    return chr(n + ord("A"))
+    letters = ""
+    n += 1
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        letters = chr(remainder + ord("A")) + letters
+    return letters
 
 
 def builtin_srgb2014_bytes() -> bytes:
