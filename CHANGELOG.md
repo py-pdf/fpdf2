@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.9.0] - Not released yet
 ### Fixed
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
+* `FPDF.write_html()` no longer raises `IndexError` on an `<ol type="a">` or `<ol type="A">` list with more than 26 items: like browsers, letters continue with `aa`, `ab`... and a `start` below 1 shows as a number - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
 

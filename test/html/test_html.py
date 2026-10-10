@@ -6,6 +6,7 @@ import pytest
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
 from fpdf.errors import FPDFException
+from fpdf.html import ol_prefix
 from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
 HERE = Path(__file__).resolve().parent
@@ -754,6 +755,29 @@ def test_html_anchor_without_href(tmp_path):
     expected.add_page()
     expected.write_html("Introduction and body")
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "ol_type, index, expected",
+    [
+        ("a", 1, "a"),
+        ("a", 26, "z"),
+        ("a", 27, "aa"),
+        ("a", 53, "ba"),
+        ("a", 703, "aaa"),
+        ("A", 28, "AB"),
+        ("a", 0, 0),
+    ],
+)
+def test_html_ol_letters_past_z(ol_type, index, expected):
+    "Lettered list items continue past z like browsers do: aa, ab, ..."
+    assert ol_prefix(ol_type, index) == expected
+
+
+def test_html_ol_with_more_than_26_lettered_items():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ol type="a">' + "<li>item</li>" * 28 + "</ol>")
 
 
 def test_html_link_style(tmp_path):

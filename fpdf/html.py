@@ -1469,13 +1469,24 @@ def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
     raise NotImplementedError(f"Unsupported type: {ul_type}")
 
 
+def _alphabetic(index: int, letters: str) -> int | str:
+    # Like browsers: a..z, then aa, ab..., and plain numbers below 1.
+    if index < 1:
+        return index
+    prefix = ""
+    while index:
+        index, remainder = divmod(index - 1, len(letters))
+        prefix = letters[remainder] + prefix
+    return prefix
+
+
 def ol_prefix(ol_type: str, index: int) -> int | str:
     if ol_type == "1":
         return index
     if ol_type == "a":
-        return ascii_lowercase[index - 1]
+        return _alphabetic(index, ascii_lowercase)
     if ol_type == "A":
-        return ascii_uppercase[index - 1]
+        return _alphabetic(index, ascii_uppercase)
     if ol_type == "I":
         return int2roman(index)
     if ol_type == "i":
