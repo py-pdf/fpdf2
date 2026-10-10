@@ -1,6 +1,6 @@
 import pytest
 
-from fpdf.syntax import PDFArray, PDFObject, create_dictionary_string
+from fpdf.syntax import DestinationXYZ, PDFArray, PDFObject, create_dictionary_string
 
 
 class DummyObj(PDFObject):
@@ -15,7 +15,7 @@ class DummyObj(PDFObject):
         ([], "[]"),
         (["a", "b"], "[a b]"),
         ([1, 2, 3], "[1 2 3]"),
-        ([1.5, 2.0], "[1.5 2.0]"),
+        ([1.5, 2.0], "[1.5 2]"),
         ([True], "[true]"),
         ([False], "[false]"),
         ([True, False], "[true false]"),
@@ -116,3 +116,29 @@ def test_create_dictionary_string_null(
         has_empty_fields=has_empty_fields,
     )
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "elements,expected",
+    [
+        ([100.0, -0.0, 1.123456789012345], "[100 -0 1.123456789012345]"),
+        ([1.0, True, None, 1.123456789012345], "[1\ntrue\nnull\n1.123456789012345]"),
+        ([1e20, 1e-20], "[1e+20 1e-20]"),
+        (["1.00", "(2.00)"], "[1.00 (2.00)]"),
+    ],
+)
+def test_pdf_array_trailing_zeros_preserve_precision(elements, expected):
+    assert PDFArray(elements).serialize() == expected
+
+
+def test_dictionary_trailing_zeros_preserve_precision():
+    assert (
+        create_dictionary_string({"/A": 100.0, "/B": 1.123456789012345, "/C": "(2.00)"})
+        == "<</A 100\n/B 1.123456789012345\n/C (2.00)>>"
+    )
+
+
+def test_destination_trailing_zeros_preserve_rounding():
+    dest = DestinationXYZ(page=1, top=123.456, left=10.0, zoom=1.0)
+    dest.page_ref = "3 0 R"
+    assert dest.serialize() == "[3 0 R /XYZ 10 123.46 1]"

@@ -81,7 +81,7 @@ from typing import (
     runtime_checkable,
 )
 
-from .util import Number, NumberClass, escape_parens, number_to_str
+from .util import Number, NumberClass, escape_parens, number_to_str, trim_trailing_zeros
 
 if TYPE_CHECKING:
     from .drawing import InheritType
@@ -122,7 +122,15 @@ def create_dictionary_string(
                         (
                             "null"
                             if v is None
-                            else (str(v).lower() if isinstance(v, bool) else str(v))
+                            else (
+                                str(v).lower()
+                                if isinstance(v, bool)
+                                else (
+                                    trim_trailing_zeros(str(v))
+                                    if isinstance(v, float)
+                                    else str(v)
+                                )
+                            )
                         ),
                     )
                 )
@@ -417,7 +425,7 @@ class PDFArray(list[Any]):
             isinstance(elem, (int, float)) and not isinstance(elem, bool)
             for elem in self
         ):
-            serialized_elems = " ".join(str(elem) for elem in self)
+            serialized_elems = " ".join(trim_trailing_zeros(str(elem)) for elem in self)
         else:
             serialized_chunks: list[str] = []
             for elem in self:
@@ -432,7 +440,7 @@ class PDFArray(list[Any]):
                 elif isinstance(elem, bool):
                     serialized_chunks.append(str(elem).lower())
                 elif isinstance(elem, (int, float)):
-                    serialized_chunks.append(str(elem))
+                    serialized_chunks.append(trim_trailing_zeros(str(elem)))
                 elif elem is None:
                     serialized_chunks.append("null")
                 else:
@@ -489,7 +497,11 @@ class DestinationXYZ(Destination):
         left = round(self.left, 2) if isinstance(self.left, float) else self.left
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref
-        return f"[{self.page_ref} /XYZ {left} {top} {self.zoom}]"
+        return (
+            f"[{self.page_ref} /XYZ {trim_trailing_zeros(str(left))} "
+            f"{trim_trailing_zeros(str(top))} "
+            f"{trim_trailing_zeros(str(self.zoom))}]"
+        )
 
     def replace(
         self,

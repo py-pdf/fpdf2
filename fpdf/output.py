@@ -48,7 +48,7 @@ from .syntax import (
     create_list_string as pdf_list,
     iobj_ref as pdf_ref,
 )
-from .util import int2roman, int_to_letters
+from .util import int2roman, int_to_letters, trim_trailing_zeros
 
 try:
     from endesive import signer
@@ -2373,7 +2373,10 @@ def _cid_font_widths(cid_widths: dict[int, int]) -> str:
 
 def _dimensions_to_mediabox(dimensions: tuple[float, float]) -> str:
     width_pt, height_pt = dimensions
-    return f"[0 0 {width_pt:.2f} {height_pt:.2f}]"
+    return (
+        f"[0 0 {trim_trailing_zeros(f'{width_pt:.2f}')} "
+        f"{trim_trailing_zeros(f'{height_pt:.2f}')}]"
+    )
 
 
 def _sizeof_fmt(num: float, suffix: str = "B") -> str:
