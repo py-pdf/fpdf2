@@ -2,7 +2,6 @@
 
 _New in [:octicons-tag-24: 2.7.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
-!!! warning "This is currently incompatible with [the special `{nb}` string](./PageBreaks.md) that inserts the number of pages.<br>_cf._ [GitHub issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)"
 
 ## What is text shaping? ##
 Text shaping is a fundamental process in typography and computer typesetting that influences the aesthetics and readability of text in various languages and scripts. It involves the transformation of Unicode text into glyphs, which are then positioned for display or print. 

@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 
 from fpdf import FPDF
-from fpdf.enums import DocumentCompliance
+from fpdf.enums import DocumentCompliance, FileAttachmentAppearance
 from fpdf.errors import PDFAComplianceError
 from test.conftest import EPOCH, USING_ZLIB_NG, assert_pdf_equal
 
@@ -29,6 +29,17 @@ def test_pdfa1_forbids_embed(dc):
         str(err.value)
         == f"Embedding files is not allowed for documents compliant with {dc.label}"
     )
+
+
+@pytest.mark.parametrize("dc", [DocumentCompliance.PDFA_1B, DocumentCompliance.PDFA_2B])
+def test_pdfa_forbids_file_attachment_hide_icon(dc):
+    pdf = FPDF(enforce_compliance=dc)
+    pdf.add_page()
+    with pytest.raises(PDFAComplianceError) as err:
+        pdf.file_attachment_annotation(
+            "test.txt", x=50, y=50, appearance=FileAttachmentAppearance.HIDDEN
+        )
+    assert "not allowed" in str(err.value)
 
 
 @pytest.mark.skipif(

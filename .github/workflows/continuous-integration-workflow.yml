@@ -14,11 +14,11 @@ jobs:
     permissions: {}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Set up Python 3.14 🔧
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: 3.14
       - name: Install system dependencies ⚙️
@@ -38,16 +38,16 @@ jobs:
           scripts/verapdf.py --print-aggregated-report
           scripts/check-PDF-A-with-verapdf.sh
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       security-events: write  # for zizmor
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: 3.13 # guarddog / pygit2 still have issues with 3.14
       - name: Install Python dependencies ⚙️
@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           sarif_file: results.sarif
           category: zizmor
@@ -75,7 +75,7 @@ jobs:
           mypy
           pyright
       - name: Scan project with grype 🔎
-        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           path: "."
           fail-build: true
@@ -88,7 +88,7 @@ jobs:
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@02ea592e44b3a53c302f697cddca7641cd051c3d # v1.45.0
+        uses: crate-ci/typos@7f9d0819ca1c008ade73f4b41fa9d258d48f605b # v1.51.1
   test:
     strategy:
       matrix:
@@ -98,11 +98,11 @@ jobs:
     permissions: {}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }} 🔧
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
@@ -120,24 +120,26 @@ jobs:
           choco install qpdf -y
           qpdf --version
       - name: Install Python dependencies ⚙️
-        # Temporarily writing a constraints file to make sure numpy 2.3.3 is used
-        # for python 3.14
+        # Temporarily writing a constraints file
+        # to make sure numpy 2.3.3 is used for Python 3.14
         shell: bash
+        env:
+          PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
-          python -m pip install --upgrade pip setuptools wheel
           # --- Create constraints file ---
+          # It must exist before the first pip invocation, and even when empty:
+          # PIP_BUILD_CONSTRAINT applies to every pip call in this step, and pip
+          # aborts with "Could not open requirements file" if the path is missing.
+          : > "$PIP_BUILD_CONSTRAINT"
+          python -m pip install --upgrade pip setuptools wheel
           # For Python 3.14 only - temporary solution while camelot-py
           # update its dependencies
-          CONSTRAINTS_FILE="constraints.txt"
           if [[ "${{ matrix.python-version }}" == "3.14" ]]; then
-            echo "numpy>=2.3.3" > "$CONSTRAINTS_FILE"
-            echo "Added numpy>=2.3.3 to $CONSTRAINTS_FILE"
-          else
-            : > "$CONSTRAINTS_FILE"   # create empty file
-            echo "Created empty $CONSTRAINTS_FILE"
+            echo "numpy>=2.3.3" >> "$PIP_BUILD_CONSTRAINT"
+            echo "Added numpy>=2.3.3 to $PIP_BUILD_CONSTRAINT"
           fi
           # --- Install dependencies respecting constraints ---
-          pip install --upgrade .[dev,test] -c "$CONSTRAINTS_FILE"
+          pip install --upgrade .[dev,test]
       - name: Run tests ☑
         shell: bash
         env:
@@ -180,7 +182,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: block
           allowed-endpoints:
@@ -200,13 +202,13 @@ jobs:
             borbpdf.com:443
           # Starting from api.star-history.com, the endpoints whitelist reason is the mkdocs privacy plugin
       - name: Checkout 🛎️
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
       - name: Set up Python 3.14 🔧
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: 3.14
       - name: Install Python dependencies ⚙️
@@ -237,7 +239,7 @@ jobs:
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
@@ -254,7 +256,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: block
           allowed-endpoints:
@@ -266,11 +268,11 @@ jobs:
             *.sigstore.dev:443
             upload.pypi.org:443
       - name: Checkout 🛎️
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Set up Python 3.14 🔧
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.14'
       - name: Build distributions for Pypi 🏗️
@@ -284,7 +286,7 @@ jobs:
           if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$VERSION\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python -m build; twine check dist/*; fi
       - name: Publish package distributions to PyPI 🚀
         if: steps.build.outputs.publish == 'yes'
-        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         # Doc: https://github.com/marketplace/actions/pypi-publish
         with:
           print-hash: true

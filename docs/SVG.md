@@ -24,6 +24,59 @@ pdf.output("doc-with-svg.pdf")
 Either the embedded `.svg` file must includes `width` and/or `height` attributes (absolute or relative),
 or some dimensions must be provided to `.image()` through its `w=` and/or `h=` parameters.
 
+## SVG complexity limits ##
+
+`fpdf2` applies configurable SVG complexity limits while converting SVG content
+to PDF drawing paths. These limits are intended to prevent small, malicious SVG
+files from consuming excessive CPU or memory through deeply nested or repeated
+`<use>` references or SVG control-flow elements.
+
+The limits are configured on the `FPDF` instance:
+
+```python
+from fpdf import FPDF
+from fpdf.svg import SVGLimits
+
+pdf = FPDF()
+pdf.svg_limits = SVGLimits(
+    max_use_depth=64,
+    max_resolved_elements=500_000,
+)
+```
+
+The default limits are suitable for typical SVG input. If a trusted SVG is
+larger than the defaults allow, applications can raise the limits. A limit can
+also be disabled with `None`, but this should only be done for trusted SVG
+content:
+
+```python
+from fpdf import FPDF
+from fpdf.svg import SVGLimits
+
+pdf = FPDF()
+pdf.svg_limits = SVGLimits(
+    max_use_depth=None,
+    max_resolved_elements=None,
+)
+```
+
+When an SVG exceeds the configured limits, `fpdf2` raises
+`fpdf.errors.FPDFSvgLimitExceeded`:
+
+```python
+from fpdf import FPDF
+from fpdf.errors import FPDFSvgLimitExceeded
+
+pdf = FPDF()
+pdf.add_page()
+
+try:
+    pdf.image("vector.svg")
+except FPDFSvgLimitExceeded:
+    # Reject the SVG, ask the user to simplify it, or retry only if trusted.
+    ...
+```
+
 ## Detailed example ##
 
 The following script will create a PDF that consists only of the graphics
@@ -197,9 +250,10 @@ logging.getLogger("fpdf.svg").propagate = False
 - basic shapes (`<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, `<polygon>`)
 - basic `<image>` elements
 - basic cross-references, with `defs` tags anywhere in the SVG code
+- basic `<switch>` elements, selecting the first child without conditional processing attributes
 - stroke & fill coloring and opacity
 - basic stroke styling
-- inline CSS styling via `style="..."` attributes
+- basic CSS styling via `style="..."` attributes and class rules in `<style>` tags
 - clipping paths
 - gradients: `<linearGradient>` and `<radialGradient>` elements with stops, opacity, transforms, and spread methods
 
@@ -215,13 +269,12 @@ rendering as a completely blank PDF.
 
 There are some common SVG features that are currently **unsupported**, but that `fpdf2` could end up supporting with the help of contributors :
 
-- `<tspan>` / `<textPath>` / `<text>` (-> there is a starting [draft PR](https://github.com/py-pdf/fpdf2/pull/1029))
-- `<symbol>`
 - `<marker>`
 - `<pattern>`
 - embedded non-image content (including nested SVGs)
+- `<textPath>`
 - many standard attributes
-- CSS styling via `<style>` tags or external *.css files.
+- complex CSS selectors or external *.css files.
 
 {==
 

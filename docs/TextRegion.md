@@ -15,7 +15,7 @@ Other types like Table cells, shaped regions and combinations are still in the d
 ## General Operation ##
 Using the different region types and combination always follows the same pattern. The main difference to the normal `FPDF.write()` method is that all added text will first be buffered, and only gets rendered on the page when the context of the region is closed. This is necessary so that text can be aligned within the given boundaries even if its font, style, or size are arbitrarily varied along the way.
 
-* Create the region instance with an `FPDF` method, , for example [text_columns()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.text_columns).
+* Create the region instance with an `FPDF` method, , for example [text_columns()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns).
 <!--
 * future: (_If desired, add or subtract other shapes from it (with geometric regions)_).
 -->

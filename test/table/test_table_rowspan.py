@@ -259,3 +259,34 @@ def test_table_with_rowspan_images(tmp_path):
         row.cell("Four\nlines\nof\ntext")
 
     assert_pdf_equal(pdf, HERE / "table_with_rowspan_images.pdf", tmp_path)
+
+
+def test_table_with_rowspan_out_of_order(tmp_path):
+    # A rowspan starting in a later column, followed by one starting in an
+    # earlier column, leaves the active rowspans in a different order than the
+    # columns they belong to - cf. issue #1948
+    pdf = FPDF()
+    pdf.set_font("Times", size=24)
+    pdf.add_page()
+    with pdf.table(text_align="CENTER", first_row_as_headings=False) as table:
+        row = table.row()
+        row.cell("A1")
+        row.cell("B1")
+        row.cell("C1", rowspan=3)
+        row.cell("D1")
+        row = table.row()
+        row.cell("A2", rowspan=2)
+        row.cell("B2")
+        row.cell("D2")
+        row = table.row()
+        row.cell("B3")
+        row.cell("D3")
+
+    # the last row keeps a placeholder under both rowspans, so D3 stays in the
+    # fourth column instead of sliding into the third one
+    assert [
+        cell.text if cell is not None else None for cell in table.rows[2].cells
+    ] == [None, "B3", None, "D3"]
+    assert_pdf_equal(
+        pdf, HERE / "table_with_rowspan_out_of_order.pdf", tmp_path, generate=False
+    )

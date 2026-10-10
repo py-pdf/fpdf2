@@ -102,7 +102,7 @@ class Paragraph:
         indent: float = 0,
         bullet_r_margin: Optional[float] = None,
         bullet_string: str = "",
-        skip_leading_spaces: bool = False,
+        skip_leading_spaces: Optional[bool] = None,
         wrapmode: Optional[WrapMode] = None,
         first_line_indent: float = 0,
     ):
@@ -123,7 +123,12 @@ class Paragraph:
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
         self.indent = indent
-        self.skip_leading_spaces = skip_leading_spaces
+        # An explicit True/False always wins; None means "inherit from the region".
+        self.skip_leading_spaces = (
+            self._region.skip_leading_spaces
+            if skip_leading_spaces is None
+            else skip_leading_spaces
+        )
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
         else:
@@ -204,8 +209,7 @@ class Paragraph:
             align=self.text_align or self._region.text_align or Align.L,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
-            skip_leading_spaces=self.skip_leading_spaces
-            or self._region.skip_leading_spaces,
+            skip_leading_spaces=self.skip_leading_spaces,
         )
         bullet_text_line = bullet_line_break.get_line()
         return bullet_fragments, bullet_text_line
@@ -234,8 +238,7 @@ class Paragraph:
             print_sh=print_sh,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
-            skip_leading_spaces=self.skip_leading_spaces
-            or self._region.skip_leading_spaces,
+            skip_leading_spaces=self.skip_leading_spaces,
         )
         self._text_fragments = []
         text_line = multi_line_break.get_line()
@@ -296,7 +299,10 @@ class ImageParagraph:
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
         self.name, self.img, self.info = preload_image(
-            self.region.pdf.image_cache, self.name
+            self.region.pdf.image_cache,
+            self.name,
+            resource_access_policy=self.region.pdf.resource_access_policy,
+            svg_limits=self.region.pdf.svg_limits,
         )
         return self
 
@@ -369,6 +375,7 @@ class ImageParagraph:
                 alt_text=self.alt_text,
                 dims=None,
                 keep_aspect_ratio=self.keep_aspect_ratio,
+                resource_access_policy=self.region.pdf.resource_access_policy,
             )
         )
         return return_info
@@ -429,7 +436,33 @@ class ParagraphCollectorMixin(ABC):
         self.pdf.clear_text_region()
         self.pdf.page = self._page
         self.pdf._pop_local_stack()  # pyright: ignore[reportPrivateUsage]
-        self.render()
+        # Preserve font state across `render()`. Internally, rendering each
+        # paragraph temporarily adjusts font_size_pt / font_family /
+        # font_style / current_font, but those mutations must not leak back
+        # onto the calling FPDF instance because the caller did not ask to
+        # change fonts. Cursor position and other render-produced state are
+        # intentionally left alone, since subsequent draws rely on them.
+        # Fixes GH issue #1804.
+        saved_font_family = self.pdf.font_family
+        saved_font_style = self.pdf.font_style
+        saved_font_size_pt = self.pdf.font_size_pt
+        saved_current_font = self.pdf.current_font
+        try:
+            self.render()
+        finally:
+            self.pdf.font_family = saved_font_family
+            self.pdf.font_style = saved_font_style
+            self.pdf.font_size_pt = saved_font_size_pt
+            self.pdf.current_font = saved_current_font
+            # `render()` may have emitted `Tf` operators to the page for
+            # paragraph-level fonts. After restoring the Python-side font
+            # attributes, also invalidate `current_font_is_set_on_page` so
+            # the next text operation re-emits a `Tf` for the restored
+            # (outer) font instead of inheriting whatever the last
+            # paragraph wrote to the page. Without this, `pdf.cell()`
+            # after the context silently renders at the inner paragraph's
+            # font size even though `pdf.font_size_pt` reads correctly.
+            self.pdf.current_font_is_set_on_page = False
 
     def _check_paragraph(self) -> None:
         if self._active_paragraph == "EXPLICIT":
@@ -463,7 +496,7 @@ class ParagraphCollectorMixin(ABC):
         self,
         text_align: Optional[Align] = None,
         line_height: Optional[float] = None,
-        skip_leading_spaces: bool = False,
+        skip_leading_spaces: Optional[bool] = None,
         top_margin: Optional[float] = 0,
         bottom_margin: Optional[float] = 0,
         indent: Optional[float] = 0,
@@ -484,7 +517,8 @@ class ParagraphCollectorMixin(ABC):
             indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
             bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
             bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
-            skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
+            skip_leading_spaces (bool, optional): removes all space characters at the beginning of each line.
+                (Default: None, which inherits the value set on the text region)
             wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
             first_line_indent (float, optional): left spacing before first line of text in paragraph.
         """
@@ -494,7 +528,7 @@ class ParagraphCollectorMixin(ABC):
             region=self,
             text_align=text_align or self.text_align,
             line_height=line_height,
-            skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
+            skip_leading_spaces=skip_leading_spaces,
             wrapmode=wrapmode,
             top_margin=top_margin or 0,
             bottom_margin=bottom_margin or 0,
@@ -685,7 +719,7 @@ class TextRegion(ParagraphCollectorMixin):
 
     def get_width(self, height: float) -> float:
         start, end = self.current_x_extents(self.pdf.y, height)
-        if self.pdf.x > start and self.pdf.x < end:
+        if start < self.pdf.x < end:
             start = self.pdf.x
         res = end - start
         return res

@@ -89,7 +89,7 @@ if TYPE_CHECKING:
 
 
 def clear_empty_fields(d: Mapping[str, object]) -> Mapping[str, object]:
-    return {k: v for k, v in d.items() if v}
+    return {k: v for k, v in d.items() if v or v is False or v == 0}
 
 
 def create_dictionary_string(
@@ -115,7 +115,19 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join(key_value_join.join((k, str(v))) for k, v in dict_.items()),
+            field_join.join(
+                key_value_join.join(
+                    (
+                        k,
+                        (
+                            "null"
+                            if v is None
+                            else (str(v).lower() if isinstance(v, bool) else str(v))
+                        ),
+                    )
+                )
+                for k, v in dict_.items()
+            ),
             close_dict,
         ]
     )
@@ -212,16 +224,17 @@ class PDFObject:
             obj_dict = self._build_obj_dict(_security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
-        content_stream = self.content_stream()
-        if content_stream:
+        # Subclasses return bytes for stream objects.
+        content_stream = self.content_stream()  # pylint: disable=assignment-from-none
+        if content_stream is not None:
             output.append(create_stream(content_stream))
         output.append("endobj")
         return "\n".join(output)
 
     # pylint: disable=no-self-use
-    def content_stream(self) -> bytes:
-        "Subclasses can override this method to indicate the presence of a content stream"
-        return b""
+    def content_stream(self) -> Optional[bytes]:
+        "Return None for no stream; subclasses may return bytes, including an empty stream."
+        return None
 
     def _build_obj_dict(
         self, security_handler: Optional["StandardSecurityHandler"] = None
@@ -396,7 +409,14 @@ class PDFArray(list[Any]):
     ) -> str:
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
-        elif all(isinstance(elem, (int, float)) for elem in self):
+        elif all(isinstance(elem, bool) for elem in self):
+            serialized_elems = " ".join(str(elem).lower() for elem in self)
+        elif all(elem is None for elem in self):
+            serialized_elems = " ".join("null" for _ in self)
+        elif all(
+            isinstance(elem, (int, float)) and not isinstance(elem, bool)
+            for elem in self
+        ):
             serialized_elems = " ".join(str(elem) for elem in self)
         else:
             serialized_chunks: list[str] = []
@@ -413,6 +433,8 @@ class PDFArray(list[Any]):
                     serialized_chunks.append(str(elem).lower())
                 elif isinstance(elem, (int, float)):
                     serialized_chunks.append(str(elem))
+                elif elem is None:
+                    serialized_chunks.append("null")
                 else:
                     serialized_chunks.append(str(elem))
             serialized_elems = "\n".join(serialized_chunks)

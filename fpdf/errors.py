@@ -2,6 +2,10 @@ class FPDFException(Exception):
     pass
 
 
+class FPDFResourceAccessError(FPDFException):
+    """Raised when loading a resource violates the active resource access policy."""
+
+
 class FPDFPageFormatException(FPDFException):
     """Error is thrown when a bad page format is given"""
 
@@ -58,3 +62,7 @@ class ComplianceError(FPDFException):
 
 class PDFAComplianceError(ComplianceError):
     """Raised when an operation would produce a PDF that violates the selected PDF/A profile."""
+
+
+class FPDFSvgLimitExceeded(FPDFException):
+    """Raised when an SVG file exceeds the configured limits for use depth or resolved elements."""

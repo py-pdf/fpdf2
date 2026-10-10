@@ -30,7 +30,7 @@ from .errors import FPDFException
 from .fonts import FontFace, TextStyle
 from .outline import OutlineSection
 from .table import Row, Table
-from .util import get_scale_factor, int2roman
+from .util import get_scale_factor, int2roman, resolve_length, unit_splitter
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -325,6 +325,19 @@ def parse_css_style(style_attr: str) -> dict[str, str]:
     return style
 
 
+def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
+    """Parse a numeric HTML attribute length into points (pt)."""
+    if not val:
+        return 0.0
+    val_str = str(val).strip()
+    if not val_str:
+        return 0.0
+    try:
+        return resolve_length(val_str, default_unit=default_unit)
+    except (ValueError, KeyError):
+        return 0.0
+
+
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
@@ -578,15 +591,40 @@ class HTML2FPDF(HTMLParser):
             indent = 0
         if not top_margin and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
+        prev_family = self.pdf.font_family
+        prev_style = self.pdf.font_style
+        prev_size = self.pdf.font_size_pt
+
+        prev_underline = self.pdf.underline
+        prev_strikethrough = self.pdf.strikethrough
+        prev_current_font = self.pdf.current_font
+        prev_font_set = self.pdf.current_font_is_set_on_page
+        page = self.pdf.page
+        # Set page to 0 to prevent set_font from writing redundant Tf operators to the PDF stream
+        self.pdf.page = 0
+        self.pdf.set_font(
+            family=self.font_family,
+            style=self.font_emphasis.style,
+            size=self.font_size_pt,
+        )
+        self.pdf.page = page
+
         self._paragraph = self._column.paragraph(
             text_align=self.align if isinstance(self.align, Align) else None,
             line_height=line_height,
-            skip_leading_spaces=True,
+            skip_leading_spaces=not self._pre_formatted,
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
             bullet_string=bullet,
         )
+        self.pdf.font_family = prev_family
+        self.pdf.font_style = prev_style
+        self.pdf.font_size_pt = prev_size
+        self.pdf.current_font = prev_current_font
+        self.pdf.current_font_is_set_on_page = prev_font_set
+        self.pdf.underline = prev_underline
+        self.pdf.strikethrough = prev_strikethrough
         self.follows_trailing_space = True
         self.follows_heading = False
 
@@ -752,7 +790,8 @@ class HTML2FPDF(HTMLParser):
         if tag in ("b", "i", "u") and self.td_th is not None:
             self.td_th[tag] = True
         if tag == "a":
-            self.href = attrs_dict["href"] or ""
+            # <a name="..."> and <a id="..."> are anchors, not links: no href means plain text
+            self.href = attrs_dict.get("href") or ""
             try:
                 page = int(self.href)
                 self.href = self.pdf.add_link(page=page)
@@ -764,10 +803,11 @@ class HTML2FPDF(HTMLParser):
             self._end_paragraph()
             width_str = css_style.get("width", attrs_dict.get("width"))
             if width_str:
-                if width_str[-1] == "%":
+                width_str = width_str.strip()
+                if width_str.endswith("%"):
                     hr_width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    hr_width = float(width_str) / self.pdf.k
+                    hr_width = _parse_html_dimension(width_str) / self.pdf.k
             else:
                 hr_width = self.pdf.epw
             # Centering:
@@ -943,14 +983,15 @@ class HTML2FPDF(HTMLParser):
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
+            line_height = None
             if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(line_height_str))
+                    line_height = float(line_height_str)
                 except ValueError:
+                    # Invalid line-height: ignored, the default value is used
                     pass
-            else:
-                self.line_height_stack.append(None)
+            self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
                 if isinstance(tag_style, TextStyle):
@@ -985,14 +1026,15 @@ class HTML2FPDF(HTMLParser):
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
+            line_height = None
             if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(line_height_str))
+                    line_height = float(line_height_str)
                 except ValueError:
+                    # Invalid line-height: ignored, the default value is used
                     pass
-            else:
-                self.line_height_stack.append(None)
+            self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
                 if isinstance(tag_style, TextStyle):
@@ -1075,10 +1117,11 @@ class HTML2FPDF(HTMLParser):
             width: Optional[float] = None
             width_str = css_style.get("width") or attrs_dict.get("width")
             if width_str:
-                if width_str[-1] == "%":
+                width_str = width_str.strip()
+                if width_str.endswith("%"):
                     width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    width = float(width_str) / self.pdf.k
+                    width = _parse_html_dimension(width_str) / self.pdf.k
             if "border" not in attrs_dict:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
@@ -1099,12 +1142,30 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     borders_layout = "NONE"
             align = Align.coerce(attrs_dict.get("align") or "CENTER")
-            padding = (
-                float(attrs_dict["cellpadding"] or 0)
-                if "cellpadding" in attrs_dict
-                else None
-            )
-            spacing = float(attrs_dict.get("cellspacing") or 0)
+            padding = None
+            if "cellpadding" in attrs_dict:
+                pad_val = attrs_dict["cellpadding"]
+                match = unit_splitter.match((pad_val or "").strip())
+                if match and not match.group("unit"):
+                    try:
+                        padding = float(match.group("value"))
+                    except ValueError:
+                        padding = 0.0
+                else:
+                    padding = _parse_html_dimension(pad_val) / self.pdf.k
+
+            sp_val = attrs_dict.get("cellspacing")
+            if sp_val is not None:
+                match = unit_splitter.match((sp_val or "").strip())
+                if match and not match.group("unit"):
+                    try:
+                        spacing = float(match.group("value"))
+                    except ValueError:
+                        spacing = 0.0
+                else:
+                    spacing = _parse_html_dimension(sp_val) / self.pdf.k
+            else:
+                spacing = 0.0
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -1145,13 +1206,13 @@ class HTML2FPDF(HTMLParser):
                     tag,
                 )
             if "width" in attrs_dict:
-                width_str = attrs_dict["width"] or "0"
+                width_str = (attrs_dict["width"] or "0").strip()
                 # pylint: disable=protected-access
                 if len(self.table.rows) == 1:  # => first table row
-                    if width_str[-1] == "%":
+                    if width_str.endswith("%"):
                         width = float(width_str[:-1])
                     else:
-                        width = float(width_str)
+                        width = _parse_html_dimension(width_str)
                     if not self.table._col_widths:
                         self.table._col_widths = []
                     assert isinstance(self.table._col_widths, list)
@@ -1163,8 +1224,8 @@ class HTML2FPDF(HTMLParser):
                         tag,
                     )
         if tag == "img" and "src" in attrs_dict:
-            width = float(attrs_dict.get("width") or 0) / self.pdf.k
-            height = float(attrs_dict.get("height") or 0) / self.pdf.k
+            width = _parse_html_dimension(attrs_dict.get("width")) / self.pdf.k
+            height = _parse_html_dimension(attrs_dict.get("height")) / self.pdf.k
             if self.table_row:  # => <img> in a <table>
                 if width or height:
                     LOGGER.warning(
@@ -1188,6 +1249,13 @@ class HTML2FPDF(HTMLParser):
             )
         if tag == "toc":
             self._end_paragraph()
+            self.pdf.set_font(
+                family=self.font_family,
+                size=self.font_size_pt,
+                style=self.font_emphasis.style,
+            )
+            if self.font_color != self.pdf.text_color and self.font_color is not None:
+                self.pdf.set_text_color(self.font_color)
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs_dict.get("pages") or "1")
             )
@@ -1354,8 +1422,8 @@ class HTML2FPDF(HTMLParser):
         pdf.ln()
         for section in outline:
             link = pdf.add_link(page=section.page_number)
-            text = f'{" " * section.level * 2} {section.name}'
-            text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
+            text = f"{' ' * section.level * 2} {section.name}"
+            text += f" {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}"
             pdf.multi_cell(
                 w=pdf.epw,
                 h=pdf.font_size,

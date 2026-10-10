@@ -23,7 +23,10 @@ def test_TitleStyle_deprecation():
 def test_add_font_uni_deprecation():
     pdf = FPDF()
 
-    with pytest.warns(DeprecationWarning) as record:
+    with pytest.warns(
+        DeprecationWarning,
+        match=r'"uni" parameter is deprecated since v2\.5\.1 and will be removed in a future release',
+    ):
         # pylint: disable=unexpected-keyword-arg
         pdf.add_font(
             "DejaVu",
@@ -31,19 +34,14 @@ def test_add_font_uni_deprecation():
             HERE.parent / "fonts" / "DejaVuSans.ttf",
             uni=True,
         )
-    assert (
-        str(record[0].message)
-        == '"uni" parameter is deprecated since v2.5.1 and will be removed in a future release'
-    )
 
 
 def test_output_dest_deprecation():
     pdf = FPDF()
 
-    with pytest.warns(DeprecationWarning) as record:
+    with pytest.warns(
+        DeprecationWarning,
+        match=r'"dest" parameter is deprecated since v2\.2\.0 and will be removed in a future release',
+    ):
         # pylint: disable=unexpected-keyword-arg
         pdf.output(dest="S")
-    assert (
-        str(record[0].message)
-        == '"dest" parameter is deprecated since v2.2.0 and will be removed in a future release'
-    )

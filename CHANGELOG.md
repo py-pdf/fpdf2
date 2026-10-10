@@ -16,17 +16,70 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.8] - Not released yet
+## [2.9.0] - Not released yet
 ### Added
-* Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 ### Fixed
+* `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
+* `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
+* warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
+
+
+## [2.8.9] - 2026-09-29
+### Added
+* `align` parameter for [`FPDF.alias_nb_pages()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) to control horizontal alignment (`Align.L`, `Align.C`, `Align.R`) of substitution text inside reserved alias space - _cf._ [issue #1926](https://github.com/py-pdf/fpdf2/issues/1926) - thanks to @prateek-dagar
+* support for page number alias substitution with bidirectional / RTL text shaping - _cf._ [issue #1925](https://github.com/py-pdf/fpdf2/issues/1925) - thanks to @prateek-dagar
+* `appearance` parameter for [`FPDF.file_attachment_annotation()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_attachment_annotation), accepting `FileAttachmentAppearance.HIDDEN` to give the annotation an empty appearance stream so its default icon is not displayed while the file stays embedded and reachable - _cf._ [issue #561](https://github.com/py-pdf/fpdf2/issues/561) - thanks to @ChrisJr404
+* Turkish translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-tr.html#ogretici-7-pdfa-belgeleri-olusturma) tutorial section, along with fixes for duplicated clauses and mistranslations in the Tuto 2, 4 & 6 descriptions - _cf._ [PR #1951](https://github.com/py-pdf/fpdf2/pull/1951) - thanks to @ihsandeniz
+### Fixed
+* escaped Markdown markers adjacent to emphasis markers in link labels no longer lose literal characters or apply unintended styling
+* PDF serialization of boolean and null values: booleans in arrays and dictionaries now use lowercase `true` and `false`, including in mixed numeric/boolean arrays; `None` in arrays is serialized as `null`; and filtering empty dictionary fields preserves `False` and numeric zero values - thanks to @agustin18
+* SVG percentage `width` and `height` values with surrounding whitespace (e.g. `width="100% "`) no longer raise `ValueError` - thanks to @Anai-Guo
+* PDF/A-1 documents using TrueType or CFF-based CID fonts now include a `/CIDSet` stream in each font descriptor, as required by ISO 19005-1 (veraPDF rule 6.3.5-3) - _cf._ [issue #88](https://github.com/py-pdf/fpdf2/issues/88)
+* split font `/ToUnicode` and `/Encoding` CMap mappings into blocks of at most 100 entries, as required by the PDF specification - _cf._ [issue #1952](https://github.com/py-pdf/fpdf2/issues/1952)
+* visual gap in rendering subsequent text after `{nb}` page alias when text shaping is enabled - _cf._ [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090) - thanks to @prateek-dagar
+* `FPDF.write_html()` no longer raises `IndexError: pop from empty list` when a `<ul>` or `<ol>` element carries a `line-height` that is not a bare number (_e.g._ `line-height: normal` or `line-height: 1.5em`); such values are now ignored, and the default line height is used, consistently with `<p line-height="x">` - thanks to @Anai-Guo
+* `FPDF.write_html()` now renders list bullets with correct font styling instead of inheriting preceding heading (e.g. `<h1>`) styles - _cf._ [issue #1921](https://github.com/py-pdf/fpdf2/issues/1921) - thanks to @prateek-dagar
+* table cells landing in the wrong column when a row was covered by several rowspans that did not start in column order - _cf._ [issue #1948](https://github.com/py-pdf/fpdf2/issues/1948)
+* `Padding.new()` now accepts 1-element sequences per CSS shorthand rules and preserves existing `Padding` instances without redundant allocations
+### Changed
+* Refactored `_tt_font_widths` to reuse `_cid_font_widths` glyph interval compression logic - thanks to @agustin18
+
+
+## [2.8.8] - 2026-08-09
+### Added
+* Punjabi (pa) tutorial translation - thanks to @Pawansingh3889
+* `FPDF.svg_limits` and `SVGLimits` to configure SVG complexity limits while rendering SVG images
+* `resource_access_policy` and [Security considerations](https://py-pdf.github.io/fpdf2/Security.html) documentation
+* [`FPDF.optional_content()`](https://py-pdf.github.io/fpdf2/OptionalContent.html) context manager to mark content as visible on screen only or in print only, using PDF Optional Content Groups - _cf._ [issue #441](https://github.com/py-pdf/fpdf2/issues/441), based on a recipe by @digidigital - thanks to @eugen-goebel
+* basic support for SVG `<symbol>` elements in the SVG parser - thanks to @Theo1335
+* basic support for SVG `<switch>` elements in the SVG parser - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537) - thanks to @dannymaaz
+* support for keeping aspect ratio for images in templates - _cf._ [issue #1118](https://github.com/py-pdf/fpdf2/issues/1118) - thanks to @prateek-dagar
+### Fixed
+* custom height passed to `Paragraph.ln()` in a text region is now applied to the line it terminates instead of the first line of the following paragraph - _cf._ [issue #1786](https://github.com/py-pdf/fpdf2/issues/1786) - thanks to @Sanjays2402
+* the optional `numpy` import in `image_parsing.py` no longer crashes on CPUs unsupported by numpy's `manylinux` wheel baseline; `RuntimeError` is now treated the same as `ImportError`, so `numpy` degrades to unavailable instead of taking down `import fpdf` - _cf._ [issue #1908](https://github.com/py-pdf/fpdf2/issues/1908) - thanks to @stumpylog
+* font state (family, style, size, current font, and the page-level "font is set" flag) no longer leaks back onto the `FPDF` instance after a `text_columns()` / `text_region()` context exits, so a subsequent `pdf.cell()` / `pdf.write()` renders at the caller's font instead of the last paragraph's - _cf._ [issue #1804](https://github.com/py-pdf/fpdf2/issues/1804) - thanks to @Pawansingh3889
 * text rendering when the first text on a page starts with a fallback glyph - _cf._ [issue #1772](https://github.com/py-pdf/fpdf2/issues/1772)
 * preserve boundary-neutral formatting during bidirectional text preprocessing - _cf._ [issue #1779](https://github.com/py-pdf/fpdf2/issues/1779)
 * transform application on user space gradients - _cf._ [issue #1784](https://github.com/py-pdf/fpdf2/issues/1784)
 * dependency extras for camelot-py and endesive on pyproject.toml - _cf._ [issue #1792](https://github.com/py-pdf/fpdf2/issues/1792)
-* preserve link annotations during dry-run of pdf.multi_cell - _cf._ [issue #1807](https://github.com/py-pdf/fpdf2/issues/1807)
-* preserve two consecutive markdown links (without space inbetween) - _cf._ [issue #1814](https://github.com/py-pdf/fpdf2/issues/1814)
+* preserve link annotations during dry-run of `FPDF.multi_cell` - _cf._ [issue #1807](https://github.com/py-pdf/fpdf2/issues/1807) - thanks to @CoLa5
+* preserve two consecutive markdown links (without space inbetween) - _cf._ [issue #1814](https://github.com/py-pdf/fpdf2/issues/1814) - thanks to @CoLa5
+* support markdown style around markdown links - _cf._ [issue #1826](https://github.com/py-pdf/fpdf2/issues/1826) - thanks to @CoLa5
+* Reset gstate for ToC-rendering - _cf._ [issue #1837](https://github.com/py-pdf/fpdf2/issues/1837) - thanks to @CoLa5
+* preserve markdown format in `FPDF.multi_cell` in dry-run - _cf._ [issue #1840](https://github.com/py-pdf/fpdf2/issues/1840) - thanks to @CoLa5
+* fix page order after dry-run of `FPDF.multi_cell` in ToC - _cf._ [issue #1836](https://github.com/py-pdf/fpdf2/issues/1836) - thanks to @CoLa5
+* rendering SVG arcs with very small sweeps that previously rounded to zero - _cf._ [issue #1831](https://github.com/py-pdf/fpdf2/issues/1831)
+* spurious "Not enough horizontal space to render a single character" error when text without break opportunities is split into many small fragments, e.g. by a fallback font alternating with the main font - _cf._ [issue #1250](https://github.com/py-pdf/fpdf2/issues/1250) - thanks to @uttam12331
+* number of surviving escape characters - __cf.__ [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215) - thanks to @amidou-naba
+* leading spaces on new lines inside `<pre>` and `<pre><code>` blocks are no longer dropped - _cf._ [issue #1063](https://github.com/py-pdf/fpdf2/issues/1063) - thanks to @eugen-goebel
+* `FPDF.set_font()` can restore `current_font` when the selected font state diverged - _cf._ [PR #1872](https://github.com/py-pdf/fpdf2/pull/1872) - thanks to @gaoflow
+* embed CID-keyed CFF fonts as raw CFF programs so browser PDF viewers render them correctly - _cf._ [issue #1874](https://github.com/py-pdf/fpdf2/issues/1874)
+* fixed broken links on documentation not directly leading to the API reference - _cf._ [issue #1876](https://github.com/py-pdf/fpdf2/issues/1876) - thanks to @iamfazakb
+* reject SVG `<use>` cycles and excessive nested expansion to prevent resource exhaustion in `FPDF.image()`
+* count SVG `<switch>` elements in SVG complexity limits
+* declare the default base state and display order for Optional Content Groups so PDF viewers can list layers correctly - _cf._ [issue #1895](https://github.com/py-pdf/fpdf2/issues/1895)
+* parse balanced markdown styles inside link labels while keeping unbalanced markers literal, and consume escapes without destabilizing `LINES` re-serialization - _cf._ [issue #1847](https://github.com/py-pdf/fpdf2/issues/1847)
 ### Changed
 * skip byte-for-byte compressed data comparison when zlib-ng is detected, regardless of OS
 

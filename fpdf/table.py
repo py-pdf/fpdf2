@@ -199,6 +199,12 @@ class Table:
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
         # Starting with some sanity checks:
         self._cols_count = max(row.cols_count for row in self.rows) if self.rows else 0
+        if (
+            self._col_widths
+            and not isinstance(self._col_widths, NumberClass)
+            and sum(self._col_widths) <= 0
+        ):
+            self._col_widths = None
         if self._width is None:
             if self._col_widths and isinstance(self._col_widths, NumberClass):
                 self._width = self._cols_count * self._col_widths
@@ -576,13 +582,16 @@ class Table:
             return float(colspan * (width / cols_count) + gutter_within_cell)
         if isinstance(self._col_widths, NumberClass):
             return colspan * self._col_widths + gutter_within_cell
+        total_col_widths = sum(self._col_widths)
+        if total_col_widths <= 0:
+            return float(colspan * (width / cols_count) + gutter_within_cell)
         if j >= len(self._col_widths):
             raise ValueError(
                 f"Invalid .col_widths specified: missing width for table() column {j + 1} on row {i + 1}"
             )
         col_width: float = 0
         for k in range(j, j + colspan):
-            col_ratio = self._col_widths[k] / sum(self._col_widths)
+            col_ratio = self._col_widths[k] / total_col_widths
             col_width += col_ratio * width
             if k != j:
                 col_width += self._gutter_width
@@ -793,7 +802,10 @@ class Row:
                     cells.extend([None] * (cell.colspan - 1))
         # now we can correctly interpret active_rowspans
         remaining_rowspans: dict[int, int] = {}
-        for k, v in active_rowspans.items():
+        # ascending, so that an insert never shifts a placeholder that is
+        # already in place: the keys reach us in the order the rowspans
+        # started, which is not the column order
+        for k, v in sorted(active_rowspans.items()):
             cells.insert(k, None)
             if v > 1:
                 remaining_rowspans[k] = v - 1

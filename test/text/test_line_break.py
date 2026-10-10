@@ -1483,3 +1483,50 @@ def test_substitution_fragments_are_not_merged_with_base_fragments():
     assert line.fragments == [fragment_before, substitution_fragment, fragment_after]
 
     assert multi_line_break.get_line() is None
+
+
+def test_forced_break_across_many_small_fragments():  # issue #1250
+    """
+    Text without any break opportunity can be split into many small fragments
+    (as happens when a fallback font alternates with the main font).
+    Consecutive lines are then force-broken at the same character index
+    within *different* fragments, which must not raise
+    "Not enough horizontal space to render a single character".
+    """
+    char_width = 6
+    test_width = char_width * 3
+    alphabet = {
+        "normal": {},
+    }
+    for char in "abcde":
+        alphabet["normal"][char] = char_width
+    graphics_state = gs_with_font(_gs_normal, alphabet["normal"])
+    fragments = [
+        FxFragment(characters, graphics_state, 1, None, alphabet)
+        for characters in ("aa", "b", "cc", "d", "ee")
+    ]
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
+    lines = []
+    while (line := multi_line_break.get_line()) is not None:
+        lines.append("".join("".join(frag.characters) for frag in line.fragments))
+    assert lines == ["aab", "ccd", "ee"]
+
+
+def test_character_wider_than_line_raises():
+    """A single character wider than the line must still raise."""
+    char_width = 50
+    test_width = 20
+    alphabet = {
+        "normal": {"x": char_width, "y": char_width},
+    }
+    fragments = [
+        FxFragment(
+            "xy", gs_with_font(_gs_normal, alphabet["normal"]), 1, None, alphabet
+        )
+    ]
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
+    with pytest.raises(FPDFException) as error:
+        for _ in range(10):
+            if multi_line_break.get_line() is None:
+                break
+    assert "Not enough horizontal space" in str(error.value)

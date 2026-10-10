@@ -56,6 +56,7 @@ class AnnotationMixin:
         field_type: Optional[str] = None,
         value: Optional[str] = None,
         default_appearance: Optional[str] = None,  # for free text annotations
+        appearance_stream: Optional[bytes] = None,
     ) -> None:
         self.type = Name("Annot")
         self.subtype = Name(subtype)
@@ -84,6 +85,14 @@ class AnnotationMixin:
         )
         self.f_s = file_spec
         self.d_a = default_appearance
+        # Normal appearance stream (/AP << /N ... >>): set to the raw content stream
+        # bytes of the Form XObject. An empty bytestring produces a blank appearance,
+        # which is a portable way to hide the default icon of an annotation.
+        # The actual /AP dictionary is filled in at output time, once the appearance
+        # Form XObject has been assigned an object ID - cf. issue #561.
+        self.a_p = None
+        self._appearance_stream = appearance_stream
+        self._appearance_bbox = (width, height)
 
 
 class PDFAnnotation(AnnotationMixin, PDFObject):
@@ -115,6 +124,9 @@ class AnnotationDict(AnnotationMixin):
         "ink_list",
         "f_s",
         "d_a",
+        "a_p",
+        "_appearance_stream",
+        "_appearance_bbox",
     )
 
     def serialize(

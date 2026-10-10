@@ -74,6 +74,7 @@ test = [
   "brotli",
   "camelot-py",
   "endesive",
+  "pypdf",
   "pytest",
   "pytest-cov",
   "qrcode",

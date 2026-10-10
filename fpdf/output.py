@@ -58,6 +58,7 @@ except ImportError:
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generator,
     ItemsView,
     Iterator,
     Literal,
@@ -308,6 +309,7 @@ class PDFCatalog(PDFObject):
         self.struct_tree_root: Optional[PDFObject] = None
         self.a_f: Optional[str] = None
         self.page_labels: Optional[str] = None
+        self.o_c_properties: Optional[str] = None
 
 
 class PDFResources(PDFObject):
@@ -319,6 +321,7 @@ class PDFResources(PDFObject):
         ext_g_state: Optional[str],
         shading: Optional[str],
         pattern: Optional[str],
+        properties: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.proc_set = proc_set
@@ -327,6 +330,24 @@ class PDFResources(PDFObject):
         self.ext_g_state = ext_g_state
         self.shading = shading
         self.pattern = pattern
+        self.properties = properties
+
+
+class PDFOptionalContentGroup(PDFObject):
+    "An Optional Content Group, used to show/hide content on screen or in print."
+
+    def __init__(self, name: str, on_view: bool, on_print: bool) -> None:
+        super().__init__()
+        self.type = Name("OCG")
+        self.name = PDFString(name)
+        # The /Usage entry is applied automatically by the viewer through the
+        # /AS usage-application array declared in the catalog's /OCProperties:
+        view_state = "ON" if on_view else "OFF"
+        print_state = "ON" if on_print else "OFF"
+        self.usage = Raw(
+            f"<< /View << /ViewState /{view_state} >>"
+            f" /Print << /PrintState /{print_state} >> >>"
+        )
 
 
 class PDFFontStream(PDFContentStream):
@@ -754,6 +775,11 @@ class ResourceCatalog:
         self.last_reserved_object_id: int = 0
         self.font_registry: dict[str, CoreFont | TTFFont] = {}
         self.next_xobject_index: int = 1
+        # Optional Content Groups, keyed by resource name (e.g. "OC1"):
+        self.optional_content_groups: "OrderedDict[str, dict[str, object]]" = (
+            OrderedDict()
+        )
+        self._ocg_names_by_state: dict[tuple[bool, bool], str] = {}
 
     def add(
         self,
@@ -803,6 +829,27 @@ class ResourceCatalog:
             self.graphics_styles[style_str] = name
 
         return self.graphics_styles[style_str]
+
+    def add_optional_content_group(
+        self, on_view: bool, on_print: bool, label: str, page_number: int
+    ) -> str:
+        """
+        Register an Optional Content Group for the given visibility and associate
+        it with a page. Groups sharing the same visibility are reused.
+        Returns the resource name (e.g. "OC1") to reference in a /OC marked sequence.
+        """
+        state = (on_view, on_print)
+        name = self._ocg_names_by_state.get(state)
+        if name is None:
+            name = f"OC{len(self.optional_content_groups) + 1}"
+            self.optional_content_groups[name] = {
+                "on_view": on_view,
+                "on_print": on_print,
+                "label": label,
+            }
+            self._ocg_names_by_state[state] = name
+        self.resources_per_page[(page_number, PDFResourceType.PROPERTIES)].add(name)
+        return name
 
     def register_soft_mask(self, soft_mask: PaintSoftMask | ImageSoftMask) -> int:
         """Register a soft mask xobject and return its object id"""
@@ -1006,9 +1053,11 @@ class OutputProducer:
         catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
         sig_annotation_obj = self._add_annotations_as_objects()
+        self._add_annotation_appearance_streams()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
             self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
+        self._add_optional_content_groups(catalog_obj)
         self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
@@ -1181,6 +1230,27 @@ class OutputProducer:
                         sig_annotation_obj = annot_obj
         return sig_annotation_obj
 
+    def _add_annotation_appearance_streams(self) -> None:
+        """Build a normal appearance stream (/AP << /N ... >>) for every annotation
+        that requested one. The appearance is a Form XObject whose content stream is
+        the bytes stored on the annotation; an empty stream yields a blank appearance,
+        which portably hides the annotation's default icon - cf. issue #561."""
+        for page_obj in self.fpdf.pages.values():
+            assert isinstance(page_obj.annots, PDFArray)
+            for annot_obj in page_obj.annots:
+                appearance_stream = getattr(annot_obj, "_appearance_stream", None)
+                if appearance_stream is None:
+                    continue
+                width, height = annot_obj._appearance_bbox
+                xobject = PDFContentStream(contents=appearance_stream)
+                xobject.type = Name("XObject")  # type: ignore[attr-defined]
+                xobject.subtype = Name("Form")  # type: ignore[attr-defined]
+                xobject.b_box = PDFArray(  # type: ignore[attr-defined]
+                    [0, 0, round(width, 2), round(height, 2)]
+                )
+                self._add_pdf_obj(xobject, "annotations")
+                annot_obj.a_p = Raw(f"<< /N {xobject.ref} >>")
+
     def _add_fonts(
         self,
         image_objects_per_index: dict[int, PDFXObject],
@@ -1233,9 +1303,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<00> <FF>\n"
                         "endcodespacerange\n"
-                        f"{len(bfChar)} beginbfchar\n"
-                        f"{''.join(bfChar)}"
-                        "endbfchar\n"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1343,6 +1411,8 @@ class OutputProducer:
 
                 # A CIDFont whose glyph descriptions are based on TrueType or CFF technology
                 is_cff_cid = font.is_cff and font.is_cid_keyed
+                if is_cff_cid and "CFF " in font.ttfont:
+                    ttfontstream = font.ttfont["CFF "].compile(font.ttfont)
                 code_to_cid: Optional[dict[int, int]] = None
                 cid_widths: Optional[dict[int, int]] = None
                 if is_cff_cid:
@@ -1420,9 +1490,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<0000> <FFFF>\n"
                         "endcodespacerange\n"
-                        f"{len(bfChar)} beginbfchar\n"
-                        f"{''.join(bfChar)}"
-                        "endbfchar\n"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1457,9 +1525,7 @@ class OutputProducer:
                             "1 begincodespacerange\n"
                             "<0000> <FFFF>\n"
                             "endcodespacerange\n"
-                            f"{len(cid_mapping)} begincidchar\n"
-                            f"{''.join(cid_mapping)}"
-                            "endcidchar\n"
+                            f"{_build_cmap_blocks(cid_mapping, 'cidchar')}"
                             "endcmap\n"
                             "CMapName currentdict /CMap defineresource pop\n"
                             "end\n"
@@ -1505,6 +1571,25 @@ class OutputProducer:
                     )
                     self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
                     cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
+
+                compliance = self.fpdf._compliance
+                if compliance and compliance.profile == "PDFA" and compliance.part == 1:
+                    # PDF/A-1 requires a CIDSet identifying the CIDs present in
+                    # the embedded font subset (veraPDF rule 6.3.5-3). It is
+                    # optional in later parts and deprecated since PDF 2.0.
+                    cids_present = {0}
+                    if is_cff_cid and code_to_cid:
+                        cids_present.update(code_to_cid.values())
+                    else:
+                        cids_present.update(code_to_glyph)
+                    cid_set = bytearray(max(cids_present) // 8 + 1)
+                    for cid in cids_present:
+                        cid_set[cid // 8] |= 0x80 >> (cid % 8)
+                    cid_set_obj = PDFContentStream(
+                        contents=bytes(cid_set), compress=True
+                    )
+                    self._add_pdf_obj(cid_set_obj, "fonts")
+                    font_descriptor_obj.c_i_d_set = cid_set_obj  # type: ignore[attr-defined]
 
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
                 if is_cff_cid:
@@ -1621,6 +1706,41 @@ class OutputProducer:
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
 
+    def _add_optional_content_groups(self, catalog_obj: PDFCatalog) -> None:
+        "Create the OCG objects and the catalog's /OCProperties configuration."
+        resource_catalog = self.fpdf._resource_catalog
+        self._ocg_objs_per_name: "OrderedDict[str, PDFOptionalContentGroup]" = (
+            OrderedDict()
+        )
+        for name, spec in resource_catalog.optional_content_groups.items():
+            ocg_obj = PDFOptionalContentGroup(
+                name=str(spec["label"]),
+                on_view=bool(spec["on_view"]),
+                on_print=bool(spec["on_print"]),
+            )
+            self._add_pdf_obj(ocg_obj, "optional_content_groups")
+            self._ocg_objs_per_name[name] = ocg_obj
+        if not self._ocg_objs_per_name:
+            return
+        all_refs = " ".join(obj.ref for obj in self._ocg_objs_per_name.values())
+        on_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        off_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if not resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        catalog_obj.o_c_properties = Raw(
+            f"<< /OCGs [{all_refs}]"
+            f" /D << /ON [{on_refs}] /OFF [{off_refs}]"
+            f" /BaseState /ON /Order [{all_refs}]"
+            f" /AS [ << /Event /View /OCGs [{all_refs}] /Category [/View] >>"
+            f" << /Event /Print /OCGs [{all_refs}] /Category [/Print] >> ] >> >>"
+        )
+
     def _add_soft_masks(
         self,
         gfxstate_objs_per_name: dict[str, PDFExtGState],
@@ -1722,6 +1842,7 @@ class OutputProducer:
                 gfxstate_objs_per_name,
                 shading_objs_per_name,
                 pattern_objs_per_name,
+                self._ocg_objs_per_name,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
@@ -1759,6 +1880,12 @@ class OutputProducer:
                         page_number, PDFResourceType.PATTERN
                     )
                 }
+                page_properties_objs_per_name = {
+                    str(ocg_name): self._ocg_objs_per_name[str(ocg_name)]
+                    for ocg_name in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.PROPERTIES
+                    )
+                }
 
                 page_obj.resources = self._add_resources_dict(
                     page_font_objs_per_index,
@@ -1766,6 +1893,7 @@ class OutputProducer:
                     page_gfxstate_objs_per_name,
                     page_shading_objs_per_name,
                     page_pattern_objs_per_name,
+                    page_properties_objs_per_name,
                 )
 
     def _add_resources_dict(
@@ -1775,6 +1903,7 @@ class OutputProducer:
         gfxstate_objs_per_name: dict[str, PDFExtGState],
         shading_objs_per_name: dict[str, Shading | MeshShading],
         pattern_objs_per_name: dict[str, Pattern],
+        properties_objs_per_name: Optional[dict[str, "PDFOptionalContentGroup"]] = None,
     ) -> PDFResources:
         # From section 10.1, "Procedure sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -1823,6 +1952,15 @@ class OutputProducer:
                 }
             )
 
+        properties = None
+        if properties_objs_per_name:
+            properties = pdf_dict(
+                {
+                    f"/{name}": pdf_ref(ocg_obj.id)
+                    for name, ocg_obj in sorted(properties_objs_per_name.items())
+                }
+            )
+
         resources_obj = PDFResources(
             proc_set=proc_set,
             font=font,
@@ -1830,6 +1968,7 @@ class OutputProducer:
             ext_g_state=ext_g_state,
             shading=shading,
             pattern=pattern,
+            properties=properties,
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj
@@ -2113,7 +2252,7 @@ class OutputProducer:
             )
 
     @contextmanager
-    def _trace_size(self, label: str) -> Iterator[None]:
+    def _trace_size(self, label: str) -> Generator[None, None, None]:
         prev_size = len(self.buffer)
         yield
         self.sections_size_per_trace_label[label] += len(self.buffer) - prev_size
@@ -2149,73 +2288,24 @@ def stream_content_for_raster_image(
     )
 
 
+def _build_cmap_blocks(
+    entries: list[str], operator: Literal["bfchar", "cidchar"]
+) -> str:
+    """Limit CMap mapping blocks to 100 entries (Adobe Technical Note #5014)."""
+    blocks: list[str] = []
+    for start in range(0, len(entries), 100):
+        chunk = entries[start : start + 100]
+        blocks.append(f"{len(chunk)} begin{operator}\n{''.join(chunk)}end{operator}\n")
+    return "".join(blocks)
+
+
 def _tt_font_widths(font: TTFFont) -> str:
-    rangeid: int = 0
-    range_: dict[int, list[int]] = {}
-    range_interval: dict[int, bool] = {}
-    prevcid: int = -2
-    prevwidth: int = -1
-    interval: bool = False
-
-    # Glyphs sorted by mapped character id
-    glyphs = dict(sorted(font.subset.items(), key=lambda item: item[1]))
-
-    for glyph in glyphs:
-        assert glyph is not None
-        cid_mapped = glyphs[glyph]
-        if cid_mapped == (prevcid + 1):
-            if glyph.glyph_width == prevwidth:
-                if glyph.glyph_width == range_[rangeid][0]:
-                    range_.setdefault(rangeid, []).append(glyph.glyph_width)
-                else:
-                    range_[rangeid].pop()
-                    # new range
-                    rangeid = prevcid
-                    range_[rangeid] = [prevwidth, glyph.glyph_width]
-                interval = True
-                range_interval[rangeid] = True
-            else:
-                if interval:
-                    # new range
-                    rangeid = cid_mapped
-                    range_[rangeid] = [glyph.glyph_width]
-                else:
-                    range_[rangeid].append(glyph.glyph_width)
-                interval = False
-        else:
-            rangeid = cid_mapped
-            range_[rangeid] = [glyph.glyph_width]
-            interval = False
-        prevcid = cid_mapped
-        prevwidth = glyph.glyph_width
-    prevk = -1
-    nextk = -1
-    prevint = False
-
-    ri = range_interval
-    for k, ws in sorted(range_.items()):
-        cws = len(ws)
-        if k == nextk and not prevint and (k not in ri or cws < 3):
-            if k in ri:
-                del ri[k]
-            range_[prevk] = range_[prevk] + range_[k]
-            del range_[k]
-        else:
-            prevk = k
-        nextk = k + cws
-        if k in ri:
-            prevint = cws > 3
-            del ri[k]
-            nextk -= 1
-        else:
-            prevint = False
-    w: list[str] = []
-    for k, ws in sorted(range_.items()):
-        if len(set(ws)) == 1:
-            w.append(f" {k} {k + len(ws) - 1} {ws[0]}")
-        else:
-            w.append(f" {k} [ {' '.join(str(int(h)) for h in ws)} ]\n")
-    return f"[{''.join(w)}]"
+    cid_widths = {
+        cid: glyph.glyph_width
+        for glyph, cid in font.subset.items()
+        if glyph is not None
+    }
+    return _cid_font_widths(cid_widths)
 
 
 def _cid_font_widths(cid_widths: dict[int, int]) -> str:

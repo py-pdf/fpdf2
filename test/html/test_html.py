@@ -527,6 +527,20 @@ and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
     assert_pdf_equal(pdf, HERE / "html_whitespace_handling.pdf", tmp_path)
 
 
+def test_html_pre_code_leading_spaces(tmp_path):  # issue 1063
+    """Leading spaces on new lines inside <pre><code> must be preserved."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("""
+<pre><code>
+Testing pre-code blocks
+    that span multiple lines
+and have tabs    and    spaces.
+</code></pre>
+""")
+    assert_pdf_equal(pdf, HERE / "html_pre_code_leading_spaces.pdf", tmp_path)
+
+
 def test_html_custom_line_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -731,6 +745,17 @@ def test_html_link_underline(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_link_underline.pdf", tmp_path)
 
 
+def test_html_anchor_without_href(tmp_path):
+    "An <a> without href, such as a named anchor, renders as plain text."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<a name="intro">Introduction</a> and <a id="body">body</a>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("Introduction and body")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_link_style(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -909,6 +934,36 @@ def test_html_ol_ul_line_height(tmp_path):
             <li>item</li>
         </ul>""")
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)
+
+
+def test_html_ol_ul_invalid_line_height(tmp_path):
+    # An invalid line-height on <ul> / <ol> must be ignored - just like on <p> -
+    # and render exactly like a list without any line-height:
+    def build(list_attrs, nested_attrs=""):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.write_html(f"""<ul{list_attrs}>
+            <li>item</li>
+            <li>item
+                <ol{nested_attrs}>
+                    <li>nested item</li>
+                </ol>
+            </li>
+            <li>item</li>
+        </ul>
+        <ol{list_attrs}>
+            <li>item</li>
+        </ol>""")
+        return pdf
+
+    for attrs in (' style="line-height: normal"', ' line-height="1.5em"'):
+        assert_pdf_equal(build(attrs), build(""), tmp_path)
+    # A nested list must not consume its parent list line-height either:
+    assert_pdf_equal(
+        build(' line-height="2"', ' style="line-height: inherit"'),
+        build(' line-height="2"'),
+        tmp_path,
+    )
 
 
 def test_html_long_list_entries(tmp_path):
@@ -1247,3 +1302,64 @@ def test_html_ol_nested_in_ul(tmp_path):  # cf. issue #1358
           </li>
         </ul>""")
     assert_pdf_equal(pdf, HERE / "html_ol_nested_in_ul.pdf", tmp_path)
+
+
+def test_html_list_after_h1(tmp_path):  # cf. issue #1921
+    pdf = FPDF()
+    pdf.add_page()
+    html = """
+    <h1>Header</h1>
+    <ol>
+        <li>Item 1</li>
+        <li>Item 2</li>
+    </ol>
+    <br break-before="page">
+    <h1>Header 2</h1>
+    <ul>
+        <li>Item A</li>
+        <li>Item B</li>
+    </ul>
+    """
+    pdf.write_html(html)
+    assert_pdf_equal(pdf, HERE / "html_list_after_h1.pdf", tmp_path)
+
+
+def test_html_list_heading_different_fonts(tmp_path):
+    pdf = FPDF()
+    pdf.add_font("roboto", fname=FONT_DIR / "Roboto-Regular.ttf")
+    pdf.add_page()
+    html = """
+    <font face="courier"><h1>Courier Header 1</h1></font>
+    <font face="times">
+    <ul>
+        <li>Times Regular Item A</li>
+        <li>Times Regular Item B</li>
+    </ul></font>
+    <br break-before="page">
+    <font face="courier"><h1>Courier Header 2</h1></font>
+    <font face="roboto">
+    <ol>
+        <li>Roboto Regular Item 1</li>
+        <li>Roboto Regular Item 2</li>
+    </ol></font>
+    """
+    pdf.write_html(html)
+    assert_pdf_equal(pdf, HERE / "html_list_heading_different_fonts.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html_snippet",
+    [
+        '<img src="docs/fpdf2-logo.png" width="100px" height="50px">',
+        '<img src="docs/fpdf2-logo.png" width="80pt" height="40pt">',
+        '<img src="docs/fpdf2-logo.png" width=" 100 px ">',
+        '<hr width="200px">',
+        '<hr width="150pt">',
+        '<hr width=" 200 px ">',
+    ],
+)
+def test_html_img_and_hr_dimension_units(html_snippet):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html_snippet)
+    assert len(pdf.pages) == 1

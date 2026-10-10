@@ -1,4 +1,6 @@
 # pylint: disable=protected-access
+import pytest
+
 from fpdf import FPDF
 from fpdf.line_break import Fragment
 
@@ -118,10 +120,39 @@ def test_markdown_unrelated_escape():
     )
     expected = (Fragment("unrelated \\ escape **bold**", GSTATE, k=PDF.k),)
     assert frags == expected
+
     frags = merge_fragments(
         tuple(FPDF()._parse_chars("unrelated \\\\ double escape \\**bold\\**", True))
     )
-    expected = (Fragment("unrelated \\\\ double escape **bold**", GSTATE, k=PDF.k),)
+    expected = (Fragment("unrelated \\ double escape **bold**", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(FPDF()._parse_chars("unrelated \\\\\\ triple escape \\**bold\\**", True))
+    )
+    expected = (Fragment("unrelated \\\\ triple escape **bold**", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                "unrelated \\\\\\\\ quadruple escape \\**bold\\**", True
+            )
+        )
+    )
+    expected = (Fragment("unrelated \\\\ quadruple escape **bold**", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                "unrelated \\\\\\\\\\ quintuple escape \\**bold\\**", True
+            )
+        )
+    )
+    expected = (
+        Fragment("unrelated \\\\\\ quintuple escape **bold**", GSTATE, k=PDF.k),
+    )
     assert frags == expected
 
 
@@ -130,16 +161,48 @@ def test_markdown_parse_multiple_escape():
         tuple(FPDF()._parse_chars("\\\\**bold\\\\** double escaped", True))
     )
     expected = (
-        Fragment("\\\\", GSTATE, k=PDF.k),
-        Fragment("bold\\\\", GSTATE_B, k=PDF.k),
+        Fragment("\\", GSTATE, k=PDF.k),
+        Fragment("bold\\", GSTATE_B, k=PDF.k),
         Fragment(" double escaped", GSTATE, k=PDF.k),
     )
-
     assert frags == expected
+
     frags = merge_fragments(
         tuple(FPDF()._parse_chars("\\\\\\**triple bold\\\\\\** escaped", True))
     )
-    expected = (Fragment("\\\\**triple bold\\\\** escaped", GSTATE, k=PDF.k),)
+    expected = (Fragment("\\**triple bold\\** escaped", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(FPDF()._parse_chars("\\\\\\\\**quadruple bold\\\\\\\\** escaped", True))
+    )
+    expected = (
+        Fragment("\\\\", GSTATE, k=PDF.k),
+        Fragment("quadruple bold\\\\", GSTATE_B, k=PDF.k),
+        Fragment(" escaped", GSTATE, k=PDF.k),
+    )
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars("\\\\\\\\\\**quintuple bold\\\\\\\\\\** escaped", True)
+        )
+    )
+    expected = (Fragment("\\\\**quintuple bold\\\\** escaped", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars(
+                "\\\\\\\\\\\\**sextuple bold\\\\\\\\\\\\** escaped", True
+            )
+        )
+    )
+    expected = (
+        Fragment("\\\\\\", GSTATE, k=PDF.k),
+        Fragment("sextuple bold\\\\\\", GSTATE_B, k=PDF.k),
+        Fragment(" escaped", GSTATE, k=PDF.k),
+    )
     assert frags == expected
 
 
@@ -270,7 +333,7 @@ def test_markdown_parse_escape_non_marker():
 def test_markdown_parse_escape_before_marker_odd_even():
     frags = tuple(FPDF()._parse_chars("\\\\**bold**", True))
     expected = (
-        Fragment("\\\\", GSTATE, k=PDF.k),
+        Fragment("\\", GSTATE, k=PDF.k),
         Fragment("bold", GSTATE_B, k=PDF.k),
     )
     assert frags == expected
@@ -329,10 +392,28 @@ def test_markdown_parse_link_variations():
 
     frags = tuple(FPDF()._parse_chars("[**bold**](https://example.com)", True))
     assert len(frags) == 1
-    assert "".join(frags[0].characters) == "**bold**"
+    assert "".join(frags[0].characters) == "bold"
     assert frags[0].graphics_state.underline is True
-    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].graphics_state.font_style == "B"
     assert frags[0].link == "https://example.com"
+
+    frags = tuple(FPDF()._parse_chars("[**bold** normal](url)", True))
+    assert ["".join(frag.characters) for frag in frags] == ["bold", " normal"]
+    assert [frag.graphics_state.font_style for frag in frags] == ["B", ""]
+    assert all(frag.link == "url" for frag in frags)
+
+    frags = merge_fragments(tuple(FPDF()._parse_chars("[**bold](url)", True)))
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "**bold"
+    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].link == "url"
+
+    for text in ("[***a**b](url)", "[**a***b](url)"):
+        frags = merge_fragments(tuple(FPDF()._parse_chars(text, True)))
+        assert len(frags) == 1
+        assert "".join(frags[0].characters) == text[1:-6]
+        assert frags[0].graphics_state.font_style == ""
+        assert frags[0].link == "url"
 
     frags = tuple(FPDF()._parse_chars("[x](url)**y**", True))
     assert len(frags) == 2
@@ -349,3 +430,56 @@ def test_markdown_parse_link_variations():
     )
     assert frags == expected
     assert frags[1].link == "url"
+
+
+def test_markdown_parse_escaped_markers_inside_link():  # issue 1847
+    # Escaping markdown markers inside a link must consume the escape
+    # backslashes, exactly as it does outside of a link, instead of leaving
+    # them as literal backslashes in the rendered text.
+    frags = merge_fragments(
+        tuple(
+            FPDF()._parse_chars("[\\**Issue\\** 1844](https://example.com/1844)", True)
+        )
+    )
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "**Issue** 1844"
+    assert frags[0].link == "https://example.com/1844"
+    assert frags[0].graphics_state.font_style == ""
+    assert frags[0].graphics_state.underline is True
+
+    # A doubled backslash inside a link collapses to a single literal
+    # backslash, just like outside of a link.
+    frags = tuple(FPDF()._parse_chars("[a\\\\b](url)", True))
+    assert len(frags) == 1
+    assert "".join(frags[0].characters) == "a\\b"
+
+
+@pytest.mark.parametrize("marker", ["**", "__", "--", "~~"])
+@pytest.mark.parametrize("escape_count", [1, 2, 3, 4])
+@pytest.mark.parametrize("balanced", [False, True])
+def test_markdown_link_escaped_marker_adjacency(marker, escape_count, balanced):
+    pdf = FPDF()
+    pdf.MARKDOWN_LINK_UNDERLINE = False
+    label = "\\" * escape_count + marker * 2 + "Z"
+    if balanced:
+        label += marker
+    frags = tuple(pdf._parse_chars(f"[{label}](url) tail", True))
+    linked = [frag for frag in frags if frag.link == "url"]
+    active = balanced and escape_count % 2 == 1
+    expected = "\\" * (escape_count // 2) + marker * (1 if active else 2) + "Z"
+    if balanced and not active:
+        expected += marker
+    assert "".join(frag.string for frag in linked) == expected
+    for frag in linked:
+        styled = active and "Z" in frag.string
+        assert frag.font_style == (
+            "B"
+            if styled and marker == "**"
+            else "I" if styled and marker == "__" else ""
+        )
+        assert frag.underline == (styled and marker == "--")
+        assert frag.strikethrough == (styled and marker == "~~")
+    assert frags[-1].string == " tail"
+    assert frags[-1].font_style == ""
+    assert not frags[-1].underline
+    assert not frags[-1].strikethrough

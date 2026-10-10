@@ -7,6 +7,7 @@ in non-backward-compatible ways.
 """
 
 import decimal
+import re
 
 # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.9)
 from importlib import resources
@@ -36,6 +37,60 @@ Number = Union[int, float, decimal.Decimal]
 NumberClass = (int, float, decimal.Decimal)
 _StrBytes = TypeVar("_StrBytes", str, bytes)
 
+unit_splitter = re.compile(r"\s*(?P<value>[-+]?[\d\.]+)\s*(?P<unit>%|[a-zA-Z]*)")
+
+# https://www.w3.org/TR/css-values-4/#lengths
+relative_length_units = {
+    "%",  # (context sensitive, depends on which attribute it is applied to)
+    "em",  # (current font size)
+    "ex",  # (current font x-height)
+    # CSS 3
+    "ch",  # (advance measure of 0, U+0030 glyph)
+    "rem",  # (font-size of the root element)
+    "vw",  # (1% of viewport width)
+    "vh",  # (1% of viewport height)
+    "vmin",  # (smaller of vw or vh)
+    "vmax",  # (larger of vw or vh)
+    # CSS 4
+    "cap",  # (font cap height)
+    "ic",  # (advance measure of fullwidth U+6C34 glyph)
+    "lh",  # (line height)
+    "rlh",  # (root element line height)
+    "vi",  # (1% of viewport size in root element's inline axis)
+    "vb",  # (1% of viewport size in root element's block axis)
+}
+
+absolute_length_units = {
+    "in": 72.0,  # (inches, 72 pt)
+    "cm": 72.0 / 2.54,  # (centimeters, 72 / 2.54 pt)
+    "mm": 72.0 / 25.4,  # (millimeters 72 / 25.4 pt)
+    "pt": 1.0,  # (pdf canonical unit)
+    "pc": 12.0,  # (pica, 12 pt)
+    "px": 0.75,  # (reference pixel unit, 0.75 pt)
+    # CSS 3
+    "Q": 72.0 / 101.6,  # (quarter-millimeter, 72 / 101.6 pt)
+}
+
+
+def resolve_length(length_str: str, default_unit: str = "pt") -> float:
+    """Convert a length unit to our canonical length unit, pt."""
+    match = unit_splitter.match(length_str)
+    if match is None:
+        raise ValueError(f"Unable to parse '{length_str}' as a length") from None
+    value, unit = match.groups()
+    if not unit:
+        unit = default_unit
+
+    try:
+        return float(value) * absolute_length_units[unit]
+    except KeyError:
+        if unit in relative_length_units:
+            raise ValueError(
+                f"{length_str} uses unsupported relative length {unit}"
+            ) from None
+
+        raise ValueError(f"{length_str} contains unrecognized unit {unit}") from None
+
 
 class Padding(NamedTuple):
     top: float = 0
@@ -46,10 +101,14 @@ class Padding(NamedTuple):
     @classmethod
     def new(cls, padding: Union[Number, Sequence[Number], "Padding"]) -> "Padding":
         """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
+        if isinstance(padding, Padding):
+            return padding
         if isinstance(padding, NumberClass):
-            return Padding(
-                float(padding), float(padding), float(padding), float(padding)
-            )
+            val = float(padding)
+            return Padding(val, val, val, val)
+        if len(padding) == 1:
+            val = float(padding[0])
+            return Padding(val, val, val, val)
         if len(padding) == 2:
             return Padding(
                 float(padding[0]),
@@ -73,7 +132,7 @@ class Padding(NamedTuple):
             )
 
         raise ValueError(
-            f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+            f"padding shall be a number or a sequence of 1, 2, 3 or 4 numbers, got {str(padding)}"
         )
 
 
