@@ -481,3 +481,43 @@ def test_html_table_invalid_or_zero_widths(table_content):
     html = f"<table>{table_content}</table>"
     pdf.write_html(html)
     assert len(pdf.pages) == 1
+
+
+SPAN_TABLES = {
+    "colspan": "<table><tr><td{attr}>{text}</td><td>b</td></tr>"
+    "<tr><td>c</td><td>d</td><td>e</td></tr></table>",
+    "rowspan": "<table><tr><td{attr}>{text}</td><td>b</td></tr>"
+    "<tr><td>c</td></tr></table>",
+}
+
+
+def render_span_table(span, attr, text):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(SPAN_TABLES[span].format(attr=attr, text=text))
+    return pdf
+
+
+@pytest.mark.parametrize("text", ["a", ""], ids=["cell", "empty_cell"])
+@pytest.mark.parametrize("span", ["colspan", "rowspan"])
+@pytest.mark.parametrize("value", ["+2", "2.5", "2abc", " 2"])
+def test_html_table_span_leading_integer(tmp_path, span, value, text):
+    "Like browsers, a span value is read from its leading integer."
+    assert_pdf_equal(
+        render_span_table(span, f' {span}="{value}"', text),
+        render_span_table(span, f' {span}="2"', text),
+        tmp_path,
+    )
+
+
+@pytest.mark.parametrize("text", ["a", ""], ids=["cell", "empty_cell"])
+@pytest.mark.parametrize("span", ["colspan", "rowspan"])
+@pytest.mark.parametrize("value", ["x", "-1", "0", "", None])
+def test_html_table_invalid_span_counts_as_one(tmp_path, span, value, text):
+    "Like browsers, a missing, invalid or zero colspan or rowspan spans a single cell."
+    attr = f" {span}" if value is None else f' {span}="{value}"'
+    assert_pdf_equal(
+        render_span_table(span, attr, text),
+        render_span_table(span, f' {span}="1"', text),
+        tmp_path,
+    )
