@@ -320,6 +320,9 @@ def color_as_decimal(
         return color_from_rgb_string(color.lower())
     # Checks if color is a name and gets the hex value
     hexcolor = COLOR_DICT.get(color.lower(), color)
+    # Like browsers, a legacy HTML color of six hex digits may omit the "#"
+    if re.fullmatch(r"[0-9a-fA-F]{6}", hexcolor):
+        hexcolor = "#" + hexcolor
     return color_from_hex_string(hexcolor)
 
 

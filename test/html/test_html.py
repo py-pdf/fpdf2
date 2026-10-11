@@ -682,6 +682,38 @@ def test_html_table_bgcolor_rgb_function(tmp_path):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html", ['<font color="ff0000">red</font>', '<font color="FF0000">red</font>']
+)
+def test_html_font_color_without_hash(tmp_path, html):
+    "Like browsers, six hex digits without the leading # are a hex color."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<font color="#ff0000">red</font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_table_bgcolor_without_hash(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<table><tr bgcolor="eeeeee"><td>a</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<table><tr bgcolor="#eeeeee"><td>a</td></tr></table>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_color_without_hash_needs_six_hex_digits():
+    pdf = FPDF()
+    pdf.add_page()
+    for color in ("f00", "ff000", "gg0000"):
+        with pytest.raises(ValueError):
+            pdf.write_html(f'<font color="{color}">red</font>')
+
+
 def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf = FPDF()
     pdf.add_page()
