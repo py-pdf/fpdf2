@@ -402,6 +402,8 @@ def color_from_rgb_string(rgbstr: str) -> DeviceRGB | DeviceGray:
 
     Args:
         rgbstr (str): of the form `rgb(R, G, B)` or `rgb(R, G, B, A)`.
+            R, G and B can also be css percentages, as in `rgb(100%, 0%, 50%)`,
+            clamped to 0%-100%.
 
     Returns:
         DeviceRGB representation of the color.
@@ -417,12 +419,21 @@ def color_from_rgb_string(rgbstr: str) -> DeviceRGB | DeviceGray:
     rgbstr = rgbstr[4:-1]
     colors = rgbstr.split(",")
 
+    def component(value: str) -> int:
+        value = value.strip()
+        if value.endswith("%"):
+            # like css, a percentage outside 0%-100% is clamped
+            percentage = min(max(float(value[:-1]), 0.0), 100.0)
+            return round(percentage * 255 / 100)
+        return int(value)
+
     if len(colors) == 3:
-        r, g, b = (int(c) for c in colors)
+        r, g, b = (component(c) for c in colors)
         return rgb8(r, g, b, a=None)
 
     if len(colors) == 4:
-        return rgb8(*[int(c) for c in colors])
+        r, g, b = (component(c) for c in colors[:3])
+        return rgb8(r, g, b, int(colors[3]))
 
     raise ValueError(f"{rgbstr} could not be interpreted as a rgb(R, G, B[, A]) color")
 

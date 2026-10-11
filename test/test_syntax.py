@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
 import pytest
@@ -6,6 +7,7 @@ from fpdf.syntax import (
     DestinationXYZ,
     Name,
     PDFArray,
+    PDFDate,
     PDFObject,
     PDFString,
     create_dictionary_string,
@@ -16,6 +18,22 @@ class DummyObj(PDFObject):
     def __init__(self, obj_id: int):
         super().__init__()
         self.id = obj_id
+
+
+@pytest.mark.parametrize("year", [1, 12, 123, 999, 1000, 2026])
+@pytest.mark.parametrize(
+    "zone,with_tz,suffix",
+    [
+        (None, False, ""),
+        (timezone.utc, True, "Z"),
+        (timezone(timedelta(hours=-3, minutes=-30)), True, "-03'30'"),
+    ],
+)
+def test_pdf_date_four_digit_year(year, zone, with_tz, suffix):
+    value = datetime(year, 1, 2, 3, 4, 5, tzinfo=zone)
+    assert PDFDate(value, with_tz=with_tz).serialize() == (
+        f"(D:{year:04d}0102030405{suffix})"
+    )
 
 
 @pytest.mark.parametrize(
