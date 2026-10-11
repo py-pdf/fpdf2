@@ -82,6 +82,16 @@ rgb_colors = (
         rgb8(r=255, g=51, b=0, a=5),
         id="percentages with alpha",
     ),
+    pytest.param(
+        "rgb(150%, -10%, 50%)",
+        rgb8(r=255, g=0, b=128, a=None),
+        id="percentages clamped to 0%-100%",
+    ),
+    pytest.param(
+        "rgb(\t50%\t, 0%,\n0%)",
+        rgb8(r=128, g=0, b=0, a=None),
+        id="percentages with tabs and newlines",
+    ),
     pytest.param("rgb(a%, 0%, 0%)", ValueError, id="bad percentage"),
     pytest.param("rgb(a, s, d)", ValueError, id="bad characters"),
     pytest.param("(240, 170, 187)", ValueError, id="missing rgb"),

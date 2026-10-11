@@ -402,7 +402,8 @@ def color_from_rgb_string(rgbstr: str) -> DeviceRGB | DeviceGray:
 
     Args:
         rgbstr (str): of the form `rgb(R, G, B)` or `rgb(R, G, B, A)`.
-            R, G and B can also be css percentages, as in `rgb(100%, 0%, 50%)`.
+            R, G and B can also be css percentages, as in `rgb(100%, 0%, 50%)`,
+            clamped to 0%-100%.
 
     Returns:
         DeviceRGB representation of the color.
@@ -419,8 +420,11 @@ def color_from_rgb_string(rgbstr: str) -> DeviceRGB | DeviceGray:
     colors = rgbstr.split(",")
 
     def component(value: str) -> int:
+        value = value.strip()
         if value.endswith("%"):
-            return round(float(value[:-1]) * 255 / 100)
+            # like css, a percentage outside 0%-100% is clamped
+            percentage = min(max(float(value[:-1]), 0.0), 100.0)
+            return round(percentage * 255 / 100)
         return int(value)
 
     if len(colors) == 3:
