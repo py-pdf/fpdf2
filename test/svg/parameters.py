@@ -501,6 +501,12 @@ test_svg_attribute_conversion = (
         id="fill color name",
     ),
     pytest.param(
+        '<path fill="rgb(100%, 0%, 0%)"/>',
+        Gs(fill_color="#f00"),
+        no_error(),
+        id="fill color rgb() percentages",
+    ),
+    pytest.param(
         '<path fill="BLACK"/>',
         Gs(fill_color="#000"),
         no_error(),

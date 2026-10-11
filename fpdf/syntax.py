@@ -402,15 +402,14 @@ class PDFDate:
         _security_handler: Optional["StandardSecurityHandler"] = None,
         _obj_id: Optional[int] = None,
     ) -> str:
+        out_str = f"D:{self.date.year:04d}{self.date:%m%d%H%M%S}"
         if self.with_tz:
             assert self.date.tzinfo
             if self.date.tzinfo == timezone.utc:
-                out_str = f"D:{self.date:%Y%m%d%H%M%SZ}"
+                out_str += "Z"
             else:
-                out_str = f"D:{self.date:%Y%m%d%H%M%S%z}"
+                out_str += f"{self.date:%z}"
                 out_str = out_str[:-2] + "'" + out_str[-2:] + "'"
-        else:
-            out_str = f"D:{self.date:%Y%m%d%H%M%S}"
         if _security_handler and self.encrypt:
             assert _obj_id
             return _security_handler.encrypt_string(out_str, _obj_id)

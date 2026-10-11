@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 import pytest
@@ -6,7 +7,13 @@ from pypdf.generic import read_object
 
 from fpdf import FPDF
 
-from fpdf.syntax import DestinationXYZ, PDFArray, PDFObject, create_dictionary_string
+from fpdf.syntax import (
+    DestinationXYZ,
+    PDFArray,
+    PDFDate,
+    PDFObject,
+    create_dictionary_string,
+)
 
 
 class DummyObj(PDFObject):
@@ -38,6 +45,22 @@ def test_display_mode_with_small_numeric_zoom():
     pdf.set_display_mode(zoom)
     reader = PdfReader(BytesIO(pdf.output()), strict=True)
     assert float(reader.trailer["/Root"]["/OpenAction"][-1]) == zoom / 100
+
+
+@pytest.mark.parametrize("year", [1, 12, 123, 999, 1000, 2026])
+@pytest.mark.parametrize(
+    "zone,with_tz,suffix",
+    [
+        (None, False, ""),
+        (timezone.utc, True, "Z"),
+        (timezone(timedelta(hours=-3, minutes=-30)), True, "-03'30'"),
+    ],
+)
+def test_pdf_date_four_digit_year(year, zone, with_tz, suffix):
+    value = datetime(year, 1, 2, 3, 4, 5, tzinfo=zone)
+    assert PDFDate(value, with_tz=with_tz).serialize() == (
+        f"(D:{year:04d}0102030405{suffix})"
+    )
 
 
 @pytest.mark.parametrize(

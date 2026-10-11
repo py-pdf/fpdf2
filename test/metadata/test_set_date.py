@@ -15,6 +15,12 @@ def test_setting_bad_date():
         doc.set_creation_date("i am not a date")
 
 
+def test_setting_date_before_year_1000():
+    doc = fpdf.FPDF()
+    doc.set_creation_date(datetime(123, 1, 2, 3, 4, 5, tzinfo=timezone.utc))
+    assert b"/CreationDate (D:01230102030405Z)" in doc.output()
+
+
 def test_setting_old_date(tmp_path):
     doc = fpdf.FPDF()
     doc.add_page()
