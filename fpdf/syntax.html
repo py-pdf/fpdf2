@@ -99,7 +99,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L296-L329" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L296-L329" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def build_obj_dict(
     key_values: Dict[str, object],
@@ -147,7 +147,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L332-L333" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L332-L333" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def camel_case(snake_case: str) -&gt; str:
     return &#34;&#34;.join(x for x in snake_case.title() if x != &#34;_&#34;)</code></pre>
@@ -161,7 +161,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L91-L92" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L91-L92" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def clear_empty_fields(d: Mapping[str, object]) -&gt; Mapping[str, object]:
     return {k: v for k, v in d.items() if v or v is False or v == 0}</code></pre>
@@ -175,7 +175,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L95-L141" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L95-L141" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def create_dictionary_string(
     dict_: Mapping[str, object],
@@ -240,7 +240,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L144-L146" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L144-L146" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def create_list_string(list_: list[str]) -&gt; str:
     &#34;&#34;&#34;format list of strings as PDF array&#34;&#34;&#34;
@@ -255,7 +255,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L154-L164" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L154-L164" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def create_stream(
     stream: bytearray | bytes | str,
@@ -278,7 +278,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L149-L151" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L149-L151" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def iobj_ref(n: int) -&gt; str:
     &#34;&#34;&#34;format an indirect PDF Object reference from its id number&#34;&#34;&#34;
@@ -293,7 +293,7 @@ and prefixed with a slash character "/".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L539-L596" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L539-L596" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_pdf_primitive(primitive: PDFPrimitive) -&gt; Raw:
     &#34;&#34;&#34;
@@ -389,7 +389,7 @@ representation.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L167-L172" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L167-L172" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def wrap_in_local_context(draw_commands: list[str]) -&gt; list[str]:
     &#34;&#34;&#34;
@@ -413,7 +413,7 @@ draw style only apply to these commands.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L453-L459" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L453-L459" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Destination(ABC):
     def serialize(
@@ -442,7 +442,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L454-L459" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L454-L459" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -463,7 +463,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L462-L521" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L462-L521" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class DestinationXYZ(Destination):
     def __init__(
@@ -542,7 +542,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L506-L521" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L506-L521" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def replace(
     self,
@@ -570,7 +570,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L492-L504" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L492-L504" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -598,7 +598,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L179-L194" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L179-L194" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Name(str):
     &#34;&#34;&#34;str subclass signifying a PDF name, which are emitted differently than normal strings.&#34;&#34;&#34;
@@ -638,7 +638,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L186-L194" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L186-L194" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -662,7 +662,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L412-L449" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L412-L449" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFArray(list[Any]):
     def serialize(
@@ -719,7 +719,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L413-L449" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L413-L449" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -771,7 +771,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L263-L293" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L263-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFContentStream(PDFObject):
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
@@ -833,7 +833,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L278-L279" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L278-L279" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def content_stream(self) -&gt; bytes:
     return self._contents</code></pre>
@@ -851,7 +851,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L282-L293" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L282-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -878,7 +878,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L375-L409" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L375-L409" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFDate:
     def __init__(
@@ -935,7 +935,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L392-L409" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L392-L409" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -967,7 +967,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L197-L260" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L197-L260" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFObject:
     # Main features of this class:
@@ -1072,7 +1072,7 @@ The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L206-L212" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L206-L212" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def id(self) -&gt; int:
@@ -1089,7 +1089,7 @@ def id(self) -&gt; int:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L218-L220" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L218-L220" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def ref(self) -&gt; str:
@@ -1107,7 +1107,7 @@ def ref(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L243-L245" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L243-L245" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def content_stream(self) -&gt; Optional[bytes]:
     &#34;Return None for no stream; subclasses may return bytes, including an empty stream.&#34;
@@ -1122,7 +1122,7 @@ def ref(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L222-L240" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L222-L240" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -1156,7 +1156,7 @@ def ref(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L336-L372" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L336-L372" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFString(str):
     USE_HEX_ENCODING = True
@@ -1230,7 +1230,7 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L354-L372" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L354-L372" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
@@ -1264,7 +1264,7 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L524-L526" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L524-L526" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@runtime_checkable
 class PrimitiveSerializable(Protocol):
@@ -1310,7 +1310,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L526-L526" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L526-L526" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str: ...</code></pre>
 </details>
@@ -1326,7 +1326,7 @@ Protocol classes can be generic, they are defined as::</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/79674e5a5c4719b6ca3e3d5a5354864aa08c9911/fpdf/syntax.py#L175-L176" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/287743f0502c0fbc6b894d41f944ec745f66d920/fpdf/syntax.py#L175-L176" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Raw(str):
     &#34;&#34;&#34;str subclass signifying raw data to be directly emitted to PDF without transformation.&#34;&#34;&#34;</code></pre>
