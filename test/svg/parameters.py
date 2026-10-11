@@ -459,6 +459,18 @@ test_svg_attribute_conversion = (
         id="fill color name",
     ),
     pytest.param(
+        '<path fill="BLACK"/>',
+        Gs(fill_color="#000"),
+        no_error(),
+        id="fill color name uppercase",
+    ),
+    pytest.param(
+        '<path fill="transparent"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color transparent",
+    ),
+    pytest.param(
         '<path fill="#0007"/>',
         Gs(fill_color="#0007", fill_opacity=0x77 / 0xFF),
         no_error(),
@@ -541,6 +553,12 @@ test_svg_attribute_conversion = (
         Gs(stroke_color="#000"),
         no_error(),
         id="stroke color name",
+    ),
+    pytest.param(
+        '<path stroke="Transparent"/>',
+        Gs(stroke_color=None),
+        no_error(),
+        id="stroke color transparent",
     ),
     pytest.param(
         '<path stroke="#0007"/>',

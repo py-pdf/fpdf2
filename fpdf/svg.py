@@ -255,16 +255,14 @@ shape_tags = xmlns_lookup(
 
 @force_nodocument
 def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
-    try:
-        colorstr = html.COLOR_DICT[colorstr]
-    except KeyError:
-        pass
+    # color keywords are ASCII case-insensitive in SVG/CSS: "Red" is "red"
+    colorstr = html.COLOR_DICT.get(colorstr.strip().lower(), colorstr.strip())
 
     if colorstr.startswith("#"):
         return color_from_hex_string(colorstr)
 
-    if colorstr.startswith("rgb"):
-        return color_from_rgb_string(colorstr)
+    if colorstr.lower().startswith("rgb"):
+        return color_from_rgb_string(colorstr.lower())
 
     raise ValueError(f"unsupported color specification {colorstr}")
 
@@ -323,18 +321,21 @@ def optional(
     return inheritable(value, converter)
 
 
+@force_nodocument
+def svg_paint(colorstr: Optional[str]) -> Any:
+    """A fill or stroke paint: "transparent" paints nothing, like "none"."""
+    if colorstr and colorstr.startswith("url("):
+        return None
+    if colorstr and colorstr.strip().lower() == "transparent":
+        return None
+    return optional(colorstr, svgcolor)
+
+
 # this is mostly SVG 1.1 stuff. SVG 2 changed some of this and the documentation is much
 # harder to assemble into something coherently understandable
 svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#FillProperty
-    "fill": lambda colorstr: (
-        "fill_color",
-        (
-            optional(colorstr, svgcolor)
-            if not (colorstr and colorstr.startswith("url("))
-            else None
-        ),
-    ),
+    "fill": lambda colorstr: ("fill_color", svg_paint(colorstr)),
     # https://www.w3.org/TR/SVG11/painting.html#FillRuleProperty
     "fill-rule": lambda fillrulestr: ("intersection_rule", inheritable(fillrulestr)),
     # https://www.w3.org/TR/SVG11/painting.html#FillOpacityProperty
@@ -343,14 +344,7 @@ svg_attr_map: dict[str, Any] = {
         inheritable(filopstr, clamp_float(0.0, 1.0)),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeProperty
-    "stroke": lambda colorstr: (
-        "stroke_color",
-        (
-            optional(colorstr, svgcolor)
-            if not (colorstr and colorstr.startswith("url("))
-            else None
-        ),
-    ),
+    "stroke": lambda colorstr: ("stroke_color", svg_paint(colorstr)),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeWidthProperty
     "stroke-width": lambda valuestr: (
         "stroke_width",
