@@ -6,6 +6,7 @@ import http.client
 import ipaddress
 import io
 import logging
+import re
 import socket
 import zlib
 from dataclasses import dataclass
@@ -479,7 +480,8 @@ def preload_image(
 
 
 def _is_svg(bytes_: bytes) -> bool:
-    return bytes_.startswith(b"<?xml ") or bytes_.startswith(b"<svg ")
+    bytes_ = bytes_.removeprefix(b"\xef\xbb\xbf").lstrip(b" \t\r\n")
+    return bool(re.match(rb"(?:<\?xml[ \t\r\n]|<svg[ \t\r\n/>])", bytes_))
 
 
 def _is_pil_image(obj: Any) -> TypeGuard[PILImage]:
