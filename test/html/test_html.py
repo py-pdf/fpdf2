@@ -6,7 +6,7 @@ import pytest
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
 from fpdf.errors import FPDFException
-from fpdf.html import ol_prefix
+from fpdf.html import ol_prefix, ul_prefix
 from fpdf.util import int_to_letters
 from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
@@ -324,6 +324,30 @@ def test_html_ul_type_square_core_font(tmp_path):
     expected.add_page()
     expected.write_html("<ul><li>item</li></ul>")
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize("ul_type", ["disc", "circle", "square"])
+def test_html_ul_type_case_insensitive(tmp_path, ul_type):
+    "Like browsers, <ul type> keywords are case-insensitive."
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    pdf.write_html(f'<ul type="{ul_type.upper()}"><li>a</li></ul>')
+    pdf.write_html(f'<ul type="{ul_type.title()}"><li>b</li></ul>')
+    expected = FPDF()
+    expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    expected.set_font("DejaVuSans")
+    expected.add_page()
+    expected.write_html(f'<ul type="{ul_type}"><li>a</li></ul>')
+    expected.write_html(f'<ul type="{ul_type}"><li>b</li></ul>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_ul_type_single_character_keeps_case():
+    "A one-character type is used as the bullet as-is, so its case is kept."
+    assert ul_prefix("X", is_ttf_font=False) == "X"
+    assert ul_prefix("x", is_ttf_font=False) == "x"
 
 
 def test_html_li_prefix_color(tmp_path):

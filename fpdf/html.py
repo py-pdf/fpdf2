@@ -1480,11 +1480,13 @@ def _scale_units(
 
 
 def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
-    if ul_type == "disc":
+    # Like browsers, the keywords are case-insensitive: type="DISC" is a disc
+    keyword = ul_type.lower()
+    if keyword == "disc":
         return BULLET_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
-    if ul_type == "circle":
+    if keyword == "circle":
         return RING_OPERATOR_UNICODE if is_ttf_font else DEGREE_SIGN_WIN1252
-    if ul_type == "square":
+    if keyword == "square":
         # Windows-1252 has no square, so core fonts fall back to the bullet
         return BLACK_SMALL_SQUARE_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
     if len(ul_type) == 1:
