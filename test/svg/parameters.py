@@ -513,6 +513,12 @@ test_svg_attribute_conversion = (
         id="fill-opacity too big",
     ),
     pytest.param(
+        '<path fill-opacity="50%"/>',
+        Gs(fill_opacity=0.5),
+        no_error(),
+        id="fill-opacity percentage",
+    ),
+    pytest.param(
         '<path fill-opacity="inherit"/>',
         Gs(fill_opacity=GraphicsStyle.INHERIT),
         no_error(),
@@ -721,6 +727,30 @@ test_svg_attribute_conversion = (
         Gs(stroke_opacity=1.0),
         no_error(),
         id="stroke-opacity too big",
+    ),
+    pytest.param(
+        '<path stroke-opacity="150%"/>',
+        Gs(stroke_opacity=1.0),
+        no_error(),
+        id="stroke-opacity percentage too big",
+    ),
+    pytest.param(
+        '<path opacity="25%"/>',
+        Gs(fill_opacity=0.25, stroke_opacity=0.25),
+        no_error(),
+        id="opacity percentage",
+    ),
+    pytest.param(
+        '<path opacity="1.5"/>',
+        Gs(fill_opacity=1.0, stroke_opacity=1.0),
+        no_error(),
+        id="opacity too big",
+    ),
+    pytest.param(
+        '<path opacity="-1"/>',
+        Gs(fill_opacity=0.0, stroke_opacity=0.0),
+        no_error(),
+        id="opacity too small",
     ),
     pytest.param(
         '<path stroke-opacity="inherit"/>',

@@ -290,7 +290,9 @@ def convert_miterlimit(incoming: str) -> float:
 @force_nodocument
 def clamp_float(min_val: float, max_val: float) -> Callable[[str], float]:
     def converter(value: str) -> float:
-        val = float(value)
+        value = value.strip()
+        # SVG 2 / CSS also allow opacities as a percentage: "50%" is 0.5
+        val = float(value[:-1]) / 100 if value.endswith("%") else float(value)
         if val < min_val:
             return min_val
         if val > max_val:
@@ -418,7 +420,8 @@ def apply_styles(
     if opacity_str is None:
         opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
     if opacity_str is not None:
-        opacity = float(opacity_str)
+        # out-of-range values are clamped, as for fill-opacity and stroke-opacity
+        opacity = clamp_float(0.0, 1.0)(opacity_str)
         stylable.style.fill_opacity = opacity
         stylable.style.stroke_opacity = opacity
 
