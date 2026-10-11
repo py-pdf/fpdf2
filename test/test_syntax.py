@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pytest
 
 from fpdf.syntax import (
@@ -57,8 +59,8 @@ def test_pdf_array_serializable_strings(elements, expected):
     assert PDFArray(elements).serialize() == expected
 
 
-def test_pdf_array_serializable_strings_encryption(mocker):
-    security_handler = mocker.Mock()
+def test_pdf_array_serializable_strings_encryption():
+    security_handler = Mock()
     security_handler.encrypt_string.return_value = "(ciphertext)"
     value = PDFString("secret", encrypt=True)
     assert (
