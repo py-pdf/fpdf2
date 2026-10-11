@@ -35,6 +35,7 @@ from .outline import OutlineDictionary, OutlineItemDictionary, build_outline_obj
 from .pattern import Gradient, MeshShading, Pattern, Shading
 from .sign import Signature, sign_content
 from .syntax import (
+    _format_pdf_number,
     DestinationXYZ,
     Name,
     PDFArray,
@@ -2185,7 +2186,7 @@ class OutputProducer:
                 "/XYZ",
                 "null",
                 "null",
-                str(cast(float, fpdf.zoom_mode) / 100),
+                _format_pdf_number(cast(float, fpdf.zoom_mode) / 100),
             ]
         catalog_obj.open_action = pdf_list(zoom_config)
         if struct_tree_root_obj:
