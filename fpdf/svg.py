@@ -99,6 +99,7 @@ TRANSFORM_GETTER = re.compile(
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+-]+)\)"
 )
 
+COORDINATE_RE = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
 
@@ -770,20 +771,35 @@ class ShapeBuilder:
         path.line_to(x2, y2)
         return path
 
+    @staticmethod
+    def _complete_points(points: str) -> str:
+        """The coordinate pairs of a points attribute, dropping a trailing odd one.
+
+        An odd number of coordinates is an error that is rendered up to the last
+        complete pair, like an incorrect <path>; no points renders nothing.
+        https://www.w3.org/TR/SVG11/shapes.html#PolylineElement
+        """
+        coordinates = COORDINATE_RE.findall(points)
+        if len(coordinates) % 2:
+            coordinates.pop()
+        return " ".join(coordinates)
+
     @classmethod
     def polyline(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <polyline> into a PDF path."""
         path = cls.new_path(tag)
-        points = "M" + tag.attrib["points"]
-        svg_path_converter(path, points)
+        points = cls._complete_points(tag.attrib["points"])
+        if points:
+            svg_path_converter(path, "M" + points)
         return path
 
     @classmethod
     def polygon(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <polygon> into a PDF path."""
         path = cls.new_path(tag, clipping_path)
-        points = "M" + tag.attrib["points"] + "Z"
-        svg_path_converter(path, points)
+        points = cls._complete_points(tag.attrib["points"])
+        if points:
+            svg_path_converter(path, "M" + points + "Z")
         return path
 
 
