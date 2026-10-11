@@ -1,6 +1,13 @@
 import pytest
 
-from fpdf.syntax import DestinationXYZ, PDFArray, PDFObject, create_dictionary_string
+from fpdf.syntax import (
+    DestinationXYZ,
+    Name,
+    PDFArray,
+    PDFObject,
+    PDFString,
+    create_dictionary_string,
+)
 
 
 class DummyObj(PDFObject):
@@ -33,6 +40,32 @@ class DummyObj(PDFObject):
 def test_pdf_array_serialize_booleans_and_numbers(elements, expected):
     array = PDFArray(elements)
     assert array.serialize() == expected
+
+
+@pytest.mark.parametrize(
+    "elements,expected",
+    [
+        ([PDFString("hello")], "[(hello)]"),
+        ([PDFString("Hello (world)")], r"[(Hello \(world\))]"),
+        ([PDFString("é")], "[<feff00e9>]"),
+        ([Name("Example Name")], "[/Example#20Name]"),
+        ([PDFString("hello"), Name("my name")], "[(hello)\n/my#20name]"),
+        (["/Literal", PDFString("hi")], "[/Literal\n(hi)]"),
+    ],
+)
+def test_pdf_array_serializable_strings(elements, expected):
+    assert PDFArray(elements).serialize() == expected
+
+
+def test_pdf_array_serializable_strings_encryption(mocker):
+    security_handler = mocker.Mock()
+    security_handler.encrypt_string.return_value = "(ciphertext)"
+    value = PDFString("secret", encrypt=True)
+    assert (
+        PDFArray([value]).serialize(_security_handler=security_handler, _obj_id=3)
+        == "[(ciphertext)]"
+    )
+    security_handler.encrypt_string.assert_called_once_with(value, 3)
 
 
 @pytest.mark.parametrize(

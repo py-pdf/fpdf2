@@ -415,7 +415,9 @@ class PDFArray(list[Any]):
         _security_handler: Optional["StandardSecurityHandler"] = None,
         _obj_id: Optional[int] = None,
     ) -> str:
-        if all(isinstance(elem, str) for elem in self):
+        if all(
+            isinstance(elem, str) and not hasattr(elem, "serialize") for elem in self
+        ):
             serialized_elems = " ".join(self)
         elif all(isinstance(elem, bool) for elem in self):
             serialized_elems = " ".join(str(elem).lower() for elem in self)
