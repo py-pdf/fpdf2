@@ -22,6 +22,7 @@ from .drawing_primitives import (
     DeviceGray,
     DeviceRGB,
     color_from_hex_string,
+    color_from_rgb_string,
     convert_to_device_color,
 )
 from .enums import Align, CharVPos, TextEmphasis, XPos, YPos
@@ -311,8 +312,12 @@ def color_as_decimal(
     Convert a web color name to a (R, G, B) color tuple.
     cf. https://en.wikipedia.org/wiki/Web_colors#HTML_color_names
     """
-    if not color:
+    if not color or not color.strip():
         return None
+    color = color.strip()
+    # CSS functional notation, as written by many HTML editors: rgb(255, 0, 0)
+    if color.lower().startswith("rgb("):
+        return color_from_rgb_string(color.lower())
     # Checks if color is a name and gets the hex value
     hexcolor = COLOR_DICT.get(color.lower(), color)
     return color_from_hex_string(hexcolor)
@@ -342,6 +347,12 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
         return resolve_length(val_str, default_unit=default_unit)
     except (ValueError, KeyError):
         return 0.0
+
+
+def _parse_html_span(val: str | None) -> int:
+    """Parse a colspan / rowspan attribute like browsers do: an invalid value or one below 1 means 1."""
+    match = re.match(r"\s*\+?(\d+)", val or "")
+    return max(int(match.group(1)), 1) if match else 1
 
 
 class HTML2FPDF(HTMLParser):
@@ -586,8 +597,6 @@ class HTML2FPDF(HTMLParser):
         indent: Union[float, Align] = 0,
         bullet: str = "",
     ) -> None:
-        # Note that currently top_margin is ignored if bullet is also provided,
-        # due to the behaviour of TextRegion._render_column_lines()
         self._end_paragraph()
         self.align = align
         if isinstance(indent, Align):
@@ -595,7 +604,7 @@ class HTML2FPDF(HTMLParser):
             if not self.align:
                 self.align = indent
             indent = 0
-        if not top_margin and not self.follows_heading:
+        if not top_margin and not bullet and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
         prev_family = self.pdf.font_family
         prev_style = self.pdf.font_style
@@ -717,8 +726,8 @@ class HTML2FPDF(HTMLParser):
             if bgcolor_str is None and self.tr is not None:
                 bgcolor_str = self.tr.get("bgcolor")
             bgcolor = color_as_decimal(bgcolor_str)
-            colspan = int(self.td_th.get("colspan") or "1")
-            rowspan = int(self.td_th.get("rowspan") or "1")
+            colspan = _parse_html_span(self.td_th.get("colspan"))
+            rowspan = _parse_html_span(self.td_th.get("rowspan"))
             emphasis = 0
             if self.td_th.get("b"):
                 emphasis |= TextEmphasis.B
@@ -1086,13 +1095,13 @@ class HTML2FPDF(HTMLParser):
             else:
                 b_margin = l_margin = t_margin = 0.0
             l_margin = self._normalize_l_margin(l_margin)
-            self._ln(t_margin)
             numeric_indent = 0.0 if isinstance(l_margin, Align) else l_margin
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
                 indent=numeric_indent * self.indent,
+                top_margin=t_margin,
                 bottom_margin=b_margin,
                 bullet=bullet,
             )
@@ -1377,8 +1386,8 @@ class HTML2FPDF(HTMLParser):
                     self.td_th.get("bgcolor") or self.tr.get("bgcolor", None)
                 )
                 style = FontFace(fill_color=bgcolor) if bgcolor else None
-                colspan = int(self.td_th.get("colspan", "1"))
-                rowspan = int(self.td_th.get("rowspan", "1"))
+                colspan = _parse_html_span(self.td_th.get("colspan"))
+                rowspan = _parse_html_span(self.td_th.get("rowspan"))
                 self.table_row.cell(
                     text="", style=style, colspan=colspan, rowspan=rowspan
                 )

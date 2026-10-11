@@ -19,16 +19,22 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.9.0] - Not released yet
 ### Added
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
+* documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
+* Python 3.15 is now officially supported
 ### Fixed
 * `FPDF.write_html()` ignores an unsupported `align` value on `<td>`, `<th>` and `<tr>`, such as `middle`, like it already does for `<p>`, instead of raising `ValueError` - thanks to @RavSinghChandan
+* Bulleted text-column paragraphs now honor their top margins, indented paragraphs retain the column's right boundary, and HTML list items honor their `TextStyle.t_margin` - based on [PR #1218](https://github.com/py-pdf/fpdf2/pull/1218)
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
 * `FPDF.write_html()` supports `<ul type="square">`, the third standard HTML bullet type, instead of raising `NotImplementedError`: Unicode fonts use ▪ and core fonts fall back to the bullet - thanks to @RavSinghChandan
+* `FPDF.write_html()` accepts css `rgb(R, G, B)` colors, and colors with surrounding spaces, in `color` and `bgcolor` attributes instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `IndexError` on an `<ol type="a">` or `<ol type="A">` list with more than 26 items: like browsers, letters continue with `aa`, `ab`... and a `start` below 1 shows as a number - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
+* `FPDF.write_html()` treats an invalid `colspan` or `rowspan` on `<td>` / `<th>`, or one below 1, as 1 like browsers do, instead of raising `ValueError` or `ZeroDivisionError` - thanks to @RavSinghChandan
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
-
 ### Changed
 * Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision
+### Removed
+* support for Python 3.10, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions)
 
 
 ## [2.8.9] - 2026-09-29

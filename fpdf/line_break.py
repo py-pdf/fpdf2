@@ -823,6 +823,7 @@ class MultiLineBreak:
         line_height: float = 1.0,
         skip_leading_spaces: bool = False,
         first_line_indent: float = 0,
+        indent: float = 0,
     ):
         """Accept text as Fragments, to be split into individual lines depending
         on line width and text height.
@@ -845,6 +846,7 @@ class MultiLineBreak:
             skip_leading_spaces (bool, optional): On each line, any space characters
                 at the beginning will be skipped. Default value: False.
             first_line_indent (float, optional): left spacing before first line of text in paragraph.
+            indent (float, optional): reduces the available width on every line.
         """
         self.get_width: Callable[[float], float]
         self.fragments = fragments
@@ -866,6 +868,7 @@ class MultiLineBreak:
         # the same character index within *different* fragments (issue #1250).
         self.idx_last_forced_break: Optional[Tuple[int, int]] = None
         self.first_line_indent = first_line_indent
+        self.indent = indent
         self._is_first_line = True
 
     # pylint: disable=too-many-return-statements
@@ -879,7 +882,7 @@ class MultiLineBreak:
 
         current_font_height: float = 0
 
-        max_width = self.get_width(current_font_height)
+        max_width = self.get_width(current_font_height) - self.indent
         # The full max width will be passed on via TextLine to FPDF._render_styled_text_line().
         current_line = CurrentLine(
             max_width=max_width,
@@ -922,7 +925,7 @@ class MultiLineBreak:
                 current_fragment.font_size, current_font_height
             ):
                 current_font_height = current_fragment.font_size  # document units
-                max_width = self.get_width(current_font_height)
+                max_width = self.get_width(current_font_height) - self.indent
                 current_line.max_width = max_width
                 for margin in self.margins:
                     max_width -= float(margin)

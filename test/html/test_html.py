@@ -653,6 +653,35 @@ def test_html_custom_pre_code_font_deprecated(tmp_path):  # issue 770
     assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<font color="rgb(255, 0, 0)">red</font>',
+        '<font color="RGB(255,0,0)">red</font>',
+        '<font color=" #ff0000 ">red</font>',
+    ],
+)
+def test_html_font_color_rgb_function(tmp_path, html):
+    "A css rgb() color, or one with surrounding spaces, renders like its hex value."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<font color="#ff0000">red</font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_table_bgcolor_rgb_function(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<table><tr bgcolor="rgb(238, 238, 238)"><td>a</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<table><tr bgcolor="#eeeeee"><td>a</td></tr></table>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf = FPDF()
     pdf.add_page()
@@ -1150,6 +1179,31 @@ def test_bulleted_paragraphs():
         f'supported by the font used: "{pdf.font_family+pdf.font_style}". Please consider using a Unicode font.'
     )
     assert str(error.value) == expected_msg
+
+
+@pytest.mark.parametrize("margin", [0, 2, 10])
+@pytest.mark.parametrize("tag", ["ul", "ol"])
+def test_html_list_item_top_margin(monkeypatch, margin, tag):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    positions = {}
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        text = "".join(fragment.string for fragment in line.fragments)
+        positions[text] = pdf.y
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    pdf.write_html(
+        f"<{tag}><li>First</li><li>Second</li></{tag}>",
+        tag_styles={"li": TextStyle(l_margin=10, t_margin=margin)},
+    )
+    assert positions["First"] == pytest.approx(pdf.t_margin)
+    assert positions["Second"] - positions["First"] == pytest.approx(
+        pdf.font_size + margin
+    )
 
 
 def test_html_list_vertical_margin(tmp_path):

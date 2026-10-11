@@ -10,6 +10,76 @@ PNG_DIR = HERE.parent / "image/png_images"
 SVG_DIR = HERE.parent / "svg/svg_sources"
 
 
+@pytest.mark.parametrize("bullet", ["", "*"])
+@pytest.mark.parametrize("top_margin", [0, 10])
+def test_paragraph_top_margin_with_bullet(monkeypatch, bullet, top_margin):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    positions = {}
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        text = "".join(fragment.string for fragment in line.fragments)
+        positions[text] = pdf.y
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    with pdf.text_columns() as cols:
+        with cols.paragraph(top_margin=10, bullet_string=bullet) as paragraph:
+            paragraph.write("First")
+        with cols.paragraph(top_margin=top_margin, bullet_string=bullet) as paragraph:
+            paragraph.write("Second")
+    assert positions["First"] == pytest.approx(pdf.t_margin)
+    assert positions["Second"] == pytest.approx(
+        pdf.t_margin + pdf.font_size + top_margin
+    )
+
+
+@pytest.mark.parametrize("align", ["L", "C", "R", "J"])
+@pytest.mark.parametrize("bullet", ["", "*"])
+def test_paragraph_indent_preserves_right_boundary(monkeypatch, align, bullet):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    lines = []
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        lines.append((pdf.x, line))
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    with pdf.text_columns(text_align=align, ncols=2) as cols:
+        with cols.paragraph(
+            indent=10, first_line_indent=5, bullet_string=bullet
+        ) as paragraph:
+            paragraph.write(LOREM_IPSUM[:300])
+    right = pdf.l_margin + (pdf.epw - 10) / 2
+    for x, line in lines:
+        assert x + line.max_width == pytest.approx(right)
+        assert line.text_width <= line.max_width - 2 * pdf.c_margin
+
+
+def test_bullet_top_margin_after_page_break(monkeypatch):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.set_y(pdf.h - pdf.b_margin - 2)
+    positions = []
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        positions.append((pdf.page, pdf.y))
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    with pdf.text_columns() as cols:
+        with cols.paragraph(top_margin=10, indent=10, bullet_string="*") as paragraph:
+            paragraph.write("Next page")
+    assert positions == [(2, pdf.t_margin), (2, pdf.t_margin)]
+
+
 def test_tcols_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -468,3 +538,71 @@ def test_tcols_ln_with_custom_height():
     # not to the first line of the next paragraph.
     assert heights[1] == 16
     assert heights[2] == heights[3] == heights[0]
+
+
+def test_tcols_bullets_indent(tmp_path):
+    """Ensure that the top/bottom margins work with indented/bulleted
+    paragraphs.
+    Ensure that indented paragraphs have a reduced total width.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 14)
+    pdf.set_top_margin(50)
+    pdf.set_auto_page_break(True, 50)
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    with pdf.text_columns(text_align="L", ncols=2) as cols:
+        cols.write("Paragraphs with Top Margin\n\n")
+        for _ in range(4):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 4,
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+        for _ in range(5):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 4,
+                indent=10,
+                bullet_string="\x95",
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+    pdf.add_page()
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    with pdf.text_columns(text_align="L", ncols=2) as cols:
+        cols.write("Paragraphs with Bottom Margin\n\n")
+        for _ in range(4):
+            with cols.paragraph(
+                text_align="J",
+                bottom_margin=pdf.font_size * 4,
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+        for _ in range(5):
+            with cols.paragraph(
+                text_align="J",
+                bottom_margin=pdf.font_size * 4,
+                indent=10,
+                bullet_string="\x95",
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+    pdf.add_page()
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    with pdf.text_columns(text_align="L", ncols=2) as cols:
+        cols.write("Paragraphs with Top and Bottom Margin\n\n")
+        for _ in range(4):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 1.5,
+                bottom_margin=pdf.font_size * 2.5,
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+        for _ in range(5):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 1.5,
+                bottom_margin=pdf.font_size * 2.5,
+                indent=10,
+                bullet_string="\x95",
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+    assert_pdf_equal(pdf, HERE / "tcols_bullets_indent.pdf", tmp_path)

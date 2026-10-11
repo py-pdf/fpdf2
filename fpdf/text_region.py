@@ -202,10 +202,8 @@ class Paragraph:
         bullet_line_break = MultiLineBreak(
             bullet_fragments,
             max_width=self._region.get_width,
-            margins=(
-                self.pdf.c_margin + (self.indent - fragments_width - bullet_r_margin),
-                self.pdf.c_margin,
-            ),
+            margins=(self.pdf.c_margin, self.pdf.c_margin),
+            indent=self.indent - fragments_width - bullet_r_margin,
             align=self.text_align or self._region.text_align or Align.L,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
@@ -232,7 +230,8 @@ class Paragraph:
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self._region.get_width,
-            margins=(self.pdf.c_margin + self.indent, self.pdf.c_margin),
+            margins=(self.pdf.c_margin, self.pdf.c_margin),
+            indent=self.indent,
             first_line_indent=self.first_line_indent,
             align=self.text_align or self._region.text_align or Align.L,
             print_sh=print_sh,
@@ -646,7 +645,6 @@ class TextRegion(ParagraphCollectorMixin):
                 if (
                     text_rendered
                     and tl_wrapper.first_line
-                    and not cur_bullet
                     and cur_paragraph.top_margin
                     # Do not render margin on top of page:
                     and self.pdf.y > self.pdf.t_margin

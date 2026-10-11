@@ -48,8 +48,8 @@ def test_embed_file_single_parens(tmp_path):
 
 
 @pytest.mark.skipif(
-    sys.platform in ("cygwin", "win32") and sys.version_info[:2] == (3, 14),
-    reason="Skipped on Windows with Python 3.14 due to zlib compressed data differences",
+    sys.platform in ("cygwin", "win32") and sys.version_info[:2] >= (3, 14),
+    reason="Skipped on Windows with Python 3.14+ due to zlib compressed data differences",
 )
 def test_embed_file_all_optionals(tmp_path):
     pdf = FPDF()

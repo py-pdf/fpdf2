@@ -17,10 +17,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Set up Python 3.14 🔧
+      - name: Set up Python 3.15 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: 3.14
+          python-version: 3.15
       - name: Install system dependencies ⚙️
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
       - name: Check all PDF reference files used in tests ☑
@@ -92,7 +92,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
         platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
@@ -120,31 +120,16 @@ jobs:
           choco install qpdf -y
           qpdf --version
       - name: Install Python dependencies ⚙️
-        # Temporarily writing a constraints file
-        # to make sure numpy 2.3.3 is used for Python 3.14
         shell: bash
-        env:
-          PIP_BUILD_CONSTRAINT: constraints.txt
         run: |
-          # --- Create constraints file ---
-          # It must exist before the first pip invocation, and even when empty:
-          # PIP_BUILD_CONSTRAINT applies to every pip call in this step, and pip
-          # aborts with "Could not open requirements file" if the path is missing.
-          : > "$PIP_BUILD_CONSTRAINT"
           python -m pip install --upgrade pip setuptools wheel
-          # For Python 3.14 only - temporary solution while camelot-py
-          # update its dependencies
-          if [[ "${{ matrix.python-version }}" == "3.14" ]]; then
-            echo "numpy>=2.3.3" >> "$PIP_BUILD_CONSTRAINT"
-            echo "Added numpy>=2.3.3 to $PIP_BUILD_CONSTRAINT"
-          fi
-          # --- Install dependencies respecting constraints ---
-          pip install --upgrade .[dev,test]
+          # Lint tools are installed separately in the lint job.
+          pip install --upgrade .[test]
       - name: Run tests ☑
         shell: bash
         env:
-          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.10' && 'test-enabled' || '' }}
-          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.14' && 'test-enabled' || '' }}
+          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.11' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.15' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
@@ -207,10 +192,10 @@ jobs:
           persist-credentials: false
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
-      - name: Set up Python 3.14 🔧
+      - name: Set up Python 3.15 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: 3.14
+          python-version: 3.15
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -271,10 +256,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Set up Python 3.14 🔧
+      - name: Set up Python 3.15 🔧
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.14'
+          python-version: '3.15'
       - name: Build distributions for Pypi 🏗️
         id: build
         run: |
