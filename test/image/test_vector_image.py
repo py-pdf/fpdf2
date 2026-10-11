@@ -170,6 +170,28 @@ def test_svg_image_from_bytes(tmp_path):
     assert_pdf_equal(pdf, HERE / "svg_image_from_bytesio.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("as_stream", [False, True])
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        b"<svg\n",
+        b"<svg\t",
+        b"\xef\xbb\xbf<svg ",
+        b'<?xml\nversion="1.0"?>\n<svg ',
+    ],
+)
+def test_svg_image_from_bytes_with_xml_whitespace(tmp_path, as_stream, prefix):
+    data = (
+        prefix
+        + b'width="180" height="180" xmlns="http://www.w3.org/2000/svg">'
+        + b'<rect x="60" y="60" width="60" height="60"/></svg>'
+    )
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.image(BytesIO(data) if as_stream else data)
+    assert_pdf_equal(pdf, HERE / "svg_image_from_bytesio.pdf", tmp_path)
+
+
 def test_svg_image_billion_laughs():
     "cf. https://pypi.org/project/defusedxml/#attack-vectors"
     pdf = fpdf.FPDF()
