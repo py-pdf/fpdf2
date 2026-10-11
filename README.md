@@ -382,6 +382,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/agustin18"><img src="https://avatars.githubusercontent.com/u/23065192?v=4?s=100" width="100px;" alt="agustin18"/><br /><sub><b>agustin18</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=agustin18" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://swimmingbrain.dev"><img src="https://avatars.githubusercontent.com/u/93007893?v=4?s=100" width="100px;" alt="Braian Plaku"/><br /><sub><b>Braian Plaku</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=swimmingbrain" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://portfolio-app-alpha-lyart.vercel.app/"><img src="https://avatars.githubusercontent.com/u/99543778?v=4?s=100" width="100px;" alt="Chandan Kumar"/><br /><sub><b>Chandan Kumar</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=RavSinghChandan" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/xiehuanyi"><img src="https://avatars.githubusercontent.com/u/74809554?v=4?s=100" width="100px;" alt="Huanyi Xie"/><br /><sub><b>Huanyi Xie</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=xiehuanyi" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
