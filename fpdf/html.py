@@ -1496,6 +1496,9 @@ def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
     if keyword == "square":
         # Windows-1252 has no square, so core fonts fall back to the bullet
         return BLACK_SMALL_SQUARE_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
+    if keyword == "none":
+        # like browsers, list items without a marker, still indented
+        return ""
     if len(ul_type) == 1:
         return ul_type
     raise NotImplementedError(f"Unsupported type: {ul_type}")

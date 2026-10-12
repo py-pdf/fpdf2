@@ -344,6 +344,16 @@ def test_html_ul_type_case_insensitive(tmp_path, ul_type):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+def test_html_ul_type_none(tmp_path):
+    '<ul type="none"> renders its items without a marker, like browsers.'
+    assert ul_prefix("none", is_ttf_font=False) == ""
+    assert ul_prefix("None", is_ttf_font=True) == ""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ul type="none"><li>first item</li><li>second item</li></ul>')
+    assert_pdf_equal(pdf, HERE / "html_ul_type_none.pdf", tmp_path)
+
+
 def test_html_ul_type_single_character_keeps_case():
     "A one-character type is used as the bullet as-is, so its case is kept."
     assert ul_prefix("X", is_ttf_font=False) == "X"

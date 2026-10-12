@@ -30,6 +30,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
 * `FPDF.write_html()` supports `<ul type="square">`, the third standard HTML bullet type, instead of raising `NotImplementedError`: Unicode fonts use ▪ and core fonts fall back to the bullet - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts the `<ul type>` keywords in any case, like browsers: `<ul type="CIRCLE">` and `<ul type="Square">` no longer raise `NotImplementedError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` supports `<ul type="none">`, rendering the list items without a marker like browsers do, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
 * SVG import: color keywords are case-insensitive (`fill="RED"`), and `fill` / `stroke` accept `transparent`, painting nothing like `none`, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts css `rgb(R, G, B)` colors, and colors with surrounding spaces, in `color` and `bgcolor` attributes instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts a legacy HTML color of six hex digits without the leading `#`, like browsers do, as in `bgcolor="eeeeee"` or `<font color="ff0000">`, instead of raising `ValueError` - thanks to @RavSinghChandan
