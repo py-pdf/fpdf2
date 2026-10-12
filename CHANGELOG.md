@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
+* `FPDF.write_html()` uses the first available font of a `<font face>` list, like browsers, as in `face="Arial, Helvetica, sans-serif"`, with the generic `serif`, `sans-serif` and `monospace` families rendered by the core fonts, instead of raising `FPDFException: Undefined font` - thanks to @RavSinghChandan
 * Floating-point numbers in PDF arrays, dictionaries and destinations are written without exponent notation, preserving their values and allowing very small numeric zoom factors to be read correctly. - thanks to @xiehuanyi
 * SVG byte strings and `BytesIO` inputs accept a UTF-8 BOM and XML whitespace after `<svg` or `<?xml`, instead of being sent to the raster image loader. - thanks to @xiehuanyi
 * SVG import: a `<polygon>` or `<polyline>` whose `points` has an error (an invalid coordinate or an odd number of them) is drawn up to the last complete point before it, and one with empty `points` draws nothing, as the SVG specification says, instead of raising `IndexError` - thanks to @RavSinghChandan

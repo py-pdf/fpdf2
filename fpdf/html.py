@@ -27,7 +27,7 @@ from .drawing_primitives import (
 )
 from .enums import Align, CharVPos, TextEmphasis, XPos, YPos
 from .errors import FPDFException
-from .fonts import FontFace, TextStyle
+from .fonts import CORE_FONTS, FontFace, TextStyle
 from .outline import OutlineSection
 from .table import Row, Table
 from .util import (
@@ -53,6 +53,13 @@ HEADING_TAGS = ("title", "h1", "h2", "h3", "h4", "h5", "h6")
 # and due to the _scale_units() conversion performed in HTML2FPDF constructor below.
 # Those constants are formatted as Mixed Fractions, a mathematical representation
 # making clear what the closest integer value is.
+# CSS generic font families, mapped to the core font that renders each of them
+GENERIC_FONT_FAMILIES = {
+    "serif": "times",
+    "sans-serif": "helvetica",
+    "monospace": "courier",
+}
+
 DEFAULT_TAG_STYLES = {
     # Inline tags are FontFace instances :
     "a": FontFace(color="#00f", emphasis="UNDERLINE"),
@@ -1133,8 +1140,9 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     pass
             if "face" in attrs_dict:
-                font_family = attrs_dict.get("face") or ""
-                self.font_family = font_family.lower()
+                self.font_family = self._first_available_family(
+                    attrs_dict.get("face") or ""
+                )
         if tag == "table":
             self._end_paragraph()
             width: Optional[float] = None
@@ -1295,6 +1303,24 @@ class HTML2FPDF(HTMLParser):
                 self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
             else:
                 self._page_break_after_paragraph = True
+
+    def _first_available_family(self, face: str) -> str:
+        """
+        Like browsers, the first font of a comma-separated list such as
+        "Arial, Helvetica, sans-serif" that is available: a core font, a font added
+        with FPDF.add_font(), or a generic family. Otherwise the first name, as before.
+        """
+        names = [name.strip().strip("'\"").lower() for name in face.split(",")]
+        names = [name for name in names if name]
+        if not names:
+            return face.lower()
+        # font keys are the family followed by the style: "helvetica", "helveticaBI"
+        available = {key.rstrip("BI") for key in (*CORE_FONTS, *self.pdf.fonts)}
+        for name in names:
+            family = GENERIC_FONT_FAMILIES.get(name, name)
+            if family in available:
+                return family
+        return names[0]
 
     def handle_endtag(self, tag: str) -> None:
         while (

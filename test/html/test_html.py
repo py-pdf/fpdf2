@@ -773,6 +773,46 @@ in the PDF. <b>This</b> is a sample text that will be justified in the PDF.
     assert_pdf_equal(pdf, HERE / "html_format_within_p.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "face, family",
+    [
+        ("Arial, Helvetica, sans-serif", "helvetica"),
+        ("'Comic Sans MS', Times, serif", "times"),
+        ("Verdana, sans-serif", "helvetica"),
+        ("Consolas, monospace", "courier"),
+        (" Times ", "times"),
+    ],
+)
+def test_html_font_face_list(tmp_path, face, family):
+    "Like browsers, the first available font of a font face list is used."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<font face="{face}"><p>hello</p></font>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(f'<font face="{family}"><p>hello</p></font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_with_added_font(tmp_path):
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.add_page()
+    pdf.write_html('<font face="Segoe UI, DejaVuSans, sans-serif"><p>hello</p></font>')
+    expected = FPDF()
+    expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    expected.add_page()
+    expected.write_html('<font face="DejaVuSans"><p>hello</p></font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_without_an_available_font():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(FPDFException, match="no_such_font"):
+        pdf.write_html('<font face="no_such_font, other_font"><p>hello</p></font>')
+
+
 def test_html_bad_font():
     pdf = FPDF()
     pdf.add_page()
