@@ -68,6 +68,7 @@ from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -90,6 +91,13 @@ if TYPE_CHECKING:
 
 def clear_empty_fields(d: Mapping[str, object]) -> Mapping[str, object]:
     return {k: v for k, v in d.items() if v or v is False or v == 0}
+
+
+def _format_pdf_number(number: object) -> str:
+    value = str(number)
+    if isinstance(number, float) and "e" in value.lower():
+        value = format(Decimal(value), "f")
+    return trim_trailing_zeros(value)
 
 
 def create_dictionary_string(
@@ -126,7 +134,7 @@ def create_dictionary_string(
                                 str(v).lower()
                                 if isinstance(v, bool)
                                 else (
-                                    trim_trailing_zeros(str(v))
+                                    _format_pdf_number(v)
                                     if isinstance(v, float)
                                     else str(v)
                                 )
@@ -426,7 +434,7 @@ class PDFArray(list[Any]):
             isinstance(elem, (int, float)) and not isinstance(elem, bool)
             for elem in self
         ):
-            serialized_elems = " ".join(trim_trailing_zeros(str(elem)) for elem in self)
+            serialized_elems = " ".join(_format_pdf_number(elem) for elem in self)
         else:
             serialized_chunks: list[str] = []
             for elem in self:
@@ -441,7 +449,7 @@ class PDFArray(list[Any]):
                 elif isinstance(elem, bool):
                     serialized_chunks.append(str(elem).lower())
                 elif isinstance(elem, (int, float)):
-                    serialized_chunks.append(trim_trailing_zeros(str(elem)))
+                    serialized_chunks.append(_format_pdf_number(elem))
                 elif elem is None:
                     serialized_chunks.append("null")
                 else:
@@ -499,9 +507,9 @@ class DestinationXYZ(Destination):
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref
         return (
-            f"[{self.page_ref} /XYZ {trim_trailing_zeros(str(left))} "
-            f"{trim_trailing_zeros(str(top))} "
-            f"{trim_trailing_zeros(str(self.zoom))}]"
+            f"[{self.page_ref} /XYZ {_format_pdf_number(left)} "
+            f"{_format_pdf_number(top)} "
+            f"{_format_pdf_number(self.zoom)}]"
         )
 
     def replace(

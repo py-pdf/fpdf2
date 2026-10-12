@@ -1,7 +1,12 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
+from io import BytesIO
 
 import pytest
+from pypdf import PdfReader
+from pypdf.generic import read_object
+
+from fpdf import FPDF
 
 from fpdf.syntax import (
     DestinationXYZ,
@@ -18,6 +23,31 @@ class DummyObj(PDFObject):
     def __init__(self, obj_id: int):
         super().__init__()
         self.id = obj_id
+
+
+@pytest.mark.parametrize("number", [1e-7, -1e-7, 1.25e20, 1.234567890123456e-20])
+@pytest.mark.parametrize("mixed", [False, True])
+def test_pdf_array_float_exponents_are_written_as_decimals(number, mixed):
+    elements = [number, None] if mixed else [number]
+    parsed = read_object(BytesIO(PDFArray(elements).serialize().encode()), None)
+    assert len(parsed) == len(elements)
+    assert float(parsed[0]) == number
+
+
+@pytest.mark.parametrize("number", [1e-7, -1e-7, 1.25e20, 1.234567890123456e-20])
+def test_pdf_dictionary_float_exponents_are_written_as_decimals(number):
+    serialized = create_dictionary_string({"/Value": number})
+    parsed = read_object(BytesIO(serialized.encode()), None)
+    assert float(parsed["/Value"]) == number
+
+
+def test_display_mode_with_small_numeric_zoom():
+    zoom = 0.00001
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_display_mode(zoom)
+    reader = PdfReader(BytesIO(pdf.output()), strict=True)
+    assert float(reader.trailer["/Root"]["/OpenAction"][-1]) == zoom / 100
 
 
 @pytest.mark.parametrize("year", [1, 12, 123, 999, 1000, 2026])
@@ -176,7 +206,7 @@ def test_create_dictionary_string_null(
     [
         ([100.0, -0.0, 1.123456789012345], "[100 -0 1.123456789012345]"),
         ([1.0, True, None, 1.123456789012345], "[1\ntrue\nnull\n1.123456789012345]"),
-        ([1e20, 1e-20], "[1e+20 1e-20]"),
+        ([1e20, 1e-20], "[100000000000000000000 0.00000000000000000001]"),
         (["1.00", "(2.00)"], "[1.00 (2.00)]"),
     ],
 )
