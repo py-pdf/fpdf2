@@ -341,6 +341,36 @@ test_svg_shape_tags = (
 
 test_svg_transforms = (
     pytest.param(
+        "matrix(1e0,2E0,3e+0,4e0,5e1,-6E1)",
+        Transform(1, 2, 3, 4, 50, -60),
+        no_error(),
+        id="matrix exponents",
+    ),
+    pytest.param(
+        "scale(1e-3,2E+1)",
+        Transform.scaling(x=0.001, y=20),
+        no_error(),
+        id="scale exponents",
+    ),
+    pytest.param(
+        "rotate(3e1,1e2,-2E1)",
+        Transform.rotation_d(30).about(100, -20),
+        no_error(),
+        id="rotate exponents",
+    ),
+    pytest.param(
+        "skewX(3e1)",
+        Transform.shearing(x=math.tan(math.radians(30)), y=0),
+        no_error(),
+        id="skew exponents",
+    ),
+    pytest.param(
+        "translate(1e2,2E1) scale(2)",
+        Transform.scaling(x=2, y=2).translate(100, 20),
+        no_error(),
+        id="combined transforms with exponents",
+    ),
+    pytest.param(
         "matrix(1,2,3,4,5,6)",
         Transform(1, 2, 3, 4, 5, 6),
         no_error(),

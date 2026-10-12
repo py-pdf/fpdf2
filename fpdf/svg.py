@@ -96,7 +96,7 @@ _HANDY_NAMESPACES = {
 
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 TRANSFORM_GETTER = re.compile(
-    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+-]+)\)"
+    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+eE-]+)\)"
 )
 
 # One coordinate of a points attribute, with the whitespace and comma that may follow it
