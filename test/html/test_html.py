@@ -742,19 +742,26 @@ def test_html_color_without_hash_needs_six_hex_digits():
     "html, plain",
     [
         ('<font color="transparent">a</font>', "a"),
-        ('<font color="Transparent">a</font>', "a"),
+        (
+            '<font color="red">a<font color="Transparent">b</font>c</font>',
+            '<font color="red">a<font color="red">b</font>c</font>',
+        ),
         (
             '<table><tr bgcolor="transparent"><td>a</td></tr></table>',
             "<table><tr><td>a</td></tr></table>",
         ),
         (
-            '<table><tr><td bgcolor="TRANSPARENT">a</td></tr></table>',
-            "<table><tr><td>a</td></tr></table>",
+            '<table><tr bgcolor="red"><td bgcolor="TRANSPARENT">a</td></tr></table>',
+            '<table><tr bgcolor="red"><td>a</td></tr></table>',
+        ),
+        (
+            '<table><tr bgcolor="red"><td bgcolor="transparent"></td></tr></table>',
+            '<table><tr bgcolor="red"><td></td></tr></table>',
         ),
     ],
 )
 def test_html_transparent_color_is_ignored(tmp_path, html, plain):
-    "Like browsers, color or bgcolor set to transparent is ignored."
+    "Like browsers, color or bgcolor set to transparent is ignored: the inherited color is kept."
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(html)

@@ -315,9 +315,6 @@ def color_as_decimal(
     if not color or not color.strip():
         return None
     color = color.strip()
-    # In HTML color attributes, "transparent" is an error that browsers ignore
-    if color.lower() == "transparent":
-        return None
     # CSS functional notation, as written by many HTML editors: rgb(255, 0, 0)
     if color.lower().startswith("rgb("):
         return color_from_rgb_string(color.lower())
@@ -327,6 +324,16 @@ def color_as_decimal(
     if re.fullmatch(r"[0-9a-fA-F]{6}", hexcolor):
         hexcolor = "#" + hexcolor
     return color_from_hex_string(hexcolor)
+
+
+def _without_transparent(color: Optional[str]) -> Optional[str]:
+    """
+    A color or bgcolor attribute value, or None for "transparent": in these HTML
+    attributes it is an error that browsers ignore, keeping the inherited color.
+    """
+    if color is not None and color.strip().lower() == "transparent":
+        return None
+    return color
 
 
 def parse_css_style(style_attr: str) -> dict[str, str]:
@@ -728,9 +735,9 @@ class HTML2FPDF(HTMLParser):
                     # like browsers, and like <p>, ignore a value such as "middle",
                     # keeping the default: <th> cells are centered
                     align = Align.C if self.td_th.get("tag") == "th" else None
-            bgcolor_str = self.td_th.get("bgcolor")
+            bgcolor_str = _without_transparent(self.td_th.get("bgcolor"))
             if bgcolor_str is None and self.tr is not None:
-                bgcolor_str = self.tr.get("bgcolor")
+                bgcolor_str = _without_transparent(self.tr.get("bgcolor"))
             bgcolor = color_as_decimal(bgcolor_str)
             colspan = _parse_html_span(self.td_th.get("colspan"))
             rowspan = _parse_html_span(self.td_th.get("rowspan"))
@@ -931,7 +938,7 @@ class HTML2FPDF(HTMLParser):
             )
             if "color" in css_style:
                 self.font_color = color_as_decimal(css_style["color"])
-            elif "color" in attrs_dict:
+            elif _without_transparent(attrs_dict.get("color")) is not None:
                 # "color" attributes are not valid in HTML,
                 # but we support it for backward compatibility:
                 self.font_color = color_as_decimal(attrs_dict["color"])
@@ -1121,7 +1128,7 @@ class HTML2FPDF(HTMLParser):
                     color=self.font_color,
                 )
             )
-            if "color" in attrs_dict:
+            if _without_transparent(attrs_dict.get("color")) is not None:
                 self.font_color = color_as_decimal(attrs_dict["color"])
             if "font-size" in css_style:
                 font_size_str = css_style.get("font-size") or ""
@@ -1389,7 +1396,8 @@ class HTML2FPDF(HTMLParser):
             if "inserted" not in self.td_th:
                 # handle_data() was not called => we call it to produce an empty cell:
                 bgcolor = color_as_decimal(
-                    self.td_th.get("bgcolor") or self.tr.get("bgcolor", None)
+                    _without_transparent(self.td_th.get("bgcolor"))
+                    or _without_transparent(self.tr.get("bgcolor", None))
                 )
                 style = FontFace(fill_color=bgcolor) if bgcolor else None
                 colspan = _parse_html_span(self.td_th.get("colspan"))
