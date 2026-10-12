@@ -315,6 +315,9 @@ def color_as_decimal(
     if not color or not color.strip():
         return None
     color = color.strip()
+    # In HTML color attributes, "transparent" is an error that browsers ignore
+    if color.lower() == "transparent":
+        return None
     # CSS functional notation, as written by many HTML editors: rgb(255, 0, 0)
     if color.lower().startswith("rgb("):
         return color_from_rgb_string(color.lower())

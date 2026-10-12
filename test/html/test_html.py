@@ -738,6 +738,32 @@ def test_html_color_without_hash_needs_six_hex_digits():
             pdf.write_html(f'<font color="{color}">red</font>')
 
 
+@pytest.mark.parametrize(
+    "html, plain",
+    [
+        ('<font color="transparent">a</font>', "a"),
+        ('<font color="Transparent">a</font>', "a"),
+        (
+            '<table><tr bgcolor="transparent"><td>a</td></tr></table>',
+            "<table><tr><td>a</td></tr></table>",
+        ),
+        (
+            '<table><tr><td bgcolor="TRANSPARENT">a</td></tr></table>',
+            "<table><tr><td>a</td></tr></table>",
+        ),
+    ],
+)
+def test_html_transparent_color_is_ignored(tmp_path, html, plain):
+    "Like browsers, color or bgcolor set to transparent is ignored."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(plain)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf = FPDF()
     pdf.add_page()
