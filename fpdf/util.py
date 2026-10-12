@@ -37,7 +37,9 @@ Number = Union[int, float, decimal.Decimal]
 NumberClass = (int, float, decimal.Decimal)
 _StrBytes = TypeVar("_StrBytes", str, bytes)
 
-unit_splitter = re.compile(r"\s*(?P<value>[-+]?[\d\.]+)\s*(?P<unit>%|[a-zA-Z]*)")
+unit_splitter = re.compile(
+    r"\s*(?P<value>[-+]?[\d\.]+(?:[eE][-+]?[\d\.]+)?)\s*(?P<unit>%|[a-zA-Z]*)"
+)
 
 # https://www.w3.org/TR/css-values-4/#lengths
 relative_length_units = {
