@@ -798,7 +798,7 @@ def test_html_font_face_list_with_added_font(tmp_path):
     pdf = FPDF()
     pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.add_page()
-    pdf.write_html('<font face="Segoe UI, DejaVuSans, sans-serif"><p>hello</p></font>')
+    pdf.write_html('<font face="Noto Sans, DejaVuSans, sans-serif"><p>hello</p></font>')
     expected = FPDF()
     expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     expected.add_page()
