@@ -1042,7 +1042,11 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     start = 1
             self.bullet.append(start - 1)
-            self.ol_type[self.indent] = attrs_dict.get("type") or "1"
+            ol_type = attrs_dict.get("type") or "1"
+            # like browsers, an unknown type (they are case-sensitive) gives numbers
+            self.ol_type[self.indent] = (
+                ol_type if ol_type in ("1", "a", "A", "i", "I") else "1"
+            )
             line_height_str = css_style.get("line-height") or attrs_dict.get(
                 "line-height"
             )

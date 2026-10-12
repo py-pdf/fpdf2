@@ -893,6 +893,18 @@ def test_int_to_letters(n, expected):
     assert int_to_letters(n) == expected
 
 
+@pytest.mark.parametrize("ol_type", ["z", "disc", "", " 1"])
+def test_html_ol_unknown_type_uses_numbers(tmp_path, ol_type):
+    "Like browsers, an <ol> with an unknown type is numbered 1, 2, 3."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<ol type="{ol_type}"><li>a</li><li>b</li></ol>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<ol><li>a</li><li>b</li></ol>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_ol_with_more_than_26_lettered_items():
     pdf = FPDF()
     pdf.add_page()
