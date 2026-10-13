@@ -1200,6 +1200,7 @@ class SVGObject:
     ) -> list[tuple[float, DeviceRGB | DeviceGray]]:
         """Parse <stop> children of a gradient element."""
         stops: list[tuple[float, DeviceRGB | DeviceGray]] = []
+        opacity_converter = clamp_float(0.0, 1.0)
 
         for stop_element in gradient_element:
             tag_name = without_ns(stop_element.tag)
@@ -1224,7 +1225,9 @@ class SVGObject:
 
             if "stop-opacity" in stop_element.attrib:
                 try:
-                    stop_opacity = float(stop_element.attrib.get("stop-opacity") or "1")
+                    stop_opacity = opacity_converter(
+                        stop_element.attrib.get("stop-opacity") or "1"
+                    )
                 except ValueError:
                     pass
 
@@ -1235,7 +1238,7 @@ class SVGObject:
                 stop_opacity_str = style_dict.get("stop-opacity")
                 if stop_opacity_str:
                     try:
-                        stop_opacity = float(stop_opacity_str)
+                        stop_opacity = opacity_converter(stop_opacity_str)
                     except ValueError:
                         LOGGER.warning(
                             "Invalid stop-opacity value: %s", stop_opacity_str
@@ -1247,13 +1250,15 @@ class SVGObject:
             try:
                 color_obj = svgcolor(stop_color)
 
-                if stop_opacity < 1.0:
+                color_alpha = color_obj.a if color_obj.a is not None else 1.0
+                effective_opacity = color_alpha * stop_opacity
+                if effective_opacity < 1.0:
                     if isinstance(color_obj, DeviceRGB):
                         color_obj = DeviceRGB(
-                            color_obj.r, color_obj.g, color_obj.b, stop_opacity
+                            color_obj.r, color_obj.g, color_obj.b, effective_opacity
                         )
                     if isinstance(color_obj, DeviceGray):
-                        color_obj = DeviceGray(color_obj.g, stop_opacity)
+                        color_obj = DeviceGray(color_obj.g, effective_opacity)
                 stops.append((offset, color_obj))
 
             except (ValueError, KeyError) as e:
