@@ -318,3 +318,59 @@ def test_nested_pattern_own_fill_overrides_inherited_url(tmp_path):
       </pattern></defs><rect width="120" height="120"/>
     </svg>"""
     assert_svg_golden(render_svg(svg), "tiling_root_own_fill_override.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "gradient_attr,pattern_attr", [("fill", "stroke"), ("stroke", "fill")]
+)
+def test_mixed_paints_keep_independent_coordinate_systems(gradient_attr, pattern_attr):
+    """Changing the other paint must not change a transformed gradient's bounds."""
+    matrices = []
+    for other_paint in ("black", "url(#p)"):
+        svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+          <defs><linearGradient id="g"><stop offset="0" stop-color="red"/>
+            <stop offset="1" stop-color="blue"/></linearGradient>
+          <pattern id="p" patternUnits="userSpaceOnUse" width="10" height="10">
+            <rect width="10" height="10"/></pattern></defs>
+          <rect x="10" y="10" width="40" height="40" transform="scale(2)"
+            {gradient_attr}="url(#g)" {pattern_attr}="{other_paint}"/>
+        </svg>"""
+        patterns = patterns_in(render_svg(svg))
+        gradient = next(p for p in patterns if p["/PatternType"] == 2)
+        matrices.append(list(gradient["/Matrix"]))
+    assert matrices == [[80, 0, 0, -80, 20, 100]] * 2
+
+
+@pytest.mark.parametrize("attr", ["fill", "stroke"])
+@pytest.mark.parametrize("placement", ["group", "use", "css", "inherit"])
+def test_use_patterns_resolve_per_leaf_and_preserve_overrides(attr, placement):
+    group_style = f'{attr}="url(#p)"' if placement in ("group", "inherit") else ""
+    use_style = {
+        "group": "",
+        "use": f'{attr}="url(#p)"',
+        "css": f'style="{attr}:url(#p)"',
+        "inherit": f'{attr}="inherit"',
+    }[placement]
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+      <defs><pattern id="p" width=".25" height=".25"
+        patternContentUnits="objectBoundingBox">
+        <rect width=".1" height=".1" fill="red"/></pattern>
+      <g id="shapes">
+        <rect width="20" height="20"/>
+        <g><rect x="30" width="40" height="20"/></g>
+        <rect y="30" width="60" height="20" {attr}="blue"/>
+        <rect y="60" width="80" height="20" {attr}="none"/>
+      </g></defs>
+      <g {group_style}><use xmlns:xlink="http://www.w3.org/1999/xlink"
+        xlink:href="#shapes" x="5" y="5" {use_style}/></g>
+      <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#shapes"/>
+    </svg>"""
+    pdf = render_svg(svg)
+    patterns = patterns_in(pdf)
+    assert sorted(p["/Matrix"][0] for p in patterns) == [20, 40]
+    assert {p["/Matrix"][4] for p in patterns} == {5, 35}
+    reader = PdfReader(BytesIO(pdf.output()))
+    content = reader.pages[0].get_contents().get_data()
+    # Binding one instance must not change the shared reference or other instances.
+    assert content.count(b"scn" if attr == "fill" else b"SCN") == 2
+    assert content.count(b"0 0 1 rg" if attr == "fill" else b"0 0 1 RG") == 2

@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.0] - Not released yet
 ### Added
+* support for colored and uncolored tiling patterns with `FPDF.create_pattern()` and `FPDF.use_pattern()`, including SVG `<pattern>` elements and pattern fills and strokes on referenced `<use>` shapes - _cf._ [issue #790](https://github.com/py-pdf/fpdf2/issues/790)
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported

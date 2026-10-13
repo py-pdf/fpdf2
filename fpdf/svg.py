@@ -2079,7 +2079,9 @@ class SVGObject:
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
     @force_nodocument
-    def build_xref(self, xref: "Element") -> GraphicsContext:
+    def build_xref(
+        self, xref: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> GraphicsContext:
         """Resolve a cross-reference to an already-seen SVG element by ID."""
         style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
@@ -2102,7 +2104,18 @@ class SVGObject:
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
         self._record_resolved_elements(1 + referenced_cost)
-        pdf_group.add_item(referenced)
+        referenced = deepcopy(referenced)
+        pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
+        for attr in ("fill", "stroke"):
+            value = _get_attr_or_style(xref, attr, style_map)
+            if value in (None, "inherit"):
+                value = (inherited_style or {}).get(attr)
+            pattern_id = self._extract_gradient_id(value) if value else None
+            if pattern_id in self._pattern_elements:
+                pattern_paints[attr + "_color"] = self._get_pattern_paint(pattern_id)
+        if pattern_paints and isinstance(referenced, (GraphicsContext, PaintedPath)):
+            self._bind_reference_patterns(referenced, pattern_paints)
+        pdf_group.add_item(referenced, False)
 
         placement_transform = None
         if "x" in xref.attrib or "y" in xref.attrib:
@@ -2136,6 +2149,25 @@ class SVGObject:
                 pdf_group.transform = placement_transform
 
         return pdf_group
+
+    def _bind_reference_patterns(
+        self,
+        node: GraphicsContext | PaintedPath,
+        paints: dict[str, Optional[SVGPatternPaint]],
+    ) -> None:
+        """Resolve inherited reference paints at each leaf's own bounds."""
+        inherited = {
+            attr: paint
+            for attr, paint in paints.items()
+            if getattr(node.style, attr) is GraphicsStyle.INHERIT
+        }
+        if isinstance(node, PaintedPath):
+            for attr, paint in inherited.items():
+                setattr(node.style, attr, deepcopy(paint))
+            return
+        for item in node.path_items:
+            if isinstance(item, (GraphicsContext, PaintedPath)):
+                self._bind_reference_patterns(item, inherited)
 
     @force_nodocument
     def build_group(
@@ -2219,7 +2251,7 @@ class SVGObject:
             self._apply_inherited_pattern(path, child, inherited_style)
             pdf_group.add_item(path, False)
         elif child.tag in xmlns_lookup("svg", "use"):
-            pdf_group.add_item(self.build_xref(child), False)
+            pdf_group.add_item(self.build_xref(child, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "image"):
             pdf_group.add_item(self.build_image(child), False)
         elif child.tag in xmlns_lookup("svg", "text"):

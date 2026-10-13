@@ -4016,20 +4016,18 @@ class GraphicsContext:
             fill_color = self.style.fill_color
             stroke_color = self.style.stroke_color
 
-            bbox_for_units = None
-            if isinstance(fill_color, (GradientPaint, PatternPaint)) or isinstance(
-                stroke_color, (GradientPaint, PatternPaint)
-            ):
-                # Compute bbox once so mask and color share the same mapping
-                bbox_for_units = self.bounding_box(
-                    initial_point,
-                    style=self.style,
-                    expand_for_stroke=False,
-                    transformed=not (
-                        getattr(fill_color, "local_bbox", False)
-                        or getattr(stroke_color, "local_bbox", False)
-                    ),
-                )[0]
+            paint_bboxes: dict[bool, BoundingBox] = {}
+
+            def bbox_for_paint(paint: GradientPaint | PatternPaint) -> BoundingBox:
+                transformed = not getattr(paint, "local_bbox", False)
+                if transformed not in paint_bboxes:
+                    paint_bboxes[transformed] = self.bounding_box(
+                        initial_point,
+                        style=self.style,
+                        expand_for_stroke=False,
+                        transformed=transformed,
+                    )[0]
+                return paint_bboxes[transformed]
 
             if (
                 fill_color not in NO_EMIT_SET
@@ -4037,7 +4035,9 @@ class GraphicsContext:
             ):
                 if isinstance(fill_color, (GradientPaint, PatternPaint)):
                     render_list.append(
-                        fill_color.emit_fill(resource_registry, bbox_for_units)
+                        fill_color.emit_fill(
+                            resource_registry, bbox_for_paint(fill_color)
+                        )
                     )
                 else:
                     assert isinstance(fill_color, (DeviceCMYK | DeviceGray | DeviceRGB))
@@ -4049,7 +4049,9 @@ class GraphicsContext:
             ):
                 if isinstance(stroke_color, (GradientPaint, PatternPaint)):
                     render_list.append(
-                        stroke_color.emit_stroke(resource_registry, bbox_for_units)
+                        stroke_color.emit_stroke(
+                            resource_registry, bbox_for_paint(stroke_color)
+                        )
                     )
                 else:
                     assert isinstance(stroke_color, (DeviceCMYK, DeviceGray, DeviceRGB))
