@@ -1172,6 +1172,14 @@ class HTML2FPDF(HTMLParser):
                     width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
                     width = _parse_html_dimension(width_str) / self.pdf.k
+                if width <= 0:  # like browsers, an invalid width is ignored
+                    width = None
+                elif width > self.pdf.epw:
+                    LOGGER.warning(
+                        'Table width="%s" is wider than the page: using the page width',
+                        width_str,
+                    )
+                    width = self.pdf.epw
             if "border" not in attrs_dict:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
