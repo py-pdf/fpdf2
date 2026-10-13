@@ -92,3 +92,25 @@ def test_rect_transform_ignoring_zero_top_attrs_uses_viewport():
     )
     assert (width, height) == (20, 30)
     assert context.path_items
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        'width="0" height="10"',
+        'width="10" height="0"',
+        'viewBox="0 0 0 10"',
+        'viewBox="0 0 10 0"',
+    ],
+)
+def test_draw_zero_sized_svg_at_position(attributes):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    previous_position = (pdf.x, pdf.y)
+    svg = fpdf.svg.SVGObject(
+        f'<svg xmlns="http://www.w3.org/2000/svg" {attributes}>'
+        '<rect width="10" height="10"/></svg>'
+    )
+    svg.draw_to_page(pdf, x=10, y=10)
+    assert (pdf.x, pdf.y) == previous_position
+    assert b" re" not in pdf.pages[1].contents
