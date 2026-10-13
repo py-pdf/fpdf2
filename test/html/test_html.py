@@ -5,7 +5,7 @@ import pytest
 
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
-from fpdf.errors import FPDFException
+from fpdf.errors import FPDFException, PDFAComplianceError
 from fpdf.html import ol_prefix, ul_prefix
 from fpdf.util import int_to_letters
 from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
@@ -804,6 +804,61 @@ def test_html_font_face_list_with_added_font(tmp_path):
     expected.add_page()
     expected.write_html('<font face="DejaVuSans"><p>hello</p></font>')
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_prefers_an_earlier_added_font(tmp_path):
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.add_page()
+    pdf.write_html('<font face="DejaVuSans, Helvetica"><p>hello</p></font>')
+    expected = FPDF()
+    expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    expected.add_page()
+    expected.write_html('<font face="DejaVuSans"><p>hello</p></font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize("tag", ["b", "i"])
+def test_html_font_face_list_keeps_bold_and_italic(tmp_path, tag):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<{tag}><font face="Verdana, sans-serif">hello</font></{tag}>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(f'<{tag}><font face="helvetica">hello</font></{tag}>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_with_only_a_bold_added_font(tmp_path):
+    "A font added only in bold is found for bold text."
+    pdf = FPDF()
+    pdf.add_font("DejaVuSans", style="B", fname=FONT_DIR / "DejaVuSans-Bold.ttf")
+    pdf.add_page()
+    pdf.write_html('<b><font face="Noto Sans, DejaVuSans">hello</font></b>')
+    expected = FPDF()
+    expected.add_font("DejaVuSans", style="B", fname=FONT_DIR / "DejaVuSans-Bold.ttf")
+    expected.add_page()
+    expected.write_html('<b><font face="DejaVuSans">hello</font></b>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_in_pdfa_still_rejects_core_fonts():
+    "PDF/A requires embedded fonts: picking a core font from the list still raises."
+    pdf = FPDF(enforce_compliance="PDF/A-2B")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    with pytest.raises(PDFAComplianceError):
+        pdf.write_html('<font face="Arial, Helvetica, sans-serif">hello</font>')
+
+
+def test_html_font_face_list_in_pdfa_with_an_added_font():
+    pdf = FPDF(enforce_compliance="PDF/A-2B")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    pdf.write_html('<font face="Noto Sans, DejaVuSans">hello</font>')
+    assert sorted(pdf.fonts) == ["dejavusans"]
 
 
 def test_html_font_face_list_without_an_available_font():

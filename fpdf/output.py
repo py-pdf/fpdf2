@@ -754,6 +754,35 @@ class OutputIntentDictionary:
 ResourceTypes = Union[str, int, Name, "Gradient", "Pattern", "Shading", "MeshShading"]
 
 
+# Font families, including CSS generic ones, that are rendered by a core font
+FONT_FAMILY_ALIASES = {
+    # sans
+    "sans-serif": "helvetica",
+    "sans serif": "helvetica",
+    "arial": "helvetica",
+    "verdana": "helvetica",
+    "tahoma": "helvetica",
+    "segoe ui": "helvetica",
+    # serif
+    "serif": "times",
+    "times": "times",
+    "times new roman": "times",
+    "georgia": "times",
+    "cambria": "times",
+    "garamond": "times",
+    # mono
+    "monospace": "courier",
+    "courier": "courier",
+    "courier new": "courier",
+    "consolas": "courier",
+    "monaco": "courier",
+    # symbol
+    "symbol": "symbol",
+    "zapfdingbats": "zapfdingbats",
+    "zapf dingbats": "zapfdingbats",
+}
+
+
 class ResourceCatalog:
     "Manage the indexing of resources and association to the pages they are used"
 
@@ -931,6 +960,40 @@ class ResourceCatalog:
             return "Sh"
         raise ValueError(f"No prefix for resource type {resource_type}")
 
+    def resolve_font_family(self, font_family: str, font_style: str = "") -> str:
+        """
+        Resolve a family+style to the family of a concrete font, without adding it
+        to the font registry.
+        Behavior:
+          - `font_family` may be a comma-separated list: the first available is used
+          - Exact match (family.lower() + style.upper()) in registry: return family
+          - If `family` names a core font: return it
+          - If `family` is an alias/generic: return the core font it translates to
+          - Otherwise: raise KeyError
+        """
+        if not font_family:
+            raise KeyError("Empty font family")
+
+        style = "".join(sorted(font_style.upper()))
+
+        for candidate in font_family.strip().strip("'\"").split(","):
+            family = candidate.strip().strip("'\"").lower()
+
+            # 1) Exact match
+            if f"{family}{style}" in self.font_registry:
+                return family
+
+            # 2) Core-family direct hit?
+            if family in CORE_FONTS:
+                return family
+
+            # 3) Alias / generic mapping to core font
+            if family in FONT_FAMILY_ALIASES:
+                return FONT_FAMILY_ALIASES[family]
+
+        # 4) Fail: do not return anything
+        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
+
     def get_font_from_family(
         self, font_family: str, font_style: str = ""
     ) -> CoreFont | TTFFont:
@@ -945,67 +1008,16 @@ class ResourceCatalog:
         Notes:
           - For Symbol/ZapfDingbats, style is forced to "" (they don't support B/I).
         """
-        if not font_family:
-            raise KeyError("Empty font family")
-
+        family = self.resolve_font_family(font_family, font_style)
         style = "".join(sorted(font_style.upper()))
-
-        alias = {
-            # sans
-            "sans-serif": "helvetica",
-            "sans serif": "helvetica",
-            "arial": "helvetica",
-            "verdana": "helvetica",
-            "tahoma": "helvetica",
-            "segoe ui": "helvetica",
-            # serif
-            "serif": "times",
-            "times": "times",
-            "times new roman": "times",
-            "georgia": "times",
-            "cambria": "times",
-            "garamond": "times",
-            # mono
-            "monospace": "courier",
-            "courier": "courier",
-            "courier new": "courier",
-            "consolas": "courier",
-            "monaco": "courier",
-            # symbol
-            "symbol": "symbol",
-            "zapfdingbats": "zapfdingbats",
-            "zapf dingbats": "zapfdingbats",
-        }
-
-        for candidate in font_family.strip().strip("'\"").split(","):
-            family = candidate.strip().strip("'\"").lower()
-
-            # 1) Exact match
-            fontkey = f"{family}{style}"
-            if fontkey in self.font_registry:
-                return self.font_registry[fontkey]
-
-            # 2) Core-family direct hit?
-            if family in CORE_FONTS:
-                core_style = "" if family in {"symbol", "zapfdingbats"} else style
-                key = f"{family}{core_style}"
-                if key not in self.font_registry:
-                    i = len(self.font_registry) + 1
-                    self.font_registry[key] = CoreFont(i, key, core_style)
-                return self.font_registry[key]
-
-            # 3) Alias / generic mapping to core font
-            mapped = alias.get(family)
-            if mapped:
-                core_style = "" if mapped in {"symbol", "zapfdingbats"} else style
-                key = f"{mapped}{core_style}"
-                if key not in self.font_registry:
-                    i = len(self.font_registry) + 1
-                    self.font_registry[key] = CoreFont(i, key, core_style)
-                return self.font_registry[key]
-
-        # 4) Fail: do not return anything
-        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
+        if f"{family}{style}" in self.font_registry:
+            return self.font_registry[f"{family}{style}"]
+        core_style = "" if family in {"symbol", "zapfdingbats"} else style
+        key = f"{family}{core_style}"
+        if key not in self.font_registry:
+            i = len(self.font_registry) + 1
+            self.font_registry[key] = CoreFont(i, key, core_style)
+        return self.font_registry[key]
 
 
 class OutputProducer:

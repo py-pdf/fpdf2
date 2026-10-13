@@ -1138,10 +1138,13 @@ class HTML2FPDF(HTMLParser):
                 catalog = (
                     self.pdf._resource_catalog  # pyright: ignore[reportPrivateUsage]
                 )
+                # bold and italic select the font file; underline and strikethrough do not
+                style = "".join(c for c in self.font_emphasis.style if c in "BI")
                 try:
                     # like browsers, the first available font of a list such as
-                    # "Arial, Helvetica, sans-serif"
-                    self.font_family = catalog.get_font_from_family(face).fontkey
+                    # "Arial, Helvetica, sans-serif"; set_font() then adds it,
+                    # with its checks (such as PDF/A requiring embedded fonts)
+                    self.font_family = catalog.resolve_font_family(face, style)
                 except KeyError:
                     # no font of the list is available: set_font() reports it, as before
                     self.font_family = face.lower()
