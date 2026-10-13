@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 
 import fpdf
-from ..conftest import EPOCH, assert_pdf_equal
+from ..conftest import assert_pdf_equal
 
 from defusedxml.ElementTree import fromstring as parse_xml_str
 import pytest
@@ -184,8 +184,8 @@ class TestSVGAttributeConversion:
             pdf, GENERATED_PDF_DIR / "transforms" / f"{svg_file.stem}.pdf", tmp_path
         )
 
-    def test_svg_transform_exponents_render_like_decimals(self):
-        outputs = []
+    def test_svg_transform_exponents_render_like_decimals(self, tmp_path):
+        pdfs = []
         for transform in ("translate(1e1,2E1) scale(2e0)", "translate(10,20) scale(2)"):
             svg = (
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
@@ -193,11 +193,11 @@ class TestSVGAttributeConversion:
                 "</svg>"
             )
             pdf = fpdf.FPDF()
-            pdf.set_creation_date(EPOCH)
             pdf.add_page()
             pdf.image(BytesIO(svg.encode()), x=10, y=10, w=50, h=50)
-            outputs.append(pdf.output())
-        assert outputs[0] == outputs[1]
+            pdfs.append(pdf)
+
+        assert_pdf_equal(pdfs[0], pdfs[1], tmp_path)
 
     @pytest.mark.parametrize(
         "element, expected, guard", parameters.test_svg_attribute_conversion
