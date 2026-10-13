@@ -120,7 +120,9 @@ def test_gradient_stop_opacity_multiplies_color_alpha(opacity):
         '<stop offset="1" stop-color="blue" />'
         "</linearGradient>"
     )
-    stops = SVGObject._parse_gradient_stops(gradient)  # pylint: disable=protected-access
+    # pylint: disable=protected-access
+    stops = SVGObject._parse_gradient_stops(gradient)
+    # pylint: enable=protected-access
     assert len(stops) == 2
     assert stops[0][1].a == pytest.approx((128 / 255) * 0.5)
 
