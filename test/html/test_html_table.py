@@ -554,3 +554,27 @@ def test_html_table_invalid_span_counts_as_one(tmp_path, span, value, text):
         render_span_table(span, f' {span}="1"', text),
         tmp_path,
     )
+
+
+@pytest.mark.parametrize("width", ["150%", "1000px", ' style="width: 120%"'])
+def test_html_table_wider_than_the_page_uses_the_page_width(tmp_path, caplog, width):
+    attribute = width if width.startswith(" ") else f' width="{width}"'
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f"<table{attribute}><tr><td>a</td><td>b</td></tr></table>")
+    assert "wider than the page" in caplog.text
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<table width="100%"><tr><td>a</td><td>b</td></tr></table>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize("width", ["-50%", "-10"])
+def test_html_table_with_a_negative_width_ignores_it(tmp_path, width):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<table width="{width}"><tr><td>a</td><td>b</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<table><tr><td>a</td><td>b</td></tr></table>")
+    assert_pdf_equal(pdf, expected, tmp_path)
