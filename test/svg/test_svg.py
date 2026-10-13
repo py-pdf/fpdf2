@@ -528,3 +528,42 @@ def test_user_space_gradient_tracks_svg_image_transform(tmp_path):
         GENERATED_PDF_DIR / "gradient_user_space_tracks_svg_transform.pdf",
         tmp_path,
     )
+
+
+@pytest.mark.parametrize(
+    "shape, converted",
+    [
+        ('<circle cx="1in" cy="2in" r="0.5in"/>', '<circle cx="72" cy="144" r="36"/>'),
+        (
+            '<ellipse cx="1in" cy="2in" rx="0.5in" ry="1in"/>',
+            '<ellipse cx="72" cy="144" rx="36" ry="72"/>',
+        ),
+        ('<ellipse rx="0.5in"/>', '<ellipse rx="36"/>'),
+        ('<ellipse ry="0.5in"/>', '<ellipse ry="36"/>'),
+        (
+            '<line x1="1in" y1="2in" x2="3in" y2="4in"/>',
+            '<line x1="72" y1="144" x2="216" y2="288"/>',
+        ),
+        (
+            '<rect width="4in" height="4in" rx="1in" ry="2in"/>',
+            '<rect width="288" height="288" rx="72" ry="144"/>',
+        ),
+        (
+            '<rect width="4in" height="4in" rx="1in"/>',
+            '<rect width="288" height="288" rx="72"/>',
+        ),
+        (
+            '<rect width="4in" height="4in" ry="1in"/>',
+            '<rect width="288" height="288" ry="72"/>',
+        ),
+    ],
+)
+def test_svg_shape_absolute_lengths(shape, converted):
+    xml = parse_xml_str(shape)
+    converter = getattr(fpdf.svg.ShapeBuilder, xml.tag)
+    actual = converter(xml)
+    expected = converter(parse_xml_str(converted))
+    assert (
+        actual._root_graphics_context.path_items
+        == expected._root_graphics_context.path_items
+    )

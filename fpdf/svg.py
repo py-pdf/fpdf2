@@ -701,12 +701,12 @@ class ShapeBuilder:
         if rx_str == ry_str == "auto":
             rx = ry = 0
         elif rx_str == "auto":
-            rx = ry = float(ry_str)
+            rx = ry = resolve_length(ry_str)
         elif ry_str == "auto":
-            ry = rx = float(rx_str)
+            ry = rx = resolve_length(rx_str)
         else:
-            rx = float(rx_str)
-            ry = float(ry_str)
+            rx = resolve_length(rx_str)
+            ry = resolve_length(ry_str)
 
         if (width < 0) or (height < 0) or (rx < 0) or (ry < 0):
             raise ValueError(f"bad rect {tag}")
@@ -726,9 +726,9 @@ class ShapeBuilder:
     @classmethod
     def circle(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <circle> into a PDF path."""
-        cx = float(tag.attrib.get("cx", 0))
-        cy = float(tag.attrib.get("cy", 0))
-        r = float(tag.attrib["r"])
+        cx = resolve_length(tag.attrib.get("cx", "0"))
+        cy = resolve_length(tag.attrib.get("cy", "0"))
+        r = resolve_length(tag.attrib["r"])
 
         path = cls.new_path(tag, clipping_path)
         path.circle(cx, cy, r)
@@ -737,8 +737,8 @@ class ShapeBuilder:
     @classmethod
     def ellipse(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <ellipse> into a PDF path."""
-        cx = float(tag.attrib.get("cx", 0))
-        cy = float(tag.attrib.get("cy", 0))
+        cx = resolve_length(tag.attrib.get("cx", "0"))
+        cy = resolve_length(tag.attrib.get("cy", "0"))
 
         rx_str = tag.attrib.get("rx") or "auto"
         ry_str = tag.attrib.get("ry") or "auto"
@@ -749,12 +749,12 @@ class ShapeBuilder:
             return path
 
         if rx_str == "auto":
-            rx = ry = float(ry_str)
+            rx = ry = resolve_length(ry_str)
         elif ry_str == "auto":
-            rx = ry = float(rx_str)
+            rx = ry = resolve_length(rx_str)
         else:
-            rx = float(rx_str)
-            ry = float(ry_str)
+            rx = resolve_length(rx_str)
+            ry = resolve_length(ry_str)
 
         path.ellipse(cx, cy, rx, ry)
         return path
@@ -762,10 +762,10 @@ class ShapeBuilder:
     @classmethod
     def line(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <line> into a PDF path."""
-        x1 = float(tag.attrib["x1"])
-        y1 = float(tag.attrib["y1"])
-        x2 = float(tag.attrib["x2"])
-        y2 = float(tag.attrib["y2"])
+        x1 = resolve_length(tag.attrib["x1"])
+        y1 = resolve_length(tag.attrib["y1"])
+        x2 = resolve_length(tag.attrib["x2"])
+        y2 = resolve_length(tag.attrib["y2"])
 
         path = cls.new_path(tag)
         path.move_to(x1, y1)
