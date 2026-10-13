@@ -51,6 +51,30 @@ class TestUnits:
         value = 1.5
         assert fpdf.svg.resolve_length(f"{value}") == value
 
+    @pytest.mark.parametrize(
+        "length, expected",
+        [
+            ("1e2pt", 100),
+            ("2E+2px", 150),
+            ("-2.5e-1mm", -0.25 * 72 / 25.4),
+            ("1.e-1in", 7.2),
+            (".5e+2cm", 50 * 72 / 2.54),
+            ("1e-3", 0.001),
+        ],
+    )
+    def test_resolve_scientific_length(self, length, expected):
+        assert fpdf.svg.resolve_length(length) == pytest.approx(expected)
+
+    @pytest.mark.parametrize("length", ["1.2.3", "1e2.3", "1e+", "-1E--2"])
+    def test_resolve_invalid_scientific_length(self, length):
+        with pytest.raises(ValueError):
+            fpdf.svg.resolve_length(length)
+
+    def test_resolve_scientific_angle(self):
+        assert fpdf.svg.resolve_angle("1e2deg") == pytest.approx(
+            fpdf.svg.resolve_angle("100deg")
+        )
+
     def test_resolve_angle_bad_units(self):
         with pytest.raises(ValueError):
             fpdf.svg.resolve_angle("1 fake")
@@ -173,6 +197,20 @@ class TestSVGAttributeConversion:
 
 
 class TestSVGObject:
+    def test_scientific_length_attributes(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1e2pt" height="5e1pt">'
+            '<rect x="1e1pt" y="2E0pt" width="8e1pt" height="4.8e1pt" />'
+            "</svg>"
+        )
+        assert svg.width == pytest.approx(100)
+        assert svg.height == pytest.approx(50)
+        pdf = fpdf.FPDF(unit="pt", format=(100, 50))
+        pdf.set_margin(0)
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert pdf.output().startswith(b"%PDF-")
+
     def test_bad_root_tag(self):
         notsvg = """<sometag></sometag>"""
 

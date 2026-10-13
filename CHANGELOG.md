@@ -23,6 +23,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Python 3.15 is now officially supported
 ### Fixed
 * `FPDF.write_html()` uses the first available font of a `<font face>` list, like browsers, as in `face="Arial, Helvetica, sans-serif"`, with the generic `serif`, `sans-serif` and `monospace` families rendered by the core fonts, instead of raising `FPDFException: Undefined font` - thanks to @RavSinghChandan
+* SVG gradient stops honor inline `style` declarations of `stop-opacity` over the corresponding presentation attribute. - thanks to @xiehuanyi
+* SVG length and angle attributes accept scientific notation, such as `width="1e2pt"`, instead of raising `ValueError`. - thanks to @xiehuanyi
 * Floating-point numbers in PDF arrays, dictionaries and destinations are written without exponent notation, preserving their values and allowing very small numeric zoom factors to be read correctly. - thanks to @xiehuanyi
 * SVG byte strings and `BytesIO` inputs accept a UTF-8 BOM and XML whitespace after `<svg` or `<?xml`, instead of being sent to the raster image loader. - thanks to @xiehuanyi
 * SVG import: a `<polygon>` or `<polyline>` whose `points` has an error (an invalid coordinate or an odd number of them) is drawn up to the last complete point before it, and one with empty `points` draws nothing, as the SVG specification says, instead of raising `IndexError` - thanks to @RavSinghChandan
@@ -34,7 +36,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * SVG import: color keywords are case-insensitive (`fill="RED"`), and `fill` / `stroke` accept `transparent`, painting nothing like `none`, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts css `rgb(R, G, B)` colors, and colors with surrounding spaces, in `color` and `bgcolor` attributes instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts a legacy HTML color of six hex digits without the leading `#`, like browsers do, as in `bgcolor="eeeeee"` or `<font color="ff0000">`, instead of raising `ValueError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` ignores `color="transparent"` and `bgcolor="transparent"` like browsers, keeping the inherited text or background color, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `IndexError` on an `<ol type="a">` or `<ol type="A">` list with more than 26 items: like browsers, letters continue with `aa`, `ab`... and a `start` below 1 shows as a number - thanks to @RavSinghChandan
+* `FPDF.write_html()` numbers an `<ol>` with an unknown `type`, such as `type="disc"`, as 1, 2, 3, like browsers, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
 * `FPDF.write_html()` treats an invalid `colspan` or `rowspan` on `<td>` / `<th>`, or one below 1, as 1 like browsers do, instead of raising `ValueError` or `ZeroDivisionError` - thanks to @RavSinghChandan
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections

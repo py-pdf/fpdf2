@@ -738,6 +738,39 @@ def test_html_color_without_hash_needs_six_hex_digits():
             pdf.write_html(f'<font color="{color}">red</font>')
 
 
+@pytest.mark.parametrize(
+    "html, plain",
+    [
+        ('<font color="transparent">a</font>', "a"),
+        (
+            '<font color="red">a<font color="Transparent">b</font>c</font>',
+            '<font color="red">a<font color="red">b</font>c</font>',
+        ),
+        (
+            '<table><tr bgcolor="transparent"><td>a</td></tr></table>',
+            "<table><tr><td>a</td></tr></table>",
+        ),
+        (
+            '<table><tr bgcolor="red"><td bgcolor="TRANSPARENT">a</td></tr></table>',
+            '<table><tr bgcolor="red"><td>a</td></tr></table>',
+        ),
+        (
+            '<table><tr bgcolor="red"><td bgcolor="transparent"></td></tr></table>',
+            '<table><tr bgcolor="red"><td></td></tr></table>',
+        ),
+    ],
+)
+def test_html_transparent_color_is_ignored(tmp_path, html, plain):
+    "Like browsers, color or bgcolor set to transparent is ignored: the inherited color is kept."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(plain)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf = FPDF()
     pdf.add_page()
@@ -986,6 +1019,18 @@ def test_html_ol_letters_past_z(ol_type, index, expected):
 )
 def test_int_to_letters(n, expected):
     assert int_to_letters(n) == expected
+
+
+@pytest.mark.parametrize("ol_type", ["z", "disc", "", " 1"])
+def test_html_ol_unknown_type_uses_numbers(tmp_path, ol_type):
+    "Like browsers, an <ol> with an unknown type is numbered 1, 2, 3."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<ol type="{ol_type}"><li>a</li><li>b</li></ol>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<ol><li>a</li><li>b</li></ol>")
+    assert_pdf_equal(pdf, expected, tmp_path)
 
 
 def test_html_ol_with_more_than_26_lettered_items():

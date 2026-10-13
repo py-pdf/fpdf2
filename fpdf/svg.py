@@ -1222,6 +1222,12 @@ class SVGObject:
             stop_color = None
             stop_opacity = 1.0
 
+            if "stop-opacity" in stop_element.attrib:
+                try:
+                    stop_opacity = float(stop_element.attrib.get("stop-opacity") or "1")
+                except ValueError:
+                    pass
+
             style = stop_element.attrib.get("style", "")
             if style:
                 style_dict = html.parse_css_style(style)
@@ -1237,12 +1243,6 @@ class SVGObject:
 
             if stop_color is None:
                 stop_color = stop_element.attrib.get("stop-color", "black")
-
-            if "stop-opacity" in stop_element.attrib:
-                try:
-                    stop_opacity = float(stop_element.attrib.get("stop-opacity") or "1")
-                except ValueError:
-                    pass
 
             try:
                 color_obj = svgcolor(stop_color)
