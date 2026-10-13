@@ -840,6 +840,7 @@ test_svg_attribute_conversion = (
 
 test_svg_sources = (
     pytest.param(svgfile("arcs01.svg"), id="SVG spec arcs01"),
+    pytest.param(svgfile("tilling_and_gradient.svg"), id="MDN tiling and gradients"),
     pytest.param(svgfile("arcs02.svg"), id="SVG spec arcs02"),
     pytest.param(svgfile("circle01.svg"), id="SVG spec circle01"),
     pytest.param(svgfile("cubic01.svg"), id="SVG spec cubic01 (modified)"),

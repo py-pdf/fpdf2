@@ -323,6 +323,7 @@ class PDFResources(PDFObject):
         shading: Optional[str],
         pattern: Optional[str],
         properties: Optional[str] = None,
+        color_space: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.proc_set = proc_set
@@ -332,6 +333,7 @@ class PDFResources(PDFObject):
         self.shading = shading
         self.pattern = pattern
         self.properties = properties
+        self.color_space = color_space
 
 
 class PDFOptionalContentGroup(PDFObject):
@@ -770,6 +772,9 @@ class ResourceCatalog:
         self.resources_per_page: dict[
             tuple[int, PDFResourceType], set[ResourceTypes]
         ] = defaultdict(set)
+        self.drawing_pattern_matrix = Transform.identity()
+        self.uncolored_pattern = False
+        self.pattern_color_spaces: dict[str, str] = {}
         self.graphics_styles: dict[str, Name] = OrderedDict()
         self.soft_mask_xobjects: list[PDFContentStream] = []
         self.form_xobjects: list[tuple[int, PDFContentStream]] = []
@@ -871,6 +876,10 @@ class ResourceCatalog:
     def scan_stream(self, rendered: str) -> set[tuple[PDFResourceType, str]]:
         """Parse a content stream and return discovered resources"""
         found: set[tuple[PDFResourceType, str]] = set()
+
+        for name in self.pattern_color_spaces:
+            if re.search(rf"/{name}\s+(?:cs|CS)\b", rendered):
+                found.add((PDFResourceType.COLOR_SPACE, name))
 
         for m in self.GS_REGEX.finditer(rendered):
             found.add((PDFResourceType.EXT_G_STATE, m.group(1)))
@@ -1751,7 +1760,10 @@ class OutputProducer:
         """Append soft-mask Form XObjects after patterns exist so we can resolve /Pattern ids."""
         for soft_mask in self.fpdf._resource_catalog.soft_mask_xobjects:
             soft_mask.resources = soft_mask._path.get_resource_dictionary(  # type: ignore[attr-defined]
-                gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
+                gfxstate_objs_per_name,
+                pattern_objs_per_name,
+                img_objs_per_index,
+                self.fpdf._resource_catalog.pattern_color_spaces,
             )
             self.pdf_objs.append(soft_mask)
 
@@ -1783,6 +1795,7 @@ class OutputProducer:
                     shading_objs_per_name,
                     font_objs_per_index,
                     img_objs_per_index,
+                    self.fpdf._resource_catalog.pattern_color_spaces,
                 )
 
     def _add_shadings(self) -> dict[str, Shading | MeshShading]:
@@ -1835,6 +1848,40 @@ class OutputProducer:
         self._add_soft_masks(
             gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
         )
+        # Tile streams have their own resource scope. Resolve references only
+        # after all resource objects (including nested patterns) have IDs.
+        for tile in pattern_objs_per_name.values():
+            if tile.pattern_type == 1:
+                used = tile._resources_used
+                resources = self._add_resources_dict(
+                    {
+                        i: obj
+                        for i, obj in font_objs_per_index.items()
+                        if (PDFResourceType.FONT, str(i)) in used
+                    },
+                    {
+                        i: obj
+                        for i, obj in img_objs_per_index.items()
+                        if (PDFResourceType.X_OBJECT, str(i)) in used
+                    },
+                    {
+                        name: obj
+                        for name, obj in gfxstate_objs_per_name.items()
+                        if (PDFResourceType.EXT_G_STATE, name) in used
+                    },
+                    {},
+                    {
+                        name: obj
+                        for name, obj in pattern_objs_per_name.items()
+                        if (PDFResourceType.PATTERN, name) in used
+                    },
+                    color_spaces={
+                        name: base
+                        for name, base in self.fpdf._resource_catalog.pattern_color_spaces.items()
+                        if (PDFResourceType.COLOR_SPACE, name) in used
+                    },
+                )
+                tile.resources = resources.ref
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
@@ -1844,6 +1891,7 @@ class OutputProducer:
                 shading_objs_per_name,
                 pattern_objs_per_name,
                 self._ocg_objs_per_name,
+                color_spaces=self.fpdf._resource_catalog.pattern_color_spaces,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
@@ -1895,6 +1943,14 @@ class OutputProducer:
                     page_shading_objs_per_name,
                     page_pattern_objs_per_name,
                     page_properties_objs_per_name,
+                    color_spaces={
+                        name: base
+                        for name, base in self.fpdf._resource_catalog.pattern_color_spaces.items()
+                        if name
+                        in self.fpdf._resource_catalog.get_resources_per_page(
+                            page_number, PDFResourceType.COLOR_SPACE
+                        )
+                    },
                 )
 
     def _add_resources_dict(
@@ -1905,6 +1961,7 @@ class OutputProducer:
         shading_objs_per_name: dict[str, Shading | MeshShading],
         pattern_objs_per_name: dict[str, Pattern],
         properties_objs_per_name: Optional[dict[str, "PDFOptionalContentGroup"]] = None,
+        color_spaces: Optional[dict[str, str]] = None,
     ) -> PDFResources:
         # From section 10.1, "Procedure sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -1970,6 +2027,16 @@ class OutputProducer:
             shading=shading,
             pattern=pattern,
             properties=properties,
+            color_space=(
+                pdf_dict(
+                    {
+                        f"/{name}": f"[/Pattern /{base}]"
+                        for name, base in sorted(color_spaces.items())
+                    }
+                )
+                if color_spaces
+                else None
+            ),
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj
