@@ -1284,6 +1284,31 @@ def test_html_list_item_top_margin(monkeypatch, margin, tag):
     )
 
 
+def test_html_ul_type_none_preserves_list_item_spacing(monkeypatch):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    positions = {}
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        text = "".join(fragment.string for fragment in line.fragments)
+        positions[text] = pdf.y
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    for list_type in ("disc", "none"):
+        pdf.write_html(
+            f'<ul type="{list_type}"><li>First {list_type}</li>'
+            f"<li>Second {list_type}</li></ul>",
+            tag_styles={"li": TextStyle(t_margin=0)},
+        )
+
+    assert positions["Second disc"] - positions["First disc"] == pytest.approx(
+        positions["Second none"] - positions["First none"]
+    )
+
+
 def test_html_list_vertical_margin(tmp_path):
     pdf = FPDF()
     for margin_value in (None, 4, 8, 16):

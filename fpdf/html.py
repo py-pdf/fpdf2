@@ -598,7 +598,7 @@ class HTML2FPDF(HTMLParser):
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: Union[float, Align] = 0,
-        bullet: str = "",
+        bullet: Optional[str] = None,
     ) -> None:
         self._end_paragraph()
         self.align = align
@@ -607,7 +607,7 @@ class HTML2FPDF(HTMLParser):
             if not self.align:
                 self.align = indent
             indent = 0
-        if not top_margin and not bullet and not self.follows_heading:
+        if not top_margin and bullet is None and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
         prev_family = self.pdf.font_family
         prev_style = self.pdf.font_style
@@ -634,7 +634,7 @@ class HTML2FPDF(HTMLParser):
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
-            bullet_string=bullet,
+            bullet_string=bullet or "",
         )
         self.pdf.font_family = prev_family
         self.pdf.font_style = prev_style
