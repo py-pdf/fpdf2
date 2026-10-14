@@ -3128,7 +3128,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Returns: a PDFEmbeddedFile instance, with a .basename string attribute representing the internal file name
         """
         if file_path:
-            if bytes:
+            if bytes is not None:
                 raise ValueError("'bytes' cannot be provided with 'file_path'")
             if basename:
                 raise ValueError("'basename' cannot be provided with 'file_path'")
@@ -3140,7 +3140,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if modification_date is None:
                 modification_date = datetime.fromtimestamp(stats.st_mtime).astimezone()
         else:
-            if not bytes:
+            if bytes is None:
                 raise ValueError("'bytes' is required if 'file_path' is not provided")
             if not basename:
                 raise ValueError(

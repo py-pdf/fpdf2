@@ -2,6 +2,8 @@ import pytest
 import sys
 
 from pathlib import Path
+from io import BytesIO
+from pypdf import PdfReader
 from fpdf import FPDF
 from fpdf.enums import FileAttachmentAppearance
 from test.conftest import assert_pdf_equal, EPOCH
@@ -70,6 +72,30 @@ def test_embed_file_from_bytes(tmp_path):
     pdf.add_page()
     pdf.embed_file(bytes=b"Hello world!", basename="hello_world.txt")
     assert_pdf_equal(pdf, HERE / "embed_file_from_bytes.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("compress", [False, True])
+@pytest.mark.parametrize("source", ["bytes", "path"])
+def test_embed_empty_file(tmp_path, compress, source):
+    pdf = FPDF()
+    pdf.add_page()
+    if source == "bytes":
+        pdf.embed_file(bytes=b"", basename="empty.txt", compress=compress)
+    else:
+        empty_file = tmp_path / "empty.txt"
+        empty_file.write_bytes(b"")
+        pdf.embed_file(empty_file, compress=compress)
+    reader = PdfReader(BytesIO(pdf.output()))
+    assert list(reader.attachments["empty.txt"]) == [b""]
+    names = reader.trailer["/Root"]["/Names"]["/EmbeddedFiles"]["/Names"]
+    stream = names[1].get_object()["/EF"]["/F"].get_object()
+    assert stream["/Params"]["/Size"] == 0
+
+
+def test_embed_file_rejects_empty_bytes_with_file_path(tmp_path):
+    pdf = FPDF()
+    with pytest.raises(ValueError, match="'bytes' cannot be provided with 'file_path'"):
+        pdf.embed_file(_make_text_file(tmp_path), bytes=b"")
 
 
 def test_file_attachment_annotation(tmp_path):
