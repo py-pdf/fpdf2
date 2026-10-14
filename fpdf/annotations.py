@@ -71,7 +71,9 @@ class AnnotationMixin:
         self.border = f"[0 0 {trim_trailing_zeros(str(border_width))}]"
         self.f_t = Name(field_type) if field_type else None
         self.v = value
-        self.f = sum(tuple(AnnotationFlag.coerce(flag) for flag in flags))
+        self.f = 0
+        for flag in flags:
+            self.f |= AnnotationFlag.coerce(flag)
         self.contents = PDFString(contents, encrypt=True) if contents else None
         self.a = action
         self.dest = dest
