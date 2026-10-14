@@ -6,8 +6,9 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Patterns.html>
 
 import math
 import struct
+import zlib
 from abc import ABC
-from typing import TYPE_CHECKING, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Dict, Optional, Sequence, Union
 
 from .drawing_primitives import (
     Color,
@@ -19,12 +20,13 @@ from .drawing_primitives import (
     Transform,
     convert_to_device_color,
 )
-from .enums import GradientSpreadMethod
+from .enums import GradientSpreadMethod, PDFResourceType
 from .syntax import Name, PDFArray, PDFContentStream, PDFObject
 from .util import FloatTolerance, NumberClass, format_number
 
 if TYPE_CHECKING:
     from .drawing import BoundingBox
+    from .encryption import StandardSecurityHandler
 
 
 def lerp(a: float, b: float, t: float) -> float:
@@ -258,27 +260,80 @@ def extract_alpha_stops(
 
 
 class Pattern(PDFObject):
-    """
-    Represents a PDF Pattern object.
+    """A PDF shading pattern or tiling pattern.
 
-    Currently, this class supports only "shading patterns" (pattern_type 2),
-    using either a linear or radial gradient. Tiling patterns (pattern_type 1)
-    are not yet implemented.
+    Shading patterns are dictionaries without a content stream. Tiling patterns
+    carry a cell content stream and a resource dictionary. Use ``from_tile`` to
+    construct a tile; the existing ``Pattern(shading)`` constructor is preserved.
     """
+
+    # Only tiling instances populate these fields. Class annotations make the
+    # variant fields visible to type checkers without serializing them on shades.
+    paint_type: int
+    tiling_type: int
+    b_box: PDFArray
+    x_step: float
+    y_step: float
+    _resources_used: set[tuple[PDFResourceType, str]]
+    resources: Optional[str]
 
     def __init__(self, shading: Union["Gradient", "Shading", "MeshShading"]):
         super().__init__()
+        self._contents: Optional[bytes] = None
+        self.filter: Optional[Name] = None
         self.type = Name("Pattern")
-        # 1 for a tiling pattern or type 2 for a shading pattern:
         self.pattern_type = 2
-        self._shading = shading
+        self._shading: Optional[Union["Gradient", "Shading", "MeshShading"]] = shading
         self._matrix = Transform.identity()
-        # If True (default), OutputProducer will bake the page CTM into this pattern.
-        # For patterns used inside Form XObjects (e.g., soft masks), set to False.
+        self.length: Optional[int] = None
+        # OutputProducer converts document coordinates into page coordinates.
+        # Patterns inside Form XObjects and tile streams disable this conversion.
         self._apply_page_ctm = True
 
+    @classmethod
+    def from_shading(
+        cls, shading: Union["Gradient", "Shading", "MeshShading"]
+    ) -> "Pattern":
+        """Construct a shading pattern without a content stream."""
+        return cls(shading)
+
+    @classmethod
+    def from_tile(
+        cls,
+        contents: bytes,
+        width: float,
+        height: float,
+        x_step: float,
+        y_step: float,
+        matrix: Transform,
+        resources: set[tuple[PDFResourceType, str]],
+        *,
+        colored: bool = True,
+    ) -> "Pattern":
+        """Construct a tile whose placement matrix is already resolved."""
+        pattern = cls.__new__(cls)
+        PDFObject.__init__(pattern)
+        pattern._contents = zlib.compress(contents)
+        pattern.filter = Name("FlateDecode")
+        pattern.length = len(pattern._contents)
+        pattern.type = Name("Pattern")
+        pattern.pattern_type = 1
+        pattern.paint_type = 1 if colored else 2
+        pattern.tiling_type = 1
+        pattern.b_box = PDFArray([0, 0, width, height])
+        pattern.x_step = x_step
+        pattern.y_step = y_step
+        pattern._shading = None
+        pattern._matrix = matrix
+        pattern._apply_page_ctm = False
+        pattern._resources_used = resources
+        pattern.resources = None
+        return pattern
+
     @property
-    def shading(self) -> str:
+    def shading(self) -> Optional[str]:
+        if self._shading is None:
+            return None
         return f"{self._shading.get_shading_object().id} 0 R"
 
     @property
@@ -288,6 +343,20 @@ class Pattern(PDFObject):
             f"{format_number(self._matrix.c)} {format_number(self._matrix.d)} "
             f"{format_number(self._matrix.e)} {format_number(self._matrix.f)}]"
         )
+
+    def content_stream(self) -> Optional[bytes]:
+        return self._contents
+
+    def serialize(
+        self,
+        obj_dict: Optional[Dict[str, object]] = None,
+        _security_handler: Optional["StandardSecurityHandler"] = None,
+    ) -> str:
+        if _security_handler and self._contents is not None:
+            assert not obj_dict
+            self._contents = _security_handler.encrypt_stream(self._contents, self.id)
+            self.length = len(self._contents)
+        return super().serialize(obj_dict, _security_handler)
 
     def set_matrix(self, matrix: Transform) -> "Pattern":
         self._matrix = matrix
