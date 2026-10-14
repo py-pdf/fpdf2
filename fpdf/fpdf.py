@@ -77,7 +77,13 @@ from .deprecation import (
     get_stack_level,
     support_deprecated_txt_arg,
 )
-from .drawing import DrawingContext, GraphicsContext, GraphicsStyle, PaintedPath
+from .drawing import (
+    DrawingContext,
+    GraphicsContext,
+    GraphicsStyle,
+    PaintedPath,
+    PatternPaint,
+)
 from .drawing_primitives import (
     Color,
     ColorInput,
@@ -480,6 +486,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self._set_min_pdf_version("2.0")
 
         self._current_draw_context: Optional[DrawingContext] = None
+        self._active_tiling_patterns = 0
         # map page numbers to a set of GraphicsState names:
         self._record_text_quad_points = False
         self._resource_catalog: ResourceCatalog = ResourceCatalog()
@@ -1154,6 +1161,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
             label_start (int): Starting number for the first page of a page label range.
         """
+        if self._active_tiling_patterns:
+            raise FPDFException("Finish use_pattern() before changing pages")
+
         if self.buffer:
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
@@ -1542,17 +1552,85 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._set_min_pdf_version("1.4")
 
     @contextmanager
-    @check_page
-    def use_pattern(self, shading: Gradient) -> Generator[None, None, None]:
+    def create_pattern(
+        self,
+        width: float,
+        height: float,
+        *,
+        x_step: Optional[float] = None,
+        y_step: Optional[float] = None,
+        transform: Optional[Transform] = None,
+        colored: bool = True,
+    ) -> Generator[PatternPaint, None, None]:
+        """Build a reusable tile using drawing API items.
+
+        Dimensions and spacing are in document units. The tile has a top-left
+        origin and is clipped to (0, 0, width, height). Spacing defaults to the
+        tile dimensions. Creation does not require or paint a page.
+        With colored=False, the cell defines a stencil and must not set colors.
+        Apply it with use_pattern() to use the current fill color, or bind a
+        drawing paint with tile.with_color(...).
         """
-        Create a context for using a shading pattern on the current page.
-        """
-        self._resource_catalog.add(PDFResourceType.SHADING, shading, self.page)
-        pattern = shading.get_pattern()
-        pattern_name = self._resource_catalog.add(
-            PDFResourceType.PATTERN, pattern, self.page
+        if not isinstance(colored, bool):
+            raise TypeError("colored must be a bool")
+        x_step = width if x_step is None else x_step
+        y_step = height if y_step is None else y_step
+        if any(
+            not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0
+            for v in (width, height, x_step, y_step)
+        ):
+            raise ValueError(
+                "Pattern dimensions and spacing must be finite and positive"
+            )
+        if transform is not None and not isinstance(transform, Transform):
+            raise TypeError("Pattern transform must be a Transform")
+        pattern = PatternPaint(
+            self._resource_catalog,
+            width,
+            height,
+            x_step,
+            y_step,
+            transform or Transform.identity(),
+            colored=colored,
         )
-        self._out(f"/Pattern cs /{pattern_name} scn")
+        starting_style = self._current_graphic_style()
+        yield pattern
+        pattern.finalize(starting_style)
+        self._set_min_pdf_version("1.4")
+
+    @contextmanager
+    @check_page
+    def use_pattern(
+        self, shading: Gradient | PatternPaint
+    ) -> Generator[None, None, None]:
+        """Use a gradient or tiling pattern for nonstroking painting.
+
+        Uncolored tiles default to the current fill color unless bound with
+        with_color(). Drawing-style text fills use the explicit pattern paint.
+        A tiling-pattern context is confined to one page: finish it before adding
+        a page or triggering an automatic page break.
+        """
+        if isinstance(shading, PatternPaint):
+            matrix = Transform.translation(0, -self.h).scale(x=1, y=-1).scale(self.k)
+            paint = shading.emit(self._resource_catalog, matrix, color=self.fill_color)
+            self._resource_catalog.index_stream_resources(paint, self.page)
+            self._push_local_stack()
+            self._start_local_context()
+            self._active_tiling_patterns += 1
+            try:
+                self._out(paint)
+                yield
+            finally:
+                self._active_tiling_patterns -= 1
+                self._end_local_context()
+                self._pop_local_stack()
+            return
+
+        self._resource_catalog.add(PDFResourceType.SHADING, shading, self.page)
+        name = self._resource_catalog.add(
+            PDFResourceType.PATTERN, shading.get_pattern(), self.page
+        )
+        self._out(f"/Pattern cs /{name} scn")
         try:
             yield
         finally:
@@ -4840,6 +4918,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         and a potential existing `fpdf.fpdf.FPDF.local_context()`.
         A call to `fpdf.fpdf.FPDF.will_page_break()` should be performed beforehand.
         """
+        if self._active_tiling_patterns:
+            raise FPDFException("Finish use_pattern() before changing pages")
         x = self.x
         # If we are in a .local_context(), we need to temporarily leave it,
         # by popping out every GraphicsState:

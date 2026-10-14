@@ -184,6 +184,21 @@ class TestSVGAttributeConversion:
             pdf, GENERATED_PDF_DIR / "transforms" / f"{svg_file.stem}.pdf", tmp_path
         )
 
+    def test_svg_transform_exponents_render_like_decimals(self, tmp_path):
+        pdfs = []
+        for transform in ("translate(1e1,2E1) scale(2e0)", "translate(10,20) scale(2)"):
+            svg = (
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+                f'<rect x="5" y="5" width="10" height="10" transform="{transform}"/>'
+                "</svg>"
+            )
+            pdf = fpdf.FPDF()
+            pdf.add_page()
+            pdf.image(BytesIO(svg.encode()), x=10, y=10, w=50, h=50)
+            pdfs.append(pdf)
+
+        assert_pdf_equal(pdfs[0], pdfs[1], tmp_path)
+
     @pytest.mark.parametrize(
         "element, expected, guard", parameters.test_svg_attribute_conversion
     )

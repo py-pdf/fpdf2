@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="440" height="550" viewBox="0 0 440 550">
+  <defs>
+    <pattern id="dots" patternUnits="userSpaceOnUse" width="20" height="20">
+      <circle cx="10" cy="10" r="4" fill="#C04B68"/>
+    </pattern>
+    <pattern id="relative" width="20%" height="25%" patternContentUnits="objectBoundingBox">
+      <circle cx=".1" cy=".125" r=".04" fill="#167D8D"/>
+    </pattern>
+    <pattern id="mixed" width="20%" height="25%">
+      <circle cx="10" cy="10" r="4" fill="#50804B"/>
+    </pattern>
+    <pattern id="boxContents" patternUnits="userSpaceOnUse" width="24" height="24"
+             patternContentUnits="objectBoundingBox">
+      <rect x=".02" y=".02" width=".07" height=".07" fill="#5968D8"/>
+    </pattern>
+    <pattern id="inherited" xlink:href="#template" patternTransform="rotate(15)"/>
+    <pattern id="template" patternUnits="userSpaceOnUse" x="3" y="5" width="24" height="30"
+             viewBox="0 0 10 10" preserveAspectRatio="xMidYMid meet">
+      <path d="M0 0 L10 0 L5 10 Z" fill="#D28B26"/>
+    </pattern>
+    <pattern id="words" patternUnits="userSpaceOnUse" width="45" height="20">
+      <text x="2" y="14" font-family="Helvetica" font-size="12" fill="#167D8D">fpdf2</text>
+    </pattern>
+  </defs>
+  <rect x="20" y="40" width="180" height="130" fill="url(#dots)"/>
+  <rect x="240" y="40" width="180" height="130" fill="url(#relative)"/>
+  <rect x="20" y="220" width="180" height="130" fill="url(#mixed)"/>
+  <rect x="240" y="220" width="180" height="130" fill="url(#boxContents)"/>
+  <circle cx="110" cy="465" r="65" fill="url(#inherited)"/>
+  <g transform="translate(240 400)">
+    <rect width="180" height="130" fill="url(#words)"/>
+  </g>
+</svg>
