@@ -1,4 +1,8 @@
 from pathlib import Path
+from io import BytesIO
+
+import pytest
+from pypdf import PdfReader
 
 from fpdf import FPDF
 from fpdf.annotations import AnnotationDict
@@ -229,3 +233,17 @@ def test_annotation_numbers_preserve_rounding():
     assert annotation.c == "[0 0.123456789012345 1]"
     assert annotation.quad_points == "[10 20.12]"
     assert annotation.ink_list == "[[10 20.12]]"
+
+
+@pytest.mark.parametrize(
+    "color, border_width",
+    [((1e-5, 0.5, 1.0), 0), ((0.0, 0.5, 1.0), 1e-5)],
+)
+def test_annotation_small_numbers_are_valid_pdf_numbers(color, border_width):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.text_annotation(x=10, y=10, text="Note", color=color, border_width=border_width)
+    reader = PdfReader(BytesIO(pdf.output()))
+    annotation = reader.get_page(0)["/Annots"][0].get_object()
+    assert list(annotation["/C"]) == pytest.approx(color)
+    assert list(annotation["/Border"]) == pytest.approx([0, 0, border_width])
