@@ -109,6 +109,9 @@ def build_outline_objs(
 
     outline_items: list[OutlineItemDictionary] = []
     last_outline_item_per_level: dict[int, OutlineItemDictionary] = {}
+    last_outline_item_per_parent: dict[
+        OutlineDictionary | OutlineItemDictionary, OutlineItemDictionary
+    ] = {}
     parent_outline_item: OutlineDictionary | OutlineItemDictionary
 
     for section in sections:
@@ -119,15 +122,16 @@ def build_outline_objs(
         )
         yield outline_item
 
-        if section.level in last_outline_item_per_level:
-            last_outline_item_at_level = last_outline_item_per_level[section.level]
-            last_outline_item_at_level.next = outline_item
-            outline_item.prev = last_outline_item_at_level
-
         if section.level - 1 in last_outline_item_per_level:
             parent_outline_item = last_outline_item_per_level[section.level - 1]
         else:
             parent_outline_item = outline
+
+        last_sibling = last_outline_item_per_parent.get(parent_outline_item)
+        if last_sibling is not None:
+            last_sibling.next = outline_item
+            outline_item.prev = last_sibling
+        last_outline_item_per_parent[parent_outline_item] = outline_item
 
         outline_item.parent = parent_outline_item
         if parent_outline_item.first is None:
@@ -146,6 +150,11 @@ def build_outline_objs(
             for level, oitem in last_outline_item_per_level.items()
             if level <= section.level
         }
+
+    # All items are open: accumulate visible descendant counts from the leaves.
+    for outline_item in reversed(outline_items):
+        assert outline_item.parent is not None
+        outline_item.parent.count += outline_item.count
 
 
 class TableOfContents:

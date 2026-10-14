@@ -1,3 +1,9 @@
+from io import BytesIO
+
+import pytest
+from pypdf import PdfReader
+from fpdf import FPDF
+
 from fpdf.outline import OutlineSection, build_outline_objs
 from fpdf.syntax import DestinationXYZ, PDFString
 
@@ -35,7 +41,7 @@ def test_serialize_outline():
     assert _serialize_outline(sections, first_object_id=6) == """\
 6 0 obj
 <<
-/Count 2
+/Count 5
 /First 7 0 R
 /Last 9 0 R
 /Type /Outlines
@@ -110,7 +116,7 @@ def test__serialize_outline_with_headless_hierarchy():  # issues 239
     assert _serialize_outline(sections, first_object_id=6) == """\
 6 0 obj
 <<
-/Count 2
+/Count 5
 /First 7 0 R
 /Last 9 0 R
 /Type /Outlines
@@ -122,6 +128,7 @@ endobj
 /Dest [5 0 R /XYZ 0 0 null]
 /First 8 0 R
 /Last 8 0 R
+/Next 9 0 R
 /Parent 6 0 R
 /Title (?-1)
 >>
@@ -136,11 +143,12 @@ endobj
 endobj
 9 0 obj
 <<
-/Count 1
+/Count 2
 /Dest [5 0 R /XYZ 0 0 null]
 /First 10 0 R
 /Last 10 0 R
 /Parent 6 0 R
+/Prev 7 0 R
 /Title (1)
 >>
 endobj
@@ -222,3 +230,32 @@ endobj
 endobj"""
     finally:
         PDFString.USE_HEX_ENCODING = True  # restore default value
+
+
+@pytest.mark.parametrize(
+    "levels, expected_counts",
+    [
+        ([0, 1, 2], [3, 2, 1, 0]),
+        ([0, 1, 0, 1, 1], [5, 1, 0, 2, 0, 0]),
+        ([0, 0], [2, 0, 0]),
+        ([1, 2, 0, 1, 2], [5, 1, 0, 2, 1, 0]),
+    ],
+)
+def test_outline_counts_all_visible_descendants(levels, expected_counts):
+    pdf = FPDF()
+    pdf.add_page()
+    for index, level in enumerate(levels):
+        pdf.start_section(f"Section {index}", level=level, strict=False)
+    reader = PdfReader(BytesIO(pdf.output()))
+    root = reader.trailer["/Root"]["/Outlines"]
+
+    def collect_counts(item):
+        counts = [item["/Count"]]
+        child = item.get("/First")
+        while child is not None:
+            child = child.get_object()
+            counts.extend(collect_counts(child))
+            child = child.get("/Next")
+        return counts
+
+    assert collect_counts(root) == expected_counts

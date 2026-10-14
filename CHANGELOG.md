@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
+* Document outlines count all visible descendants and link siblings by parent, retaining bookmarks when the hierarchy starts below the top level.
 * SVG gradient `stop-opacity` accepts percentages, clamps out-of-range values to 0-1, and combines with the color's alpha channel instead of replacing it. - thanks to @xiehuanyi
 * SVG basic-shape coordinates and corner radii now accept absolute length units. - thanks to @xiehuanyi
 * SVG gradient stops honor inline `style` declarations of `stop-opacity` over the corresponding presentation attribute. - thanks to @xiehuanyi
