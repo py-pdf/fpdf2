@@ -578,3 +578,27 @@ def test_html_table_with_a_negative_width_ignores_it(tmp_path, width):
     expected.add_page()
     expected.write_html("<table><tr><td>a</td><td>b</td></tr></table>")
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        (
+            '<table><tr><td rowspan="99">a</td><td>b</td></tr><tr><td>c</td></tr></table>',
+            '<table><tr><td rowspan="2">a</td><td>b</td></tr><tr><td>c</td></tr></table>',
+        ),
+        (
+            '<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td rowspan="3">d</td></tr></table>',
+            "<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>",
+        ),
+    ],
+)
+def test_html_table_rowspan_past_the_last_row(tmp_path, html, equivalent):
+    "Like browsers, a rowspan that goes past the last row stops at the last row."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)

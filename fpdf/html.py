@@ -13,6 +13,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/HTML.html>
 import logging
 import re
 import warnings
+from dataclasses import replace
 from html.parser import HTMLParser
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
@@ -29,7 +30,7 @@ from .enums import Align, CharVPos, TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .fonts import FontFace, TextStyle
 from .outline import OutlineSection
-from .table import Row, Table
+from .table import Cell, Row, Table
 from .util import (
     get_scale_factor,
     int2roman,
@@ -1393,6 +1394,12 @@ class HTML2FPDF(HTMLParser):
             self.bullet.pop()
         if tag == "table":
             assert self.table is not None
+            # like browsers, a rowspan that goes past the last row stops at the last row
+            rows = self.table.rows
+            for i, row in enumerate(rows):
+                for j, cell in enumerate(row.cells):
+                    if isinstance(cell, Cell) and cell.rowspan > len(rows) - i:
+                        row.cells[j] = replace(cell, rowspan=len(rows) - i)
             self.table.render()
             self.table = None
             self._ln()

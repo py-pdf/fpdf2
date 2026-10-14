@@ -42,6 +42,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` numbers an `<ol>` with an unknown `type`, such as `type="disc"`, as 1, 2, 3, like browsers, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
 * `FPDF.write_html()` treats an invalid `colspan` or `rowspan` on `<td>` / `<th>`, or one below 1, as 1 like browsers do, instead of raising `ValueError` or `ZeroDivisionError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` stops a `rowspan` that goes past the last row of a `<table>` at the last row, like browsers, instead of raising `FPDFException: Rowspan extends beyond end of table` - thanks to @RavSinghChandan
 * `FPDF.write_html()` renders a `<table>` whose `width` is wider than the page, such as `width="150%"`, at the page width with a warning, and ignores a negative `width` like browsers, instead of raising `ValueError` - thanks to @RavSinghChandan
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
 * SVG import: `opacity`, `fill-opacity` and `stroke-opacity` accept percentages (`50%`), and an out-of-range `opacity` is clamped to 0-1 like the other two instead of raising `ValueError` - thanks to @RavSinghChandan
