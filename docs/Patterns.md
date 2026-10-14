@@ -12,7 +12,99 @@ The **patterns** on PDF documents are grouped on 2 types:
 
 *fpdf2* provides a context manager `pdf.use_pattern(...)`. Within this context, all drawn shapes or text will use the specified pattern. Once the context ends, drawing reverts to the previously defined color.
 
-**At this moment, tiling patterns are not yet supported by `fpdf2`**.
+## 1. Tiling patterns
+
+Build a colored tile with `create_pattern()`, adding paths or graphics contexts
+from the drawing API. The context returns a reusable pattern paint:
+
+```python
+from fpdf import FPDF
+from fpdf.drawing import PaintedPath
+
+pdf = FPDF()
+with pdf.create_pattern(width=10, height=10) as tile:
+    motif = PaintedPath().rectangle(0, 0, 4, 4)
+    motif.style.fill_color = "#336699"
+    motif.style.stroke_color = None
+    tile.add_item(motif)
+
+pdf.add_page()
+with pdf.use_pattern(tile):
+    pdf.rect(20, 20, 80, 50, style="F")
+
+shape = PaintedPath().rectangle(20, 80, 80, 50)
+shape.style.fill_color = tile
+shape.style.stroke_color = None
+with pdf.drawing_context() as drawing:
+    drawing.add_item(shape)
+
+pdf.output("tiling.pdf")
+```
+
+Tile coordinates use document units and a top-left origin. Contents are clipped
+to the tile dimensions. `x_step` and `y_step` optionally change the repetition
+spacing; both default to the corresponding tile dimension. `transform` accepts
+a drawing `Transform` to position, scale, or rotate the pattern.
+
+Colored tiles capture the current drawing colors and line width when the creation
+context starts. Explicit styles on individual motifs override those defaults.
+
+Creation does not require a page and does not draw on the current page. Finish
+the creation context before applying the pattern. A finalized tile cannot be
+modified or used in another document. Drawing styles accept the pattern as
+both `fill_color` and `stroke_color`; `use_pattern()` selects nonstroking paint.
+Use drawing styles for text with an explicit fill style.
+
+Each tiling `use_pattern()` block applies to one page. Finish the block before
+calling `add_page()` or using layout that triggers an automatic page break.
+The same tile can be reused in separate blocks on subsequent pages.
+
+### Uncolored tiling patterns
+
+Use `colored=False` to define a stencil. Its paths and text describe where to
+paint; the color is supplied when the pattern is applied. Cell contents must
+not specify fill/stroke colors, gradients, other paints, or ordinary images.
+Paint composites are currently unsupported inside an uncolored cell.
+
+```python
+with pdf.create_pattern(10, 10, colored=False) as stencil:
+    dot = PaintedPath().circle(5, 5, 2)
+    dot.style.stroke_color = None
+    stencil.add_item(dot)
+
+pdf.set_fill_color(40, 120, 180)
+with pdf.use_pattern(stencil):  # uses the current fill color
+    pdf.rect(20, 140, 80, 50, style="F")
+
+shape = PaintedPath().rectangle(110, 140, 80, 50)
+shape.style.fill_color = stencil.with_color("#C04B68")
+shape.style.stroke_color = stencil.with_color("#336699")
+with pdf.drawing_context() as drawing:
+    drawing.add_item(shape)
+```
+
+`with_color()` returns a paint without modifying the stencil. It accepts the
+same device colors as `set_fill_color()`, including RGB, grayscale, and CMYK.
+Drawing styles require an explicitly bound color. A bound paint can also be
+passed to `use_pattern()` to override the current fill color.
+
+### SVG patterns
+
+SVG `<pattern>` elements can be referenced with `fill="url(#id)"` or
+`stroke="url(#id)"`, including on text. Supported attributes include:
+
+- `patternUnits` and `patternContentUnits`, independently choosing
+  `userSpaceOnUse` or `objectBoundingBox`.
+- `x`, `y`, `width`, and `height`, including percentages.
+- `patternTransform`, `viewBox`, and `preserveAspectRatio`.
+- Local `href` and `xlink:href` template inheritance, including forward references.
+
+SVG cells are colored tiles and can include supported drawing content such as
+paths, text, raster images, and gradients. Tiles are clipped to their bounds;
+`overflow="visible"` is not supported. External pattern templates are not
+loaded. Cyclic references are rejected, and template chains use the existing
+SVG depth and element limits. A single bounding-box definition can produce
+separate PDF tiles for differently sized shapes.
 
 ## 2. Gradients
 

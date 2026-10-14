@@ -18,13 +18,16 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.0] - Not released yet
 ### Added
+* support for colored and uncolored tiling patterns with `FPDF.create_pattern()` and `FPDF.use_pattern()`, including SVG `<pattern>` elements and pattern fills and strokes on referenced `<use>` shapes - _cf._ [issue #790](https://github.com/py-pdf/fpdf2/issues/790)
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
-* SVG images with a zero width or height disable rendering instead of using viewport dimensions.
+* SVG images with a zero width or height disable rendering instead of using viewport dimensions. - thanks to @xiehuanyi
+* `FPDF.write_html()` uses the first available font of a `<font face>` list, like browsers, as in `face="Arial, Helvetica, sans-serif"`, with the generic `serif`, `sans-serif` and `monospace` families rendered by the core fonts, instead of raising `FPDFException: Undefined font` - thanks to @RavSinghChandan
 * SVG gradient `stop-opacity` accepts percentages, clamps out-of-range values to 0-1, and combines with the color's alpha channel instead of replacing it. - thanks to @xiehuanyi
 * SVG basic-shape coordinates and corner radii now accept absolute length units. - thanks to @xiehuanyi
+* SVG transforms accept numbers written in scientific notation, such as `scale(1e-3)`, instead of silently ignoring the transform.
 * SVG gradient stops honor inline `style` declarations of `stop-opacity` over the corresponding presentation attribute. - thanks to @xiehuanyi
 * SVG length and angle attributes accept scientific notation, such as `width="1e2pt"`, instead of raising `ValueError`. - thanks to @xiehuanyi
 * Floating-point numbers in PDF arrays, dictionaries and destinations are written without exponent notation, preserving their values and allowing very small numeric zoom factors to be read correctly. - thanks to @xiehuanyi
