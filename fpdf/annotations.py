@@ -187,7 +187,7 @@ class PDFEmbeddedFile(PDFContentStream):
             params["/ModDate"] = PDFDate(modification_date, with_tz=True).serialize()
         if checksum:
             file_hash = hashlib.new("md5", usedforsecurity=False)
-            file_hash.update(self._contents)
+            file_hash.update(contents)
             hash_hex = file_hash.hexdigest()
             params["/CheckSum"] = f"<{hash_hex}>"
         if mime_type:

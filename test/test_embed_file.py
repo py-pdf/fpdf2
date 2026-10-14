@@ -1,12 +1,35 @@
 import pytest
 import sys
+from io import BytesIO
 
 from pathlib import Path
 from fpdf import FPDF
 from fpdf.enums import FileAttachmentAppearance
+from pypdf import PdfReader
 from test.conftest import assert_pdf_equal, EPOCH
 
 HERE = Path(__file__).resolve().parent
+
+
+@pytest.mark.parametrize("compress", [False, True])
+@pytest.mark.parametrize(
+    "contents, digest",
+    [
+        (b"hello", "5d41402abc4b2a76b9719d911017c592"),
+        (b"Hello world", "3e25960a79dbc69b674cd4ec67a72c62"),
+    ],
+)
+def test_embed_file_checksum_of_uncompressed_data(compress, contents, digest):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.embed_file(
+        bytes=contents, basename="payload.txt", compress=compress, checksum=True
+    )
+    reader = PdfReader(BytesIO(pdf.output()))
+    attachment = reader.trailer["/Root"]["/Names"]["/EmbeddedFiles"]["/Names"][1]
+    stream = attachment["/EF"]["/F"]
+    assert stream.get_data() == contents
+    assert stream["/Params"]["/CheckSum"].original_bytes == bytes.fromhex(digest)
 
 
 def _make_text_file(tmp_path: Path) -> Path:
