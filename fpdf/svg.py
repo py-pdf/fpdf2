@@ -14,7 +14,7 @@ import logging
 import math
 import re
 import warnings
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass
 from os import PathLike
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
@@ -44,16 +44,19 @@ except ImportError:
 from . import html
 from .drawing import (
     BoundingBox,
+    InheritType,
     ClippingPath,
     GradientPaint,
     GraphicsContext,
     GraphicsStyle,
     PaintedPath,
+    PatternPaint,
     PathPen,
     Text,
     TextRun,
 )
 from .drawing_primitives import (
+    Color,
     DeviceGray,
     DeviceRGB,
     Point,
@@ -96,7 +99,7 @@ _HANDY_NAMESPACES = {
 
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 TRANSFORM_GETTER = re.compile(
-    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+-]+)\)"
+    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+eE-]+)\)"
 )
 
 # One coordinate of a points attribute, with the whitespace and comma that may follow it
@@ -436,36 +439,218 @@ def _clone_gradient_paint(paint: GradientPaint) -> GradientPaint:
         spread_method=paint.spread_method,
     )
     cloned.skip_alpha = paint.skip_alpha
+    cloned.coordinate_transform = paint.coordinate_transform
+    cloned.local_bbox = paint.local_bbox
     return cloned
+
+
+class SVGPatternPaint(PatternPaint):
+    """Deferred SVG tile definition resolved in the referencing object's space."""
+
+    local_bbox = True
+
+    def __init__(  # pylint: disable=super-init-not-called
+        self, group: GraphicsContext, attributes: dict[str, str], svg: "SVGObject"
+    ) -> None:
+        # SVG definitions bind to a document only when _tile_for() creates a tile.
+        self._colored = True
+        self.group = group
+        self.attributes = attributes
+        self.svg = svg
+        self.units = GradientUnits.coerce(
+            attributes.get("patternUnits", "objectBoundingBox")
+        )
+        self.content_units = GradientUnits.coerce(
+            attributes.get("patternContentUnits", "userSpaceOnUse")
+        )
+        self.pattern_transform = (
+            convert_transforms(attributes.get("patternTransform", ""))
+            if attributes.get("patternTransform")
+            else Transform.identity()
+        )
+        self.svg_transform = Transform.identity()
+        self._tiles: dict[
+            tuple[
+                "ResourceCatalog", Optional[BoundingBox], Transform, tuple[float, float]
+            ],
+            PatternPaint,
+        ] = {}
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "SVGPatternPaint":
+        # Each usage gets its own placement transform, while sharing tile contents.
+        return copy(self)
+
+    def _coordinate(self, name: str, axis: int) -> float:
+        value = self.attributes.get(name, "0")
+        if value.endswith("%"):
+            fraction = float(value[:-1]) / 100
+            if self.units == GradientUnits.OBJECT_BOUNDING_BOX:
+                return fraction
+            return fraction * self.svg.pattern_viewport[axis]
+        return resolve_length(value)
+
+    def _tile_for(
+        self, catalog: "ResourceCatalog", bbox: Optional[BoundingBox]
+    ) -> Optional[PatternPaint]:
+        width, height = self._coordinate("width", 0), self._coordinate("height", 1)
+        if not all(math.isfinite(v) and v > 0 for v in (width, height)):
+            return None
+        needs_bbox = self.units == GradientUnits.OBJECT_BOUNDING_BOX or (
+            self.content_units == GradientUnits.OBJECT_BOUNDING_BOX
+            and not self.attributes.get("viewBox")
+        )
+        if needs_bbox and (bbox is None or bbox.width <= 0 or bbox.height <= 0):
+            return None
+        key = (catalog, bbox, self.svg_transform, self.svg.pattern_viewport)
+        if key in self._tiles:
+            return self._tiles[key]
+        unit_matrix = Transform.identity()
+        sx = sy = 1.0
+        if self.units == GradientUnits.OBJECT_BOUNDING_BOX:
+            assert bbox is not None
+            sx, sy = bbox.width, bbox.height
+            unit_matrix = Transform(sx, 0, 0, sy, bbox.x0, bbox.y0)
+        content_matrix = Transform.identity()
+        viewbox = self.attributes.get("viewBox")
+        if viewbox:
+            vx, vy, vw, vh = parse_viewbox(viewbox)
+            if vw <= 0 or vh <= 0:
+                return None
+            # Aspect-ratio fitting is measured in the physical tile viewport.
+            rx, ry = width * sx / vw, height * sy / vh
+            preserve = self.attributes.get(
+                "preserveAspectRatio", "xMidYMid meet"
+            ).split()
+            if preserve and preserve[0] == "defer":
+                preserve = preserve[1:]
+            alignment = preserve[0] if preserve else "xMidYMid"
+            dx = dy = 0.0
+            if alignment != "none":
+                ratio = max(rx, ry) if "slice" in preserve else min(rx, ry)
+                rx = ry = ratio
+                extra_x, extra_y = width * sx - vw * ratio, height * sy - vh * ratio
+                dx = extra_x * (
+                    0 if "xMin" in alignment else 1 if "xMax" in alignment else 0.5
+                )
+                dy = extra_y * (
+                    0 if "YMin" in alignment else 1 if "YMax" in alignment else 0.5
+                )
+            content_matrix = (
+                Transform.translation(-vx, -vy)
+                @ Transform.scaling(rx, ry)
+                @ Transform.translation(dx, dy)
+                @ Transform.scaling(1 / sx, 1 / sy)
+            )
+        elif self.content_units != self.units:
+            if self.content_units == GradientUnits.OBJECT_BOUNDING_BOX:
+                assert bbox is not None
+                content_matrix = Transform.scaling(bbox.width, bbox.height)
+            else:
+                content_matrix = Transform.scaling(1 / sx, 1 / sy)
+        matrix = (
+            Transform.translation(self._coordinate("x", 0), self._coordinate("y", 1))
+            @ self.pattern_transform
+            @ unit_matrix
+            @ self.svg_transform
+        )
+        tile = PatternPaint(catalog, width, height, width, height, matrix)
+        wrapper = GraphicsContext()
+        wrapper.transform = content_matrix
+        wrapper.add_item(self.group)
+        # Nested paint servers see the cell's content transform, not the page's.
+        apply_svg_transform_to_user_space_gradients(wrapper, pattern_cell=True)
+        tile.add_item(wrapper)
+        style = GraphicsStyle()
+        style.stroke_width = None
+        tile.finalize(style)
+        self._tiles[key] = tile
+        return tile
+
+    def _emit_svg(
+        self,
+        catalog: "ResourceCatalog",
+        bbox: Optional[BoundingBox],
+        stroke: bool = False,
+    ) -> str:
+        tile = self._tile_for(catalog, bbox)
+        if tile is None:
+            style = GraphicsStyle()
+            if stroke:
+                style.stroke_opacity = 0
+            else:
+                style.fill_opacity = 0
+            name = catalog.register_graphics_style(style)
+            assert name is not None
+            return f"{name.serialize()} gs"
+        return (
+            tile.emit_stroke(catalog, bbox) if stroke else tile.emit_fill(catalog, bbox)
+        )
+
+    def emit_fill(
+        self, catalog: "ResourceCatalog", bbox: Optional[BoundingBox] = None
+    ) -> str:
+        return self._emit_svg(catalog, bbox)
+
+    def emit_stroke(
+        self, catalog: "ResourceCatalog", bbox: Optional[BoundingBox] = None
+    ) -> str:
+        return self._emit_svg(catalog, bbox, stroke=True)
 
 
 @force_nodocument
 def apply_svg_transform_to_user_space_gradients(
     node: GraphicsContext | PaintedPath,
     inherited_transform: Optional[Transform] = None,
+    pattern_inherited_transform: Optional[Transform] = None,
+    pattern_cell: bool = False,
 ) -> None:
     current_transform = inherited_transform or Transform.identity()
+    pattern_transform = pattern_inherited_transform or current_transform
 
     if isinstance(node, PaintedPath):
         apply_svg_transform_to_user_space_gradients(
-            node.get_graphics_context(), current_transform
+            node.get_graphics_context(),
+            current_transform,
+            pattern_transform,
+            pattern_cell,
         )
         return
 
     if node.transform is not None:
         current_transform = current_transform @ node.transform
+        pattern_transform = node.transform @ pattern_transform
+
+    def transform_paint(
+        paint: Color | GradientPaint | PatternPaint | InheritType | str | None,
+    ) -> None:
+        if isinstance(paint, SVGPatternPaint):
+            paint.svg_transform = pattern_transform
+        elif isinstance(paint, GradientPaint):
+            if pattern_cell:
+                # Pattern /Matrix is relative to the cell's initial space, not
+                # the CTM at the path's painting operator. Map the local bbox
+                # first, then apply the cell-content transforms.
+                paint.coordinate_transform = pattern_transform
+                paint.local_bbox = True
+                paint.apply_page_ctm = False
+            elif paint.units == GradientUnits.USER_SPACE_ON_USE:
+                paint.gradient_transform = paint.gradient_transform @ current_transform
 
     for paint_attr in ("fill_color", "stroke_color"):
-        paint = getattr(node.style, paint_attr)
-        if (
-            isinstance(paint, GradientPaint)
-            and paint.units == GradientUnits.USER_SPACE_ON_USE
-        ):
-            paint.gradient_transform = paint.gradient_transform @ current_transform
+        transform_paint(getattr(node.style, paint_attr))
 
     for item in node.path_items:
         if isinstance(item, (GraphicsContext, PaintedPath)):
-            apply_svg_transform_to_user_space_gradients(item, current_transform)
+            apply_svg_transform_to_user_space_gradients(
+                item, current_transform, pattern_transform, pattern_cell
+            )
+        elif isinstance(item, Text):
+            for run in item.text_runs:
+                if run.run_style is not None:
+                    for attr in ("fill_color", "stroke_color"):
+                        paint = getattr(run.run_style, attr)
+                        if pattern_cell or isinstance(paint, SVGPatternPaint):
+                            transform_paint(paint)
 
 
 def _preserve_ws(style_map: dict[str, Any], tag: "Element") -> bool:
@@ -964,6 +1149,8 @@ class SVGObject:
         self.gradient_definitions: dict[str, GradientPaint] = (
             {}
         )  # Store parsed gradients by ID
+        self.pattern_definitions: dict[str, SVGPatternPaint] = {}
+        self._patterns_in_progress: set[str] = set()
         self.width: Optional[Percent | float] = None
         self.height: Optional[Percent | float] = None
         # disabling bandit rule as we use defusedxml:
@@ -972,8 +1159,22 @@ class SVGObject:
         if svg_tree.tag not in xmlns_lookup("svg", "svg"):
             raise ValueError(f"root tag must be svg, not {svg_tree.tag}")
 
+        self._pattern_elements = {
+            "#" + element.attrib["id"]: element
+            for element in svg_tree.iter()
+            if element.tag in xmlns_lookup("svg", "pattern")
+            and element.attrib.get("id")
+        }
+        self._pattern_parents = {
+            child: parent for parent in svg_tree.iter() for child in parent
+        }
         self._collect_css_styles(svg_tree)
         self.extract_shape_info(svg_tree)
+        self.pattern_viewport = (
+            (self.viewbox[2], self.viewbox[3])
+            if self.viewbox
+            else (float(self.width or 300), float(self.height or 150))
+        )
         self._check_svg_limits(svg_tree)
         self.convert_graphics(svg_tree)
 
@@ -1424,10 +1625,118 @@ class SVGObject:
         self.gradient_definitions[grad_id] = gradient_paint
         LOGGER.debug("Parsed radial gradient '%s' with %d stops", grad_id, len(stops))
 
+    def _resolve_pattern_element(
+        self, pattern_id: str, visited: tuple[str, ...] = ()
+    ) -> Optional["Element"]:
+        if pattern_id in visited:
+            raise ValueError("Cyclic SVG pattern reference")
+        max_depth = self.svg_limits.max_use_depth
+        if max_depth is not None and len(visited) >= max_depth:
+            raise FPDFSvgLimitExceeded("SVG pattern reference exceeds max_use_depth")
+        element = self._pattern_elements.get(pattern_id)
+        if element is None:
+            return None
+        resolved = deepcopy(element)
+        href = element.attrib.get(
+            "href", element.attrib.get("{http://www.w3.org/1999/xlink}href")
+        )
+        if href:
+            if not href.startswith("#"):
+                LOGGER.warning("Ignoring external SVG pattern reference: %s", href)
+                return None
+            template = self._resolve_pattern_element(href, visited + (pattern_id,))
+            if template is None:
+                return None
+            for attr in (
+                "x",
+                "y",
+                "width",
+                "height",
+                "patternUnits",
+                "patternContentUnits",
+                "patternTransform",
+                "viewBox",
+                "preserveAspectRatio",
+            ):
+                if attr not in resolved.attrib and attr in template.attrib:
+                    resolved.attrib[attr] = template.attrib[attr]
+            graphics = [
+                child
+                for child in resolved
+                if child.tag not in xmlns_lookup("svg", "title", "desc", "metadata")
+            ]
+            if not graphics:
+                for child in list(resolved):
+                    resolved.remove(child)
+                resolved.extend(deepcopy(list(template)))
+        return resolved
+
+    def _get_pattern_paint(self, pattern_id: str) -> Optional[SVGPatternPaint]:
+        if pattern_id in self.pattern_definitions:
+            return deepcopy(self.pattern_definitions[pattern_id])
+        if pattern_id in self._patterns_in_progress:
+            raise ValueError("Cyclic SVG pattern paint reference")
+        element = self._resolve_pattern_element(pattern_id)
+        if element is None:
+            return None
+        self._patterns_in_progress.add(pattern_id)
+        try:
+            group = GraphicsContext()
+            # SVG paint-server contents inherit from their own ancestors, never
+            # from the referencing shape's fill or stroke.
+            group.style.fill_color = DeviceRGB(0, 0, 0)
+            group.style.stroke_color = None
+            group.style.stroke_width = None
+            group.style.auto_close = False
+            # Inherit paint/font properties from the definition's real ancestors.
+            # Ancestor transforms and opacity do not belong to the tile contents.
+            ancestors: list["Element"] = []
+            parent = self._pattern_parents.get(self._pattern_elements[pattern_id])
+            while parent is not None:
+                ancestors.append(parent)
+                parent = self._pattern_parents.get(parent)
+            inherited: dict[str, Any] = {}
+            font_keys = (
+                "font-family",
+                "font-size",
+                "font-style",
+                "font-weight",
+                "text-anchor",
+                "white-space",
+            )
+            for ancestor in reversed(ancestors):
+                styles = self._style_map_for(ancestor)
+                for attr in (*svg_attr_map, *font_keys):
+                    value = _get_attr_or_style(ancestor, attr, styles)
+                    if value is not None:
+                        inherited[attr] = value
+            empty = copy(element)
+            empty.attrib = {}
+            apply_styles(group, empty, inherited)
+            self._apply_gradient_paint(group, empty, inherited)
+            self.build_group(
+                element,
+                group,
+                {
+                    key: value
+                    for key, value in inherited.items()
+                    if key in font_keys
+                    or (
+                        key in ("fill", "stroke")
+                        and self._extract_gradient_id(value) in self._pattern_elements
+                    )
+                },
+            )
+            paint = SVGPatternPaint(group, dict(element.attrib), self)
+            self.pattern_definitions[pattern_id] = paint
+            return deepcopy(paint)
+        finally:
+            self._patterns_in_progress.remove(pattern_id)
+
     @force_nodocument
     def _apply_gradient_paint(
         self,
-        stylable: PaintedPath,
+        stylable: PaintedPath | GraphicsContext,
         svg_element: "Element",
         style_map: Optional[dict[str, Any]] = None,
     ) -> None:
@@ -1449,6 +1758,34 @@ class SVGObject:
                     self.gradient_definitions[grad_id]
                 )
                 LOGGER.debug("Applied gradient %s to stroke", grad_id)
+
+        for attr in ("fill", "stroke"):
+            value = _get_attr_or_style(svg_element, attr, style_map)
+            pattern_id = self._extract_gradient_id(value) if value else None
+            if pattern_id is not None and pattern_id in self._pattern_elements:
+                if isinstance(stylable, GraphicsContext):
+                    # A group's bounding box must never size an inherited tile.
+                    # The referring shapes resolve the paint individually.
+                    setattr(stylable.style, attr + "_color", GraphicsStyle.INHERIT)
+                else:
+                    paint = self._get_pattern_paint(pattern_id)
+                    setattr(stylable.style, attr + "_color", paint)
+
+    def _apply_inherited_pattern(
+        self, path: PaintedPath, element: "Element", inherited: dict[str, Any]
+    ) -> None:
+        """Bind inherited pattern URLs at the actual painted shape, not its group."""
+        local_style = self._style_map_for(element)
+        for attr in ("fill", "stroke"):
+            local_value = _get_attr_or_style(element, attr, local_style)
+            if local_value not in (None, "inherit"):
+                continue
+            value = inherited.get(attr)
+            pattern_id = self._extract_gradient_id(value) if value else None
+            if pattern_id in self._pattern_elements and pattern_id is not None:
+                setattr(
+                    path.style, attr + "_color", self._get_pattern_paint(pattern_id)
+                )
 
     @force_nodocument
     def extract_shape_info(self, root_tag: "Element") -> None:
@@ -1575,7 +1912,7 @@ class SVGObject:
                 )
             vp_width = self.width * width / 100
         else:
-            vp_width = self.width or width
+            vp_width = self.width if self.width is not None else width
 
         if ignore_svg_top_attrs:
             if isinstance(height, Percent):
@@ -1589,7 +1926,12 @@ class SVGObject:
                 )
             vp_height = self.height * height / 100
         else:
-            vp_height = self.height or height
+            vp_height = self.height if self.height is not None else height
+
+        if vp_width == 0 or vp_height == 0:
+            context = GraphicsContext()
+            context.transform = Transform.identity()
+            return 0, 0, context
 
         if scale == 1:
             transform = Transform.identity()
@@ -1600,7 +1942,9 @@ class SVGObject:
             vx, vy, vw, vh = self.viewbox
 
             if (vw == 0) or (vh == 0):
-                return 0, 0, GraphicsContext()
+                context = GraphicsContext()
+                context.transform = Transform.identity()
+                return 0, 0, context
 
             w_ratio = vp_width / vw
             h_ratio = vp_height / vh
@@ -1620,6 +1964,11 @@ class SVGObject:
                     y=vp_height / 2 - (vh / 2) * h_ratio,
                 )
 
+        self.pattern_viewport = (
+            (self.viewbox[2], self.viewbox[3])
+            if self.viewbox
+            else (float(vp_width), float(vp_height))
+        )
         self.base_group.transform = transform
 
         return vp_width / scale, vp_height / scale, self.base_group
@@ -1695,6 +2044,9 @@ class SVGObject:
                 self._parse_linear_gradient(child)
             elif child.tag in xmlns_lookup("svg", "radialGradient"):
                 self._parse_radial_gradient(child)
+            elif child.tag in xmlns_lookup("svg", "pattern"):
+                # Definitions are resolved lazily, including forward references.
+                continue
             elif child.tag in xmlns_lookup("svg", "clipPath"):
                 try:
                     clip_id = child.attrib["id"]
@@ -1739,7 +2091,9 @@ class SVGObject:
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
     @force_nodocument
-    def build_xref(self, xref: "Element") -> GraphicsContext:
+    def build_xref(
+        self, xref: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> GraphicsContext:
         """Resolve a cross-reference to an already-seen SVG element by ID."""
         style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
@@ -1762,7 +2116,18 @@ class SVGObject:
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
         self._record_resolved_elements(1 + referenced_cost)
-        pdf_group.add_item(referenced)
+        referenced = deepcopy(referenced)
+        pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
+        for attr in ("fill", "stroke"):
+            value = _get_attr_or_style(xref, attr, style_map)
+            if value in (None, "inherit"):
+                value = (inherited_style or {}).get(attr)
+            pattern_id = self._extract_gradient_id(value) if value else None
+            if pattern_id in self._pattern_elements:
+                pattern_paints[attr + "_color"] = self._get_pattern_paint(pattern_id)
+        if pattern_paints and isinstance(referenced, (GraphicsContext, PaintedPath)):
+            self._bind_reference_patterns(referenced, pattern_paints)
+        pdf_group.add_item(referenced, False)
 
         placement_transform = None
         if "x" in xref.attrib or "y" in xref.attrib:
@@ -1797,6 +2162,25 @@ class SVGObject:
 
         return pdf_group
 
+    def _bind_reference_patterns(
+        self,
+        node: GraphicsContext | PaintedPath,
+        paints: dict[str, Optional[SVGPatternPaint]],
+    ) -> None:
+        """Resolve inherited reference paints at each leaf's own bounds."""
+        inherited = {
+            attr: paint
+            for attr, paint in paints.items()
+            if getattr(node.style, attr) is GraphicsStyle.INHERIT
+        }
+        if isinstance(node, PaintedPath):
+            for attr, paint in inherited.items():
+                setattr(node.style, attr, deepcopy(paint))
+            return
+        for item in node.path_items:
+            if isinstance(item, (GraphicsContext, PaintedPath)):
+                self._bind_reference_patterns(item, inherited)
+
     @force_nodocument
     def build_group(
         self,
@@ -1811,6 +2195,19 @@ class SVGObject:
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
+        for attr in ("fill", "stroke"):
+            local_value = _get_attr_or_style(group, attr, local_style)
+            inherited_value = (inherited_style or {}).get(attr)
+            if (
+                local_value == "inherit"
+                and self._extract_gradient_id(inherited_value) in self._pattern_elements
+            ):
+                merged_style[attr] = inherited_value
+            elif local_value is not None and (
+                attr in merged_style
+                or self._extract_gradient_id(local_value) in self._pattern_elements
+            ):
+                merged_style[attr] = local_value
         apply_styles(pdf_group, group, merged_style)
 
         # handle defs before anything else
@@ -1818,6 +2215,7 @@ class SVGObject:
             child for child in group if child.tag in xmlns_lookup("svg", "defs")
         ]:
             self.handle_defs(child)
+        self._apply_gradient_paint(pdf_group, group, merged_style)
 
         for child in group:
             self._build_group_child(pdf_group, child, merged_style)
@@ -1836,6 +2234,10 @@ class SVGObject:
         """Convert one graphics child while preserving its parent's style."""
         if child.tag in xmlns_lookup("svg", "defs"):
             self.handle_defs(child)
+        elif child.tag in xmlns_lookup(
+            "svg", "pattern", "linearGradient", "radialGradient"
+        ):
+            return
         elif child.tag in xmlns_lookup("svg", "style"):
             # Stylesheets already parsed globally.
             return
@@ -1853,11 +2255,15 @@ class SVGObject:
             )
             pdf_group.add_item(self.build_group(child, None, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "path"):
-            pdf_group.add_item(self.build_path(child), False)
+            path = self.build_path(child)
+            self._apply_inherited_pattern(path, child, inherited_style)
+            pdf_group.add_item(path, False)
         elif child.tag in shape_tags:
-            pdf_group.add_item(self.build_shape(child), False)
+            path = self.build_shape(child)
+            self._apply_inherited_pattern(path, child, inherited_style)
+            pdf_group.add_item(path, False)
         elif child.tag in xmlns_lookup("svg", "use"):
-            pdf_group.add_item(self.build_xref(child), False)
+            pdf_group.add_item(self.build_xref(child, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "image"):
             pdf_group.add_item(self.build_image(child), False)
         elif child.tag in xmlns_lookup("svg", "text"):
@@ -2020,8 +2426,19 @@ class SVGObject:
         local_style = self._style_map_for(text_tag)
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
+        for attr in ("fill", "stroke"):
+            value = _get_attr_or_style(text_tag, attr, local_style)
+            inherited_value = (inherited_style or {}).get(attr)
+            if (
+                value == "inherit"
+                and self._extract_gradient_id(inherited_value) in self._pattern_elements
+            ):
+                effective_style[attr] = inherited_value
+            elif value is not None:
+                effective_style[attr] = value
         path = PaintedPath()
         apply_styles(path, text_tag, local_style)
+        self._apply_gradient_paint(path, text_tag, effective_style)
         self.apply_clipping_path(path, text_tag, effective_style)
 
         preserve_parent = _preserve_ws(effective_style, text_tag)
@@ -2051,6 +2468,7 @@ class SVGObject:
                 return None
             context = GraphicsContext()
             apply_styles(context, tag, style_map_for_tag)
+            self._apply_gradient_paint(context, tag, style_map_for_tag)
             context.style.auto_close = GraphicsStyle.INHERIT
             overrides = any(
                 getattr(context.style, prop) is not GraphicsStyle.INHERIT
@@ -2211,6 +2629,11 @@ class SVGImage(NamedTuple):
     width: float
     height: float
     svg_obj: SVGObject
+
+    @property
+    def is_image_mask(self) -> bool:
+        """SVG image elements carry colors rather than a colorless stencil."""
+        return False
 
     def __deepcopy__(self: "SVGImage", _memo: dict[int, Any]) -> "SVGImage":
         # Defining this method is required to avoid the .svg_obj reference to be cloned:
