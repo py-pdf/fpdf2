@@ -1912,7 +1912,7 @@ class SVGObject:
                 )
             vp_width = self.width * width / 100
         else:
-            vp_width = self.width or width
+            vp_width = self.width if self.width is not None else width
 
         if ignore_svg_top_attrs:
             if isinstance(height, Percent):
@@ -1926,7 +1926,12 @@ class SVGObject:
                 )
             vp_height = self.height * height / 100
         else:
-            vp_height = self.height or height
+            vp_height = self.height if self.height is not None else height
+
+        if vp_width == 0 or vp_height == 0:
+            context = GraphicsContext()
+            context.transform = Transform.identity()
+            return 0, 0, context
 
         if scale == 1:
             transform = Transform.identity()
@@ -1937,7 +1942,9 @@ class SVGObject:
             vx, vy, vw, vh = self.viewbox
 
             if (vw == 0) or (vh == 0):
-                return 0, 0, GraphicsContext()
+                context = GraphicsContext()
+                context.transform = Transform.identity()
+                return 0, 0, context
 
             w_ratio = vp_width / vw
             h_ratio = vp_height / vh
