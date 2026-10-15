@@ -1,13 +1,12 @@
-import pytest
 import sys
 from io import BytesIO
-
 from pathlib import Path
-from io import BytesIO
+
+import pytest
 from pypdf import PdfReader
+
 from fpdf import FPDF
 from fpdf.enums import FileAttachmentAppearance
-from pypdf import PdfReader
 from test.conftest import assert_pdf_equal, EPOCH
 
 HERE = Path(__file__).resolve().parent

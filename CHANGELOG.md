@@ -24,6 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Python 3.15 is now officially supported
 ### Fixed
 * Document outlines count all visible descendants and link siblings by parent, retaining bookmarks when the hierarchy starts below the top level. - thanks to @xiehuanyi
+* Annotation colors and border widths are serialized as PDF numbers without exponent notation. - thanks to @xiehuanyi
 * Checksums for compressed embedded files are calculated from the original file bytes, as required by the PDF specification. - thanks to @xiehuanyi
 * Repeated annotation flags no longer change unrelated flag bits; annotation flags are combined with bitwise OR. - thanks to @xiehuanyi
 * SVG images with a zero width or height disable rendering instead of using viewport dimensions. - thanks to @xiehuanyi
