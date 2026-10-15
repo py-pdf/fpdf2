@@ -56,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L308-L326" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L308-L326" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def color_as_decimal(
     color: Optional[str] = &#34;#000000&#34;,
@@ -88,7 +88,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1536-L1549" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1539-L1552" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ol_prefix(ol_type: str, index: int) -&gt; int | str:
     if ol_type == &#34;1&#34;:
@@ -114,7 +114,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L339-L349" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L339-L349" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_css_style(style_attr: str) -&gt; dict[str, str]:
     &#34;&#34;&#34;Parse `style=&#34;...&#34;` HTML attributes, and return a dict of key-value&#34;&#34;&#34;
@@ -137,7 +137,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1521-L1533" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1521-L1536" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ul_prefix(ul_type: str, is_ttf_font: bool) -&gt; str:
     # Like browsers, the keywords are case-insensitive: type=&#34;DISC&#34; is a disc
@@ -149,6 +149,9 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
     if keyword == &#34;square&#34;:
         # Windows-1252 has no square, so core fonts fall back to the bullet
         return BLACK_SMALL_SQUARE_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
+    if keyword == &#34;none&#34;:
+        # like browsers, list items without a marker, still indented
+        return &#34;&#34;
     if len(ul_type) == 1:
         return ul_type
     raise NotImplementedError(f&#34;Unsupported type: {ul_type}&#34;)</code></pre>
@@ -168,7 +171,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L371-L1497" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L371-L1497" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTML2FPDF(HTMLParser):
     &#34;Render basic HTML to FPDF&#34;
@@ -410,7 +413,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: Union[float, Align] = 0,
-        bullet: str = &#34;&#34;,
+        bullet: Optional[str] = None,
     ) -&gt; None:
         self._end_paragraph()
         self.align = align
@@ -419,7 +422,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             if not self.align:
                 self.align = indent
             indent = 0
-        if not top_margin and not bullet and not self.follows_heading:
+        if not top_margin and bullet is None and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
         prev_family = self.pdf.font_family
         prev_style = self.pdf.font_style
@@ -446,7 +449,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
-            bullet_string=bullet,
+            bullet_string=bullet or &#34;&#34;,
         )
         self.pdf.font_family = prev_family
         self.pdf.font_style = prev_style
@@ -1364,7 +1367,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1496-L1497" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1496-L1497" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def error(self, message: str) -&gt; None:
     raise RuntimeError(message)</code></pre>
@@ -1378,7 +1381,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1448-L1454" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1448-L1454" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def feed(self, data: str) -&gt; None:
     super().feed(data)
@@ -1399,7 +1402,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L705-L798" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L705-L798" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_data(self, data: str) -&gt; None:
     if self._in_title:
@@ -1505,7 +1508,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1334-L1446" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1334-L1446" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_endtag(self, tag: str) -&gt; None:
     while (
@@ -1630,7 +1633,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L813-L1332" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L813-L1332" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
     self._pre_started = False
@@ -2162,7 +2165,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1456-L1476" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1456-L1476" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def put_link(self, text: str) -&gt; None:
     &#34;Insert a hyperlink&#34;
@@ -2195,7 +2198,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1479-L1493" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1479-L1493" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_toc(self, pdf: &#34;FPDF&#34;, outline: list[OutlineSection]) -&gt; None:
     &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
@@ -2225,7 +2228,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e14a38806fd431dc46bfe852476f98c5b12f75c9/fpdf/html.py#L1552-L1567" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a78143e4cdfbeed3f2eb00ba193fb0a250638ceb/fpdf/html.py#L1555-L1570" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTMLMixin:
     &#34;&#34;&#34;
