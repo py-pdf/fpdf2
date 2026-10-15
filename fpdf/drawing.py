@@ -11,7 +11,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Drawing.html>
 import math
 from collections import OrderedDict
 from contextlib import contextmanager
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass
 from types import EllipsisType
 from typing import (
@@ -34,6 +34,8 @@ from fontTools.pens.basePen import BasePen
 
 from .drawing_primitives import (
     Color,
+    ColorInput,
+    convert_to_device_color,
     DeviceCMYK,
     DeviceGray,
     DeviceRGB,
@@ -78,6 +80,198 @@ if TYPE_CHECKING:
 InheritType: TypeAlias = EllipsisType
 
 
+class PatternPaint:
+    """Reusable colored or uncolored tile built from drawing API items.
+
+    Patterns belong to the FPDF document that created them. Contents are finalized
+    when the create_pattern context exits successfully.
+    """
+
+    def __init__(
+        self,
+        catalog: "ResourceCatalog",
+        width: float,
+        height: float,
+        x_step: float,
+        y_step: float,
+        transform: Transform,
+        colored: bool = True,
+    ) -> None:
+        self._colored = colored
+        self._color: Optional[Color] = None
+        self._catalog = catalog
+        self._context = DrawingContext()
+        self._width = width
+        self._height = height
+        self._x_step = x_step
+        self._y_step = y_step
+        self._transform = transform
+        self._contents: Optional[bytes] = None
+        self._resources: set[tuple[PDFResourceType, str]] = set()
+        self._patterns: dict[Transform, Pattern] = {}
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "PatternPaint":
+        # Drawing items are cloned, but their finalized document resource is shared.
+        return self
+
+    def add_item(
+        self,
+        item: Union["GraphicsContext", "PaintedPath", "PaintComposite"],
+        clone: bool = True,
+    ) -> None:
+        """Add a PaintedPath, GraphicsContext or PaintComposite to this tile."""
+        if self._contents is not None:
+            raise RuntimeError("Pattern contents have already been finalized")
+        self._context.add_item(item, clone=clone)
+
+    def with_color(self, color: ColorInput) -> "PatternPaint":
+        """Bind an uncolored tile to a color without changing the original tile."""
+        if self._colored:
+            raise ValueError("with_color() requires an uncolored pattern")
+        if self._contents is None:
+            raise RuntimeError("Pattern context must finish before binding a color")
+        converted = convert_to_device_color(color)
+        paint = copy(self)
+        paint._color = converted  # pylint: disable=protected-access
+        return paint
+
+    @staticmethod
+    def _validate_uncolored_item(item: Any) -> None:
+        # Inspect drawing trees before rendering, including explicit text-run styles.
+        if getattr(item, "is_image_mask", None) is False:
+            raise ValueError("Uncolored patterns cannot contain ordinary images")
+        if isinstance(item, (PaintComposite, PaintBlendComposite)):
+            raise ValueError("Uncolored patterns do not support paint composites")
+        if isinstance(item, (GraphicsContext, PaintedPath)):
+            for attr in ("fill_color", "stroke_color"):
+                if getattr(item.style, attr) not in (None, GraphicsStyle.INHERIT):
+                    raise ValueError(
+                        "Uncolored patterns cannot contain explicit colors or paints"
+                    )
+            context = (
+                item.get_graphics_context() if isinstance(item, PaintedPath) else item
+            )
+            for child in context.path_items:
+                PatternPaint._validate_uncolored_item(child)
+        elif isinstance(item, Text):
+            for run in item.text_runs:
+                if run.run_style is not None:
+                    for attr in ("fill_color", "stroke_color"):
+                        if getattr(run.run_style, attr) not in (
+                            None,
+                            GraphicsStyle.INHERIT,
+                        ):
+                            raise ValueError(
+                                "Uncolored patterns cannot contain explicit text colors"
+                            )
+
+    def finalize(self, style: "GraphicsStyle") -> None:
+        before = set(self._catalog.get_items(PDFResourceType.PATTERN))
+        if not self._colored:
+            for item in self._context.items:
+                self._validate_uncolored_item(item)
+            style = deepcopy(style)
+            style.fill_color = GraphicsStyle.INHERIT
+            style.stroke_color = GraphicsStyle.INHERIT
+        previous_uncolored = self._catalog.uncolored_pattern
+        self._catalog.uncolored_pattern = not self._colored
+        try:
+            rendered = self._context.render(
+                self._catalog,
+                Point(0, 0),
+                1,
+                0,
+                style,
+                pattern_matrix=Transform.identity(),
+            )
+        finally:
+            self._catalog.uncolored_pattern = previous_uncolored
+        for pattern, name in self._catalog.get_items(PDFResourceType.PATTERN):
+            if (pattern, name) not in before and isinstance(pattern, Pattern):
+                pattern.set_apply_page_ctm(False)
+        # Cancel DrawingContext's page-coordinate conversion: the pattern matrix
+        # supplies the top-left document coordinate system at placement time.
+        defaults: list[str] = []
+        if self._colored:
+            if isinstance(style.fill_color, (DeviceRGB, DeviceGray, DeviceCMYK)):
+                defaults.append(style.fill_color.serialize().lower())
+            if isinstance(style.stroke_color, (DeviceRGB, DeviceGray, DeviceCMYK)):
+                defaults.append(style.stroke_color.serialize().upper())
+        contents = (
+            "q 1 0 0 -1 0 0 cm "
+            + (" ".join(defaults) + " " if defaults else "")
+            + rendered
+            + " Q"
+        )
+        self._contents = contents.encode("latin-1")
+        self._resources = self._catalog.scan_stream(contents)
+        # Make resources discoverable by image/font output producers without
+        # assigning them to any real page.
+        self._catalog.index_stream_resources(rendered, 0)
+
+    def _register(self, catalog: "ResourceCatalog", matrix: Transform) -> str:
+        if catalog is not self._catalog:
+            raise ValueError("A pattern cannot be used in another document")
+        if self._contents is None:
+            raise RuntimeError("Pattern context must finish before using the pattern")
+        matrix = self._transform @ matrix
+        if matrix not in self._patterns:
+            self._patterns[matrix] = Pattern.from_tile(
+                self._contents,
+                self._width,
+                self._height,
+                self._x_step,
+                self._y_step,
+                matrix,
+                self._resources,
+                colored=self._colored,
+            )
+        name = catalog.add(PDFResourceType.PATTERN, self._patterns[matrix], None)
+        assert name is not None
+        return name
+
+    def emit(
+        self,
+        catalog: "ResourceCatalog",
+        matrix: Transform,
+        stroke: bool = False,
+        color: Optional[Color] = None,
+    ) -> str:
+        color = self._color if self._color is not None else color
+        if not self._colored and color is None:
+            raise ValueError("Uncolored drawing paints require tile.with_color(...)")
+        name = self._register(catalog, matrix)
+        color_space, components = "Pattern", ""
+        if not self._colored:
+            assert isinstance(color, (DeviceGray, DeviceRGB, DeviceCMYK))
+            base_space = type(color).__name__
+            color_space = f"PCS{base_space}"
+            catalog.pattern_color_spaces[color_space] = base_space
+            components = " ".join(number_to_str(v) for v in color.colors) + " "
+        prefix = ""
+        if not self._colored and color is not None and color.a is not None:
+            style = GraphicsStyle()
+            if stroke:
+                style.stroke_opacity = color.a
+            else:
+                style.fill_opacity = color.a
+            state = catalog.register_graphics_style(style)
+            if state is not None:
+                prefix = f"{state.serialize()} gs "
+        cs, scn = ("CS", "SCN") if stroke else ("cs", "scn")
+        return f"{prefix}/{color_space} {cs} {components}/{name} {scn}"
+
+    def emit_fill(
+        self, catalog: "ResourceCatalog", _bbox: Optional["BoundingBox"] = None
+    ) -> str:
+        return self.emit(catalog, catalog.drawing_pattern_matrix)
+
+    def emit_stroke(
+        self, catalog: "ResourceCatalog", _bbox: Optional["BoundingBox"] = None
+    ) -> str:
+        return self.emit(catalog, catalog.drawing_pattern_matrix, stroke=True)
+
+
 class GradientPaint:
     """Fill/stroke paint using a gradient"""
 
@@ -88,6 +282,8 @@ class GradientPaint:
         "apply_page_ctm",
         "skip_alpha",
         "spread_method",
+        "coordinate_transform",
+        "local_bbox",
     )
 
     def __init__(
@@ -103,6 +299,8 @@ class GradientPaint:
         self.gradient_transform = gradient_transform or Transform.identity()
         self.apply_page_ctm = apply_page_ctm
         self.skip_alpha = False
+        self.coordinate_transform = Transform.identity()
+        self.local_bbox = False
         self.spread_method = (
             GradientSpreadMethod.coerce(spread_method)
             if spread_method is not None
@@ -120,9 +318,9 @@ class GradientPaint:
             matrix_bbox = Transform(
                 a=bbox.width, b=0, c=0, d=bbox.height, e=bbox.x0, f=bbox.y0
             )
-            return self.gradient_transform @ matrix_bbox
+            return self.gradient_transform @ matrix_bbox @ self.coordinate_transform
         # userSpaceOnUse: only the provided gradient_transform
-        return self.gradient_transform
+        return self.gradient_transform @ self.coordinate_transform
 
     def _register_pattern(
         self,
@@ -663,7 +861,9 @@ class GraphicsStyle:
             super().__setattr__("_intersection_rule", IntersectionRule.coerce(new))
 
     @property
-    def fill_color(self) -> Color | GradientPaint | InheritType | str | None:
+    def fill_color(
+        self,
+    ) -> Color | GradientPaint | PatternPaint | InheritType | str | None:
         """
         The desired fill color for this path/group.
 
@@ -674,21 +874,24 @@ class GraphicsStyle:
         if fill_color is self.INHERIT or fill_color is None:
             return fill_color
         assert isinstance(
-            fill_color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint)
+            fill_color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint, PatternPaint)
         )
         return fill_color
 
     @fill_color.setter
     def fill_color(
-        self, color: Color | GradientPaint | str | InheritType | None
+        self, color: Color | GradientPaint | PatternPaint | str | InheritType | None
     ) -> None:
         if isinstance(color, str):
             color = color_from_hex_string(color)
 
-        if isinstance(color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint)):
+        if isinstance(
+            color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint, PatternPaint)
+        ):
             super().__setattr__("_fill_color", color)
-            if getattr(color, "a", None) is not None and not isinstance(
-                color, GradientPaint
+            if (
+                isinstance(color, (DeviceRGB, DeviceGray, DeviceCMYK))
+                and color.a is not None
             ):
                 self.fill_opacity = color.a
 
@@ -714,7 +917,7 @@ class GraphicsStyle:
         super().__setattr__(PDFStyleKeys.FILL_ALPHA.value, new)
 
     @property
-    def stroke_color(self) -> Color | GradientPaint | InheritType | None:
+    def stroke_color(self) -> Color | GradientPaint | PatternPaint | InheritType | None:
         """
         The desired stroke color for this path/group.
 
@@ -725,21 +928,25 @@ class GraphicsStyle:
         if stroke_color is self.INHERIT or stroke_color is None:
             return stroke_color
         assert isinstance(
-            stroke_color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint)
+            stroke_color,
+            (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint, PatternPaint),
         )
         return stroke_color
 
     @stroke_color.setter
     def stroke_color(
-        self, color: Color | GradientPaint | str | InheritType | None
+        self, color: Color | GradientPaint | PatternPaint | str | InheritType | None
     ) -> None:
         if isinstance(color, str):
             color = color_from_hex_string(color)
 
-        if isinstance(color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint)):
+        if isinstance(
+            color, (DeviceRGB, DeviceGray, DeviceCMYK, GradientPaint, PatternPaint)
+        ):
             super().__setattr__("_stroke_color", color)
-            if getattr(color, "a", None) is not None and not isinstance(
-                color, GradientPaint
+            if (
+                isinstance(color, (DeviceRGB, DeviceGray, DeviceCMYK))
+                and color.a is not None
             ):
                 self.stroke_opacity = color.a
             if self.stroke_width is self.INHERIT:
@@ -2500,8 +2707,11 @@ class Text(NamedTuple):
                     ]
                 )
 
-                if fill_color not in NO_EMIT_SET:
-                    if isinstance(fill_color, GradientPaint):
+                if (
+                    fill_color not in NO_EMIT_SET
+                    and not resource_registry.uncolored_pattern
+                ):
+                    if isinstance(fill_color, (GradientPaint, PatternPaint)):
                         run_ops.append(
                             fill_color.emit_fill(resource_registry, run_bbox)
                         )
@@ -2510,8 +2720,11 @@ class Text(NamedTuple):
                             fill_color, (DeviceCMYK, DeviceRGB, DeviceRGB)
                         )
                         run_ops.append(fill_color.serialize().lower())
-                if stroke_color not in NO_EMIT_SET:
-                    if isinstance(stroke_color, GradientPaint):
+                if (
+                    stroke_color not in NO_EMIT_SET
+                    and not resource_registry.uncolored_pattern
+                ):
+                    if isinstance(stroke_color, (GradientPaint, PatternPaint)):
                         run_ops.append(
                             stroke_color.emit_stroke(resource_registry, run_bbox)
                         )
@@ -2697,6 +2910,13 @@ class DrawingContext:
     def __init__(self) -> None:
         self._subitems: list[Union[GraphicsContext, PaintedPath, PaintComposite]] = []
 
+    @property
+    def items(
+        self,
+    ) -> tuple[Union["GraphicsContext", "PaintedPath", "PaintComposite"], ...]:
+        """Read-only view of the drawing items, used to validate tile contents."""
+        return tuple(self._subitems)
+
     def add_item(
         self,
         item: Union["GraphicsContext", "PaintedPath", "PaintComposite"],
@@ -2748,6 +2968,7 @@ class DrawingContext:
         scale: float,
         height: float,
         starting_style: GraphicsStyle,
+        pattern_matrix: Optional[Transform] = None,
     ) -> str:
         """
         Render the drawing context to PDF format.
@@ -2776,12 +2997,21 @@ class DrawingContext:
             starting_style, first_point, scale, height
         )
 
-        for item in self._subitems:
-            rendered, last_item, first_point = item.render(
-                resource_registry, style, last_item, first_point
-            )
-            if rendered:
-                render_list.append(rendered)
+        previous_matrix = resource_registry.drawing_pattern_matrix
+        resource_registry.drawing_pattern_matrix = (
+            pattern_matrix
+            if pattern_matrix is not None
+            else Transform.translation(0, -height).scale(x=1, y=-1).scale(scale)
+        )
+        try:
+            for item in self._subitems:
+                rendered, last_item, first_point = item.render(
+                    resource_registry, style, last_item, first_point
+                )
+                if rendered:
+                    render_list.append(rendered)
+        finally:
+            resource_registry.drawing_pattern_matrix = previous_matrix
 
         # there was nothing to render: the only items are the start group and scale
         # transform.
@@ -3709,7 +3939,9 @@ class GraphicsContext:
 
             # ---- If fill/stroke use a GradientPaint with alpha, synthesize a soft mask now
             def _attach_alpha_mask_if_needed(
-                paint_obj: GradientPaint | Color | InheritType | str | None,
+                paint_obj: (
+                    GradientPaint | PatternPaint | Color | InheritType | str | None
+                ),
             ) -> None:
                 if not isinstance(paint_obj, GradientPaint):
                     return
@@ -3784,28 +4016,42 @@ class GraphicsContext:
             fill_color = self.style.fill_color
             stroke_color = self.style.stroke_color
 
-            bbox_for_units = None
-            if isinstance(fill_color, GradientPaint) or isinstance(
-                stroke_color, GradientPaint
-            ):
-                # Compute bbox once so mask and color share the same mapping
-                bbox_for_units = self.bounding_box(
-                    initial_point, style=self.style, expand_for_stroke=False
-                )[0]
+            paint_bboxes: dict[bool, BoundingBox] = {}
 
-            if fill_color not in NO_EMIT_SET:
-                if isinstance(fill_color, GradientPaint):
+            def bbox_for_paint(paint: GradientPaint | PatternPaint) -> BoundingBox:
+                transformed = not getattr(paint, "local_bbox", False)
+                if transformed not in paint_bboxes:
+                    paint_bboxes[transformed] = self.bounding_box(
+                        initial_point,
+                        style=self.style,
+                        expand_for_stroke=False,
+                        transformed=transformed,
+                    )[0]
+                return paint_bboxes[transformed]
+
+            if (
+                fill_color not in NO_EMIT_SET
+                and not resource_registry.uncolored_pattern
+            ):
+                if isinstance(fill_color, (GradientPaint, PatternPaint)):
                     render_list.append(
-                        fill_color.emit_fill(resource_registry, bbox_for_units)
+                        fill_color.emit_fill(
+                            resource_registry, bbox_for_paint(fill_color)
+                        )
                     )
                 else:
                     assert isinstance(fill_color, (DeviceCMYK | DeviceGray | DeviceRGB))
                     render_list.append(fill_color.serialize().lower())
 
-            if stroke_color not in NO_EMIT_SET:
-                if isinstance(stroke_color, GradientPaint):
+            if (
+                stroke_color not in NO_EMIT_SET
+                and not resource_registry.uncolored_pattern
+            ):
+                if isinstance(stroke_color, (GradientPaint, PatternPaint)):
                     render_list.append(
-                        stroke_color.emit_stroke(resource_registry, bbox_for_units)
+                        stroke_color.emit_stroke(
+                            resource_registry, bbox_for_paint(stroke_color)
+                        )
                     )
                 else:
                     assert isinstance(stroke_color, (DeviceCMYK, DeviceGray, DeviceRGB))
@@ -3988,6 +4234,7 @@ class PaintSoftMask:
         gfxstate_objs_per_name: dict[str, PDFObject],
         pattern_objs_per_name: dict[str, PDFObject],
         _img_objs_per_index: Optional[dict[int, PDFObject]] = None,
+        color_spaces: Optional[dict[str, str]] = None,
     ) -> str:
         """Build the resource dictionary for this soft mask, resolving GS & Pattern ids."""
         resources_registered: dict[str, set[str]] = {}
@@ -4019,6 +4266,13 @@ class PaintSoftMask:
                 )
                 + ">>"
             )
+        if color_spaces:
+            used = resources_registered.get("ColorSpace", set())
+            entries = "".join(
+                f"/{name} [/Pattern /{color_spaces[name]}]" for name in sorted(used)
+            )
+            if entries:
+                parts.append(f"/ColorSpace <<{entries}>>")
         return "<<" + "".join(parts) + ">>"
 
     def render(self, resource_registry: "ResourceCatalog") -> str:
@@ -4236,6 +4490,7 @@ class ImageSoftMask:
         _gfxstate_objs_per_name: dict[str, PDFObject],
         _pattern_objs_per_name: dict[str, PDFObject],
         img_objs_per_index: Optional[dict[int, PDFObject]] = None,
+        _color_spaces: Optional[dict[str, str]] = None,
     ) -> str:
         if img_objs_per_index is None or self.image_index not in img_objs_per_index:
             raise RuntimeError("Soft mask image XObject not registered.")
@@ -4451,6 +4706,7 @@ class BlendGroup:
         shading_objs_per_name: dict[str, PDFObject],
         font_objs_per_index: dict[int, Union["PDFFont", "PDFType3Font"]],
         img_objs_per_index: dict[int, PDFObject],
+        color_spaces: Optional[dict[str, str]] = None,
     ) -> "str":
         resources_registered: dict[PDFResourceType, set[str]] = {}
         for rtype, resource_id in self.resources:
@@ -4508,6 +4764,13 @@ class BlendGroup:
             if serialized:
                 parts.append(f"{Name('XObject').serialize()}<<{serialized}>>")
 
+        if color_spaces:
+            used = resources_registered.get(PDFResourceType.COLOR_SPACE, set())
+            entries = "".join(
+                f"/{name} [/Pattern /{color_spaces[name]}]" for name in sorted(used)
+            )
+            if entries:
+                parts.append(f"/ColorSpace <<{entries}>>")
         return "<<" + "".join(parts) + ">>" if parts else "<<>>"
 
 

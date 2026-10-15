@@ -71,7 +71,9 @@ class AnnotationMixin:
         self.border = f"[0 0 {trim_trailing_zeros(str(border_width))}]"
         self.f_t = Name(field_type) if field_type else None
         self.v = value
-        self.f = sum(tuple(AnnotationFlag.coerce(flag) for flag in flags))
+        self.f = 0
+        for flag in flags:
+            self.f |= AnnotationFlag.coerce(flag)
         self.contents = PDFString(contents, encrypt=True) if contents else None
         self.a = action
         self.dest = dest
@@ -187,7 +189,7 @@ class PDFEmbeddedFile(PDFContentStream):
             params["/ModDate"] = PDFDate(modification_date, with_tz=True).serialize()
         if checksum:
             file_hash = hashlib.new("md5", usedforsecurity=False)
-            file_hash.update(self._contents)
+            file_hash.update(contents)
             hash_hex = file_hash.hexdigest()
             params["/CheckSum"] = f"<{hash_hex}>"
         if mime_type:

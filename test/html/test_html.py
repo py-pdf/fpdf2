@@ -5,7 +5,7 @@ import pytest
 
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
-from fpdf.errors import FPDFException
+from fpdf.errors import FPDFException, PDFAComplianceError
 from fpdf.html import ol_prefix, ul_prefix
 from fpdf.util import int_to_letters
 from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
@@ -342,6 +342,16 @@ def test_html_ul_type_case_insensitive(tmp_path, ul_type):
     expected.write_html(f'<ul type="{ul_type}"><li>a</li></ul>')
     expected.write_html(f'<ul type="{ul_type}"><li>b</li></ul>')
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_ul_type_none(tmp_path):
+    '<ul type="none"> renders its items without a marker, like browsers.'
+    assert ul_prefix("none", is_ttf_font=False) == ""
+    assert ul_prefix("None", is_ttf_font=True) == ""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ul type="none"><li>first item</li><li>second item</li></ul>')
+    assert_pdf_equal(pdf, HERE / "html_ul_type_none.pdf", tmp_path)
 
 
 def test_html_ul_type_single_character_keeps_case():
@@ -804,6 +814,101 @@ in the PDF. <b>This</b> is a sample text that will be justified in the PDF.
 <i>This</i> is a sample text that will be justified in the PDF.</p>
         """)
     assert_pdf_equal(pdf, HERE / "html_format_within_p.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "face, family",
+    [
+        ("Arial, Helvetica, sans-serif", "helvetica"),
+        ("'Comic Sans MS', Times, serif", "times"),
+        ("Verdana, sans-serif", "helvetica"),
+        ("Consolas, monospace", "courier"),
+        (" Times ", "times"),
+    ],
+)
+def test_html_font_face_list(tmp_path, face, family):
+    "Like browsers, the first available font of a font face list is used."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<font face="{face}"><p>hello</p></font>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(f'<font face="{family}"><p>hello</p></font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_with_added_font(tmp_path):
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.add_page()
+    pdf.write_html('<font face="Noto Sans, DejaVuSans, sans-serif"><p>hello</p></font>')
+    expected = FPDF()
+    expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    expected.add_page()
+    expected.write_html('<font face="DejaVuSans"><p>hello</p></font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_prefers_an_earlier_added_font(tmp_path):
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.add_page()
+    pdf.write_html('<font face="DejaVuSans, Helvetica"><p>hello</p></font>')
+    expected = FPDF()
+    expected.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    expected.add_page()
+    expected.write_html('<font face="DejaVuSans"><p>hello</p></font>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize("tag", ["b", "i"])
+def test_html_font_face_list_keeps_bold_and_italic(tmp_path, tag):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<{tag}><font face="Verdana, sans-serif">hello</font></{tag}>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(f'<{tag}><font face="helvetica">hello</font></{tag}>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_with_only_a_bold_added_font(tmp_path):
+    "A font added only in bold is found for bold text."
+    pdf = FPDF()
+    pdf.add_font("DejaVuSans", style="B", fname=FONT_DIR / "DejaVuSans-Bold.ttf")
+    pdf.add_page()
+    pdf.write_html('<b><font face="Noto Sans, DejaVuSans">hello</font></b>')
+    expected = FPDF()
+    expected.add_font("DejaVuSans", style="B", fname=FONT_DIR / "DejaVuSans-Bold.ttf")
+    expected.add_page()
+    expected.write_html('<b><font face="DejaVuSans">hello</font></b>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_font_face_list_in_pdfa_still_rejects_core_fonts():
+    "PDF/A requires embedded fonts: picking a core font from the list still raises."
+    pdf = FPDF(enforce_compliance="PDF/A-2B")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    with pytest.raises(PDFAComplianceError):
+        pdf.write_html('<font face="Arial, Helvetica, sans-serif">hello</font>')
+
+
+def test_html_font_face_list_in_pdfa_with_an_added_font():
+    pdf = FPDF(enforce_compliance="PDF/A-2B")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    pdf.write_html('<font face="Noto Sans, DejaVuSans">hello</font>')
+    assert sorted(pdf.fonts) == ["dejavusans"]
+
+
+def test_html_font_face_list_without_an_available_font():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(FPDFException, match="no_such_font"):
+        pdf.write_html('<font face="no_such_font, other_font"><p>hello</p></font>')
 
 
 def test_html_bad_font():
@@ -1304,6 +1409,31 @@ def test_html_list_item_top_margin(monkeypatch, margin, tag):
     assert positions["First"] == pytest.approx(pdf.t_margin)
     assert positions["Second"] - positions["First"] == pytest.approx(
         pdf.font_size + margin
+    )
+
+
+def test_html_ul_type_none_preserves_list_item_spacing(monkeypatch):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    positions = {}
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        text = "".join(fragment.string for fragment in line.fragments)
+        positions[text] = pdf.y
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    for list_type in ("disc", "none"):
+        pdf.write_html(
+            f'<ul type="{list_type}"><li>First {list_type}</li>'
+            f"<li>Second {list_type}</li></ul>",
+            tag_styles={"li": TextStyle(t_margin=0)},
+        )
+
+    assert positions["Second disc"] - positions["First disc"] == pytest.approx(
+        positions["Second none"] - positions["First none"]
     )
 
 

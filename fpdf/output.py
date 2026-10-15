@@ -323,6 +323,7 @@ class PDFResources(PDFObject):
         shading: Optional[str],
         pattern: Optional[str],
         properties: Optional[str] = None,
+        color_space: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.proc_set = proc_set
@@ -332,6 +333,7 @@ class PDFResources(PDFObject):
         self.shading = shading
         self.pattern = pattern
         self.properties = properties
+        self.color_space = color_space
 
 
 class PDFOptionalContentGroup(PDFObject):
@@ -754,6 +756,35 @@ class OutputIntentDictionary:
 ResourceTypes = Union[str, int, Name, "Gradient", "Pattern", "Shading", "MeshShading"]
 
 
+# Font families, including CSS generic ones, that are rendered by a core font
+FONT_FAMILY_ALIASES = {
+    # sans
+    "sans-serif": "helvetica",
+    "sans serif": "helvetica",
+    "arial": "helvetica",
+    "verdana": "helvetica",
+    "tahoma": "helvetica",
+    "segoe ui": "helvetica",
+    # serif
+    "serif": "times",
+    "times": "times",
+    "times new roman": "times",
+    "georgia": "times",
+    "cambria": "times",
+    "garamond": "times",
+    # mono
+    "monospace": "courier",
+    "courier": "courier",
+    "courier new": "courier",
+    "consolas": "courier",
+    "monaco": "courier",
+    # symbol
+    "symbol": "symbol",
+    "zapfdingbats": "zapfdingbats",
+    "zapf dingbats": "zapfdingbats",
+}
+
+
 class ResourceCatalog:
     "Manage the indexing of resources and association to the pages they are used"
 
@@ -770,6 +801,9 @@ class ResourceCatalog:
         self.resources_per_page: dict[
             tuple[int, PDFResourceType], set[ResourceTypes]
         ] = defaultdict(set)
+        self.drawing_pattern_matrix = Transform.identity()
+        self.uncolored_pattern = False
+        self.pattern_color_spaces: dict[str, str] = {}
         self.graphics_styles: dict[str, Name] = OrderedDict()
         self.soft_mask_xobjects: list[PDFContentStream] = []
         self.form_xobjects: list[tuple[int, PDFContentStream]] = []
@@ -872,6 +906,10 @@ class ResourceCatalog:
         """Parse a content stream and return discovered resources"""
         found: set[tuple[PDFResourceType, str]] = set()
 
+        for name in self.pattern_color_spaces:
+            if re.search(rf"/{name}\s+(?:cs|CS)\b", rendered):
+                found.add((PDFResourceType.COLOR_SPACE, name))
+
         for m in self.GS_REGEX.finditer(rendered):
             found.add((PDFResourceType.EXT_G_STATE, m.group(1)))
 
@@ -931,6 +969,40 @@ class ResourceCatalog:
             return "Sh"
         raise ValueError(f"No prefix for resource type {resource_type}")
 
+    def resolve_font_family(self, font_family: str, font_style: str = "") -> str:
+        """
+        Resolve a family+style to the family of a concrete font, without adding it
+        to the font registry.
+        Behavior:
+          - `font_family` may be a comma-separated list: the first available is used
+          - Exact match (family.lower() + style.upper()) in registry: return family
+          - If `family` names a core font: return it
+          - If `family` is an alias/generic: return the core font it translates to
+          - Otherwise: raise KeyError
+        """
+        if not font_family:
+            raise KeyError("Empty font family")
+
+        style = "".join(sorted(font_style.upper()))
+
+        for candidate in font_family.strip().strip("'\"").split(","):
+            family = candidate.strip().strip("'\"").lower()
+
+            # 1) Exact match
+            if f"{family}{style}" in self.font_registry:
+                return family
+
+            # 2) Core-family direct hit?
+            if family in CORE_FONTS:
+                return family
+
+            # 3) Alias / generic mapping to core font
+            if family in FONT_FAMILY_ALIASES:
+                return FONT_FAMILY_ALIASES[family]
+
+        # 4) Fail: do not return anything
+        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
+
     def get_font_from_family(
         self, font_family: str, font_style: str = ""
     ) -> CoreFont | TTFFont:
@@ -945,67 +1017,16 @@ class ResourceCatalog:
         Notes:
           - For Symbol/ZapfDingbats, style is forced to "" (they don't support B/I).
         """
-        if not font_family:
-            raise KeyError("Empty font family")
-
+        family = self.resolve_font_family(font_family, font_style)
         style = "".join(sorted(font_style.upper()))
-
-        alias = {
-            # sans
-            "sans-serif": "helvetica",
-            "sans serif": "helvetica",
-            "arial": "helvetica",
-            "verdana": "helvetica",
-            "tahoma": "helvetica",
-            "segoe ui": "helvetica",
-            # serif
-            "serif": "times",
-            "times": "times",
-            "times new roman": "times",
-            "georgia": "times",
-            "cambria": "times",
-            "garamond": "times",
-            # mono
-            "monospace": "courier",
-            "courier": "courier",
-            "courier new": "courier",
-            "consolas": "courier",
-            "monaco": "courier",
-            # symbol
-            "symbol": "symbol",
-            "zapfdingbats": "zapfdingbats",
-            "zapf dingbats": "zapfdingbats",
-        }
-
-        for candidate in font_family.strip().strip("'\"").split(","):
-            family = candidate.strip().strip("'\"").lower()
-
-            # 1) Exact match
-            fontkey = f"{family}{style}"
-            if fontkey in self.font_registry:
-                return self.font_registry[fontkey]
-
-            # 2) Core-family direct hit?
-            if family in CORE_FONTS:
-                core_style = "" if family in {"symbol", "zapfdingbats"} else style
-                key = f"{family}{core_style}"
-                if key not in self.font_registry:
-                    i = len(self.font_registry) + 1
-                    self.font_registry[key] = CoreFont(i, key, core_style)
-                return self.font_registry[key]
-
-            # 3) Alias / generic mapping to core font
-            mapped = alias.get(family)
-            if mapped:
-                core_style = "" if mapped in {"symbol", "zapfdingbats"} else style
-                key = f"{mapped}{core_style}"
-                if key not in self.font_registry:
-                    i = len(self.font_registry) + 1
-                    self.font_registry[key] = CoreFont(i, key, core_style)
-                return self.font_registry[key]
-
-        # 4) Fail: do not return anything
-        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
+        if f"{family}{style}" in self.font_registry:
+            return self.font_registry[f"{family}{style}"]
+        core_style = "" if family in {"symbol", "zapfdingbats"} else style
+        key = f"{family}{core_style}"
+        if key not in self.font_registry:
+            i = len(self.font_registry) + 1
+            self.font_registry[key] = CoreFont(i, key, core_style)
+        return self.font_registry[key]
 
 
 class OutputProducer:
@@ -1751,7 +1772,10 @@ class OutputProducer:
         """Append soft-mask Form XObjects after patterns exist so we can resolve /Pattern ids."""
         for soft_mask in self.fpdf._resource_catalog.soft_mask_xobjects:
             soft_mask.resources = soft_mask._path.get_resource_dictionary(  # type: ignore[attr-defined]
-                gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
+                gfxstate_objs_per_name,
+                pattern_objs_per_name,
+                img_objs_per_index,
+                self.fpdf._resource_catalog.pattern_color_spaces,
             )
             self.pdf_objs.append(soft_mask)
 
@@ -1783,6 +1807,7 @@ class OutputProducer:
                     shading_objs_per_name,
                     font_objs_per_index,
                     img_objs_per_index,
+                    self.fpdf._resource_catalog.pattern_color_spaces,
                 )
 
     def _add_shadings(self) -> dict[str, Shading | MeshShading]:
@@ -1835,6 +1860,40 @@ class OutputProducer:
         self._add_soft_masks(
             gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
         )
+        # Tile streams have their own resource scope. Resolve references only
+        # after all resource objects (including nested patterns) have IDs.
+        for tile in pattern_objs_per_name.values():
+            if tile.pattern_type == 1:
+                used = tile._resources_used
+                resources = self._add_resources_dict(
+                    {
+                        i: obj
+                        for i, obj in font_objs_per_index.items()
+                        if (PDFResourceType.FONT, str(i)) in used
+                    },
+                    {
+                        i: obj
+                        for i, obj in img_objs_per_index.items()
+                        if (PDFResourceType.X_OBJECT, str(i)) in used
+                    },
+                    {
+                        name: obj
+                        for name, obj in gfxstate_objs_per_name.items()
+                        if (PDFResourceType.EXT_G_STATE, name) in used
+                    },
+                    {},
+                    {
+                        name: obj
+                        for name, obj in pattern_objs_per_name.items()
+                        if (PDFResourceType.PATTERN, name) in used
+                    },
+                    color_spaces={
+                        name: base
+                        for name, base in self.fpdf._resource_catalog.pattern_color_spaces.items()
+                        if (PDFResourceType.COLOR_SPACE, name) in used
+                    },
+                )
+                tile.resources = resources.ref
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
@@ -1844,6 +1903,7 @@ class OutputProducer:
                 shading_objs_per_name,
                 pattern_objs_per_name,
                 self._ocg_objs_per_name,
+                color_spaces=self.fpdf._resource_catalog.pattern_color_spaces,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
@@ -1895,6 +1955,14 @@ class OutputProducer:
                     page_shading_objs_per_name,
                     page_pattern_objs_per_name,
                     page_properties_objs_per_name,
+                    color_spaces={
+                        name: base
+                        for name, base in self.fpdf._resource_catalog.pattern_color_spaces.items()
+                        if name
+                        in self.fpdf._resource_catalog.get_resources_per_page(
+                            page_number, PDFResourceType.COLOR_SPACE
+                        )
+                    },
                 )
 
     def _add_resources_dict(
@@ -1905,6 +1973,7 @@ class OutputProducer:
         shading_objs_per_name: dict[str, Shading | MeshShading],
         pattern_objs_per_name: dict[str, Pattern],
         properties_objs_per_name: Optional[dict[str, "PDFOptionalContentGroup"]] = None,
+        color_spaces: Optional[dict[str, str]] = None,
     ) -> PDFResources:
         # From section 10.1, "Procedure sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -1970,6 +2039,16 @@ class OutputProducer:
             shading=shading,
             pattern=pattern,
             properties=properties,
+            color_space=(
+                pdf_dict(
+                    {
+                        f"/{name}": f"[/Pattern /{base}]"
+                        for name, base in sorted(color_spaces.items())
+                    }
+                )
+                if color_spaces
+                else None
+            ),
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj

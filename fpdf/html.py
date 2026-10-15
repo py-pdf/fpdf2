@@ -608,7 +608,7 @@ class HTML2FPDF(HTMLParser):
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: Union[float, Align] = 0,
-        bullet: str = "",
+        bullet: Optional[str] = None,
     ) -> None:
         self._end_paragraph()
         self.align = align
@@ -617,7 +617,7 @@ class HTML2FPDF(HTMLParser):
             if not self.align:
                 self.align = indent
             indent = 0
-        if not top_margin and not bullet and not self.follows_heading:
+        if not top_margin and bullet is None and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
         prev_family = self.pdf.font_family
         prev_style = self.pdf.font_style
@@ -644,7 +644,7 @@ class HTML2FPDF(HTMLParser):
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
-            bullet_string=bullet,
+            bullet_string=bullet or "",
         )
         self.pdf.font_family = prev_family
         self.pdf.font_style = prev_style
@@ -1147,8 +1147,21 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     pass
             if "face" in attrs_dict:
-                font_family = attrs_dict.get("face") or ""
-                self.font_family = font_family.lower()
+                face = attrs_dict.get("face") or ""
+                # pylint: disable=protected-access
+                catalog = (
+                    self.pdf._resource_catalog  # pyright: ignore[reportPrivateUsage]
+                )
+                # bold and italic select the font file; underline and strikethrough do not
+                style = "".join(c for c in self.font_emphasis.style if c in "BI")
+                try:
+                    # like browsers, the first available font of a list such as
+                    # "Arial, Helvetica, sans-serif"; set_font() then adds it,
+                    # with its checks (such as PDF/A requiring embedded fonts)
+                    self.font_family = catalog.resolve_font_family(face, style)
+                except KeyError:
+                    # no font of the list is available: set_font() reports it, as before
+                    self.font_family = face.lower()
         if tag == "table":
             self._end_paragraph()
             width: Optional[float] = None
@@ -1515,6 +1528,9 @@ def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
     if keyword == "square":
         # Windows-1252 has no square, so core fonts fall back to the bullet
         return BLACK_SMALL_SQUARE_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
+    if keyword == "none":
+        # like browsers, list items without a marker, still indented
+        return ""
     if len(ul_type) == 1:
         return ul_type
     raise NotImplementedError(f"Unsupported type: {ul_type}")
