@@ -4,15 +4,36 @@ from io import BytesIO
 import pytest
 from pypdf import PdfReader
 
+import pytest
+
 from fpdf import FPDF
 from fpdf.annotations import AnnotationDict
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
-from fpdf.enums import AnnotationName
+from fpdf.enums import AnnotationFlag, AnnotationName
 from fpdf.syntax import DestinationXYZ
 
 from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
+
+
+@pytest.mark.parametrize(
+    "flags, expected",
+    [
+        (("PRINT", "PRINT"), 4),
+        ((AnnotationFlag.PRINT, "PRINT"), 4),
+        (("PRINT", "NO_ZOOM", "PRINT"), 12),
+        ((), 0),
+    ],
+)
+def test_text_annotation_repeated_flags(flags, expected):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.text_annotation(x=20, y=20, text="Annotation", flags=flags)
+
+    annotation = pdf.pages[1].annots[0]
+    assert annotation.f == expected
+    assert f"/F {expected}" in annotation.serialize()
 
 
 def test_text_annotation(tmp_path):

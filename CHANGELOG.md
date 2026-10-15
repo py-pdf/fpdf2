@@ -23,7 +23,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
-* Annotation colors and border widths are serialized as PDF numbers without exponent notation.
+* Annotation colors and border widths are serialized as PDF numbers without exponent notation. - thanks to @xiehuanyi
+* Checksums for compressed embedded files are calculated from the original file bytes, as required by the PDF specification. - thanks to @xiehuanyi
+* Repeated annotation flags no longer change unrelated flag bits; annotation flags are combined with bitwise OR. - thanks to @xiehuanyi
+* SVG images with a zero width or height disable rendering instead of using viewport dimensions. - thanks to @xiehuanyi
 * `FPDF.write_html()` uses the first available font of a `<font face>` list, like browsers, as in `face="Arial, Helvetica, sans-serif"`, with the generic `serif`, `sans-serif` and `monospace` families rendered by the core fonts, instead of raising `FPDFException: Undefined font` - thanks to @RavSinghChandan
 * SVG gradient `stop-opacity` accepts percentages, clamps out-of-range values to 0-1, and combines with the color's alpha channel instead of replacing it. - thanks to @xiehuanyi
 * SVG basic-shape coordinates and corner radii now accept absolute length units. - thanks to @xiehuanyi
@@ -38,6 +41,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
 * `FPDF.write_html()` supports `<ul type="square">`, the third standard HTML bullet type, instead of raising `NotImplementedError`: Unicode fonts use ▪ and core fonts fall back to the bullet - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts the `<ul type>` keywords in any case, like browsers: `<ul type="CIRCLE">` and `<ul type="Square">` no longer raise `NotImplementedError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` supports `<ul type="none">`, rendering the list items without a marker like browsers do, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
 * SVG import: color keywords are case-insensitive (`fill="RED"`), and `fill` / `stroke` accept `transparent`, painting nothing like `none`, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts css `rgb(R, G, B)` colors, and colors with surrounding spaces, in `color` and `bgcolor` attributes instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts a legacy HTML color of six hex digits without the leading `#`, like browsers do, as in `bgcolor="eeeeee"` or `<font color="ff0000">`, instead of raising `ValueError` - thanks to @RavSinghChandan
@@ -50,6 +54,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
 * SVG import: `opacity`, `fill-opacity` and `stroke-opacity` accept percentages (`50%`), and an out-of-range `opacity` is clamped to 0-1 like the other two instead of raising `ValueError` - thanks to @RavSinghChandan
 * css `rgb()` colors accept percentages, as in `rgb(100%, 0%, 50%)` (clamped to 0%-100%), in SVG import and `FPDF.write_html()` instead of raising `ValueError` - thanks to @RavSinghChandan
+* `FPDF.embed_file()` accepts empty byte content and rejects simultaneous path and byte sources even when the bytes are empty.
+
 ### Changed
 * Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision
 ### Removed

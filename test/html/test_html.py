@@ -344,6 +344,16 @@ def test_html_ul_type_case_insensitive(tmp_path, ul_type):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+def test_html_ul_type_none(tmp_path):
+    '<ul type="none"> renders its items without a marker, like browsers.'
+    assert ul_prefix("none", is_ttf_font=False) == ""
+    assert ul_prefix("None", is_ttf_font=True) == ""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ul type="none"><li>first item</li><li>second item</li></ul>')
+    assert_pdf_equal(pdf, HERE / "html_ul_type_none.pdf", tmp_path)
+
+
 def test_html_ul_type_single_character_keeps_case():
     "A one-character type is used as the bullet as-is, so its case is kept."
     assert ul_prefix("X", is_ttf_font=False) == "X"
@@ -1399,6 +1409,31 @@ def test_html_list_item_top_margin(monkeypatch, margin, tag):
     assert positions["First"] == pytest.approx(pdf.t_margin)
     assert positions["Second"] - positions["First"] == pytest.approx(
         pdf.font_size + margin
+    )
+
+
+def test_html_ul_type_none_preserves_list_item_spacing(monkeypatch):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    positions = {}
+    render = pdf._render_styled_text_line  # pylint: disable=protected-access
+
+    def record(line, *args, **kwargs):
+        text = "".join(fragment.string for fragment in line.fragments)
+        positions[text] = pdf.y
+        return render(line, *args, **kwargs)
+
+    monkeypatch.setattr(pdf, "_render_styled_text_line", record)
+    for list_type in ("disc", "none"):
+        pdf.write_html(
+            f'<ul type="{list_type}"><li>First {list_type}</li>'
+            f"<li>Second {list_type}</li></ul>",
+            tag_styles={"li": TextStyle(t_margin=0)},
+        )
+
+    assert positions["Second disc"] - positions["First disc"] == pytest.approx(
+        positions["Second none"] - positions["First none"]
     )
 
 
