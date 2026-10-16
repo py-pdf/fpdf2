@@ -1075,7 +1075,8 @@ def test_html_li_value_restarts_the_numbering_mid_list():
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html('<ol><li>a</li><li value="10">b</li><li>c</li></ol>')
-    text = PdfReader(BytesIO(pdf.output())).pages[0].extract_text()
+    page = PdfReader(BytesIO(pdf.output())).pages[0]
+    text = page.extract_text()  # pylint: disable=no-member
     assert ["1.", "10.", "11."] == [line.split()[0] for line in text.splitlines()]
 
 
