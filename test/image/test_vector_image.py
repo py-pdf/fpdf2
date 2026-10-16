@@ -194,35 +194,28 @@ def test_svg_image_from_bytes_with_xml_whitespace(tmp_path, as_stream, prefix):
 
 
 def test_svg_image_billion_laughs():
-    # pylint: disable=no-member
     "cf. https://docs.python.org/3/library/xml.html#xml-security"
+    # Potential expansion: 30 MB, bounded even on an unprotected runtime.
+    declarations = ['<!ENTITY e0 "lol">']
+    for level in range(1, 8):
+        references = f"&e{level - 1};" * 10
+        declarations.append(f'<!ENTITY e{level} "{references}">')
+    svg = (
+        '<?xml version="1.0"?>'
+        f'<!DOCTYPE svg [{"".join(declarations)}]>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+        '<desc>&e7;</desc><rect width="10" height="10"/></svg>'
+    ).encode("utf-8")
     pdf = fpdf.FPDF()
     pdf.add_page()
     with pytest.raises(ParseError) as exc:
-        pdf.image(
-            BytesIO(
-                b'<?xml version="1.0"?>'
-                b"<!DOCTYPE lolz ["
-                b'  <!ENTITY lol "lol">'
-                b"  <!ELEMENT lolz (#PCDATA)>"
-                b'  <!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">'
-                b'  <!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">'
-                b'  <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">'
-                b'  <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">'
-                b'  <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">'
-                b'  <!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">'
-                b'  <!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">'
-                b'  <!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">'
-                b'  <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">'
-                b"]>"
-                b"<lolz>&lol9;</lolz>"
-            )
-        )
+        pdf.image(BytesIO(svg))
+    # Expat populates these module attributes dynamically.
+    # pylint: disable-next=no-member
     assert exc.value.code == errors.codes[errors.XML_ERROR_AMPLIFICATION_LIMIT_BREACH]
 
 
 def test_svg_image_quadratic_entity_expansion():
-    # pylint: disable=no-member
     # Repeat one large entity without nesting: potential expansion is 32 MiB.
     entity = "x" * 4096
     references = "&large;" * 8192
@@ -241,7 +234,43 @@ def test_svg_image_quadratic_entity_expansion():
     with pytest.raises(ParseError) as exc:
         pdf.image(BytesIO(svg))
 
+    # Expat populates these module attributes dynamically.
+    # pylint: disable-next=no-member
     assert exc.value.code == errors.codes[errors.XML_ERROR_AMPLIFICATION_LIMIT_BREACH]
+
+
+@pytest.mark.parametrize("resource", ["file", "http"])
+def test_svg_image_external_entity(tmp_path, resource):
+    sentinel = tmp_path / "entity.txt"
+    sentinel.write_text("EXTERNAL_ENTITY_SENTINEL", encoding="utf-8")
+    uri = sentinel.as_uri() if resource == "file" else "http://127.0.0.1:9/entity.txt"
+    svg = (
+        '<?xml version="1.0"?>'
+        f'<!DOCTYPE svg [<!ENTITY external SYSTEM "{uri}">]>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+        '<desc>&external;</desc><rect width="10" height="10"/></svg>'
+    ).encode("utf-8")
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(ParseError) as exc:
+        pdf.image(BytesIO(svg))
+    # Expat populates these module attributes dynamically.
+    # pylint: disable-next=no-member
+    assert exc.value.code == errors.codes[errors.XML_ERROR_UNDEFINED_ENTITY]
+
+
+def test_svg_image_bounded_internal_entity():
+    svg = (
+        '<?xml version="1.0"?>'
+        '<!DOCTYPE svg [<!ENTITY size "10">]>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+        '<rect width="&size;" height="&size;"/></svg>'
+    ).encode("utf-8")
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    image = pdf.image(BytesIO(svg))
+    assert image.rendered_width == 10
+    assert image.rendered_height == 10
 
 
 def test_svg_image_fit_rect(tmp_path):

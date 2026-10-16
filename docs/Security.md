@@ -23,7 +23,9 @@ Applications should avoid rendering untrusted HTML, SVG, or image paths without 
 
 `fpdf2` includes protections against some common parser-related attacks.
 
-For example, SVG/XML parsing relies on CPython's standard library `xml.etree.ElementTree` with native libexpat (≥ 2.6.0) input amplification limits (CVE-2023-52425 mitigations) to mitigate classes of attacks such as exponential entity expansion ("Billion Laughs"-style attacks) and quadratic entity expansion without requiring third-party dependencies.
+SVG/XML parsing uses Python's standard-library `xml.etree.ElementTree` parser and relies on the loaded Expat library's amplification limits to mitigate exponential ("Billion Laughs") and quadratic entity expansion. Bounded internal entities are accepted; external XML entities are not resolved.
+
+Applications processing untrusted SVG should use a runtime with current Expat security fixes. The loaded version can be checked with `pyexpat.EXPAT_VERSION`.
 
 These protections reduce risk in specific parsing paths, but they do not replace safe application design or input validation.
 

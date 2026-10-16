@@ -61,6 +61,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Changed
 * Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision
 ### Removed
+* Removed the `defusedxml` dependency: SVG parsing now relies on the standard-library ElementTree parser and Expat amplification limits; bounded internal entities are accepted - thanks to @agustin18, _cf._ [issue #1793](https://github.com/py-pdf/fpdf2/issues/1793)
 * support for Python 3.10, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions)
 
 
