@@ -602,3 +602,52 @@ def test_html_table_rowspan_past_the_last_row(tmp_path, html, equivalent):
     expected.add_page()
     expected.write_html(equivalent)
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        (
+            '<table><tr><td width="50%">a</td><td>b</td></tr></table>',
+            '<table><tr><td width="50%">a</td><td width="50%">b</td></tr></table>',
+        ),
+        (
+            '<table><tr><td width="30%">a</td><td>b</td><td>c</td></tr></table>',
+            '<table><tr><td width="30%">a</td><td width="35%">b</td><td width="35%">c</td></tr></table>',
+        ),
+        (
+            '<table><tr><td>a</td><td width="25%">b</td></tr></table>',
+            '<table><tr><td width="75%">a</td><td width="25%">b</td></tr></table>',
+        ),
+        (
+            '<table><tr><th width="25%">a</th><th>b</th></tr><tr><td>1</td><td>2</td></tr></table>',
+            '<table><tr><th width="25%">a</th><th width="75%">b</th></tr><tr><td>1</td><td>2</td></tr></table>',
+        ),
+        (
+            '<table><tr><td width="100%">a</td><td>b</td></tr></table>',
+            "<table><tr><td>a</td><td>b</td></tr></table>",
+        ),
+    ],
+)
+def test_html_table_cells_without_a_width_share_the_rest(tmp_path, html, equivalent):
+    "Like browsers, cells of the first row without a width share the space the others leave."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_table_absolute_width_leaves_the_rest_to_the_other_cells(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<table><tr><td width="200">a</td><td>b</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    rest = expected.epw * expected.k - 200
+    expected.write_html(
+        f'<table><tr><td width="200">a</td><td width="{rest}">b</td></tr></table>'
+    )
+    assert_pdf_equal(pdf, expected, tmp_path)

@@ -15,7 +15,7 @@ import re
 import warnings
 from dataclasses import replace
 from html.parser import HTMLParser
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
 
 from .deprecation import get_stack_level
 from .drawing_primitives import (
@@ -369,6 +369,25 @@ def _parse_html_span(val: str | None) -> int:
     return max(int(match.group(1)), 1) if match else 1
 
 
+def _fill_missing_widths(
+    widths: Sequence[Optional[tuple[float, bool]]], table_width_pt: float
+) -> list[float]:
+    """
+    The column widths of a table whose first row gives a width (a number, and whether
+    it is a percentage) to only some of its cells. Like browsers, the other cells
+    share the space that the rest leave; if there is none, they get the average width.
+    """
+    given = [
+        table_width_pt * width / 100 if is_percentage else width
+        for width, is_percentage in (w for w in widths if w is not None)
+    ]
+    missing = widths.count(None)
+    left = table_width_pt - sum(given)
+    share = left / missing if left > 0 else sum(given) / len(given)
+    filled = iter(given)
+    return [share if w is None else next(filled) for w in widths]
+
+
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
@@ -473,6 +492,8 @@ class HTML2FPDF(HTMLParser):
         self.table: Optional[Table] = (
             None  # becomes a Table instance when processing <table> tags
         )
+        # the width of each cell of the first row of the current table (None if it has none)
+        self.first_row_widths: list[Optional[tuple[float, bool]]] = []
         self.table_row: Optional[Row] = (
             None  # becomes a Row instance when processing <tr> tags
         )
@@ -1225,6 +1246,7 @@ class HTML2FPDF(HTMLParser):
                     spacing = _parse_html_dimension(sp_val) / self.pdf.k
             else:
                 spacing = 0.0
+            self.first_row_widths = []
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -1264,24 +1286,27 @@ class HTML2FPDF(HTMLParser):
                     attrs_dict["height"],
                     tag,
                 )
+            cell_width: Optional[tuple[float, bool]] = None
             if "width" in attrs_dict:
                 width_str = (attrs_dict["width"] or "0").strip()
-                # pylint: disable=protected-access
                 if len(self.table.rows) == 1:  # => first table row
                     if width_str.endswith("%"):
-                        width = float(width_str[:-1])
+                        cell_width = (float(width_str[:-1]), True)
                     else:
-                        width = _parse_html_dimension(width_str)
-                    if not self.table._col_widths:
-                        self.table._col_widths = []
-                    assert isinstance(self.table._col_widths, list)
-                    self.table._col_widths.append(width)
+                        cell_width = (_parse_html_dimension(width_str), False)
                 else:
                     LOGGER.warning(
                         'Ignoring width="%s" specified on a <%s> that is not in the first <tr>',
                         width_str,
                         tag,
                     )
+            if len(self.table.rows) == 1:
+                self.first_row_widths.append(cell_width)
+                if cell_width is not None:
+                    # pylint: disable=protected-access
+                    self.table._col_widths = [
+                        w[0] for w in self.first_row_widths if w is not None
+                    ]
         if tag == "img" and "src" in attrs_dict:
             width = _parse_html_dimension(attrs_dict.get("width")) / self.pdf.k
             height = _parse_html_dimension(attrs_dict.get("height")) / self.pdf.k
@@ -1413,6 +1438,13 @@ class HTML2FPDF(HTMLParser):
                 for j, cell in enumerate(row.cells):
                     if isinstance(cell, Cell) and cell.rowspan > len(rows) - i:
                         row.cells[j] = replace(cell, rowspan=len(rows) - i)
+            if None in self.first_row_widths and any(self.first_row_widths):
+                # some cells of the first row have no width: they share the rest
+                # pylint: disable=protected-access
+                table_width = float(self.table._width or self.pdf.epw)
+                self.table._col_widths = _fill_missing_widths(
+                    self.first_row_widths, table_width * self.pdf.k
+                )
             self.table.render()
             self.table = None
             self._ln()
