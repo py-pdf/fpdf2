@@ -573,14 +573,37 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.pdf_version = max(self.pdf_version, version)
 
     @property
+    def font_style(self) -> str:
+        return super().font_style
+
+    @font_style.setter
+    def font_style(self, style: str) -> None:
+        """Set the font style: bold and/or italics"""
+        if not hasattr(self, "fonts") or not self.font_family:
+            self._set_font_style(style)
+            return
+        self.set_font(style=style)
+
+    @property
     def emphasis(self) -> TextEmphasis:
-        "The current text emphasis: bold, italics, underline and/or strikethrough."
+        """The current text emphasis: bold, italics, underline and/or strikethrough."""
         font_style = self.font_style
         if self.strikethrough:
             font_style += "S"
         if self.underline:
             font_style += "U"
         return TextEmphasis.coerce(font_style)
+
+    @emphasis.setter
+    def emphasis(self, value: TextEmphasis | str) -> None:
+        """Set the text emphasis: bold, italics, underline and/or strikethrough."""
+        value = TextEmphasis.coerce(value)
+        if not hasattr(self, "fonts") or not self.font_family:
+            self.underline = bool(value & TextEmphasis.U)
+            self.strikethrough = bool(value & TextEmphasis.S)
+            self._set_font_style(value.style.replace("U", "").replace("S", ""))
+            return
+        self.set_font(style=value.style)
 
     @property
     def is_ttf_font(self) -> bool:
@@ -2792,7 +2815,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # Select it
         self.font_family = family
-        self.font_style = style
+        self._set_font_style(style)
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
         self.current_font_is_set_on_page = False
@@ -4280,7 +4303,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         # wrapped into BT / ET operators:
                         current_font = self.current_font = frag.font
                         current_font_size_pt = self.font_size_pt = frag.font_size_pt
-                        current_font_style = self.font_style = frag.font_style
+                        current_font_style = frag.font_style
+                        self._set_font_style(frag.font_style)
                         self._out(
                             self._set_font_for_page(
                                 current_font,
@@ -5399,7 +5423,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.y += padding.bottom
 
         if markdown:
-            self.font_style = prev_font_style
+            self._set_font_style(prev_font_style)
             self.current_font = prev_current_font
             self.underline = prev_underline
 
