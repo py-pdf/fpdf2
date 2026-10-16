@@ -16,7 +16,7 @@ import re
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from os import PathLike
-from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional, Union
 
 from fontTools.svgLib.path import (
     parse_path,  # pyright: ignore[reportUnknownVariableType]
@@ -2355,7 +2355,7 @@ class SVGObject:
     @force_nodocument
     def apply_clipping_path(
         self,
-        stylable: PaintedPath,
+        stylable: PaintedPath | GraphicsContext,
         svg_element: "Element",
         style_map: Optional[dict[str, Any]] = None,
     ) -> None:
@@ -2370,7 +2370,7 @@ class SVGObject:
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
-    def build_image(self, image: "Element") -> "SVGImage":
+    def build_image(self, image: "Element") -> Union["SVGImage", GraphicsContext]:
         self._record_resolved_elements(1)
         href = None
         for key in xmlns_lookup("xlink", "href"):
@@ -2381,18 +2381,28 @@ class SVGObject:
             raise ValueError("<image> is missing a href attribute")
         width = float(image.attrib.get("width", 0))
         height = float(image.attrib.get("height", 0))
-        if "preserveAspectRatio" in image.attrib:
-            LOGGER.warning(
-                '"preserveAspectRatio" defined on <image> is currently not supported (contributions are welcome to add support for it)'
+
+        keep_aspect_ratio = True
+        preserve_aspect_ratio = image.attrib.get("preserveAspectRatio")
+        if preserve_aspect_ratio is not None:
+            parts = preserve_aspect_ratio.strip().split()
+            align = (
+                parts[1]
+                if parts and parts[0] == "defer" and len(parts) > 1
+                else (parts[0] if parts else "")
             )
-        if "style" in image.attrib:
-            LOGGER.warning(
-                '"style" defined on <image> is currently not supported (contributions are welcome to add support for it)'
-            )
-        if "transform" in image.attrib:
-            LOGGER.warning(
-                '"transform" defined on <image> is currently not supported (contributions are welcome to add support for it)'
-            )
+            if align == "none":
+                keep_aspect_ratio = False
+            elif align.startswith("x") and (
+                "meet" in parts or "slice" in parts or len(parts) <= 2
+            ):
+                keep_aspect_ratio = True
+            else:
+                LOGGER.warning(
+                    '"preserveAspectRatio" value "%s" defined on <image> is currently not supported (contributions are welcome to add support for it)',
+                    preserve_aspect_ratio,
+                )
+
         # Note: at this moment, self.image_cache is not set yet:
         svg_image = SVGImage(
             href=href,
@@ -2401,9 +2411,27 @@ class SVGObject:
             width=width,
             height=height,
             svg_obj=self,
+            keep_aspect_ratio=keep_aspect_ratio,
         )
-        self.update_xref(image.attrib.get("id"), svg_image)
-        return svg_image
+
+        style_map = self._style_map_for(image)
+        has_transform = "transform" in image.attrib
+        has_style = (
+            bool(style_map) or "style" in image.attrib or "opacity" in image.attrib
+        )
+        has_clip = "clip-path" in image.attrib or "clip-path" in style_map
+
+        if has_transform or has_style or has_clip:
+            wrapper = GraphicsContext()
+            apply_styles(wrapper, image, style_map)
+            self.apply_clipping_path(wrapper, image, style_map)
+            wrapper.add_item(svg_image, clone=False)
+            result: Union[SVGImage, GraphicsContext] = wrapper
+        else:
+            result = svg_image
+
+        self.update_xref(image.attrib.get("id"), result)
+        return result
 
     @force_nodocument
     def build_text(
@@ -2622,6 +2650,7 @@ class SVGImage(NamedTuple):
     width: float
     height: float
     svg_obj: SVGObject
+    keep_aspect_ratio: bool = True
 
     @property
     def is_image_mask(self) -> bool:
@@ -2637,6 +2666,7 @@ class SVGImage(NamedTuple):
             width=self.width,
             height=self.height,
             svg_obj=self.svg_obj,
+            keep_aspect_ratio=self.keep_aspect_ratio,
         )
 
     # pylint: disable=unused-argument
@@ -2676,7 +2706,7 @@ class SVGImage(NamedTuple):
             y=self.y,
             w=w,
             h=h,
-            keep_aspect_ratio=True,
+            keep_aspect_ratio=self.keep_aspect_ratio,
         )
         return stream_content, last_item, initial_point
 
