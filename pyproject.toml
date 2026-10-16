@@ -72,7 +72,7 @@ docs = [
 test = [
   "brotli",
   "camelot-py",
-  "endesive",
+  "endesive<3.0.0",
   "pypdf",
   "pytest",
   "pytest-cov",
