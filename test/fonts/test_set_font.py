@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
+from fpdf.enums import TextEmphasis
 from fpdf.errors import FPDFException
 from fpdf.fonts import CORE_FONTS, CORE_FONTS_CHARWIDTHS
 from test.conftest import assert_pdf_equal, assert_same_file
@@ -209,3 +210,97 @@ def test_set_font_restores_current_font_after_state_divergence():
         f"set_font() returned early due to matching font_family, "
         f"but current_font was not restored (got {pdf.current_font.fontkey!r})"
     )
+
+
+@pytest.mark.parametrize(
+    "style_input,expected_fontkey,expected_style,expected_emphasis",
+    [
+        ("", "helvetica", "", TextEmphasis.coerce("")),
+        ("B", "helveticaB", "B", TextEmphasis.B),
+        ("I", "helveticaI", "I", TextEmphasis.I),
+        ("BI", "helveticaBI", "BI", TextEmphasis.B | TextEmphasis.I),
+        ("IB", "helveticaBI", "BI", TextEmphasis.B | TextEmphasis.I),
+    ],
+)
+def test_font_style_setter_synchronizes_font(
+    style_input, expected_fontkey, expected_style, expected_emphasis
+):
+    """Setting pdf.font_style must select the corresponding font and update emphasis (#1223)."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.font_style = style_input
+    assert pdf.font_style == expected_style
+    assert pdf.current_font.fontkey == expected_fontkey
+    assert pdf.emphasis == expected_emphasis
+
+
+@pytest.mark.parametrize(
+    "emphasis_input,expected_fontkey,expected_style,expected_underline,expected_strikethrough",
+    [
+        ("BOLD", "helveticaB", "B", False, False),
+        ("B", "helveticaB", "B", False, False),
+        ("I", "helveticaI", "I", False, False),
+        ("italics", "helveticaI", "I", False, False),
+        ("U", "helvetica", "", True, False),
+        ("Underline", "helvetica", "", True, False),
+        ("S", "helvetica", "", False, True),
+        (TextEmphasis.B, "helveticaB", "B", False, False),
+        (TextEmphasis.I, "helveticaI", "I", False, False),
+        (TextEmphasis.B | TextEmphasis.U, "helveticaB", "B", True, False),
+        (
+            TextEmphasis.B | TextEmphasis.I | TextEmphasis.U | TextEmphasis.S,
+            "helveticaBI",
+            "BI",
+            True,
+            True,
+        ),
+        ("", "helvetica", "", False, False),
+    ],
+)
+def test_emphasis_setter_synchronizes_font(
+    emphasis_input,
+    expected_fontkey,
+    expected_style,
+    expected_underline,
+    expected_strikethrough,
+):
+    """Setting pdf.emphasis must update font style, underline, strikethrough, and font selection (#1223)."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.emphasis = emphasis_input
+    assert pdf.font_style == expected_style
+    assert pdf.current_font.fontkey == expected_fontkey
+    assert pdf.underline is expected_underline
+    assert pdf.strikethrough is expected_strikethrough
+
+
+def test_font_style_and_emphasis_setters_before_set_font():
+    """Setting pdf.font_style or pdf.emphasis before font_family is configured updates internal state without crashing (#1223)."""
+    pdf = FPDF()
+    pdf.font_style = "B"
+    assert pdf.font_style == "B"
+
+    pdf2 = FPDF()
+    pdf2.emphasis = TextEmphasis.B | TextEmphasis.U
+    assert pdf2.font_style == "B"
+    assert pdf2.underline is True
+    assert pdf2.strikethrough is False
+    assert pdf2.emphasis == TextEmphasis.B | TextEmphasis.U
+
+
+def test_font_style_setter_sequence_issue_1223():
+    """Verify consecutive font_style updates properly change current_font (#1223)."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.font_style = ""
+    pdf.cell(text="Eins.")
+    assert pdf.current_font.fontkey == "helvetica"
+    pdf.font_style = "B"
+    pdf.cell(text="Zwei.")
+    assert pdf.current_font.fontkey == "helveticaB"
+    pdf.font_style = "I"
+    pdf.cell(text="Drei.")
+    assert pdf.current_font.fontkey == "helveticaI"
