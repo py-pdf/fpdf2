@@ -144,7 +144,7 @@ PDF `bytearray` ਬਫਰ ਵਾਪਸ ਕਰਦਾ ਹੈ।
 [ਜੂਲਸ ਵਰਨ ਟੈਕਸਟ](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 ਪਿਛਲੇ ਟਿਊਟੋਰੀਅਲ ਤੋਂ ਮੁੱਖ ਫਰਕ
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) ਮੈਥਡ ਦੀ ਵਰਤੋਂ ਹੈ।
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns) ਮੈਥਡ ਦੀ ਵਰਤੋਂ ਹੈ।
 ਇਹ ਸਾਰਾ ਟੈਕਸਟ ਇਕੱਠਾ ਕਰਦਾ ਹੈ ਅਤੇ ਬੇਨਤੀ ਕੀਤੇ ਕਾਲਮਾਂ ਦੀ ਗਿਣਤੀ ਵਿੱਚ ਵੰਡਦਾ ਹੈ, ਲੋੜ ਅਨੁਸਾਰ ਆਟੋਮੈਟਿਕ ਪੇਜ ਬ੍ਰੇਕ ਪਾਉਂਦਾ ਹੈ।
 
 ## ਟਿਊਟੋ 5 - ਟੇਬਲ ਬਣਾਉਣਾ ##

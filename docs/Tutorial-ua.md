@@ -150,7 +150,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 [Текст Жюля Верна](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Ключова відмінність від попереднього туторіалу — використання методу 
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). 
 Він збирає весь текст (можливо, по частинах) і розподіляє його на вказану кількість колонок, автоматично вставляючи розриви сторінок за потреби. Зверніть увагу: доки екземпляр `TextColumns` активний як контекстний менеджер, стилі тексту та інші властивості шрифтів можна змінювати — ці зміни будуть обмежені цим контекстом. Після його закриття попередні параметри буде відновлено.
 
 

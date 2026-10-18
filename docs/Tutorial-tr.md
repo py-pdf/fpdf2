@@ -147,7 +147,7 @@ ve aksi takdirde yoksayılır.
 [Jules Verne metni](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Önceki öğreticiyle ana fark, 
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) metodunun kullanılmasıdır.
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns) metodunun kullanılmasıdır.
 Metni toplar ve istenen sütun sayısına dağıtır, gerekirse otomatik olarak sayfa kesmeleri ekler.
 `TextColumns` örneği bir bağlam yöneticisi olarak etkin olduğunda, metin stilleri ve diğer yazı tipi özellikleri değiştirilebilir.
 Bu değişiklikler bağlamla sınırlı olacaktır. Kapatıldığında önceki ayarlar yeniden yüklenecektir.

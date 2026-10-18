@@ -154,7 +154,7 @@ Ta primer je različica prejšnjega, prikazuje, kako razdeliti besedilo v več s
 [Jules Verne besedilo](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Ključna razlika od prejšnjega vodiča je uporaba metode
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column).
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns).
 Zbira vse besedilo, po potrebi po delih, in ga razdeli čez zahtevano število
 stolpcev, pri čemer samodejno vstavi prelome strani, kjer je to potrebno. Upoštevajte,
 da dokler je `TextColumns` instanca aktivna kot upravljavec konteksta, lahko

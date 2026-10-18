@@ -154,7 +154,7 @@ Este ejemplo es una variante del anterior, mostrando cómo poner el texto en mú
 [Texto de Julio Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 La diferencia clave respecto al tutorial anterior es el uso del 
-método [`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+método [`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). 
 Este recoge todo el texto, posiblemente en incrementos, y lo distribuye entre el número de columnas solicitadas, insertando automáticamente saltos de página según sea necesario. Nota que mientras la instancia de `TextColumns` está activa como gestor de contexto, los estilos de texto y otras propiedades de la fuente pueden cambiarse. Estos cambios estarán contenidos en el contexto. Una vez se cierre, la configuración previa será reestablecida.
 
 

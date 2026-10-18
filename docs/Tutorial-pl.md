@@ -119,7 +119,7 @@ Ten przykład jest wariantem poprzedniego, pokazującym jak rozłożyć tekst na
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Główna różnica w stosunku do poprzedniego tutoriala polega na użyciu metody 
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). 
 Gromadzi ona cały tekst, możliwie w częściach, i rozdziela go na żądaną liczbę kolumn, automatycznie wstawiając łamanie strony w razie potrzeby. Należy zauważyć, że dopóki instancja `TextColumns` jest aktywna jako menedżer kontekstu, style tekstu i inne właściwości czcionki można zmieniać. Zmiany te będą ograniczone do kontekstu. Po jego zamknięciu zostaną przywrócone poprzednie ustawienia.
 
 
