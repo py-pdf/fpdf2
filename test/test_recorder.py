@@ -67,6 +67,27 @@ def test_recorder_preserve_pages_count():
     assert pdf.pages_count == 1
 
 
+def test_unbreakable_replays_table_after_page_break(tmp_path):
+    def render_table(pdf):
+        with pdf.table(text_align="CENTER") as table:
+            table.row(("Heading 1", "Heading 2"))
+            table.row(("Cell 1", "Cell 2"))
+
+    pdf = init_pdf()
+    pdf.set_y(pdf.page_break_trigger - 5)
+    with pdf.unbreakable() as recorder:
+        render_table(recorder)
+
+    assert recorder.page_break_triggered
+    assert pdf.pages_count == 2
+
+    expected = init_pdf()
+    expected.set_y(expected.page_break_trigger - 5)
+    expected.add_page()
+    render_table(expected)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_recorder_with_ttf_font(tmp_path):
     pdf = init_pdf()
     pdf.add_font(fname=str(HERE / "fonts" / "Roboto-Regular.ttf"))
