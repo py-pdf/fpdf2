@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
+* `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
 * Tables inside `FPDF.unbreakable()` are replayed with their rows and cells intact when the block is moved to a new page - _cf._ [issue #1230](https://github.com/py-pdf/fpdf2/issues/1230) - thanks to @alphaZytx
 * `FPDF.table()` raises a clear `ValueError` naming the column when `text_align` is a tuple with fewer values than the table has columns, like it does for `col_widths`, instead of an `IndexError` - thanks to @RavSinghChandan

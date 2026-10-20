@@ -1402,6 +1402,14 @@ class HTML2FPDF(HTMLParser):
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs_dict.get("pages") or "1")
             )
+        # like browsers, an id (or the name of an <a>) is a target for href="#..." links
+        anchor = (
+            attrs_dict.get("id")
+            or (attrs_dict.get("name") if tag == "a" else None)
+            or ""
+        ).strip()
+        if anchor:
+            self.pdf.set_link(name=anchor, y=self.pdf.y)
         if tag == "sup":
             self.pdf.char_vpos = CharVPos.SUP
         if tag == "sub":
