@@ -386,6 +386,7 @@ def apply_styles(
     stylable: PaintedPath | GraphicsContext,
     svg_element: "Element",
     computed_style: Optional[dict[str, Any]] = None,
+    allow_fill_and_stroke: bool = True,
 ) -> None:
     """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
     if computed_style is not None:
@@ -400,12 +401,13 @@ def apply_styles(
                 style[key] = norm_value
     stylable.style.auto_close = False
 
-    for attr_name, converter in svg_attr_map.items():
-        attr_value = _normalize_css_value(style.get(attr_name))
-        if attr_value is None:
-            attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
-        if attr_value is not None:
-            setattr(stylable.style, *converter(attr_value))
+    if allow_fill_and_stroke:
+        for attr_name, converter in svg_attr_map.items():
+            attr_value = _normalize_css_value(style.get(attr_name))
+            if attr_value is None:
+                attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+            if attr_value is not None:
+                setattr(stylable.style, *converter(attr_value))
 
     # handle this separately for now
     opacity_str = _normalize_css_value(style.get("opacity"))
@@ -2397,6 +2399,11 @@ class SVGObject:
                 "meet" in parts or "slice" in parts or len(parts) <= 2
             ):
                 keep_aspect_ratio = True
+                if align != "xMidYMid" or "slice" in parts:
+                    LOGGER.warning(
+                        'Ignoring preserveAspectRatio alignment/slice mode "%s" on <image> (only "xMidYMid meet" and "none" are supported)',
+                        preserve_aspect_ratio,
+                    )
             else:
                 LOGGER.warning(
                     '"preserveAspectRatio" value "%s" defined on <image> is currently not supported (contributions are welcome to add support for it)',
@@ -2416,14 +2423,12 @@ class SVGObject:
 
         style_map = self._style_map_for(image)
         has_transform = "transform" in image.attrib
-        has_style = (
-            bool(style_map) or "style" in image.attrib or "opacity" in image.attrib
-        )
+        has_opacity = "opacity" in image.attrib or "opacity" in style_map
         has_clip = "clip-path" in image.attrib or "clip-path" in style_map
 
-        if has_transform or has_style or has_clip:
+        if has_transform or has_opacity or has_clip:
             wrapper = GraphicsContext()
-            apply_styles(wrapper, image, style_map)
+            apply_styles(wrapper, image, style_map, allow_fill_and_stroke=False)
             self.apply_clipping_path(wrapper, image, style_map)
             wrapper.add_item(svg_image, clone=False)
             result: Union[SVGImage, GraphicsContext] = wrapper
