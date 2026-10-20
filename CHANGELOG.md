@@ -49,6 +49,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` ignores `color="transparent"` and `bgcolor="transparent"` like browsers, keeping the inherited text or background color, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `IndexError` on an `<ol type="a">` or `<ol type="A">` list with more than 26 items: like browsers, letters continue with `aa`, `ab`... and a `start` below 1 shows as a number - thanks to @RavSinghChandan
 * `FPDF.write_html()` numbers an `<ol>` with an unknown `type`, such as `type="disc"`, as 1, 2, 3, like browsers, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` supports `<li value="N">` in ordered lists: like browsers, the item is numbered N and the following ones continue from it - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
 * `FPDF.write_html()` treats an invalid `colspan` or `rowspan` on `<td>` / `<th>`, or one below 1, as 1 like browsers do, instead of raising `ValueError` or `ZeroDivisionError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` stops a `rowspan` that goes past the last row of a `<table>` at the last row, like browsers, instead of raising `FPDFException: Rowspan extends beyond end of table` - thanks to @RavSinghChandan

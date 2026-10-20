@@ -199,8 +199,23 @@ def check_signature(pdf, trusted_cert_paths, linearize=False):
     for cert_filepath in trusted_cert_paths:
         with open(cert_filepath, "rb") as cert_file:
             trusted_certs.append(cert_file.read())
-    results = endesive_pdf.verify(pdf.output(linearize=linearize), trusted_certs)
-    for hash_ok, signature_ok, cert_ok in results:
+    pdf_data = pdf.output(linearize=linearize)
+    if hasattr(
+        getattr(endesive_pdf, "PDFVerifier", None), "verify_all_signatures"
+    ):  # endesive >= 3
+        results = endesive_pdf.PDFVerifier(
+            pdf_data, trusted_certs
+        ).verify_all_signatures()
+    else:
+        results = endesive_pdf.verify(pdf_data, trusted_certs)
+    assert results
+    for result in results:
+        if isinstance(result, tuple):  # endesive < 3
+            hash_ok, signature_ok, cert_ok = result
+        else:
+            hash_ok = result.hashok
+            signature_ok = result.signatureok
+            cert_ok = result.certok
         assert signature_ok
         assert hash_ok
         assert cert_ok

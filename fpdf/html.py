@@ -1102,6 +1102,11 @@ class HTML2FPDF(HTMLParser):
                 bullet = ul_prefix(bullet, self.pdf.is_ttf_font)
             if not isinstance(bullet, str):
                 bullet += 1
+                # like browsers, <li value="N"> numbers this item N and the next ones from there
+                try:
+                    bullet = int((attrs_dict.get("value") or "").strip())
+                except ValueError:
+                    pass
                 self.bullet[self.indent - 1] = bullet
                 ol_type = self.ol_type[self.indent]
                 bullet = f"{ol_prefix(ol_type, bullet)}."
