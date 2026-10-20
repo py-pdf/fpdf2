@@ -468,6 +468,7 @@ class HTML2FPDF(HTMLParser):
         # <title>-related properties:
         self.render_title_tag = render_title_tag
         self._in_title = False
+        self._in_style_or_script = False
         # <table>-related properties:
         self.table_line_separators = table_line_separators
         self.table: Optional[Table] = (
@@ -704,6 +705,9 @@ class HTML2FPDF(HTMLParser):
         self.follows_trailing_space = True
 
     def handle_data(self, data: str) -> None:
+        if self._in_style_or_script:
+            # like browsers, the content of <style> and <script> is never displayed
+            return
         if self._in_title:
             if self.pdf.title:
                 LOGGER.warning('Ignoring repeated <title> "%s"', data)
@@ -1329,6 +1333,8 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = CharVPos.SUB
         if tag == "title":
             self._in_title = True
+        if tag in ("style", "script"):
+            self._in_style_or_script = True
         if css_style.get("break-after") == "page":
             if tag in ("br", "hr", "img"):
                 self._end_paragraph()
@@ -1456,6 +1462,8 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = CharVPos.LINE
         if tag == "title":
             self._in_title = False
+        if tag in ("style", "script"):
+            self._in_style_or_script = False
 
     def feed(self, data: str) -> None:
         super().feed(data)

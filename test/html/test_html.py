@@ -1671,6 +1671,25 @@ def test_html_title_duplicated(caplog, tmp_path):
     assert_pdf_equal(pdf, HERE / "html_title_duplicated.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html",
+    [
+        "<head><style>p { color: red; }</style></head><body><p>Hello</p></body>",
+        "<p>Hello</p><script>var x = 1;</script>",
+        "<style>\n  .a { font-weight: bold }\n</style><p>Hello</p><script></script>",
+    ],
+)
+def test_html_style_and_script_content_is_not_rendered(tmp_path, html):
+    "Like browsers, the content of <style> and <script> elements is not displayed."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<p>Hello</p>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_ol_nested_in_ul(tmp_path):  # cf. issue #1358
     pdf = FPDF()
     pdf.add_page()
