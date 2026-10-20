@@ -582,7 +582,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if not hasattr(self, "fonts") or not self.font_family:
             self._set_font_style(style)
             return
-        self.set_font(style=style)
+        style_with_decorations = style
+        upper_style = style.upper()
+        if self.underline and "U" not in upper_style:
+            style_with_decorations += "U"
+        if self.strikethrough and "S" not in upper_style:
+            style_with_decorations += "S"
+        self.set_font(style=style_with_decorations)
 
     @property
     def emphasis(self) -> TextEmphasis:

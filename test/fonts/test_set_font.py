@@ -304,3 +304,23 @@ def test_font_style_setter_sequence_issue_1223():
     pdf.font_style = "I"
     pdf.cell(text="Drei.")
     assert pdf.current_font.fontkey == "helveticaI"
+
+
+def test_font_style_setter_preserves_underline_and_strikethrough():
+    """Setting pdf.font_style must preserve existing underline and strikethrough flags (#1223)."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", style="US", size=12)
+
+    with pdf.text_columns() as columns:
+        columns.write("Hello")
+
+    assert pdf.underline is True
+    assert pdf.strikethrough is True
+
+    # Direct setter update must also preserve flags
+    pdf.font_style = "B"
+    assert pdf.font_style == "B"
+    assert pdf.underline is True
+    assert pdf.strikethrough is True
+    assert pdf.current_font.fontkey == "helveticaB"
