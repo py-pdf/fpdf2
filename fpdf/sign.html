@@ -56,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/822ce4f1b8856c3affc929c3ce88d9fb284db893/fpdf/sign.py#L66-L119" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2ee9b3ce144225a3b0a582fa0e033599e6736c80/fpdf/sign.py#L66-L120" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def sign_content(
     signer: &#34;signer&#34;,  # pyright: ignore[reportGeneralTypeIssues]
@@ -100,15 +100,16 @@ in non-backward-compatible ways.</p>
     sign = patch(&#34;endesive.signer.datetime&#34;, mock_datetime)(signer.sign)
 
     contents = sign(
-        datau=None,
+        datau=b&#34;&#34;,
         key=key,
         cert=cert,
-        othercerts=extra_certs,
+        othercerts=list(extra_certs),
         hashalgo=hashalgo,
         attrs=True,
         signed_value=content_hash.digest(),
     )
-    contents = _pkcs11_aligned(contents).encode(&#34;latin1&#34;)
+    # endesive returns DER bytes, despite its inferred dict return type.
+    contents = _pkcs11_aligned(cast(bytes, contents)).encode(&#34;latin1&#34;)
     # Sanity check, otherwise we will break the xref table:
     assert len(sig_placeholder) == len(contents)
     return buffer.replace(sig_placeholder, contents, 1)</code></pre>
@@ -129,7 +130,7 @@ The signing operation does not alter the buffer size</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/822ce4f1b8856c3affc929c3ce88d9fb284db893/fpdf/sign.py#L31-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2ee9b3ce144225a3b0a582fa0e033599e6736c80/fpdf/sign.py#L31-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Signature:
     def __init__(
@@ -194,7 +195,7 @@ The signing operation does not alter the buffer size</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/822ce4f1b8856c3affc929c3ce88d9fb284db893/fpdf/sign.py#L53-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/2ee9b3ce144225a3b0a582fa0e033599e6736c80/fpdf/sign.py#L53-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(
     self,
