@@ -582,3 +582,152 @@ def test_svg_shape_absolute_lengths(shape, converted):
         actual._root_graphics_context.path_items
         == expected._root_graphics_context.path_items
     )
+
+
+TINY_PNG_DATA_URI = (
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUP"
+    "FEBIuO0L+AAC2FBZ2JyuNICOfGx7xAwTjCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888GCItjn0szWGBJ"
+    "TVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCaGqNYJAgFDEpQAAAzmxafI4vZWwAAA"
+    "ABJRU5ErkJggg=="
+)
+
+
+@pytest.mark.parametrize(
+    "aspect_ratio_attr, expected_w, expected_h",
+    [
+        ('preserveAspectRatio="none"', 100.0, 50.0),
+        ('preserveAspectRatio="defer none"', 100.0, 50.0),
+        ('preserveAspectRatio="xMidYMid meet"', 50.0, 50.0),
+        ("", 50.0, 50.0),
+    ],
+)
+def test_svg_image_preserve_aspect_ratio(
+    aspect_ratio_attr, expected_w, expected_h, caplog
+):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10" y="20" width="100" height="50" {aspect_ratio_attr}/>'
+        "</svg>"
+    )
+    with caplog.at_level("WARNING"):
+        pdf.image(BytesIO(svg.encode()))
+    assert "not supported" not in caplog.text
+    content = pdf.pages[1].contents.decode("latin1")
+    expected_chunk = f"{expected_w:.2f} 0 0 -{expected_h:.2f}"
+    assert expected_chunk in content
+
+
+def test_svg_image_transform(caplog):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10" y="20" width="40" height="40" transform="translate(15, 25)"/>'
+        "</svg>"
+    )
+    with caplog.at_level("WARNING"):
+        pdf.image(BytesIO(svg.encode()))
+    assert "not supported" not in caplog.text
+    content = pdf.pages[1].contents.decode("latin1")
+    assert "1 0 0 1 15 25 cm" in content
+
+
+@pytest.mark.parametrize(
+    "style_attr",
+    [
+        'opacity="0.5"',
+        'style="opacity: 0.5"',
+    ],
+)
+def test_svg_image_opacity_and_style(style_attr, caplog):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10" y="20" width="40" height="40" {style_attr}/>'
+        "</svg>"
+    )
+    with caplog.at_level("WARNING"):
+        pdf.image(BytesIO(svg.encode()))
+    assert "not supported" not in caplog.text
+    content = bytes(pdf.pages[1].contents)
+    assert b"gs" in content
+    pdf_bytes = bytes(pdf.output())
+    assert b"/ca 0.5" in pdf_bytes or b"/ca .5" in pdf_bytes
+
+
+@pytest.mark.parametrize(
+    "aspect_ratio_attr",
+    [
+        'preserveAspectRatio="xMinYMin meet"',
+        'preserveAspectRatio="xMidYMid slice"',
+        'preserveAspectRatio="xMinYMin slice"',
+        'preserveAspectRatio="defer xMinYMin meet"',
+    ],
+)
+def test_svg_image_preserve_aspect_ratio_unsupported_mode_warning(
+    aspect_ratio_attr, caplog
+):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10" y="20" width="100" height="50" {aspect_ratio_attr}/>'
+        "</svg>"
+    )
+    with caplog.at_level("WARNING"):
+        pdf.image(BytesIO(svg.encode()))
+    assert "alignment/slice mode" in caplog.text
+    content = pdf.pages[1].contents.decode("latin1")
+    assert "50.00 0 0 -50.00" in content
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        'style="fill-opacity: 0"',
+        'style="stroke-opacity: 0"',
+        'style="fill-opacity: 0; stroke-opacity: 0; fill: red; stroke: blue"',
+        'fill-opacity="0"',
+        'stroke-opacity="0"',
+        'style="fill-opacity: 0" transform="translate(10, 20)"',
+    ],
+)
+def test_svg_image_ignores_fill_and_stroke_opacity(attributes):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10" y="20" width="40" height="40" {attributes}/>'
+        "</svg>"
+    )
+    pdf.image(BytesIO(svg.encode()))
+    pdf_bytes = bytes(pdf.output())
+    assert (
+        b"/ca 0\n" not in pdf_bytes
+        and b"/ca 0.0" not in pdf_bytes
+        and b"/ca 0 " not in pdf_bytes
+    )
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        'style="fill-opacity: 0; opacity: 0.5"',
+        'opacity="0.5" fill-opacity="0"',
+    ],
+)
+def test_svg_image_opacity_with_fill_opacity_override(attributes):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10" y="20" width="40" height="40" {attributes}/>'
+        "</svg>"
+    )
+    pdf.image(BytesIO(svg.encode()))
+    pdf_bytes = bytes(pdf.output())
+    assert b"/ca 0.5" in pdf_bytes or b"/ca .5" in pdf_bytes
+    assert b"/ca 0\n" not in pdf_bytes and b"/ca 0.0" not in pdf_bytes

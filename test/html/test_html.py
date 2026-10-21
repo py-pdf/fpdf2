@@ -732,6 +732,27 @@ def test_html_font_color_without_hash(tmp_path, html):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        ('<font style="font-size: 14pt">text</font>', '<font size="14">text</font>'),
+        ('<font style="font-size: 12px">text</font>', '<font size="9">text</font>'),
+        ('<font style="font-size: 0.25in">text</font>', '<font size="18">text</font>'),
+        ('<font style="font-size: 20">text</font>', '<font size="20">text</font>'),
+        ('<font style="font-size: 1.5em">text</font>', "<font>text</font>"),
+    ],
+)
+def test_html_font_css_font_size(tmp_path, html, equivalent):
+    "Like browsers, a CSS font-size is read with its unit; a number alone is in points."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_table_bgcolor_without_hash(tmp_path):
     pdf = FPDF()
     pdf.add_page()

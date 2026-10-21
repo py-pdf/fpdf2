@@ -1147,7 +1147,9 @@ class HTML2FPDF(HTMLParser):
             if "font-size" in css_style:
                 font_size_str = css_style.get("font-size") or ""
                 try:
-                    self.font_size_pt = float(font_size_str)
+                    # like browsers, a CSS length such as "14pt" or "12px";
+                    # a number without a unit is still read as points
+                    self.font_size_pt = resolve_length(font_size_str)
                 except ValueError:
                     pass
             elif "size" in attrs_dict:

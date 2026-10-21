@@ -248,7 +248,7 @@ logging.getLogger("fpdf.svg").propagate = False
 - groups (`<g>`)
 - paths (`<path>`)
 - basic shapes (`<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, `<polygon>`)
-- basic `<image>` elements
+- `<image>` elements (raster images with `transform`, `style`, `opacity`, and `preserveAspectRatio="none"`)
 - basic cross-references, with `defs` tags anywhere in the SVG code
 - basic `<switch>` elements, selecting the first child without conditional processing attributes
 - stroke & fill coloring and opacity

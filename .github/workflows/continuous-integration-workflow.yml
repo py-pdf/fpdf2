@@ -167,7 +167,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: block
           allowed-endpoints:
@@ -241,7 +241,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: block
           allowed-endpoints:
@@ -271,7 +271,7 @@ jobs:
           if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$VERSION\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python -m build; twine check dist/*; fi
       - name: Publish package distributions to PyPI 🚀
         if: steps.build.outputs.publish == 'yes'
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         # Doc: https://github.com/marketplace/actions/pypi-publish
         with:
           print-hash: true
