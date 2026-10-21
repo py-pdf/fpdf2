@@ -64,6 +64,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * css `rgb()` colors accept percentages, as in `rgb(100%, 0%, 50%)` (clamped to 0%-100%), in SVG import and `FPDF.write_html()` instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.embed_file()` accepts empty byte content and rejects simultaneous path and byte sources even when the bytes are empty.
 * `FPDF.write_html()` no longer writes the content of `<style>` and `<script>` elements into the document as text, like browsers, so an HTML page or email with a `<style>` block no longer shows its CSS - thanks to @RavSinghChandan
+* `FPDF.write_html()` raises `NotImplementedError: Unsupported nested HTML tags inside <td> element: <table>` for a `<table>` nested in a table cell, like for the other unsupported nested tags, instead of a bare `AssertionError` with no message - thanks to @RavSinghChandan
 
 ### Changed
 * Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision

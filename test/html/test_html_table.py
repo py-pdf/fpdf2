@@ -306,6 +306,21 @@ def test_html_table_with_nested_tags():  # issue 845
         </tr></table>""")
 
 
+@pytest.mark.parametrize("cell", ["td", "th"])
+def test_html_table_nested_in_a_cell(cell):
+    "A table inside a table cell is unsupported: this says so, like for other nested tags."
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(NotImplementedError) as error:
+        pdf.write_html(
+            f"<table><tr><{cell}><table><tr><td>inner</td></tr></table></{cell}></tr></table>"
+        )
+    assert (
+        str(error.value)
+        == f"Unsupported nested HTML tags inside <{cell}> element: <table>"
+    )
+
+
 def test_html_table_with_font_tags_used_to_set_text_color(tmp_path):  # issue 1013
     pdf = FPDF()
     pdf.add_page()

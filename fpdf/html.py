@@ -1204,6 +1204,11 @@ class HTML2FPDF(HTMLParser):
                     # no font of the list is available: set_font() reports it, as before
                     self.font_family = face.lower()
         if tag == "table":
+            if self.table is not None:
+                parent = self.td_th["tag"] if self.td_th is not None else "table"
+                raise NotImplementedError(
+                    f"Unsupported nested HTML tags inside <{parent}> element: <table>"
+                )
             self._end_paragraph()
             width: Optional[float] = None
             width_str = css_style.get("width") or attrs_dict.get("width")
