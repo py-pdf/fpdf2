@@ -1102,6 +1102,11 @@ class HTML2FPDF(HTMLParser):
                 bullet = ul_prefix(bullet, self.pdf.is_ttf_font)
             if not isinstance(bullet, str):
                 bullet += 1
+                # like browsers, <li value="N"> numbers this item N and the next ones from there
+                try:
+                    bullet = int((attrs_dict.get("value") or "").strip())
+                except ValueError:
+                    pass
                 self.bullet[self.indent - 1] = bullet
                 ol_type = self.ol_type[self.indent]
                 bullet = f"{ol_prefix(ol_type, bullet)}."
@@ -1138,7 +1143,9 @@ class HTML2FPDF(HTMLParser):
             if "font-size" in css_style:
                 font_size_str = css_style.get("font-size") or ""
                 try:
-                    self.font_size_pt = float(font_size_str)
+                    # like browsers, a CSS length such as "14pt" or "12px";
+                    # a number without a unit is still read as points
+                    self.font_size_pt = resolve_length(font_size_str)
                 except ValueError:
                     pass
             elif "size" in attrs_dict:

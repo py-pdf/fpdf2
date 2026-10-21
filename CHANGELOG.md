@@ -18,11 +18,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.0] - Not released yet
 ### Added
+* support for `transform`, `style`, `opacity`, and `preserveAspectRatio="none"` on SVG `<image>` tags - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537)
 * support for colored and uncolored tiling patterns with `FPDF.create_pattern()` and `FPDF.use_pattern()`, including SVG `<pattern>` elements and pattern fills and strokes on referenced `<use>` shapes - _cf._ [issue #790](https://github.com/py-pdf/fpdf2/issues/790)
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
+* Synchronize `font_style` and `emphasis` setters with font selection and state tracking - _cf._ [issue #1223](https://github.com/py-pdf/fpdf2/issues/1223)
 * Document outlines count all visible descendants and link siblings by parent, retaining bookmarks when the hierarchy starts below the top level. - thanks to @xiehuanyi
 * Annotation colors and border widths are serialized as PDF numbers without exponent notation. - thanks to @xiehuanyi
 * Checksums for compressed embedded files are calculated from the original file bytes, as required by the PDF specification. - thanks to @xiehuanyi
@@ -40,6 +42,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` ignores an unsupported `align` value on `<td>`, `<th>` and `<tr>`, such as `middle`, like it already does for `<p>`, instead of raising `ValueError` - thanks to @RavSinghChandan
 * Bulleted text-column paragraphs now honor their top margins, indented paragraphs retain the column's right boundary, and HTML list items honor their `TextStyle.t_margin` - based on [PR #1218](https://github.com/py-pdf/fpdf2/pull/1218)
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
+* `FPDF.write_html()` reads a CSS `font-size` on `<font>` with its unit, like browsers, as in `style="font-size: 14pt"` or `"12px"`, instead of silently ignoring it; a number without a unit is still in points - thanks to @RavSinghChandan
 * `FPDF.write_html()` supports `<ul type="square">`, the third standard HTML bullet type, instead of raising `NotImplementedError`: Unicode fonts use ▪ and core fonts fall back to the bullet - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts the `<ul type>` keywords in any case, like browsers: `<ul type="CIRCLE">` and `<ul type="Square">` no longer raise `NotImplementedError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` supports `<ul type="none">`, rendering the list items without a marker like browsers do, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
@@ -49,6 +52,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` ignores `color="transparent"` and `bgcolor="transparent"` like browsers, keeping the inherited text or background color, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `IndexError` on an `<ol type="a">` or `<ol type="A">` list with more than 26 items: like browsers, letters continue with `aa`, `ab`... and a `start` below 1 shows as a number - thanks to @RavSinghChandan
 * `FPDF.write_html()` numbers an `<ol>` with an unknown `type`, such as `type="disc"`, as 1, 2, 3, like browsers, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` supports `<li value="N">` in ordered lists: like browsers, the item is numbered N and the following ones continue from it - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `KeyError: 'href'` on an `<a>` element without an `href` attribute, such as a named anchor (`<a name="intro">`); its text is rendered as plain text - thanks to @RavSinghChandan
 * `FPDF.write_html()` treats an invalid `colspan` or `rowspan` on `<td>` / `<th>`, or one below 1, as 1 like browsers do, instead of raising `ValueError` or `ZeroDivisionError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` stops a `rowspan` that goes past the last row of a `<table>` at the last row, like browsers, instead of raising `FPDFException: Rowspan extends beyond end of table` - thanks to @RavSinghChandan

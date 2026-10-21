@@ -1,7 +1,9 @@
 import logging
+from io import BytesIO
 from pathlib import Path
 
 import pytest
+from pypdf import PdfReader
 
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
@@ -730,6 +732,27 @@ def test_html_font_color_without_hash(tmp_path, html):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        ('<font style="font-size: 14pt">text</font>', '<font size="14">text</font>'),
+        ('<font style="font-size: 12px">text</font>', '<font size="9">text</font>'),
+        ('<font style="font-size: 0.25in">text</font>', '<font size="18">text</font>'),
+        ('<font style="font-size: 20">text</font>', '<font size="20">text</font>'),
+        ('<font style="font-size: 1.5em">text</font>', "<font>text</font>"),
+    ],
+)
+def test_html_font_css_font_size(tmp_path, html, equivalent):
+    "Like browsers, a CSS font-size is read with its unit; a number alone is in points."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_table_bgcolor_without_hash(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -1041,6 +1064,41 @@ def test_html_ol_unknown_type_uses_numbers(tmp_path, ol_type):
     expected.add_page()
     expected.write_html("<ol><li>a</li><li>b</li></ol>")
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        (
+            '<ol><li value="5">a</li><li>b</li></ol>',
+            '<ol start="5"><li>a</li><li>b</li></ol>',
+        ),
+        (
+            '<ol type="i"><li value="4">a</li><li>b</li></ol>',
+            '<ol type="i" start="4"><li>a</li><li>b</li></ol>',
+        ),
+        ('<ol><li value="x">a</li><li>b</li></ol>', "<ol><li>a</li><li>b</li></ol>"),
+        ('<ul><li value="5">a</li></ul>', "<ul><li>a</li></ul>"),
+    ],
+)
+def test_html_li_value(tmp_path, html, equivalent):
+    "Like browsers, <li value> sets the number of the item and of the ones after it."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_li_value_restarts_the_numbering_mid_list():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ol><li>a</li><li value="10">b</li><li>c</li></ol>')
+    page = PdfReader(BytesIO(pdf.output())).pages[0]
+    text = page.extract_text()  # pylint: disable=no-member
+    assert ["1.", "10.", "11."] == [line.split()[0] for line in text.splitlines()]
 
 
 def test_html_ol_with_more_than_26_lettered_items():
