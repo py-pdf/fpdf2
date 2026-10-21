@@ -370,19 +370,27 @@ def _parse_html_span(val: str | None) -> int:
 
 
 def _fill_missing_widths(
-    widths: Sequence[Optional[tuple[float, bool]]], table_width_pt: float
+    widths: Sequence[Optional[tuple[float, bool]]],
+    table_width_pt: float,
+    usable_width_pt: Optional[float] = None,
 ) -> list[float]:
     """
     The column widths of a table whose first row gives a width (a number, and whether
-    it is a percentage) to only some of its cells. Like browsers, the other cells
-    share the space that the rest leave; if there is none, they get the average width.
+    it is a percentage of the table width) to only some of its columns. Like browsers,
+    the other columns share the space that the rest leave; if there is none, they get
+    the average width.
+
+    `usable_width_pt` is the table width without the gaps between its columns,
+    which is what the columns really share out. It defaults to the table width.
     """
+    if usable_width_pt is None:
+        usable_width_pt = table_width_pt
     given = [
         table_width_pt * width / 100 if is_percentage else width
         for width, is_percentage in (w for w in widths if w is not None)
     ]
     missing = widths.count(None)
-    left = table_width_pt - sum(given)
+    left = usable_width_pt - sum(given)
     share = left / missing if left > 0 else sum(given) / len(given)
     filled = iter(given)
     return [share if w is None else next(filled) for w in widths]
@@ -1301,7 +1309,14 @@ class HTML2FPDF(HTMLParser):
                         tag,
                     )
             if len(self.table.rows) == 1:
-                self.first_row_widths.append(cell_width)
+                # a cell that spans several columns gives each of them an equal part
+                span = _parse_html_span(attrs_dict.get("colspan"))
+                if cell_width is None:
+                    self.first_row_widths.extend([None] * span)
+                else:
+                    self.first_row_widths.extend(
+                        [(cell_width[0] / span, cell_width[1])] * span
+                    )
                 if cell_width is not None:
                     # pylint: disable=protected-access
                     self.table._col_widths = [
@@ -1442,8 +1457,15 @@ class HTML2FPDF(HTMLParser):
                 # some cells of the first row have no width: they share the rest
                 # pylint: disable=protected-access
                 table_width = float(self.table._width or self.pdf.epw)
+                usable_width = (
+                    table_width
+                    - (len(self.first_row_widths) - 1) * self.table._gutter_width
+                    - 2 * float(self.table._outer_border_margin[0])
+                )
                 self.table._col_widths = _fill_missing_widths(
-                    self.first_row_widths, table_width * self.pdf.k
+                    self.first_row_widths,
+                    table_width * self.pdf.k,
+                    usable_width * self.pdf.k,
                 )
             self.table.render()
             self.table = None

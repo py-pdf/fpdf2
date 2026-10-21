@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, FPDFException, HTML2FPDF, TextStyle
+from fpdf.table import Table
 from test.conftest import assert_pdf_equal
 from test.table.test_table import MULTILINE_TABLE_DATA
 
@@ -651,3 +652,41 @@ def test_html_table_absolute_width_leaves_the_rest_to_the_other_cells(tmp_path):
         f'<table><tr><td width="200">a</td><td width="{rest}">b</td></tr></table>'
     )
     assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<table><tr><td colspan="2" width="50%">a</td><td>b</td></tr><tr><td>c</td><td>d</td><td>e</td></tr></table>',
+        '<table><tr><td colspan="2">a</td><td width="30%">b</td></tr><tr><td>c</td><td>d</td><td>e</td></tr></table>',
+        '<table><tr><td colspan="2" width="50%">a</td><td width="50%">b</td></tr><tr><td>c</td><td>d</td><td>e</td></tr></table>',
+    ],
+    ids=["spanning-cell-has-width", "spanning-cell-has-none", "all-have-width"],
+)
+def test_html_table_widths_with_a_colspan_in_the_first_row(html):
+    "A cell spanning several columns gives each of them a part of its width."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    pdf.output()
+
+
+def test_html_table_widths_do_not_shrink_with_cellspacing(monkeypatch):
+    "The cells without a width share what is left after the widths given and the gaps."
+    widths = {}
+    original = Table._get_col_width  # pylint: disable=protected-access
+
+    def record(self, i, j, colspan=1):
+        widths.setdefault(j, original(self, i, j, colspan))
+        return widths[j]
+
+    monkeypatch.setattr(
+        Table, "_get_col_width", record
+    )  # pylint: disable=protected-access
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<table cellspacing="30"><tr><td width="200">a</td><td>b</td></tr></table>'
+    )
+    assert widths[0] * pdf.k == pytest.approx(200)
+    assert sum(widths.values()) + 30 == pytest.approx(pdf.epw)
