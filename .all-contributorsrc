@@ -1918,6 +1918,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "alphaZytx",
+      "name": "Alok Chandra",
+      "avatar_url": "https://avatars.githubusercontent.com/u/203074314?v=4",
+      "profile": "https://alokchandra-delta.vercel.app/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
