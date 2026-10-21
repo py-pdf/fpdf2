@@ -680,9 +680,7 @@ def test_html_table_widths_do_not_shrink_with_cellspacing(monkeypatch):
         widths.setdefault(j, original(self, i, j, colspan))
         return widths[j]
 
-    monkeypatch.setattr(
-        Table, "_get_col_width", record
-    )  # pylint: disable=protected-access
+    monkeypatch.setattr(Table, "_get_col_width", record)
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
