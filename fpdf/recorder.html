@@ -58,7 +58,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/a9a276a2b42c1fb86c302480ce957ea8ac13977c/fpdf/recorder.py#L86-L93" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/5b72f6ce2a0986ea79d96d284c91da7c5cabfd10/fpdf/recorder.py#L99-L106" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CallRecorder:
     def __init__(self, func: Callable[..., Any], calls: list[CallRecord]) -&gt; None:
@@ -79,7 +79,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/a9a276a2b42c1fb86c302480ce957ea8ac13977c/fpdf/recorder.py#L25-L83" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/5b72f6ce2a0986ea79d96d284c91da7c5cabfd10/fpdf/recorder.py#L26-L96" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFRecorder:
     &#34;&#34;&#34;
@@ -115,6 +115,18 @@ in non-backward-compatible ways.</p>
         if callable(attr):
             return CallRecorder(attr, self._calls)
         return attr
+
+    @contextlib.contextmanager
+    def table(self, *args: Any, **kwargs: Any) -&gt; Generator[&#34;Table&#34;, None, None]:
+        &#34;&#34;&#34;Record a completed table so it can be rendered again after a rewind.
+
+        Calls that build rows and cells are made on the yielded ``Table`` rather
+        than on this recorder. Recording only ``FPDF.table()`` would therefore
+        lose the table contents during replay.
+        &#34;&#34;&#34;
+        with self.pdf.table(*args, **kwargs) as table:
+            yield table
+        self._calls.append((table.render, (), {}))
 
     def rewind(self) -&gt; None:
         pdf_dict = vars(self.pdf)
@@ -170,7 +182,7 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/a9a276a2b42c1fb86c302480ce957ea8ac13977c/fpdf/recorder.py#L66-L83" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/5b72f6ce2a0986ea79d96d284c91da7c5cabfd10/fpdf/recorder.py#L79-L96" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def replay(self) -&gt; None:
     for call in self._calls:
@@ -200,7 +212,7 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/a9a276a2b42c1fb86c302480ce957ea8ac13977c/fpdf/recorder.py#L60-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/5b72f6ce2a0986ea79d96d284c91da7c5cabfd10/fpdf/recorder.py#L73-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rewind(self) -&gt; None:
     pdf_dict = vars(self.pdf)
@@ -209,6 +221,32 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
     self._initial = deepcopy(pdf_dict)</code></pre>
 </details>
 <div class="desc"></div>
+</dd>
+<dt id="fpdf.recorder.FPDFRecorder.table"><code class="name flex">
+<span>def <span class="ident">table</span></span>(<span>self, *args: Any, **kwargs: Any) ‑> Generator[Table, None, None]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/5b72f6ce2a0986ea79d96d284c91da7c5cabfd10/fpdf/recorder.py#L61-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@contextlib.contextmanager
+def table(self, *args: Any, **kwargs: Any) -&gt; Generator[&#34;Table&#34;, None, None]:
+    &#34;&#34;&#34;Record a completed table so it can be rendered again after a rewind.
+
+    Calls that build rows and cells are made on the yielded ``Table`` rather
+    than on this recorder. Recording only ``FPDF.table()`` would therefore
+    lose the table contents during replay.
+    &#34;&#34;&#34;
+    with self.pdf.table(*args, **kwargs) as table:
+        yield table
+    self._calls.append((table.render, (), {}))</code></pre>
+</details>
+<div class="desc"><p>Record a completed table so it can be rendered again after a rewind.</p>
+<p>Calls that build rows and cells are made on the yielded <code>Table</code> rather
+than on this recorder. Recording only <code>FPDF.table()</code> would therefore
+lose the table contents during replay.</p></div>
 </dd>
 </dl>
 </dd>
@@ -236,6 +274,7 @@ when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 <li><code><a title="fpdf.recorder.FPDFRecorder.page_break_triggered" href="#fpdf.recorder.FPDFRecorder.page_break_triggered">page_break_triggered</a></code></li>
 <li><code><a title="fpdf.recorder.FPDFRecorder.replay" href="#fpdf.recorder.FPDFRecorder.replay">replay</a></code></li>
 <li><code><a title="fpdf.recorder.FPDFRecorder.rewind" href="#fpdf.recorder.FPDFRecorder.rewind">rewind</a></code></li>
+<li><code><a title="fpdf.recorder.FPDFRecorder.table" href="#fpdf.recorder.FPDFRecorder.table">table</a></code></li>
 </ul>
 </li>
 </ul>
