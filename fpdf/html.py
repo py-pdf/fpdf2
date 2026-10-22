@@ -399,7 +399,27 @@ def _fill_missing_widths(
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
-    HTML_UNCLOSED_TAGS = ("br", "dd", "dt", "hr", "img", "li", "td", "tr")
+    # void elements, which never have an end tag, and elements whose end tag is optional
+    HTML_UNCLOSED_TAGS = (
+        "area",
+        "base",
+        "br",
+        "col",
+        "dd",
+        "dt",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "li",
+        "link",
+        "meta",
+        "source",
+        "td",
+        "tr",
+        "track",
+        "wbr",
+    )
     TABLE_LINE_HEIGHT = 1.3
 
     def __init__(

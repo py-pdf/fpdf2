@@ -650,6 +650,20 @@ def test_html_img_without_height_at_page_bottom_triggers_page_break(tmp_path):
     )
 
 
+def test_html_void_elements_need_no_end_tag(caplog):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">'
+        "<title>Invoice</title></head><body>"
+        '<p>Long<wbr>word <input type="checkbox"> done</p>'
+        '<table><colgroup><col width="30%"><col width="70%"></colgroup>'
+        "<tr><td>a</td><td>b</td></tr></table>"
+        "</body></html>"
+    )
+    assert "end tag" not in caplog.text
+
+
 def test_warn_on_tags_not_matching(caplog):
     pdf = FPDF()
     pdf.add_page()
