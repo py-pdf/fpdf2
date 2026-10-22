@@ -1061,8 +1061,16 @@ class HTML2FPDF(HTMLParser):
                 )
         if tag == "ul":
             self.indent += 1
-            bullet_char = attrs_dict.get("type", self.ul_bullet_char)
-            assert bullet_char is not None
+            bullet_char = attrs_dict.get("type") or self.ul_bullet_char
+            # like browsers, an unknown type keeps the default marker;
+            # a single character is still used as the bullet itself
+            if len(bullet_char) > 1 and bullet_char.lower() not in (
+                "disc",
+                "circle",
+                "square",
+                "none",
+            ):
+                bullet_char = self.ul_bullet_char
             self.bullet.append(bullet_char)
             line_height_str = css_style.get(
                 "line-height", attrs_dict.get("line-height")

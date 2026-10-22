@@ -356,6 +356,29 @@ def test_html_ul_type_none(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_ul_type_none.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("ul_type", ["", "  ", "disk", "triangle"])
+def test_html_ul_type_unknown(tmp_path, ul_type):
+    "Like browsers, an empty or unknown <ul type> keeps the default disc marker."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<ul type="{ul_type}"><li>a</li></ul>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<ul><li>a</li></ul>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_ul_type_unknown_keeps_custom_default(tmp_path):
+    "An unknown <ul type> falls back to the ul_bullet_char given to write_html()."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<ul type="disk"><li>a</li></ul>', ul_bullet_char="circle")
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<ul type="circle"><li>a</li></ul>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_ul_type_single_character_keeps_case():
     "A one-character type is used as the bullet as-is, so its case is kept."
     assert ul_prefix("X", is_ttf_font=False) == "X"
