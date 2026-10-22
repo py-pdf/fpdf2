@@ -212,6 +212,66 @@ class TestSVGAttributeConversion:
 
 
 class TestSVGObject:
+    @pytest.mark.parametrize(
+        "preserve_aspect_ratio,expected_transform",
+        [
+            ("xMidYMid meet", (2, 0, 0, 2, 30, 20)),
+            ("none", (4, 0, 0, 2, 10, 20)),
+        ],
+    )
+    def test_nested_svg_viewbox(self, preserve_aspect_ratio, expected_transform):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">'
+            '<svg x="10" y="20" width="80" height="40" viewBox="0 0 20 20" '
+            f'preserveAspectRatio="{preserve_aspect_ratio}">'
+            '<rect width="20" height="20"/>'
+            "</svg></svg>"
+        )
+
+        viewport = svg.base_group.path_items[0]
+        content = viewport.path_items[0]
+        effective_transform = content.transform @ viewport.transform
+        assert tuple(effective_transform) == pytest.approx(expected_transform)
+        assert viewport.clipping_path is not None
+        assert len(content.path_items) == 1
+
+    def test_nested_svg_percentages_use_parent_viewport(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">'
+            '<svg x="10%" y="20%" width="50%" height="50%">'
+            '<svg x="50%" width="50%" height="100%"><rect width="1" height="1"/></svg>'
+            "</svg></svg>"
+        )
+
+        outer_viewport = svg.base_group.path_items[0]
+        outer_content = outer_viewport.path_items[0]
+        inner_viewport = outer_content.path_items[0]
+        inner_content = inner_viewport.path_items[0]
+        assert tuple(outer_viewport.transform) == pytest.approx((1, 0, 0, 1, 20, 20))
+        assert tuple(inner_viewport.transform) == pytest.approx((1, 0, 0, 1, 50, 0))
+        assert len(inner_content.path_items) == 1
+
+    def test_nested_svg_overflow_visible_disables_viewport_clipping(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+            '<svg width="50" height="50" overflow="visible">'
+            '<rect width="100" height="100"/>'
+            "</svg></svg>"
+        )
+
+        viewport = svg.base_group.path_items[0]
+        assert viewport.clipping_path is None
+
+    def test_zero_sized_nested_svg_is_empty(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+            '<svg width="0" height="50"><rect width="50" height="50"/></svg>'
+            "</svg>"
+        )
+
+        nested = svg.base_group.path_items[0]
+        assert not nested.path_items
+
     def test_scientific_length_attributes(self):
         svg = fpdf.svg.SVGObject(
             '<svg xmlns="http://www.w3.org/2000/svg" width="1e2pt" height="5e1pt">'
