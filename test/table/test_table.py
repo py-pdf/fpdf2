@@ -457,6 +457,19 @@ def test_table_align(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_align.pdf", tmp_path)
 
 
+def test_table_text_align_tuple_too_short():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError) as error:
+        with pdf.table(TABLE_DATA, text_align=("CENTER", "RIGHT")):
+            pass
+    assert (
+        str(error.value)
+        == "Invalid .text_align specified: missing alignment for table() column 3 on row 1"
+    )
+
+
 def test_table_capture_font_settings(tmp_path):
     pdf = FPDF()
     pdf.add_page()

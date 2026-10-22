@@ -380,6 +380,10 @@ class Table:
 
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
+            if j >= len(text_align):
+                raise ValueError(
+                    f"Invalid .text_align specified: missing alignment for table() column {j + 1} on row {i + 1}"
+                )
             text_align = text_align[j]
 
         style = self._initial_style
