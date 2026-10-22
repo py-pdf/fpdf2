@@ -385,6 +385,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/xiehuanyi"><img src="https://avatars.githubusercontent.com/u/74809554?v=4?s=100" width="100px;" alt="Huanyi Xie"/><br /><sub><b>Huanyi Xie</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=xiehuanyi" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://alokchandra-delta.vercel.app/"><img src="https://avatars.githubusercontent.com/u/203074314?v=4?s=100" width="100px;" alt="Alok Chandra"/><br /><sub><b>Alok Chandra</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=alphaZytx" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ryanlcruz"><img src="https://avatars.githubusercontent.com/u/211577945?v=4?s=100" width="100px;" alt="Ryan L. Cruz"/><br /><sub><b>Ryan L. Cruz</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=ryanlcruz" title="Documentation">📖</a> <a href="#translation-ryanlcruz" title="Translation">🌍</a></td>
+    </tr>
   </tbody>
 </table>
 
