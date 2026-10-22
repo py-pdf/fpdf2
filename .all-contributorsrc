@@ -1927,6 +1927,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ryanlcruz",
+      "name": "Ryan L. Cruz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/211577945?v=4",
+      "profile": "https://github.com/ryanlcruz",
+      "contributions": [
+        "doc",
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
