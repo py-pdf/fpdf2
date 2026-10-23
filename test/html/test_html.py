@@ -1062,6 +1062,44 @@ def test_html_link_to_an_anchor_on_a_later_page():
     assert pdf.named_destinations["end"].page_number == 2
 
 
+def test_html_link_to_an_anchor_moved_to_the_next_page():
+    "The destination is where the target is rendered, after a page break."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_y(pdf.h - pdf.b_margin - 3)  # no room left for the heading
+    pdf.write_html('<h2 id="end">End</h2><a href="#end">Back to the end</a>')
+    pdf.output()
+    assert pdf.pages_count == 2
+    destination = pdf.named_destinations["end"]
+    assert destination.page_number == 2
+    assert destination.top == pytest.approx((pdf.h - pdf.t_margin) * pdf.k)
+
+
+def test_html_link_to_an_anchor_with_id_and_name():
+    "An <a> with both an id and a name is a target for both."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#legacy">go</a> <a href="#modern">go</a>'
+        '<a id="modern" name="legacy">TARGET</a>'
+    )
+    pdf.output()
+    assert pdf.named_destinations["modern"] == pdf.named_destinations["legacy"]
+
+
+def test_html_link_to_a_table():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#t">See the table</a><p>Intro</p>'
+        '<table id="t"><tr><td>a</td></tr></table><p>After</p>'
+    )
+    y_after = pdf.y
+    pdf.output()
+    assert pdf.named_destinations["t"].page_number == 1
+    assert pdf.named_destinations["t"].top > (pdf.h - y_after) * pdf.k
+
+
 def test_html_anchor_without_href(tmp_path):
     "An <a> without href, such as a named anchor, renders as plain text and is a link target."
     pdf = FPDF()

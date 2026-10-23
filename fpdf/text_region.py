@@ -149,6 +149,8 @@ class Paragraph:
         else:
             self.bullet = None
         self.first_line_indent = first_line_indent
+        # named destinations set where the first line of this paragraph is rendered
+        self.anchors: list[str] = []
 
     def __str__(self) -> str:
         return (
@@ -656,6 +658,11 @@ class TextRegion(ParagraphCollectorMixin):
                     break
                 prev_line_height = last_line_height or 0
                 last_line_height = text_line.height
+                if cur_paragraph.anchors:
+                    # after any page break: on the page where the line really is
+                    for anchor in cur_paragraph.anchors:
+                        self.pdf.set_link(name=anchor, y=self.pdf.y)
+                    cur_paragraph.anchors.clear()
                 col_left, col_right = self.current_x_extents(self.pdf.y, 0)
                 if self.pdf.x < col_left or self.pdf.x >= col_right:
                     self.pdf.x = col_left
