@@ -1025,7 +1025,7 @@ class TableCellFillMode(CoerciveEnum):
     @classmethod
     def coerce(  # type: ignore[override]
         cls,
-        value: TableCellFillModeType | str,
+        value: "TableCellFillModeType | str",
         case_sensitive: bool = False,
     ) -> TableCellFillModeType:
         if callable(getattr(value, "should_fill_cell", None)):
