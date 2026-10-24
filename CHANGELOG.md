@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
+* Unicode font detection and enhanced error handling: when text cannot be encoded with the current font, the `FPDFUnicodeEncodingException` message now identifies the Unicode script (Cyrillic, Arabic, Chinese, etc.) and suggests a suitable font available on the system, via the new internal `UnicodeFontManager` - _cf._ [PR #1563](https://github.com/py-pdf/fpdf2/pull/1563) - thanks to @otreci4sgelt0nas
 ### Fixed
 * Tables inside `FPDF.unbreakable()` are replayed with their rows and cells intact when the block is moved to a new page - _cf._ [issue #1230](https://github.com/py-pdf/fpdf2/issues/1230) - thanks to @alphaZytx
 * Synchronize `font_style` and `emphasis` setters with font selection and state tracking - _cf._ [issue #1223](https://github.com/py-pdf/fpdf2/issues/1223)
