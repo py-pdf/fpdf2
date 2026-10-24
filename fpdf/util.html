@@ -55,7 +55,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L141-L146" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L141-L146" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def buffer_subst(buffer: bytearray, placeholder: str, value: str) -&gt; bytearray:
     buffer_size = len(buffer)
@@ -73,7 +73,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L289-L291" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L289-L291" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def builtin_srgb2014_bytes() -&gt; bytes:
     pkg = &#34;fpdf.data.color_profiles&#34;
@@ -88,13 +88,13 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L199-L219" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L199-L219" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def convert_unit(
     to_convert: Number | Iterable[Any],
-    old_unit: Union[str, Number],
-    new_unit: Union[str, Number],
-) -&gt; Union[float, tuple[Any, ...]]:
+    old_unit: str | Number,
+    new_unit: str | Number,
+) -&gt; float | tuple[Any, ...]:
     &#34;&#34;&#34;
      Convert a number or sequence of numbers from one unit to another.
 
@@ -130,7 +130,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L157-L171" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L157-L171" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def escape_parens(s: _StrBytes) -&gt; _StrBytes:
     &#34;&#34;&#34;Add a backslash character before , ( and )&#34;&#34;&#34;
@@ -157,7 +157,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L294-L307" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L294-L307" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def format_number(x: float, digits: int = 8) -&gt; str:
     # snap tiny values to zero to avoid &#34;-0&#34; and scientific notation
@@ -183,7 +183,7 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L310-L381" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L310-L381" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_parsed_unicode_range(
     unicode_range: str | Sequence[str | int | tuple[int, int]],
@@ -276,9 +276,9 @@ new_unit (str, float, int): A unit accepted by <code><a title="fpdf.fpdf.FPDF" h
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L174-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L174-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">def get_scale_factor(unit: Union[str, Number]) -&gt; float:
+<pre><code class="python">def get_scale_factor(unit: str | Number) -&gt; float:
     &#34;&#34;&#34;
     Get how many pts are in a unit. (k)
 
@@ -324,7 +324,7 @@ ValueError</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L267-L276" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L267-L276" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int2roman(n: int) -&gt; str:
     &#34;Convert an integer to Roman numeral&#34;
@@ -346,7 +346,7 @@ ValueError</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L279-L286" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L279-L286" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int_to_letters(n: int) -&gt; str:
     &#34;Convert an integer to a letter value (A to Z for the first 26, then AA to ZZ, and so on)&#34;
@@ -366,7 +366,7 @@ ValueError</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L235-L247" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L235-L247" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def number_to_str(number: Number) -&gt; str:
     &#34;&#34;&#34;
@@ -400,7 +400,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L77-L94" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L77-L94" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def resolve_length(length_str: str, default_unit: str = &#34;pt&#34;) -&gt; float:
     &#34;&#34;&#34;Convert a length unit to our canonical length unit, pt.&#34;&#34;&#34;
@@ -430,7 +430,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L222-L232" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L222-L232" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def trim_trailing_zeros(value: str) -&gt; str:
     &#34;&#34;&#34;Remove redundant fractional zeros from an already formatted number.
@@ -459,7 +459,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L384-L422" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L384-L422" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FloatTolerance:
     &#34;&#34;&#34;Utility class for floating point math with a defined tolerance.&#34;&#34;&#34;
@@ -563,7 +563,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -572,7 +572,7 @@ The number's string representation.</p></div>
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[Number, Sequence[Number], &#34;Padding&#34;]) -&gt; &#34;Padding&#34;:
+    def new(cls, padding: &#34;Number | Sequence[Number] | Padding&#34;) -&gt; &#34;Padding&#34;:
         &#34;&#34;&#34;Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules&#34;&#34;&#34;
         if isinstance(padding, Padding):
             return padding
@@ -616,7 +616,7 @@ The number's string representation.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.util.Padding.new"><code class="name flex">
-<span>def <span class="ident">new</span></span>(<span>padding: int | float | decimal.Decimal | Sequence[int | float | decimal.Decimal] | <a title="fpdf.util.Padding" href="#fpdf.util.Padding">Padding</a>) ‑> <a title="fpdf.util.Padding" href="#fpdf.util.Padding">Padding</a></span>
+<span>def <span class="ident">new</span></span>(<span>padding: Number | Sequence[Number] | <a title="fpdf.util.Padding" href="#fpdf.util.Padding">Padding</a>) ‑> <a title="fpdf.util.Padding" href="#fpdf.util.Padding">Padding</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules</p></div>
@@ -629,7 +629,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -638,7 +638,7 @@ The number's string representation.</p></div>
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[Number, Sequence[Number], &#34;Padding&#34;]) -&gt; &#34;Padding&#34;:
+    def new(cls, padding: &#34;Number | Sequence[Number] | Padding&#34;) -&gt; &#34;Padding&#34;:
         &#34;&#34;&#34;Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules&#34;&#34;&#34;
         if isinstance(padding, Padding):
             return padding
@@ -681,7 +681,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -690,7 +690,7 @@ The number's string representation.</p></div>
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[Number, Sequence[Number], &#34;Padding&#34;]) -&gt; &#34;Padding&#34;:
+    def new(cls, padding: &#34;Number | Sequence[Number] | Padding&#34;) -&gt; &#34;Padding&#34;:
         &#34;&#34;&#34;Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules&#34;&#34;&#34;
         if isinstance(padding, Padding):
             return padding
@@ -733,7 +733,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -742,7 +742,7 @@ The number's string representation.</p></div>
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[Number, Sequence[Number], &#34;Padding&#34;]) -&gt; &#34;Padding&#34;:
+    def new(cls, padding: &#34;Number | Sequence[Number] | Padding&#34;) -&gt; &#34;Padding&#34;:
         &#34;&#34;&#34;Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules&#34;&#34;&#34;
         if isinstance(padding, Padding):
             return padding
@@ -785,7 +785,7 @@ The number's string representation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/util.py#L97-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Padding(NamedTuple):
     top: float = 0
@@ -794,7 +794,7 @@ The number's string representation.</p></div>
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[Number, Sequence[Number], &#34;Padding&#34;]) -&gt; &#34;Padding&#34;:
+    def new(cls, padding: &#34;Number | Sequence[Number] | Padding&#34;) -&gt; &#34;Padding&#34;:
         &#34;&#34;&#34;Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules&#34;&#34;&#34;
         if isinstance(padding, Padding):
             return padding

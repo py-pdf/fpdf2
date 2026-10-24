@@ -52,7 +52,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L956-L1013" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L952-L1009" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_box_borders(
     pdf: &#34;FPDF&#34;,
@@ -131,7 +131,7 @@ compatible with get_border(i,k)</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -151,15 +151,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -173,7 +173,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -193,15 +193,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -214,7 +214,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -234,15 +234,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -255,7 +255,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -275,15 +275,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -296,7 +296,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -316,15 +316,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -337,7 +337,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -357,15 +357,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -378,7 +378,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -398,15 +398,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -419,7 +419,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -439,15 +439,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -460,7 +460,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -480,15 +480,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -501,7 +501,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -521,15 +521,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -542,7 +542,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -562,15 +562,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -583,7 +583,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L902-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L898-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -603,15 +603,15 @@ class Cell:
         &#34;border&#34;,
     )
     text: str
-    align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, VAlign]]
+    align: Optional[str | Align]
+    v_align: Optional[str | VAlign]
     style: Optional[FontFace]
     img: Optional[ImageType]
     img_fill_width: bool
     colspan: int
     rowspan: int
     padding: Optional[float | Sequence[float] | Padding]
-    link: Optional[Union[str, int]]
+    link: Optional[str | int]
     border: CellBordersLayout
 
     def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
@@ -629,7 +629,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L931-L932" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L927-L928" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def write(self, text: str, align: Optional[Align | str] = None) -&gt; None:
     raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
@@ -646,7 +646,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L760-L899" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L756-L895" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Row:
     &#34;Object that `Table.row()` yields, used to build a row in a table&#34;
@@ -659,7 +659,7 @@ class Cell:
         min_height: Optional[float] = None,
     ) -&gt; None:
         self._table = table
-        self.cells: List[Optional[TableSpan | Cell]] = []
+        self.cells: list[Optional[TableSpan | Cell]] = []
         self.style: Optional[FontFace] = style
         self.v_align = VAlign.coerce(v_align) if v_align else v_align
         self.min_height = min_height
@@ -674,11 +674,11 @@ class Cell:
         return max(spans) if len(spans) else 1
 
     def convert_spans(
-        self, active_rowspans: Dict[int, int]
-    ) -&gt; Tuple[Dict[int, int], Sequence[int]]:
+        self, active_rowspans: dict[int, int]
+    ) -&gt; tuple[dict[int, int], Sequence[int]]:
         # convert colspans
         prev_col = 0
-        cells: List[Optional[Cell | TableSpan]] = []
+        cells: list[Optional[Cell | TableSpan]] = []
         for i, cell in enumerate(self.cells):
             if cell is None:
                 continue
@@ -726,10 +726,10 @@ class Cell:
         img_fill_width: bool = False,
         colspan: int = 1,
         rowspan: int = 1,
-        padding: Optional[Tuple[float, ...]] = None,
+        padding: Optional[tuple[float, ...]] = None,
         link: Optional[str | int] = None,
         border: CellBordersLayout = CellBordersLayout.INHERIT,
-    ) -&gt; Union[&#34;Cell&#34;, TableSpan]:
+    ) -&gt; &#34;Cell | TableSpan&#34;:
         &#34;&#34;&#34;
         Adds a cell to the row.
 
@@ -797,7 +797,7 @@ class Cell:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L776-L778" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L772-L774" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def cols_count(self) -&gt; int:
@@ -810,7 +810,7 @@ def cols_count(self) -&gt; int:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L780-L783" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L776-L779" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def max_rowspan(self) -&gt; int:
@@ -823,13 +823,13 @@ def max_rowspan(self) -&gt; int:
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.table.Row.cell"><code class="name flex">
-<span>def <span class="ident">cell</span></span>(<span>self,<br>text: str = '',<br>align: str | <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a> | None = None,<br>v_align: str | <a title="fpdf.enums.VAlign" href="enums.html#fpdf.enums.VAlign">VAlign</a> | None = None,<br>style: <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a> | None = None,<br>img: str | bytes | <class 'BinaryIO'> | PILImage | pathlib.Path | None = None,<br>img_fill_width: bool = False,<br>colspan: int = 1,<br>rowspan: int = 1,<br>padding: Tuple[float, ...] | None = None,<br>link: str | int | None = None,<br>border: <a title="fpdf.enums.CellBordersLayout" href="enums.html#fpdf.enums.CellBordersLayout">CellBordersLayout</a> = NONE) ‑> <a title="fpdf.table.Cell" href="#fpdf.table.Cell">Cell</a> | <a title="fpdf.enums.TableSpan" href="enums.html#fpdf.enums.TableSpan">TableSpan</a></span>
+<span>def <span class="ident">cell</span></span>(<span>self,<br>text: str = '',<br>align: str | <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a> | None = None,<br>v_align: str | <a title="fpdf.enums.VAlign" href="enums.html#fpdf.enums.VAlign">VAlign</a> | None = None,<br>style: <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a> | None = None,<br>img: str | bytes | <class 'BinaryIO'> | PILImage | pathlib.Path | None = None,<br>img_fill_width: bool = False,<br>colspan: int = 1,<br>rowspan: int = 1,<br>padding: tuple[float, ...] | None = None,<br>link: str | int | None = None,<br>border: <a title="fpdf.enums.CellBordersLayout" href="enums.html#fpdf.enums.CellBordersLayout">CellBordersLayout</a> = NONE) ‑> <a title="fpdf.table.Cell" href="#fpdf.table.Cell">Cell</a> | TableSpan</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L828-L899" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L824-L895" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cell(
     self,
@@ -841,10 +841,10 @@ def max_rowspan(self) -&gt; int:
     img_fill_width: bool = False,
     colspan: int = 1,
     rowspan: int = 1,
-    padding: Optional[Tuple[float, ...]] = None,
+    padding: Optional[tuple[float, ...]] = None,
     link: Optional[str | int] = None,
     border: CellBordersLayout = CellBordersLayout.INHERIT,
-) -&gt; Union[&#34;Cell&#34;, TableSpan]:
+) -&gt; &#34;Cell | TableSpan&#34;:
     &#34;&#34;&#34;
     Adds a cell to the row.
 
@@ -936,20 +936,20 @@ using the full width of the current table column.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.table.Row.convert_spans"><code class="name flex">
-<span>def <span class="ident">convert_spans</span></span>(<span>self, active_rowspans: Dict[int, int]) ‑> Tuple[Dict[int, int], Sequence[int]]</span>
+<span>def <span class="ident">convert_spans</span></span>(<span>self, active_rowspans: dict[int, int]) ‑> tuple[dict[int, int], typing.Sequence[int]]</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L785-L826" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L781-L822" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def convert_spans(
-    self, active_rowspans: Dict[int, int]
-) -&gt; Tuple[Dict[int, int], Sequence[int]]:
+    self, active_rowspans: dict[int, int]
+) -&gt; tuple[dict[int, int], Sequence[int]]:
     # convert colspans
     prev_col = 0
-    cells: List[Optional[Cell | TableSpan]] = []
+    cells: list[Optional[Cell | TableSpan]] = []
     for i, cell in enumerate(self.cells):
         if cell is None:
             continue
@@ -993,13 +993,13 @@ using the full width of the current table column.</dd>
 </dd>
 <dt id="fpdf.table.RowLayoutInfo"><code class="flex name class">
 <span>class <span class="ident">RowLayoutInfo</span></span>
-<span>(</span><span>height: float,<br>pagebreak_height: float,<br>rendered_heights: Dict[int, float],<br>merged_heights: List[float])</span>
+<span>(</span><span>height: float,<br>pagebreak_height: float,<br>rendered_heights: dict[int, float],<br>merged_heights: list[float])</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L935-L942" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L931-L938" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class RowLayoutInfo:
@@ -1007,17 +1007,17 @@ class RowLayoutInfo:
     # accumulated rowspans to take in account when considering page breaks:
     pagebreak_height: float
     # heights of every cell in the row:
-    rendered_heights: Dict[int, float]
-    merged_heights: List[float]</code></pre>
+    rendered_heights: dict[int, float]
+    merged_heights: list[float]</code></pre>
 </details>
-<div class="desc"><p>RowLayoutInfo(height: float, pagebreak_height: float, rendered_heights: Dict[int, float], merged_heights: List[float])</p></div>
+<div class="desc"><p>RowLayoutInfo(height: float, pagebreak_height: float, rendered_heights: dict[int, float], merged_heights: list[float])</p></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.table.RowLayoutInfo.height"><code class="name">var <span class="ident">height</span> : float</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.table.RowLayoutInfo.merged_heights"><code class="name">var <span class="ident">merged_heights</span> : List[float]</code></dt>
+<dt id="fpdf.table.RowLayoutInfo.merged_heights"><code class="name">var <span class="ident">merged_heights</span> : list[float]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -1025,7 +1025,7 @@ class RowLayoutInfo:
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
-<dt id="fpdf.table.RowLayoutInfo.rendered_heights"><code class="name">var <span class="ident">rendered_heights</span> : Dict[int, float]</code></dt>
+<dt id="fpdf.table.RowLayoutInfo.rendered_heights"><code class="name">var <span class="ident">rendered_heights</span> : dict[int, float]</code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -1039,7 +1039,7 @@ class RowLayoutInfo:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L945-L953" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L941-L949" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class RowSpanLayoutInfo:
@@ -1080,7 +1080,7 @@ class RowSpanLayoutInfo:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L952-L953" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L948-L949" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def row_range(self) -&gt; range:
     return range(self.start, self.start + self.length)</code></pre>
@@ -1097,7 +1097,7 @@ class RowSpanLayoutInfo:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L41-L757" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L37-L753" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Table:
     &#34;&#34;&#34;
@@ -1192,7 +1192,7 @@ class RowSpanLayoutInfo:
         self._repeat_headings = TableHeadingsDisplay.coerce(repeat_headings)
         self._min_row_height = min_row_height
         self._initial_style: Optional[FontFace] = None
-        self.rows: List[Row] = []
+        self.rows: list[Row] = []
 
         if padding is None:
             self._padding = Padding.new(0)
@@ -1413,7 +1413,7 @@ class RowSpanLayoutInfo:
             Sequence[float]
         ] = None,  # x-positions of the individual columns, pre-calculated for speed. Only relevant when rendering
         **kwargs: Any,
-    ) -&gt; Tuple[bool, float, float]:
+    ) -&gt; tuple[bool, float, float]:
         # If cell_height_info is provided then we are rendering a cell
         # If cell_height_info is not provided then we are only here to figure out the height of the cell
         #
@@ -1664,8 +1664,8 @@ class RowSpanLayoutInfo:
 
     def _compute_rows_info(self) -&gt; Iterator[&#34;RowLayoutInfo&#34;]:
         # First pass: Regularise the table by processing the rowspan and colspan entries
-        active_rowspans: Dict[int, int] = {}
-        prev_row_in_col: Dict[int, Optional[Row]] = {}
+        active_rowspans: dict[int, int] = {}
+        prev_row_in_col: dict[int, Optional[Row]] = {}
         for i, row in enumerate(self.rows):
             # Link up rowspans
             active_rowspans, prior_rowspans = row.convert_spans(active_rowspans)
@@ -1687,10 +1687,10 @@ class RowSpanLayoutInfo:
             raise FPDFException(&#34;Rowspan extends beyond end of table&#34;)
 
         # Second pass: Estimate the cell sizes
-        rowspan_list: List[RowSpanLayoutInfo] = []
-        row_min_heights: List[Number] = []
-        row_span_max: List[int] = []
-        rendered_heights: List[Dict[int, float]] = []
+        rowspan_list: list[RowSpanLayoutInfo] = []
+        row_min_heights: list[Number] = []
+        row_span_max: list[int] = []
+        rendered_heights: list[dict[int, float]] = []
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():  # pyright: ignore[reportPrivateUsage]
             for i, row in enumerate(self.rows):
@@ -1760,7 +1760,7 @@ class RowSpanLayoutInfo:
         rowspan_list = sorted(rowspan_list, key=lambda span: span.length)
 
         # Third pass: allocate space required for the rowspans
-        row_span_padding: List[float] = [0 for _ in self.rows]
+        row_span_padding: list[float] = [0 for _ in self.rows]
         for span in rowspan_list:
             # accumulate already assigned properties
             max_padding: float = 0
@@ -1789,7 +1789,7 @@ class RowSpanLayoutInfo:
         for i, row in enumerate(self.rows):
             row_height: float = float(row_min_heights[i]) + row_span_padding[i]
             # Compute the size of merged cells
-            merged_sizes: List[float] = [0, row_height]
+            merged_sizes: list[float] = [0, row_height]
             for j in range(i + 1, i + row_span_max[i]):
                 merged_sizes.append(
                     merged_sizes[-1]
@@ -1886,7 +1886,7 @@ first_row_as_headings is used in case num_heading_rows is 1.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L198-L314" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L194-L310" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self) -&gt; None:
     &#34;This is an internal method called by `fpdf.FPDF.table()` once the table is finished&#34;
@@ -2015,7 +2015,7 @@ first_row_as_headings is used in case num_heading_rows is 1.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/baeda84c4e53e4b1db6663b59e205029b39630cc/fpdf/table.py#L179-L196" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/46368ac46899b341b8705d8a7be2318494282719/fpdf/table.py#L175-L192" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def row(
     self,
