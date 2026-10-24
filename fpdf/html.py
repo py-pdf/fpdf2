@@ -515,6 +515,8 @@ class HTML2FPDF(HTMLParser):
         # <title>-related properties:
         self.render_title_tag = render_title_tag
         self._in_title = False
+        # id / <a name> targets waiting for the next text to be rendered:
+        self._pending_anchors: list[str] = []
         self._in_style_or_script = False
         # <table>-related properties:
         self.table_line_separators = table_line_separators
@@ -697,6 +699,8 @@ class HTML2FPDF(HTMLParser):
             indent=indent,
             bullet_string=bullet or "",
         )
+        self._paragraph.anchors.extend(self._pending_anchors)
+        self._pending_anchors.clear()
         self.pdf.font_family = prev_family
         self.pdf.font_style = prev_style
         self.pdf.font_size_pt = prev_size
@@ -711,14 +715,22 @@ class HTML2FPDF(HTMLParser):
         self.align = None
         if not self._paragraph:
             return
+        paragraph = self._paragraph
         self._column.end_paragraph()
         self._column.render()
+        self._set_anchors(paragraph.anchors)
         self._paragraph = None
         self.follows_trailing_space = True
         if self._page_break_after_paragraph:
             # pylint: disable=protected-access
             self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
             self._page_break_after_paragraph = False
+
+    def _set_anchors(self, anchors: list[str]) -> None:
+        "Set the anchors that no rendered line has taken at the current position."
+        for anchor in anchors:
+            self.pdf.set_link(name=anchor, y=self.pdf.y)
+        anchors.clear()
 
     def _write_paragraph(self, text: str, link: Optional[int | str] = None) -> None:
         if not text:
@@ -742,6 +754,8 @@ class HTML2FPDF(HTMLParser):
         if self.font_color != self.pdf.text_color and self.font_color is not None:
             self.pdf.set_text_color(self.font_color)
         assert self._paragraph is not None
+        self._paragraph.anchors.extend(self._pending_anchors)
+        self._pending_anchors.clear()
         self._paragraph.write(text, link=link)
         self.pdf.page = prev_page
         self.pdf._pop_local_stack()  # pyright: ignore[reportPrivateUsage]
@@ -870,6 +884,18 @@ class HTML2FPDF(HTMLParser):
         del attrs
         css_style = parse_css_style(attrs_dict.get("style") or "")
         self._tags_stack.append(tag)
+        # like browsers, an id and the name of an <a> are targets for href="#..." links;
+        # the destination is set where the target is rendered (see _write_paragraph)
+        for anchor in (
+            attrs_dict.get("id"),
+            attrs_dict.get("name") if tag == "a" else None,
+        ):
+            if (
+                anchor
+                and anchor.strip()
+                and anchor.strip() not in self._pending_anchors
+            ):
+                self._pending_anchors.append(anchor.strip())
         if css_style.get("break-before") == "page":
             self._end_paragraph()
             # pylint: disable=protected-access
@@ -1371,17 +1397,22 @@ class HTML2FPDF(HTMLParser):
                 self.table_row.cell(img=attrs_dict["src"], img_fill_width=True)
                 assert self.td_th is not None
                 self.td_th["inserted"] = True
+                self._set_anchors(self._pending_anchors)
                 return
             x: float | Align = self.pdf.get_x()
             if self.align:
                 x = self.align
-            self.pdf.image(
+            info = self.pdf.image(
                 self.image_map(attrs_dict["src"] or ""),
                 x=x,
                 w=width,
                 h=height,
                 link=self.href,
             )
+            # targets point to the top of the image, after any page break it caused
+            for anchor in self._pending_anchors:
+                self.pdf.set_link(name=anchor, y=self.pdf.y - info.rendered_height)
+            self._pending_anchors.clear()
         if tag == "toc":
             self._end_paragraph()
             self.pdf.set_font(
@@ -1394,6 +1425,9 @@ class HTML2FPDF(HTMLParser):
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs_dict.get("pages") or "1")
             )
+        if tag == "table" or self.table is not None:
+            # table cells are not rendered as paragraphs: the table position is used
+            self._set_anchors(self._pending_anchors)
         if tag == "sup":
             self.pdf.char_vpos = CharVPos.SUP
         if tag == "sub":
@@ -1551,6 +1585,7 @@ class HTML2FPDF(HTMLParser):
         while self._tags_stack and self._tags_stack[-1] in self.HTML_UNCLOSED_TAGS:
             self._tags_stack.pop()
         self._end_paragraph()  # render the final chunk of text and clean up our local context.
+        self._set_anchors(self._pending_anchors)
         if self._tags_stack and self.warn_on_tags_not_matching:
             LOGGER.warning("Missing HTML end tag for <%s>", self._tags_stack[-1])
 

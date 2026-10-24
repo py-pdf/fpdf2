@@ -1032,13 +1032,110 @@ def test_html_link_underline(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_link_underline.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "target",
+    [
+        '<h2 id="sec">Section</h2>',
+        '<p id="sec">Section</p>',
+        '<a name="sec">Section</a>',
+    ],
+)
+def test_html_link_to_an_anchor_in_the_document(target):
+    'Like browsers, an id or the name of an <a> is a target for an href="#..." link.'
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<a href="#sec">Go to the section</a>' + target)
+    pdf.output()
+    assert pdf.named_destinations["sec"].page_number == 1
+
+
+def test_html_link_to_an_anchor_on_a_later_page():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#end">Go to the end</a>'
+        + "<p>line</p>" * 60
+        + '<h2 id="end">End</h2>'
+    )
+    pdf.output()
+    assert pdf.pages_count == 2
+    assert pdf.named_destinations["end"].page_number == 2
+
+
+def test_html_link_to_an_anchor_moved_to_the_next_page():
+    "The destination is where the target is rendered, after a page break."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_y(pdf.h - pdf.b_margin - 3)  # no room left for the heading
+    pdf.write_html('<h2 id="end">End</h2><a href="#end">Back to the end</a>')
+    pdf.output()
+    assert pdf.pages_count == 2
+    destination = pdf.named_destinations["end"]
+    assert destination.page_number == 2
+    assert destination.top == pytest.approx((pdf.h - pdf.t_margin) * pdf.k)
+
+
+def test_html_link_to_an_anchor_with_id_and_name():
+    "An <a> with both an id and a name is a target for both."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#legacy">go</a> <a href="#modern">go</a>'
+        '<a id="modern" name="legacy">TARGET</a>'
+    )
+    pdf.output()
+    assert pdf.named_destinations["modern"] == pdf.named_destinations["legacy"]
+
+
+def test_html_link_to_a_table():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#t">See the table</a><p>Intro</p>'
+        '<table id="t"><tr><td>a</td></tr></table><p>After</p>'
+    )
+    y_after = pdf.y
+    pdf.output()
+    assert pdf.named_destinations["t"].page_number == 1
+    assert pdf.named_destinations["t"].top > (pdf.h - y_after) * pdf.k
+
+
+@pytest.mark.parametrize("space_left", [None, 5])
+def test_html_link_to_an_image(space_left):
+    "The destination of an <img id> is the top of the image, on the page where it is drawn."
+    pdf = FPDF()
+    pdf.add_page()
+    if space_left:  # not enough room: the image goes to the next page
+        pdf.set_y(pdf.h - pdf.b_margin - space_left)
+    tops = []
+    draw_image = pdf.image
+
+    def image(*args, **kwargs):
+        info = draw_image(*args, **kwargs)
+        tops.append((pdf.page, pdf.y - info.rendered_height))
+        return info
+
+    pdf.image = image
+    pdf.write_html(
+        '<a href="#logo">go</a>'
+        '<img id="logo" src="docs/fpdf2-logo.png" width="100" height="50">'
+    )
+    pdf.output()
+    destination = pdf.named_destinations["logo"]
+    page, top = tops[0]
+    assert destination.page_number == page == (2 if space_left else 1)
+    assert destination.top == pytest.approx((pdf.h - top) * pdf.k)
+
+
 def test_html_anchor_without_href(tmp_path):
-    "An <a> without href, such as a named anchor, renders as plain text."
+    "An <a> without href, such as a named anchor, renders as plain text and is a link target."
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html('<a name="intro">Introduction</a> and <a id="body">body</a>')
     expected = FPDF()
     expected.add_page()
+    expected.set_link(name="intro", y=expected.y)
+    expected.set_link(name="body", y=expected.y)
     expected.write_html("Introduction and body")
     assert_pdf_equal(pdf, expected, tmp_path)
 
