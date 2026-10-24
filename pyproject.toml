@@ -7,7 +7,7 @@ name = "fpdf2"
 dynamic = ["version"]
 description = "Simple & fast PDF generation for Python"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "LGPL-3.0-only"
 license-files = ["LICENSE"]
 

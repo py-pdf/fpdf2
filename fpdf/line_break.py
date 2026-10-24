@@ -9,20 +9,16 @@ in non-backward-compatible ways.
 Usage documentation at: <https://py-pdf.github.io/fpdf2/LineBreaks.html>
 """
 
+import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
-    List,
     NamedTuple,
     Optional,
     Sequence,
-    Tuple,
-    Union,
     cast,
 )
-import warnings
 from uuid import uuid4
 
 from fpdf.drawing_primitives import DeviceCMYK, DeviceGray, DeviceRGB
@@ -68,7 +64,7 @@ class Fragment:
 
     def __init__(
         self,
-        characters: Union[list[str], str],
+        characters: list[str] | str,
         graphics_state: StateStackType,
         k: float,
         link: Optional[int | str] = None,
@@ -89,7 +85,7 @@ class Fragment:
         )
 
     def clone(
-        self, characters: Union[list[str], str] = "", link: Optional[int | str] = None
+        self, characters: list[str] | str = "", link: Optional[int | str] = None
     ) -> "Fragment":
         return self.__class__(
             characters=characters,
@@ -202,7 +198,7 @@ class Fragment:
         return self.get_width()
 
     @property
-    def text_shaping_parameters(self) -> Optional[Dict[str, Any]]:
+    def text_shaping_parameters(self) -> Optional[dict[str, Any]]:
         return self.graphics_state.text_shaping
 
     @property
@@ -446,7 +442,7 @@ class TotalPagesSubstitutionFragment(Fragment):
         self,
         *args: Any,
         dummy_width_string: str = "1",
-        align: Optional[Union[Align, str]] = Align.L,
+        align: Optional[Align | str] = Align.L,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -459,7 +455,7 @@ class TotalPagesSubstitutionFragment(Fragment):
             self.characters = [dummy_width_string]
 
     def clone(
-        self, characters: Union[list[str], str] = "", link: Optional[int | str] = None
+        self, characters: list[str] | str = "", link: Optional[int | str] = None
     ) -> "TotalPagesSubstitutionFragment":
         clone_obj = cast(
             TotalPagesSubstitutionFragment,
@@ -587,7 +583,7 @@ class TextLine(NamedTuple):
     trailing_form_feed: bool = False
     indent: float = 0
 
-    def get_ordered_fragments(self) -> List[Fragment]:
+    def get_ordered_fragments(self) -> list[Fragment]:
         if not self.fragments:
             return []
         directional_runs: list[list[Fragment]] = []
@@ -646,7 +642,7 @@ class CurrentLine:
         self.max_width = max_width
         self.print_sh = print_sh
         self.indent = indent
-        self.fragments: List[Fragment] = []
+        self.fragments: list[Fragment] = []
         self.height: float = 0
         self.number_of_spaces: int = 0
 
@@ -782,7 +778,7 @@ class CurrentLine:
     def automatic_break_possible(self) -> bool:
         return self.hyphen_break_hint is not None or self.space_break_hint is not None
 
-    def automatic_break(self, align: Align) -> Tuple[int, int, TextLine]:
+    def automatic_break(self, align: Align) -> tuple[int, int, TextLine]:
         assert self.automatic_break_possible()
         if self.hyphen_break_hint is not None and (
             self.space_break_hint is None
@@ -815,7 +811,7 @@ class MultiLineBreak:
     def __init__(
         self,
         fragments: Sequence[Fragment],
-        max_width: Union[float, Callable[[float], float]],
+        max_width: float | Callable[[float], float],
         margins: Sequence[float],
         align: Align = Align.L,
         print_sh: bool = False,
@@ -866,7 +862,7 @@ class MultiLineBreak:
         # indices are needed: with heavily fragmented text (e.g. a fallback
         # font alternating with the main font), consecutive lines can break at
         # the same character index within *different* fragments (issue #1250).
-        self.idx_last_forced_break: Optional[Tuple[int, int]] = None
+        self.idx_last_forced_break: Optional[tuple[int, int]] = None
         self.first_line_indent = first_line_indent
         self.indent = indent
         self._is_first_line = True

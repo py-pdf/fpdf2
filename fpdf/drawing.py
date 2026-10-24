@@ -25,7 +25,6 @@ from typing import (
     Sequence,
     TypeAlias,
     TypeVar,
-    Union,
     cast,
     runtime_checkable,
 )
@@ -35,7 +34,6 @@ from fontTools.pens.basePen import BasePen
 from .drawing_primitives import (
     Color,
     ColorInput,
-    convert_to_device_color,
     DeviceCMYK,
     DeviceGray,
     DeviceRGB,
@@ -43,6 +41,7 @@ from .drawing_primitives import (
     Transform,
     check_range,
     color_from_hex_string,
+    convert_to_device_color,
     force_nodocument,
 )
 from .enums import (
@@ -72,7 +71,9 @@ from .syntax import Name, PDFObject, Raw, render_pdf_primitive
 from .util import FloatTolerance, Number, NumberClass, number_to_str
 
 if TYPE_CHECKING:
-    from fontTools.ttLib import ttGlyphSet
+    from fontTools.ttLib.ttGlyphSet import (
+        _TTGlyphSet,  # pyright: ignore[reportPrivateUsage]
+    )
 
     from .fonts import CoreFont, TTFFont
     from .output import PDFFont, PDFType3Font, ResourceCatalog
@@ -116,7 +117,7 @@ class PatternPaint:
 
     def add_item(
         self,
-        item: Union["GraphicsContext", "PaintedPath", "PaintComposite"],
+        item: "GraphicsContext | PaintedPath | PaintComposite",
         clone: bool = True,
     ) -> None:
         """Add a PaintedPath, GraphicsContext or PaintComposite to this tile."""
@@ -288,11 +289,11 @@ class GradientPaint:
 
     def __init__(
         self,
-        gradient: Union["Gradient", "SweepGradient"],
-        units: Union[GradientUnits, str] = GradientUnits.USER_SPACE_ON_USE,
+        gradient: "Gradient | SweepGradient",
+        units: GradientUnits | str = GradientUnits.USER_SPACE_ON_USE,
         gradient_transform: Optional["Transform"] = None,
         apply_page_ctm: bool = True,
-        spread_method: Optional[Union[str, GradientSpreadMethod]] = None,
+        spread_method: Optional[str | GradientSpreadMethod] = None,
     ):
         self.gradient = gradient
         self.units = GradientUnits.coerce(units)
@@ -1072,9 +1073,9 @@ class GraphicsStyle:
 
     @stroke_dash_pattern.setter
     def stroke_dash_pattern(
-        self, value: None | InheritType | Number | Sequence[Number]
+        self, value: InheritType | None | Number | Sequence[Number]
     ) -> None:
-        result: None | InheritType | Number | Sequence[Number]
+        result: InheritType | None | Number | Sequence[Number]
         if value is None:
             result = ()
         elif isinstance(value, InheritType):
@@ -1116,16 +1117,14 @@ class GraphicsStyle:
         raise TypeError(f"{value} isn't a number or GraphicsStyle.INHERIT")
 
     @property
-    def soft_mask(self) -> Union[InheritType, "PaintSoftMask", "ImageSoftMask"]:
+    def soft_mask(self) -> "InheritType | PaintSoftMask | ImageSoftMask":
         paint_soft_mask = getattr(self, PDFStyleKeys.SOFT_MASK.value, self.INHERIT)
         if paint_soft_mask is self.INHERIT:
             return paint_soft_mask
-        return cast(Union[PaintSoftMask, ImageSoftMask], paint_soft_mask)
+        return cast(PaintSoftMask | ImageSoftMask, paint_soft_mask)
 
     @soft_mask.setter
-    def soft_mask(
-        self, value: Union[InheritType, "PaintSoftMask", "ImageSoftMask"]
-    ) -> None:
+    def soft_mask(self, value: "InheritType | PaintSoftMask | ImageSoftMask") -> None:
         if value is self.INHERIT or isinstance(value, (PaintSoftMask, ImageSoftMask)):
             return super().__setattr__(PDFStyleKeys.SOFT_MASK.value, value)
         raise TypeError(
@@ -2628,9 +2627,7 @@ class Text(NamedTuple):
             return "", last_item, initial_point
 
         # Precise layout resolution with actual font metrics
-        layout: list[
-            tuple[float, float, float, TextRun, Union["CoreFont", "TTFFont"]]
-        ] = []
+        layout: "list[tuple[float, float, float, TextRun, CoreFont | TTFFont]]" = []
         pen_x = self.x
         pen_y = self.y
         min_x = pen_x
@@ -2908,18 +2905,18 @@ class DrawingContext:
     __slots__ = ("_subitems",)
 
     def __init__(self) -> None:
-        self._subitems: list[Union[GraphicsContext, PaintedPath, PaintComposite]] = []
+        self._subitems: list[GraphicsContext | PaintedPath | PaintComposite] = []
 
     @property
     def items(
         self,
-    ) -> tuple[Union["GraphicsContext", "PaintedPath", "PaintComposite"], ...]:
+    ) -> "tuple[GraphicsContext | PaintedPath | PaintComposite, ...]":
         """Read-only view of the drawing items, used to validate tile contents."""
         return tuple(self._subitems)
 
     def add_item(
         self,
-        item: Union["GraphicsContext", "PaintedPath", "PaintComposite"],
+        item: "GraphicsContext | PaintedPath | PaintComposite",
         clone: bool = True,
     ) -> None:
         """
@@ -3838,13 +3835,7 @@ class GraphicsContext:
 
     def add_item(
         self,
-        item: Union[
-            Renderable,
-            "GraphicsContext",
-            PaintedPath,
-            "PaintComposite",
-            "PaintBlendComposite",
-        ],
+        item: "Renderable | GraphicsContext | PaintedPath | PaintComposite | PaintBlendComposite",
         clone: bool = True,
     ) -> None:
         """
@@ -4198,7 +4189,7 @@ class PaintSoftMask:
 
     def __init__(
         self,
-        mask_path: Union[PaintedPath, GraphicsContext],
+        mask_path: PaintedPath | GraphicsContext,
         invert: bool = False,
         use_luminosity: bool = False,
         matrix: Transform = Transform.identity(),
@@ -4287,8 +4278,8 @@ class PaintSoftMask:
 
     @staticmethod
     def coverage_white(
-        node: Union[PaintedPath, GraphicsContext],
-    ) -> Union[PaintedPath, GraphicsContext]:
+        node: PaintedPath | GraphicsContext,
+    ) -> PaintedPath | GraphicsContext:
         """
         Return a deep-copied version of *node* whose appearance encodes only its
         geometric coverage: every shape is converted to an **opaque white fill**
@@ -4385,7 +4376,7 @@ class PaintSoftMask:
     def from_AB(
         cls,
         A: Optional[GraphicsContext],
-        B: Union[PaintedPath, GraphicsContext],
+        B: PaintedPath | GraphicsContext,
         invert: bool,
         registry: "ResourceCatalog",
         region_bbox: Optional["BoundingBox"] = None,
@@ -4521,7 +4512,7 @@ def _iter_nodes(
                 yield from _iter_nodes(ch)
 
 
-def _disable_auto_alpha(node: Union[PaintedPath, GraphicsContext]) -> None:
+def _disable_auto_alpha(node: PaintedPath | GraphicsContext) -> None:
     for n in _iter_nodes(node):
         if isinstance(n, PaintedPath):
             for attr in ("fill_color", "stroke_color"):
@@ -4624,8 +4615,8 @@ class PaintComposite:
     @classmethod
     def _with_mask(
         cls,
-        path: Union[PaintedPath, GraphicsContext],
-        mask_from: Union[PaintedPath, GraphicsContext],
+        path: PaintedPath | GraphicsContext,
+        mask_from: PaintedPath | GraphicsContext,
         invert: bool,
         resource_registry: "ResourceCatalog",
     ) -> PaintedPath | GraphicsContext:
@@ -4645,7 +4636,7 @@ class PaintComposite:
         _disable_auto_alpha(p)
         return p
 
-    def _pick(self, which: str) -> Union[PaintedPath, GraphicsContext]:
+    def _pick(self, which: str) -> PaintedPath | GraphicsContext:
         return self.source if which == "source" else self.backdrop
 
     def render(
@@ -4704,7 +4695,7 @@ class BlendGroup:
         gfxstate_objs_per_name: dict[str, PDFObject],
         pattern_objs_per_name: dict[str, PDFObject],
         shading_objs_per_name: dict[str, PDFObject],
-        font_objs_per_index: dict[int, Union["PDFFont", "PDFType3Font"]],
+        font_objs_per_index: "dict[int, PDFFont | PDFType3Font]",
         img_objs_per_index: dict[int, PDFObject],
         color_spaces: Optional[dict[str, str]] = None,
     ) -> "str":
@@ -4831,9 +4822,7 @@ class PathPen(BasePen):  # type: ignore[misc]
     def __init__(
         self,
         pdf_path: ClippingPath | PaintedPath,
-        glyphSet: Optional[  # pyright: ignore[reportUnknownParameterType]
-            "ttGlyphSet"  # pyright: ignore[reportInvalidTypeForm]
-        ] = None,
+        glyphSet: Optional["_TTGlyphSet"] = None,
     ) -> None:
         self.pdf_path: ClippingPath | PaintedPath = pdf_path
         self.last_was_line_to: bool = False

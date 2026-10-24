@@ -16,7 +16,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableO
 """
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, DefaultDict, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, DefaultDict, Iterator, Optional
 
 from .syntax import PDFArray, PDFObject, PDFString
 
@@ -48,7 +48,7 @@ class NumberTree(PDFObject):
 
     def serialize(
         self,
-        obj_dict: Optional[Dict[str, object]] = None,
+        obj_dict: Optional[dict[str, object]] = None,
         _security_handler: Optional["StandardSecurityHandler"] = None,
     ) -> str:
         newline = "\n"
@@ -88,7 +88,7 @@ class StructElem(PDFObject):
         self,
         struct_type: str,
         parent: PDFObject,
-        kids: Union[List[int], List["StructElem"]],
+        kids: list[int] | list["StructElem"],
         page_number: Optional[int] = None,
         title: Optional[str] = None,
         alt: Optional[str] = None,
@@ -117,7 +117,7 @@ class StructureTreeBuilder:
             struct_type="/Document", parent=self.struct_tree_root, kids=[]
         )
         self.struct_tree_root.k.append(self.doc_struct_elem)
-        self.spid_per_page_number: Dict[int, int] = {}
+        self.spid_per_page_number: dict[int, int] = {}
 
     def add_marked_content(
         self,

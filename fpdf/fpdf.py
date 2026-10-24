@@ -36,10 +36,8 @@ from typing import (
     Optional,
     ParamSpec,
     Sequence,
-    Type,
     TypeAlias,
     TypeVar,
-    Union,
     ValuesView,
     cast,
     overload,
@@ -116,8 +114,8 @@ from .enums import (
     PageOrientation,
     PathPaintRule,
     PDFResourceType,
-    ResourceAccessPolicy,
     RenderStyle,
+    ResourceAccessPolicy,
     TextDirection,
     TextEmphasis,
     TextMarkupType,
@@ -173,8 +171,8 @@ from .sign import Signature
 from .structure_tree import StructElem, StructureTreeBuilder
 from .svg import (
     Percent,
-    SVGObject,
     SVGLimits,
+    SVGObject,
     apply_svg_transform_to_user_space_gradients,
 )
 from .syntax import DestinationXYZ, Name, PDFArray, PDFDate, PDFString
@@ -321,12 +319,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def __init__(
         self,
-        orientation: Union[str, PageOrientation] = PageOrientation.PORTRAIT,
-        unit: Union[str, float] = "mm",
-        format: Union[str, tuple[float, float]] = "A4",
+        orientation: str | PageOrientation = PageOrientation.PORTRAIT,
+        unit: str | float = "mm",
+        format: str | tuple[float, float] = "A4",
         font_cache_dir: Literal["DEPRECATED"] = "DEPRECATED",
         *,
-        enforce_compliance: Optional[Union[str, DocumentCompliance]] = None,
+        enforce_compliance: Optional[str | DocumentCompliance] = None,
     ) -> None:
         """
         Args:
@@ -1081,9 +1079,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if image_filter == "JPXDecode":
             self._set_min_pdf_version("1.5")
 
-    def alias_nb_pages(
-        self, alias: str = "{nb}", align: Union[Align, str] = Align.L
-    ) -> None:
+    def alias_nb_pages(self, alias: str = "{nb}", align: Align | str = Align.L) -> None:
         """
         Defines an alias for the total number of pages.
         It will be substituted as the document is closed.
@@ -1797,7 +1793,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._set_min_pdf_version("1.4")
 
     def draw_vector_glyph(
-        self, path: Union[PaintedPath, GraphicsContext], font: "Type3Font"
+        self, path: PaintedPath | GraphicsContext, font: "Type3Font"
     ) -> str:
         """
         Add a pre-constructed path to the document.
@@ -2639,7 +2635,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style (str): font style. "" for regular, include 'B' for bold, and/or 'I' for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
-            unicode_range (Optional[Union[str, int, tuple, list]]): subset of Unicode codepoints to embed.
+            unicode_range (Optional[str | int | tuple | list]): subset of Unicode codepoints to embed.
                 Accepts CSS-style strings (e.g. "U+1F600-1F64F, U+2600"), integers, tuples, or lists.
                 Defaults to None, which embeds the full cmap.
             variations (dict[style, dict]): maps style to limits of axes for the variable font.
@@ -2725,7 +2721,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_font(
         self,
         family: Optional[str] = None,
-        style: Union[str, TextEmphasis] = "",
+        style: str | TextEmphasis = "",
         size: float = 0,
     ) -> None:
         """
@@ -3125,7 +3121,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def embed_file(
         self,
-        file_path: Optional[Union[str, Path]] = None,
+        file_path: Optional[str | Path] = None,
         bytes: Optional[bytes] = None,
         basename: Optional[str] = None,
         modification_date: Optional[datetime] = None,
@@ -3837,9 +3833,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         draw_color: Optional[ColorInput] = None,
         fill_color: Optional[ColorInput] = None,
         text_color: Optional[ColorInput] = None,
-        dash_pattern: Optional[
-            Union[tuple[float, float, float], dict[str, float]]
-        ] = None,
+        dash_pattern: Optional[tuple[float, float, float] | dict[str, float]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -4086,7 +4080,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         text_line: TextLine,
         h: Optional[float] = None,
-        border: Union[str, int] = 0,
+        border: str | int = 0,
         new_x: XPos = XPos.RIGHT,
         new_y: YPos = YPos.TOP,
         fill: bool = False,
@@ -7029,7 +7023,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         name: Optional[Literal[""]] = "",
         *,
         linearize: bool = False,
-        output_producer_class: Type[OutputProducer] = OutputProducer,
+        output_producer_class: type[OutputProducer] = OutputProducer,
     ) -> bytearray: ...
     @overload
     def output(
@@ -7037,7 +7031,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         name: str | os.PathLike[str] | BinaryIO,
         *,
         linearize: bool = False,
-        output_producer_class: Type[OutputProducer] = OutputProducer,
+        output_producer_class: type[OutputProducer] = OutputProducer,
     ) -> None: ...
     @deprecated_parameter([("dest", "2.2.0")])
     def output(
@@ -7045,7 +7039,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         name: Optional[str | os.PathLike[str] | BinaryIO] = "",
         *,
         linearize: bool = False,
-        output_producer_class: Type[OutputProducer] = OutputProducer,
+        output_producer_class: type[OutputProducer] = OutputProducer,
     ) -> Optional[bytearray]:
         """
         Output PDF to some destination.

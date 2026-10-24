@@ -24,7 +24,6 @@ from typing import (
     Optional,
     Protocol,
     Sequence,
-    Union,
     cast,
 )
 
@@ -48,8 +47,8 @@ from .drawing import (
     ClippingPath,
     GlyphPathPen,
     GradientPaint,
-    GraphicsStyle,
     GraphicsContext,
+    GraphicsStyle,
     ImageSoftMask,
     PaintBlendComposite,
     PaintComposite,
@@ -867,7 +866,7 @@ class COLRFont(Type3Font):
 
         raise NotImplementedError(f"Unknown composite mode: {composite_mode}")
 
-    def _unwrap_paint(self, paint: Paint) -> Union[Paint, "VarTableWrapper"]:
+    def _unwrap_paint(self, paint: Paint) -> "Paint | VarTableWrapper":
         mapped_format = PAINT_VAR_MAPPING.get(paint.Format)
         if mapped_format is None or self.colr_var_instancer is None:
             return paint
@@ -1305,7 +1304,7 @@ class SBIXColorFont(Type3Font):
 # pylint: disable=too-many-return-statements
 def get_color_font_object(
     fpdf: "FPDF", base_font: "TTFFont", palette_index: int = 0
-) -> Union[Type3Font, None]:
+) -> Type3Font | None:
     def has_outline_glyphs() -> bool:
         if base_font.is_cff:
             return True

@@ -8,7 +8,7 @@ import math
 import struct
 import zlib
 from abc import ABC
-from typing import TYPE_CHECKING, Dict, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Optional, Sequence
 
 from .drawing_primitives import (
     Color,
@@ -59,7 +59,7 @@ def pick_colorspace_and_promote(colors: list[Color]) -> tuple[str, list[Color]]:
 
 
 def normalize_stops(
-    stops: Sequence[tuple[float, Union[Color, str]]],
+    stops: Sequence[tuple[float, Color | str]],
     coerce_to_device: bool = True,
     *,
     return_raw: bool = False,
@@ -196,9 +196,9 @@ def normalize_stops(
 
 
 def merge_near_duplicates(
-    pairs: Sequence[tuple[float, Union[Color, str]]],
-) -> Sequence[tuple[float, Union[Color, str]]]:
-    out: list[tuple[float, Union[Color, str]]] = []
+    pairs: Sequence[tuple[float, Color | str]],
+) -> Sequence[tuple[float, Color | str]]:
+    out: list[tuple[float, Color | str]] = []
     for u, col in pairs:
         if out and FloatTolerance.equal(out[-1][0], u):
             prev_u, prev_col = out[-1]
@@ -277,13 +277,13 @@ class Pattern(PDFObject):
     _resources_used: set[tuple[PDFResourceType, str]]
     resources: Optional[str]
 
-    def __init__(self, shading: Union["Gradient", "Shading", "MeshShading"]):
+    def __init__(self, shading: "Gradient | Shading | MeshShading"):
         super().__init__()
         self._contents: Optional[bytes] = None
         self.filter: Optional[Name] = None
         self.type = Name("Pattern")
         self.pattern_type = 2
-        self._shading: Optional[Union["Gradient", "Shading", "MeshShading"]] = shading
+        self._shading: Optional["Gradient | Shading | MeshShading"] = shading
         self._matrix = Transform.identity()
         self.length: Optional[int] = None
         # OutputProducer converts document coordinates into page coordinates.
@@ -291,9 +291,7 @@ class Pattern(PDFObject):
         self._apply_page_ctm = True
 
     @classmethod
-    def from_shading(
-        cls, shading: Union["Gradient", "Shading", "MeshShading"]
-    ) -> "Pattern":
+    def from_shading(cls, shading: "Gradient | Shading | MeshShading") -> "Pattern":
         """Construct a shading pattern without a content stream."""
         return cls(shading)
 
@@ -349,7 +347,7 @@ class Pattern(PDFObject):
 
     def serialize(
         self,
-        obj_dict: Optional[Dict[str, object]] = None,
+        obj_dict: Optional[dict[str, object]] = None,
         _security_handler: Optional["StandardSecurityHandler"] = None,
     ) -> str:
         if _security_handler and self._contents is not None:
@@ -413,7 +411,7 @@ class Type3Function(PDFObject):
 
     def __init__(
         self,
-        functions: Sequence[Union[Type2Function, Type2FunctionGray, "Type3Function"]],
+        functions: "Sequence[Type2Function | Type2FunctionGray | Type3Function]",
         bounds: Sequence[float],
     ):
         super().__init__()
@@ -909,8 +907,8 @@ class SweepGradient(PDFObject):
         cy: float,
         start_angle: float,
         end_angle: float,
-        stops: Sequence[tuple[float, Union[Color, str]]],
-        spread_method: Union["GradientSpreadMethod", str] = GradientSpreadMethod.PAD,
+        stops: Sequence[tuple[float, Color | str]],
+        spread_method: "GradientSpreadMethod | str" = GradientSpreadMethod.PAD,
         segments: Optional[int] = None,
         inner_radius_factor: float = 0.002,
     ):
@@ -1031,7 +1029,7 @@ def shape_sweep_gradient_as_mesh(
     cy: float,
     start_angle: float,
     end_angle: float,
-    stops: Sequence[tuple[float, Union[Color, str]]],
+    stops: Sequence[tuple[float, Color | str]],
     spread_method: GradientSpreadMethod,
     bbox: "BoundingBox",
     segments: Optional[int] = None,
@@ -1322,8 +1320,8 @@ def shape_linear_gradient(
     y1: float,
     x2: float,
     y2: float,
-    stops: Sequence[tuple[float, Union[Color, str]]],
-    spread_method: Union[GradientSpreadMethod, str] = GradientSpreadMethod.PAD,
+    stops: Sequence[tuple[float, Color | str]],
+    spread_method: GradientSpreadMethod | str = GradientSpreadMethod.PAD,
     bbox: Optional["BoundingBox"] = None,
 ) -> LinearGradient:
     """
@@ -1391,7 +1389,7 @@ def shape_linear_gradient(
     start_tile = math.floor((tmin_norm - base_start) / base_span) - 1
     end_tile = math.ceil((tmax_norm - base_start) / base_span) + 1
 
-    expanded: list[tuple[float, Union[Color, str]]] = []
+    expanded: list[tuple[float, Color | str]] = []
     for k in range(start_tile, end_tile + 1):
         shift = k * base_span
         if spread_method == GradientSpreadMethod.REPEAT or (k & 1) == 0:
@@ -1452,11 +1450,11 @@ def shape_radial_gradient(
     cx: float,
     cy: float,
     r: float,
-    stops: Sequence[tuple[float, Union[Color, str]]],
+    stops: Sequence[tuple[float, Color | str]],
     fx: Optional[float] = None,
     fy: Optional[float] = None,
     fr: float = 0.0,
-    spread_method: Union[GradientSpreadMethod, str] = GradientSpreadMethod.PAD,
+    spread_method: GradientSpreadMethod | str = GradientSpreadMethod.PAD,
     bbox: Optional["BoundingBox"] = None,
 ) -> RadialGradient:
     """

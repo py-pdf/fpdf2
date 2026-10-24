@@ -15,7 +15,7 @@ import re
 import warnings
 from dataclasses import replace
 from html.parser import HTMLParser
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence
 
 from .deprecation import get_stack_level
 from .drawing_primitives import (
@@ -494,7 +494,7 @@ class HTML2FPDF(HTMLParser):
         self._page_break_after_paragraph = False
         self.follows_trailing_space = False  # The last write has ended with a space.
         self.follows_heading = False  # We don't want extra space below a heading.
-        self.align: Optional[Union[float, Align]] = None
+        self.align: Optional[float | Align] = None
         self.heading_level: Optional[int] = None
         self._tags_stack: list[str] = []
         self._column = self.pdf.text_columns(skip_leading_spaces=True)
@@ -645,7 +645,7 @@ class HTML2FPDF(HTMLParser):
                 self.tag_styles[tag] = self.tag_styles[tag].replace(l_margin=indent)
 
     @staticmethod
-    def _normalize_l_margin(l_margin: Any) -> Union[float, Align]:
+    def _normalize_l_margin(l_margin: Any) -> float | Align:
         if isinstance(l_margin, Align):
             return l_margin
         if isinstance(l_margin, (int, float)):
@@ -654,11 +654,11 @@ class HTML2FPDF(HTMLParser):
 
     def _new_paragraph(
         self,
-        align: Optional[Union[float, Align]] = None,
+        align: Optional[float | Align] = None,
         line_height: Optional[float] = 1.0,
         top_margin: float = 0,
         bottom_margin: float = 0,
-        indent: Union[float, Align] = 0,
+        indent: float | Align = 0,
         bullet: Optional[str] = None,
     ) -> None:
         self._end_paragraph()

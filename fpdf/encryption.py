@@ -18,7 +18,7 @@ import unicodedata
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
 from os import urandom
-from typing import TYPE_CHECKING, Callable, Iterator, Optional, Sequence, Type, Union
+from typing import TYPE_CHECKING, Callable, Iterator, Optional, Sequence
 
 from .enums import AccessPermission, EncryptionMethod
 from .errors import FPDFException
@@ -214,9 +214,7 @@ class StandardSecurityHandler:
         """Return an encryption dictionary"""
         return EncryptionDictionary(self)
 
-    def encrypt(
-        self, text: Union[str, bytearray, bytes], obj_id: int
-    ) -> Union[str, bytes]:
+    def encrypt(self, text: str | bytearray | bytes, obj_id: int) -> str | bytes:
         """Method invoked by PDFObject and PDFContentStream to encrypt strings and streams"""
         LOGGER.debug("Encrypting %s", text)
         return (
@@ -287,7 +285,7 @@ class StandardSecurityHandler:
         return iv
 
     @classmethod
-    def get_random_bytes(cls: Type["StandardSecurityHandler"], size: int) -> bytes:
+    def get_random_bytes(cls: type["StandardSecurityHandler"], size: int) -> bytes:
         """
         https://docs.python.org/3/library/os.html#os.urandom
         os.urandom will use OS-specific sources to generate random bytes
@@ -296,7 +294,7 @@ class StandardSecurityHandler:
         return urandom(size)
 
     @classmethod
-    def prepare_string(cls: Type["StandardSecurityHandler"], string: str) -> bytes:
+    def prepare_string(cls: type["StandardSecurityHandler"], string: str) -> bytes:
         """
         PDF2.0 - ISO 32000-2:2020
         All passwords for revision 6 shall be based on Unicode. Preprocessing of a user-provided password
@@ -427,7 +425,7 @@ class StandardSecurityHandler:
 
     @classmethod
     def compute_hash(
-        cls: Type["StandardSecurityHandler"],
+        cls: type["StandardSecurityHandler"],
         input_password: bytes | bytearray,
         salt: bytes,
         user_key: bytes | bytearray = bytearray(),
@@ -559,7 +557,7 @@ class StandardSecurityHandler:
         return result
 
 
-def md5(data: Union[bytes, bytearray]) -> bytes:
+def md5(data: bytes | bytearray) -> bytes:
     h = hashlib.new("md5", usedforsecurity=False)
     h.update(data)
     return h.digest()

@@ -3,8 +3,8 @@
 import base64
 import hashlib
 import http.client
-import ipaddress
 import io
+import ipaddress
 import logging
 import re
 import socket
@@ -21,7 +21,6 @@ from typing import (
     Optional,
     TypeAlias,
     TypeGuard,
-    Union,
     no_type_check,
 )
 from urllib.parse import urlsplit
@@ -42,7 +41,7 @@ from .image_datastructures import (
     RasterImageInfo,
     VectorImageInfo,
 )
-from .svg import SVGObject, SVGLimits
+from .svg import SVGLimits, SVGObject
 from .util import ImageType
 
 try:
@@ -356,11 +355,7 @@ def preload_image(
     dims: Optional[tuple[float, float]] = None,
     resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
     svg_limits: Optional[SVGLimits] = None,
-) -> tuple[
-    str,
-    Union[SVGObject, "PILImage", bytes, BinaryIO, Path, None],
-    RasterImageInfo | VectorImageInfo,
-]:
+) -> "tuple[str, SVGObject | PILImage | bytes | BinaryIO | Path | None, RasterImageInfo | VectorImageInfo]":
     """
     Read an image and load it into memory.
 
@@ -427,7 +422,7 @@ def preload_image(
         )
 
     # Load raster data.
-    img: Union["PILImage", bytes, BinaryIO, Path, None]
+    img: "PILImage | bytes | BinaryIO | Path | None"
     raster_name: str
     if isinstance(name, str):
         raster_name, img = name, None
@@ -587,8 +582,8 @@ def get_svg_info(
 
 
 def get_img_info(
-    filename: Union[str, BinaryIO, Path],
-    img: Union["PILImage", bytes, BinaryIO, Path, str, None] = None,
+    filename: str | BinaryIO | Path,
+    img: "PILImage | bytes | BinaryIO | Path | str | None" = None,
     image_filter: ImageFilter = "AUTO",
     dims: Optional[tuple[float, float]] = None,
     resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,

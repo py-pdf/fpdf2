@@ -72,7 +72,6 @@ from decimal import Decimal
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     Mapping,
     Optional,
     Protocol,
@@ -229,7 +228,7 @@ class PDFObject:
 
     def serialize(
         self,
-        obj_dict: Optional[Dict[str, object]] = None,
+        obj_dict: Optional[dict[str, object]] = None,
         _security_handler: Optional["StandardSecurityHandler"] = None,
     ) -> str:
         "Serialize the PDF object as an obj<</>>endobj text block"
@@ -254,7 +253,7 @@ class PDFObject:
 
     def _build_obj_dict(
         self, security_handler: Optional["StandardSecurityHandler"] = None
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         """
         Build the PDF Object associative map to serialize,
         based on this class instance properties.
@@ -289,7 +288,7 @@ class PDFContentStream(PDFObject):
     # method override
     def serialize(
         self,
-        obj_dict: Optional[Dict[str, object]] = None,
+        obj_dict: Optional[dict[str, object]] = None,
         _security_handler: Optional["StandardSecurityHandler"] = None,
     ) -> str:
         if _security_handler:
@@ -302,10 +301,10 @@ class PDFContentStream(PDFObject):
 
 
 def build_obj_dict(
-    key_values: Dict[str, object],
+    key_values: dict[str, object],
     _security_handler: Optional["StandardSecurityHandler"] = None,
     _obj_id: Optional[int] = None,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """
     Build the PDF Object associative map to serialize, based on a key-values dict.
     The property names are converted from snake_case to CamelCase,

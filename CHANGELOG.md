@@ -70,6 +70,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` raises `NotImplementedError: Unsupported nested HTML tags inside <td> element: <table>` for a `<table>` nested in a table cell, like for the other unsupported nested tags, instead of a bare `AssertionError` with no message - thanks to @RavSinghChandan
 
 ### Changed
+* Modernized type annotations for Python 3.11+, using union syntax, standard collection types, and `typing.Self`.
 * Removed redundant trailing zeros from numbers in PDF dictionaries and arrays outside content streams, preserving existing numeric precision
 ### Removed
 * Removed the `defusedxml` dependency: SVG parsing now relies on the standard-library ElementTree parser and Expat amplification limits; bounded internal entities are accepted - thanks to @agustin18, _cf._ [issue #1793](https://github.com/py-pdf/fpdf2/issues/1793)

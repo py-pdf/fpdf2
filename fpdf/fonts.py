@@ -29,7 +29,6 @@ from typing import (
     Optional,
     Protocol,
     Sequence,
-    Union,
 )
 
 from fontTools import ttLib
@@ -116,8 +115,8 @@ class FontFace:
     #                                   This can be a combination: B | U
     size_pt: Optional[float]
     # Colors are single number grey scales or (red, green, blue) tuples:
-    color: Optional[Union[DeviceGray, DeviceRGB, DeviceCMYK]]
-    fill_color: Optional[Union[DeviceGray, DeviceRGB, DeviceCMYK]]
+    color: Optional[DeviceGray | DeviceRGB | DeviceCMYK]
+    fill_color: Optional[DeviceGray | DeviceRGB | DeviceCMYK]
 
     def __init__(
         self,
@@ -195,10 +194,10 @@ class TextStyle(FontFace):
         font_style: Optional[str | TextEmphasis] = None,
         font_size_pt: Optional[float] = None,
         color: Optional[
-            Union[str, float, Sequence[float], DeviceGray, DeviceRGB, DeviceCMYK]
+            str | float | Sequence[float] | DeviceGray | DeviceRGB | DeviceCMYK
         ] = None,  # grey scale or (red, green, blue),
         fill_color: Optional[
-            Union[float, Sequence[float], DeviceGray, DeviceRGB, DeviceCMYK]
+            float | Sequence[float] | DeviceGray | DeviceRGB | DeviceCMYK
         ] = None,  # grey scale or (red, green, blue),
         underline: bool = False,
         t_margin: Optional[float] = None,
@@ -586,7 +585,7 @@ class TTFFont:
                     blob = hb.Blob.from_bytes(ttfont_bytes)
                     face = hb.Face(blob=blob, index=self.collection_font_number)
                 except (AttributeError, RuntimeError):
-                    import tempfile, os  # pylint: disable=import-outside-toplevel
+                    import os, tempfile  # pylint: disable=import-outside-toplevel
 
                     tmp_name = None
                     try:

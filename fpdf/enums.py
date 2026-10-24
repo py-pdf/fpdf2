@@ -7,10 +7,8 @@ from typing import (
     ClassVar,
     Optional,
     Protocol,
-    Type,
+    Self,
     TypeAlias,
-    TypeVar,
-    Union,
     cast,
 )
 
@@ -46,16 +44,11 @@ class ResourceAccessPolicy(Flag):
     DEFAULT = LOCAL_FILES | REMOTE_PUBLIC
 
 
-E = TypeVar("E", bound="CoerciveEnum")
-IE = TypeVar("IE", bound="CoerciveIntEnum")
-IF = TypeVar("IF", bound="CoerciveIntFlag")
-
-
 class CoerciveEnum(Enum):
     "An enumeration that provides a helper to coerce strings into enumeration members."
 
     @classmethod
-    def coerce(cls: Type[E], value: E | str, case_sensitive: bool = False) -> E:
+    def coerce(cls, value: Self | str, case_sensitive: bool = False) -> Self:
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -100,7 +93,7 @@ class CoerciveIntEnum(IntEnum):
     """
 
     @classmethod
-    def coerce(cls: Type[IE], value: IE | str | int) -> IE:
+    def coerce(cls, value: Self | str | int) -> Self:
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -142,7 +135,7 @@ class CoerciveIntFlag(IntFlag):
     """
 
     @classmethod
-    def coerce(cls: Type[IF], value: IF | str | int) -> IF:
+    def coerce(cls, value: Self | str | int) -> Self:
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -232,7 +225,7 @@ class Align(CoerciveEnum):
 
     @classmethod
     def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls, value: Union["Align", str], case_sensitive: bool = False
+        cls, value: "Align | str", case_sensitive: bool = False
     ) -> "Align":
         if value == "":
             return cls.L
@@ -258,7 +251,7 @@ class VAlign(CoerciveEnum):
 
     @classmethod
     def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls, value: Union["VAlign", str], case_sensitive: bool = False
+        cls, value: "VAlign | str", case_sensitive: bool = False
     ) -> "VAlign":
         if value == "":
             return cls.M
@@ -305,7 +298,7 @@ class TextEmphasis(CoerciveIntFlag):
         )
 
     @classmethod
-    def coerce(cls, value: Union["TextEmphasis", str, int]) -> "TextEmphasis":
+    def coerce(cls, value: "TextEmphasis | str | int") -> "TextEmphasis":
         if isinstance(value, str):
             if value == "":
                 return cls.NONE
@@ -376,7 +369,7 @@ class CellBordersLayout(CoerciveIntFlag):
     "Inherits the border layout from the table borders layout"
 
     @classmethod
-    def coerce(cls, value: Union["CellBordersLayout", str, int]) -> "CellBordersLayout":
+    def coerce(cls, value: "CellBordersLayout | str | int") -> "CellBordersLayout":
         if isinstance(value, int) and value > 16:
             raise ValueError("INHERIT cannot be combined with other values")
         return super().coerce(value)
@@ -416,15 +409,15 @@ class TableBorderStyle:
     """
 
     thickness: Optional[float] = None
-    color: Union[
-        int, tuple[int, int, int], "DeviceRGB", "DeviceGray", "DeviceCMYK", None
-    ] = None
+    color: "int | tuple[int, int, int] | DeviceRGB | DeviceGray | DeviceCMYK | None" = (
+        None
+    )
     dash: Optional[float] = None
     gap: float = 0.0
     phase: float = 0.0
 
     @staticmethod
-    def from_bool(should_draw: Union[bool, "TableBorderStyle"]) -> "TableBorderStyle":
+    def from_bool(should_draw: "bool | TableBorderStyle") -> "TableBorderStyle":
         """
         From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object
         """
@@ -571,7 +564,7 @@ class TableCellStyle:
         return None
 
     @staticmethod
-    def get_change_fill_color_command(color: Union["Color", str]) -> list[str]:
+    def get_change_fill_color_command(color: "Color | str") -> list[str]:
         """Return list with string for command to change device color (empty list if no color)"""
         return (
             []
@@ -586,7 +579,7 @@ class TableCellStyle:
         y1: float,
         x2: float,
         y2: float,
-        fill_color: Optional[Union["Color", str]] = None,
+        fill_color: Optional["Color | str"] = None,
     ) -> list[str]:
         """
         Get list of primitive commands to draw the cell border for this cell, and fill it with the
@@ -627,7 +620,7 @@ class TableCellStyle:
         x2: float,
         y2: float,
         pdf: "FPDF",
-        fill_color: Optional[Union["Color", str]],
+        fill_color: Optional["Color | str"],
     ) -> tuple[list[str], bool]:
         """Get draw commands for case when some of the borders have different styles"""
         needs_wrap = False
@@ -660,7 +653,7 @@ class TableCellStyle:
         x2: float,
         y2: float,
         pdf: "FPDF",
-        fill_color: Optional[Union["Color", str]],
+        fill_color: Optional["Color | str"],
     ) -> tuple[list[str], bool]:
         """Get draw commands for case when all of the borders are off / not drawn"""
         needs_wrap = False
@@ -680,7 +673,7 @@ class TableCellStyle:
         x2: float,
         y2: float,
         pdf: "FPDF",
-        fill_color: Optional[Union["Color", str]],
+        fill_color: Optional["Color | str"],
         scale: float,
         common_border_style: Optional[TableBorderStyle | bool],
     ) -> tuple[list[str], bool]:
@@ -725,7 +718,7 @@ class TableCellStyle:
         y1: float,
         x2: float,
         y2: float,
-        fill_color: Optional[Union["Color", str]] = None,
+        fill_color: Optional["Color | str"] = None,
     ) -> None:
         """
         Draw the cell border for this cell, and fill it with the given fill color.
@@ -801,7 +794,7 @@ class TableBordersLayout(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def coerce(cls, value: Union["TableBordersLayout", str]) -> "TableBordersLayout":
+    def coerce(cls, value: "TableBordersLayout | str") -> "TableBordersLayout":
         """
         Attempt to coerce `value` into a member of this class.
 
@@ -1032,7 +1025,7 @@ class TableCellFillMode(CoerciveEnum):
     @classmethod
     def coerce(  # type: ignore[override]
         cls,
-        value: Union[TableCellFillModeType, str],
+        value: TableCellFillModeType | str,
         case_sensitive: bool = False,
     ) -> TableCellFillModeType:
         if callable(getattr(value, "should_fill_cell", None)):
@@ -1106,7 +1099,7 @@ class RenderStyle(CoerciveEnum):
 
     @classmethod
     def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls, value: Union["RenderStyle", str], case_sensitive: bool = False
+        cls, value: "RenderStyle | str", case_sensitive: bool = False
     ) -> "RenderStyle":
         if not value:
             return cls.D
@@ -1762,7 +1755,7 @@ class PageOrientation(CoerciveEnum):
 
     @classmethod
     def coerce(  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls, value: Union["PageOrientation", str], case_sensitive: bool = False
+        cls, value: "PageOrientation | str", case_sensitive: bool = False
     ) -> "PageOrientation":
         if isinstance(value, str):
             value = value.upper()
@@ -1846,7 +1839,7 @@ class DocumentCompliance(Enum):
         )
 
     @classmethod
-    def coerce(cls, value: Union["DocumentCompliance", str]) -> "DocumentCompliance":
+    def coerce(cls, value: "DocumentCompliance | str") -> "DocumentCompliance":
         if isinstance(value, cls):
             return value
         if isinstance(value, str):

@@ -4,7 +4,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Annotations.html>
 
 import hashlib
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Optional, Sequence
 
 from .actions import Action
 from .enums import (
@@ -16,17 +16,16 @@ from .enums import (
 from .syntax import (
     Destination,
     Name,
+    PDFArray,
     PDFContentStream,
     PDFDate,
     PDFObject,
-    PDFArray,
     PDFString,
     build_obj_dict,
     create_dictionary_string as pdf_dict,
     create_list_string as pdf_list,
     iobj_ref as pdf_ref,
 )
-
 from .util import trim_trailing_zeros
 
 if TYPE_CHECKING:
@@ -53,9 +52,9 @@ class AnnotationMixin:
         title: Optional[str] = None,
         quad_points: Optional[Sequence[float]] = None,
         border_width: float = 0,  # PDF readers support: displayed by Acrobat but not Sumatra
-        name: Union[AnnotationName, FileAttachmentAnnotationName, None] = None,
+        name: AnnotationName | FileAttachmentAnnotationName | None = None,
         ink_list: Optional[tuple[float, ...]] = None,  # for ink annotations
-        file_spec: Optional[Union["FileSpec", str]] = None,
+        file_spec: Optional["FileSpec | str"] = None,
         field_type: Optional[str] = None,
         value: Optional[str] = None,
         default_appearance: Optional[str] = None,  # for free text annotations

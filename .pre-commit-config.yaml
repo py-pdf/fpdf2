@@ -16,15 +16,15 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
   - repo: https://github.com/psf/black
-    rev: 26.3.1
+    rev: 26.10.1
     hooks:
       - id: black
   - repo: https://github.com/crate-ci/typos
-    rev: v1.45.0
+    rev: v1.51.1
     hooks:
       - id: typos
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.20.0'
+    rev: 'v2.4.0'
     hooks:
       - id: mypy
         args:
@@ -38,7 +38,7 @@ repos:
           - Pillow
           - uharfbuzz
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.408
+    rev: v1.1.414
     hooks:
       - id: pyright
         files: ^fpdf/.*\.py$

@@ -35,7 +35,6 @@ from .outline import OutlineDictionary, OutlineItemDictionary, build_outline_obj
 from .pattern import Gradient, MeshShading, Pattern, Shading
 from .sign import Signature, sign_content
 from .syntax import (
-    _format_pdf_number,
     DestinationXYZ,
     Name,
     PDFArray,
@@ -44,6 +43,7 @@ from .syntax import (
     PDFObject,
     PDFString,
     Raw,
+    _format_pdf_number,
     build_obj_dict,
     create_dictionary_string as pdf_dict,
     create_list_string as pdf_list,

@@ -9,7 +9,7 @@ in non-backward-compatible ways.
 import decimal
 import re
 
-# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.9)
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.11)
 from importlib import resources
 from pathlib import Path
 from typing import (
@@ -33,7 +33,7 @@ ImageType = Union[str, bytes, BinaryIO, "PILImage", Path, None]
 ImageClass = (str, bytes, BinaryIO, "PILImage", Path)
 ImageData = Union["SVGObject", "PILImage", bytes, BinaryIO, Path, None]
 SVGObjectType = TypeVar("SVGObjectType", bound="SVGObject")
-Number = Union[int, float, decimal.Decimal]
+Number = int | float | decimal.Decimal
 NumberClass = (int, float, decimal.Decimal)
 _StrBytes = TypeVar("_StrBytes", str, bytes)
 
@@ -101,7 +101,7 @@ class Padding(NamedTuple):
     left: float = 0
 
     @classmethod
-    def new(cls, padding: Union[Number, Sequence[Number], "Padding"]) -> "Padding":
+    def new(cls, padding: "Number | Sequence[Number] | Padding") -> "Padding":
         """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
         if isinstance(padding, Padding):
             return padding
@@ -171,7 +171,7 @@ def escape_parens(s: _StrBytes) -> _StrBytes:
     )
 
 
-def get_scale_factor(unit: Union[str, Number]) -> float:
+def get_scale_factor(unit: str | Number) -> float:
     """
     Get how many pts are in a unit. (k)
 
@@ -198,9 +198,9 @@ def get_scale_factor(unit: Union[str, Number]) -> float:
 
 def convert_unit(
     to_convert: Number | Iterable[Any],
-    old_unit: Union[str, Number],
-    new_unit: Union[str, Number],
-) -> Union[float, tuple[Any, ...]]:
+    old_unit: str | Number,
+    new_unit: str | Number,
+) -> float | tuple[Any, ...]:
     """
      Convert a number or sequence of numbers from one unit to another.
 

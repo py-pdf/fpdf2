@@ -10,9 +10,8 @@ from typing import (
     Any,
     NamedTuple,
     Optional,
+    Self,
     Sequence,
-    Type,
-    Union,
     cast,
 )
 
@@ -47,12 +46,12 @@ class TextRegionMixin(ABC):
         super().__init__(*args, **kwargs)
 
     def register_text_region(
-        self, region: Union["TextRegion", "ParagraphCollectorMixin"]
+        self, region: "TextRegion | ParagraphCollectorMixin"
     ) -> None:
         self.__current_text_region = cast("TextRegion", region)
 
     def is_current_text_region(
-        self, region: Union["TextRegion", "ParagraphCollectorMixin"]
+        self, region: "TextRegion | ParagraphCollectorMixin"
     ) -> bool:
         return self.__current_text_region == region
 
@@ -94,7 +93,7 @@ class Bullet:
 class Paragraph:
     def __init__(
         self,
-        region: Union["TextRegion", "ParagraphCollectorMixin"],
+        region: "TextRegion | ParagraphCollectorMixin",
         text_align: Optional[str | Align] = None,
         line_height: Optional[float] = None,
         top_margin: float = 0,
@@ -157,12 +156,12 @@ class Paragraph:
             f" #text_fragments={len(self._text_fragments)})"
         )
 
-    def __enter__(self) -> "Paragraph":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
@@ -258,7 +257,7 @@ class Paragraph:
 class ImageParagraph:
     def __init__(
         self,
-        region: Union["TextRegion", "ParagraphCollectorMixin"],
+        region: "TextRegion | ParagraphCollectorMixin",
         name: str,
         align: Optional[str | Align] = None,
         width: Optional[float] = None,
@@ -415,7 +414,7 @@ class ParagraphCollectorMixin(ABC):
         if img:
             self.image(img, fill_width=img_fill_width)
 
-    def __enter__(self) -> "ParagraphCollectorMixin":
+    def __enter__(self) -> Self:
         if self.pdf.is_current_text_region(self):
             raise FPDFException(
                 f"Unable to enter the same {self.__class__.__name__} context recursively."
@@ -428,7 +427,7 @@ class ParagraphCollectorMixin(ABC):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
@@ -779,7 +778,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
             self._cols.append(Extents(c_left, c_left + col_width))
         self._first_page_top = max(self.pdf.t_margin, self.pdf.y)
 
-    def __enter__(self) -> "TextColumns":
+    def __enter__(self) -> Self:
         super().__enter__()
         self._first_page_top = max(self.pdf.t_margin, self.pdf.y)
         if self.balance:

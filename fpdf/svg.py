@@ -16,35 +16,26 @@ import re
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from os import PathLike
-from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
+
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
+from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec B405
 
 from fontTools.svgLib.path import (
     parse_path,  # pyright: ignore[reportUnknownVariableType]
 )
 
-from .enums import (
-    GradientSpreadMethod,
-    GradientUnits,
-    PathPaintRule,
-    ResourceAccessPolicy,
-    StrokeCapStyle,
-)
-from .errors import FPDFSvgLimitExceeded
-
-# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
-from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec B405
-
 from . import html
 from .drawing import (
     BoundingBox,
-    InheritType,
     ClippingPath,
     GradientPaint,
     GraphicsContext,
     GraphicsStyle,
+    InheritType,
     PaintedPath,
-    PatternPaint,
     PathPen,
+    PatternPaint,
     Text,
     TextRun,
 )
@@ -58,14 +49,22 @@ from .drawing_primitives import (
     color_from_rgb_string,
     force_nodocument,
 )
+from .enums import (
+    GradientSpreadMethod,
+    GradientUnits,
+    PathPaintRule,
+    ResourceAccessPolicy,
+    StrokeCapStyle,
+)
+from .errors import FPDFSvgLimitExceeded
 from .image_datastructures import ImageCache, VectorImageInfo
 from .output import stream_content_for_raster_image
 from .pattern import shape_linear_gradient, shape_radial_gradient
 
 # pylint: disable=unused-import
+from .util import absolute_length_units  # pyright: ignore[reportUnusedImport]
+from .util import relative_length_units  # pyright: ignore[reportUnusedImport]
 from .util import (
-    absolute_length_units,  # pyright: ignore[reportUnusedImport]
-    relative_length_units,  # pyright: ignore[reportUnusedImport]
     resolve_length,
     unit_splitter,
 )
@@ -2372,7 +2371,7 @@ class SVGObject:
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
-    def build_image(self, image: "Element") -> Union["SVGImage", GraphicsContext]:
+    def build_image(self, image: "Element") -> "SVGImage | GraphicsContext":
         self._record_resolved_elements(1)
         href = None
         for key in xmlns_lookup("xlink", "href"):
@@ -2431,7 +2430,7 @@ class SVGObject:
             apply_styles(wrapper, image, style_map, allow_fill_and_stroke=False)
             self.apply_clipping_path(wrapper, image, style_map)
             wrapper.add_item(svg_image, clone=False)
-            result: Union[SVGImage, GraphicsContext] = wrapper
+            result: SVGImage | GraphicsContext = wrapper
         else:
             result = svg_image
 

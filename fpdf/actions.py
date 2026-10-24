@@ -1,6 +1,6 @@
 import warnings
 from abc import ABC
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 
 from .syntax import PDFString, build_obj_dict, create_dictionary_string
 
@@ -76,7 +76,7 @@ class NamedAction(Action):
 
 class GoToAction(Action):
     def __init__(
-        self, dest: Union[str, "Destination"], next_action: Optional[Action] = None
+        self, dest: "str | Destination", next_action: Optional[Action] = None
     ) -> None:
         super().__init__(next_action)
         if isinstance(dest, str) and dest.startswith("#"):
