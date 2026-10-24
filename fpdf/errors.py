@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class FPDFException(Exception):
     pass
 
@@ -40,7 +43,11 @@ class FPDFUnicodeEncodingException(FPDFException):
     """Error is thrown when a character that cannot be encoded by the chosen encoder is provided"""
 
     def __init__(
-        self, text_index: int, character: str, font_name: str, suggestion: str = None
+        self,
+        text_index: int,
+        character: str,
+        font_name: str,
+        suggestion: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.text_index = text_index
@@ -59,8 +66,7 @@ class FPDFUnicodeEncodingException(FPDFException):
 
         if self.suggestion:
             return f"{base_message}\n\n{self.suggestion}"
-        else:
-            return f"{base_message} Please consider using a Unicode font."
+        return f"{base_message} Please consider using a Unicode font."
 
 
 class ComplianceError(FPDFException):

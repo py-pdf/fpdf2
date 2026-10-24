@@ -9,7 +9,6 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import os
 import platform
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
@@ -25,14 +24,27 @@ class UnicodeFontManager:
     Manages Unicode font detection and provides recommendations for different scripts.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.system = platform.system().lower()
         self.font_paths = self._get_system_font_paths()
-        self.available_fonts = self._scan_available_fonts()
+        # The filesystem scan is deferred: it is potentially expensive (it walks
+        # every system font directory) and is only needed when a recommendation
+        # is actually requested. See the `available_fonts` property below.
+        self._available_fonts: Optional[Dict[str, Path]] = None
+        self._available_fonts_loaded = False
+
+    @property
+    def available_fonts(self) -> Dict[str, Path]:
+        """Mapping of font name to file path, scanned lazily on first access."""
+        if not self._available_fonts_loaded:
+            self._available_fonts = self._scan_available_fonts()
+            self._available_fonts_loaded = True
+        assert self._available_fonts is not None
+        return self._available_fonts
 
     def _get_system_font_paths(self) -> List[Path]:
         """Get common font paths for the current system."""
-        paths = []
+        paths: List[Path] = []
 
         if self.system == "darwin":  # macOS
             paths.extend(
@@ -63,7 +75,7 @@ class UnicodeFontManager:
 
     def _scan_available_fonts(self) -> Dict[str, Path]:
         """Scan for available TrueType/OpenType fonts."""
-        fonts = {}
+        fonts: Dict[str, Path] = {}
 
         for font_dir in self.font_paths:
             for font_file in font_dir.rglob("*.ttf"):
@@ -90,10 +102,10 @@ class UnicodeFontManager:
         Returns:
             List of (font_name, file_path) tuples, ordered by preference.
         """
-        recommendations = []
+        recommendations: List[Tuple[str, str]] = []
 
         # Define font recommendations by script
-        script_fonts = {
+        script_fonts: Dict[UnicodeScript, List[str]] = {
             UnicodeScript.CYRILLIC: [
                 "dejavusans",
                 "dejavuserif",
@@ -196,18 +208,19 @@ class UnicodeFontManager:
 
         return recommendations
 
-    def detect_script_in_text(self, text: str) -> Optional[UnicodeScript]:
+    @staticmethod
+    def detect_script_in_text(text: str) -> Optional[UnicodeScript]:
         """
         Detect the primary Unicode script in the given text.
 
         Returns:
             The most common non-Latin Unicode script in the text, or None if only Latin/Common scripts are found.
         """
-        script_counts = {}
+        script_counts: Dict[UnicodeScript, int] = {}
 
         for char in text:
             script = get_unicode_script(char)
-            if script != UnicodeScript.COMMON and script != UnicodeScript.LATIN:
+            if script not in (UnicodeScript.COMMON, UnicodeScript.LATIN):
                 script_counts[script] = script_counts.get(script, 0) + 1
 
         if not script_counts:
