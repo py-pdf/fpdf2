@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, FPDFException, TextStyle
+from fpdf import FPDF, FPDFException, HTML2FPDF, TextStyle
+from fpdf.table import Table
 from test.conftest import assert_pdf_equal
 from test.table.test_table import MULTILINE_TABLE_DATA
 
@@ -106,6 +107,39 @@ def test_html_table_with_img_without_explicit_dimensions(tmp_path):
         HERE / "html_table_with_img_without_explicit_dimensions.pdf",
         tmp_path,
     )
+
+
+@pytest.mark.parametrize("row_or_cell", ["tr", "td"])
+def test_html_table_unknown_align_is_ignored(tmp_path, row_or_cell):
+    "Like browsers, an align value that is not supported, such as middle, is ignored."
+    tr_attr = ' align="middle"' if row_or_cell == "tr" else ""
+    td_attr = ' align="middle"' if row_or_cell == "td" else ""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f"<table><tr{tr_attr}><td{td_attr}>a</td><td>b</td></tr></table>")
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<table><tr><td>a</td><td>b</td></tr></table>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize("row_or_cell", ["tr", "th"])
+def test_html_table_unknown_align_keeps_th_centered(tmp_path, row_or_cell):
+    "An ignored align value keeps the default centered alignment of <th> cells."
+    tr_attr = ' align="middle"' if row_or_cell == "tr" else ""
+    th_attr = ' align="middle"' if row_or_cell == "th" else ""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        f"<table><tr{tr_attr}><th{th_attr}>header</th><th>b</th></tr>"
+        "<tr><td>c</td><td>d</td></tr></table>"
+    )
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(
+        "<table><tr><th>header</th><th>b</th></tr><tr><td>c</td><td>d</td></tr></table>"
+    )
+    assert_pdf_equal(pdf, expected, tmp_path)
 
 
 def test_html_table_with_imgs_captions_and_colspan(caplog, tmp_path):
@@ -272,6 +306,21 @@ def test_html_table_with_nested_tags():  # issue 845
         </tr></table>""")
 
 
+@pytest.mark.parametrize("cell", ["td", "th"])
+def test_html_table_nested_in_a_cell(cell):
+    "A table inside a table cell is unsupported: this says so, like for other nested tags."
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(NotImplementedError) as error:
+        pdf.write_html(
+            f"<table><tr><{cell}><table><tr><td>inner</td></tr></table></{cell}></tr></table>"
+        )
+    assert (
+        str(error.value)
+        == f"Unsupported nested HTML tags inside <{cell}> element: <table>"
+    )
+
+
 def test_html_table_with_font_tags_used_to_set_text_color(tmp_path):  # issue 1013
     pdf = FPDF()
     pdf.add_page()
@@ -390,3 +439,267 @@ Table outside paragraph:
         },
     )
     assert_pdf_equal(pdf, HERE / "html_table_inside_paragraph.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "width_attr,expected_width",
+    [
+        ('width="100"', 100.0),
+        ('width="96px"', 72.0),
+        ('width=" 96 px "', 72.0),
+        ('width="80pt"', 80.0),
+        ('width="1in"', 72.0),
+        ('width="25.4mm"', 72.0),
+        ('width="50%"', 50.0),
+    ],
+)
+def test_html_table_td_th_dimension_units(width_attr, expected_width):
+    pdf = FPDF()
+    pdf.add_page()
+    parser = HTML2FPDF(pdf)
+    parser.feed(
+        f'<table><tr><th {width_attr}>Header</th><td width="100">Data</td></tr>'
+    )
+    # pylint: disable=protected-access
+    assert parser.table._col_widths[0] == pytest.approx(expected_width)
+
+    pdf2 = FPDF()
+    pdf2.add_page()
+    pdf2.write_html(
+        f'<table><tr><th {width_attr}>Header</th><td width="100">Data</td></tr></table>'
+    )
+    assert len(pdf2.pages) == 1
+
+
+@pytest.mark.parametrize(
+    "table_attrs",
+    [
+        'width="300px"',
+        'width="300pt"',
+        'cellpadding="5px" cellspacing="2px"',
+        'cellpadding=" 5 px "',
+    ],
+)
+def test_html_table_dimension_units(table_attrs):
+    pdf = FPDF()
+    pdf.add_page()
+    html = f"""
+    <table {table_attrs}>
+        <tr>
+            <td>Cell</td>
+        </tr>
+    </table>
+    """
+    pdf.write_html(html)
+    assert len(pdf.pages) == 1
+
+
+def test_html_table_cellpadding_cellspacing_units():
+    pdf = FPDF(unit="mm")
+    pdf.add_page()
+    parser = HTML2FPDF(pdf)
+    parser.feed('<table cellpadding="72pt" cellspacing="36pt"><tr><td>Cell</td></tr>')
+    # 72pt = 1 inch = 25.4mm; 36pt = 0.5 inch = 12.7mm
+    # pylint: disable=protected-access
+    assert parser.table._padding.top == pytest.approx(25.4)
+    assert parser.table._gutter_width == pytest.approx(12.7)
+    assert parser.table._gutter_height == pytest.approx(12.7)
+
+    pdf2 = FPDF(unit="mm")
+    pdf2.add_page()
+    pdf2.write_html(
+        '<table cellpadding="72pt" cellspacing="36pt"><tr><td>Cell</td></tr></table>'
+    )
+    assert len(pdf2.pages) == 1
+
+
+@pytest.mark.parametrize(
+    "table_content",
+    [
+        '<tr><th width="invalid">Header</th><td width="100">Data</td></tr>',
+        '<tr><th width="invalid">Header</th><td width="invalid">Data</td></tr>',
+        '<tr><td width="invalid">Single cell</td></tr>',
+        '<tr><th width="0">Header</th><td width="0">Data</td></tr>',
+        '<tr><td width="0">Single cell</td></tr>',
+        '<tr><th width="invalid">Header</th><td width="0">Data</td></tr>',
+    ],
+)
+def test_html_table_invalid_or_zero_widths(table_content):
+    pdf = FPDF()
+    pdf.add_page()
+    html = f"<table>{table_content}</table>"
+    pdf.write_html(html)
+    assert len(pdf.pages) == 1
+
+
+SPAN_TABLES = {
+    "colspan": "<table><tr><td{attr}>{text}</td><td>b</td></tr>"
+    "<tr><td>c</td><td>d</td><td>e</td></tr></table>",
+    "rowspan": "<table><tr><td{attr}>{text}</td><td>b</td></tr>"
+    "<tr><td>c</td></tr></table>",
+}
+
+
+def render_span_table(span, attr, text):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(SPAN_TABLES[span].format(attr=attr, text=text))
+    return pdf
+
+
+@pytest.mark.parametrize("text", ["a", ""], ids=["cell", "empty_cell"])
+@pytest.mark.parametrize("span", ["colspan", "rowspan"])
+@pytest.mark.parametrize("value", ["+2", "2.5", "2abc", " 2"])
+def test_html_table_span_leading_integer(tmp_path, span, value, text):
+    "Like browsers, a span value is read from its leading integer."
+    assert_pdf_equal(
+        render_span_table(span, f' {span}="{value}"', text),
+        render_span_table(span, f' {span}="2"', text),
+        tmp_path,
+    )
+
+
+@pytest.mark.parametrize("text", ["a", ""], ids=["cell", "empty_cell"])
+@pytest.mark.parametrize("span", ["colspan", "rowspan"])
+@pytest.mark.parametrize("value", ["x", "-1", "0", "", None])
+def test_html_table_invalid_span_counts_as_one(tmp_path, span, value, text):
+    "Like browsers, a missing, invalid or zero colspan or rowspan spans a single cell."
+    attr = f" {span}" if value is None else f' {span}="{value}"'
+    assert_pdf_equal(
+        render_span_table(span, attr, text),
+        render_span_table(span, f' {span}="1"', text),
+        tmp_path,
+    )
+
+
+@pytest.mark.parametrize("width", ["150%", "1000px", ' style="width: 120%"'])
+def test_html_table_wider_than_the_page_uses_the_page_width(tmp_path, caplog, width):
+    attribute = width if width.startswith(" ") else f' width="{width}"'
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f"<table{attribute}><tr><td>a</td><td>b</td></tr></table>")
+    assert "wider than the page" in caplog.text
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html('<table width="100%"><tr><td>a</td><td>b</td></tr></table>')
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize("width", ["-50%", "-10"])
+def test_html_table_with_a_negative_width_ignores_it(tmp_path, width):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(f'<table width="{width}"><tr><td>a</td><td>b</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<table><tr><td>a</td><td>b</td></tr></table>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        (
+            '<table><tr><td rowspan="99">a</td><td>b</td></tr><tr><td>c</td></tr></table>',
+            '<table><tr><td rowspan="2">a</td><td>b</td></tr><tr><td>c</td></tr></table>',
+        ),
+        (
+            '<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td rowspan="3">d</td></tr></table>',
+            "<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>",
+        ),
+    ],
+)
+def test_html_table_rowspan_past_the_last_row(tmp_path, html, equivalent):
+    "Like browsers, a rowspan that goes past the last row stops at the last row."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html, equivalent",
+    [
+        (
+            '<table><tr><td width="50%">a</td><td>b</td></tr></table>',
+            '<table><tr><td width="50%">a</td><td width="50%">b</td></tr></table>',
+        ),
+        (
+            '<table><tr><td width="30%">a</td><td>b</td><td>c</td></tr></table>',
+            '<table><tr><td width="30%">a</td><td width="35%">b</td><td width="35%">c</td></tr></table>',
+        ),
+        (
+            '<table><tr><td>a</td><td width="25%">b</td></tr></table>',
+            '<table><tr><td width="75%">a</td><td width="25%">b</td></tr></table>',
+        ),
+        (
+            '<table><tr><th width="25%">a</th><th>b</th></tr><tr><td>1</td><td>2</td></tr></table>',
+            '<table><tr><th width="25%">a</th><th width="75%">b</th></tr><tr><td>1</td><td>2</td></tr></table>',
+        ),
+        (
+            '<table><tr><td width="100%">a</td><td>b</td></tr></table>',
+            "<table><tr><td>a</td><td>b</td></tr></table>",
+        ),
+    ],
+)
+def test_html_table_cells_without_a_width_share_the_rest(tmp_path, html, equivalent):
+    "Like browsers, cells of the first row without a width share the space the others leave."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(equivalent)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+def test_html_table_absolute_width_leaves_the_rest_to_the_other_cells(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html('<table><tr><td width="200">a</td><td>b</td></tr></table>')
+    expected = FPDF()
+    expected.add_page()
+    rest = expected.epw * expected.k - 200
+    expected.write_html(
+        f'<table><tr><td width="200">a</td><td width="{rest}">b</td></tr></table>'
+    )
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<table><tr><td colspan="2" width="50%">a</td><td>b</td></tr><tr><td>c</td><td>d</td><td>e</td></tr></table>',
+        '<table><tr><td colspan="2">a</td><td width="30%">b</td></tr><tr><td>c</td><td>d</td><td>e</td></tr></table>',
+        '<table><tr><td colspan="2" width="50%">a</td><td width="50%">b</td></tr><tr><td>c</td><td>d</td><td>e</td></tr></table>',
+    ],
+    ids=["spanning-cell-has-width", "spanning-cell-has-none", "all-have-width"],
+)
+def test_html_table_widths_with_a_colspan_in_the_first_row(html):
+    "A cell spanning several columns gives each of them a part of its width."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    pdf.output()
+
+
+def test_html_table_widths_do_not_shrink_with_cellspacing(monkeypatch):
+    "The cells without a width share what is left after the widths given and the gaps."
+    widths = {}
+    original = Table._get_col_width  # pylint: disable=protected-access
+
+    def record(self, i, j, colspan=1):
+        widths.setdefault(j, original(self, i, j, colspan))
+        return widths[j]
+
+    monkeypatch.setattr(Table, "_get_col_width", record)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<table cellspacing="30"><tr><td width="200">a</td><td>b</td></tr></table>'
+    )
+    assert widths[0] * pdf.k == pytest.approx(200)
+    assert sum(widths.values()) + 30 == pytest.approx(pdf.epw)

@@ -1,6 +1,6 @@
 import abc
 from dataclasses import dataclass
-from enum import Enum, Flag, IntEnum, IntFlag
+from enum import Enum, Flag, IntEnum, IntFlag, auto
 from sys import intern
 from typing import (
     TYPE_CHECKING,
@@ -31,6 +31,19 @@ class SignatureFlag(IntEnum):
     if the file is saved (written) in a way that alters its previous contents,
     as opposed to an incremental update.
     """
+
+
+class ResourceAccessPolicy(Flag):
+    "Defines which external and local resources fpdf2 may load implicitly."
+
+    NONE = 0
+    LOCAL_FILES = auto()
+    REMOTE_PUBLIC = auto()
+    REMOTE_PRIVATE = auto()
+
+    REMOTE_ALL = REMOTE_PUBLIC | REMOTE_PRIVATE
+    ALL = LOCAL_FILES | REMOTE_ALL
+    DEFAULT = LOCAL_FILES | REMOTE_PUBLIC
 
 
 E = TypeVar("E", bound="CoerciveEnum")
@@ -1397,6 +1410,16 @@ class FileAttachmentAnnotationName(CoerciveEnum):
     PUSH_PIN = Name("PushPin")
     GRAPH_PUSH_PIN = Name("GraphPushPin")
     PAPERCLIP_TAG = Name("PaperclipTag")
+
+
+class FileAttachmentAppearance(CoerciveEnum):
+    "How a file attachment annotation is displayed on the page"
+
+    DEFAULT = "DEFAULT"
+    "Display the icon selected by the annotation name (the default)"
+
+    HIDDEN = "HIDDEN"
+    "Give the annotation an empty appearance stream so no icon is drawn"
 
 
 class IntersectionRule(CoerciveEnum):

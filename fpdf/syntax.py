@@ -68,6 +68,7 @@ from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -81,7 +82,7 @@ from typing import (
     runtime_checkable,
 )
 
-from .util import Number, NumberClass, escape_parens, number_to_str
+from .util import Number, NumberClass, escape_parens, number_to_str, trim_trailing_zeros
 
 if TYPE_CHECKING:
     from .drawing import InheritType
@@ -89,7 +90,14 @@ if TYPE_CHECKING:
 
 
 def clear_empty_fields(d: Mapping[str, object]) -> Mapping[str, object]:
-    return {k: v for k, v in d.items() if v}
+    return {k: v for k, v in d.items() if v or v is False or v == 0}
+
+
+def _format_pdf_number(number: object) -> str:
+    value = str(number)
+    if isinstance(number, float) and "e" in value.lower():
+        value = format(Decimal(value), "f")
+    return trim_trailing_zeros(value)
 
 
 def create_dictionary_string(
@@ -115,7 +123,27 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join(key_value_join.join((k, str(v))) for k, v in dict_.items()),
+            field_join.join(
+                key_value_join.join(
+                    (
+                        k,
+                        (
+                            "null"
+                            if v is None
+                            else (
+                                str(v).lower()
+                                if isinstance(v, bool)
+                                else (
+                                    _format_pdf_number(v)
+                                    if isinstance(v, float)
+                                    else str(v)
+                                )
+                            )
+                        ),
+                    )
+                )
+                for k, v in dict_.items()
+            ),
             close_dict,
         ]
     )
@@ -212,16 +240,17 @@ class PDFObject:
             obj_dict = self._build_obj_dict(_security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
-        content_stream = self.content_stream()
-        if content_stream:
+        # Subclasses return bytes for stream objects.
+        content_stream = self.content_stream()  # pylint: disable=assignment-from-none
+        if content_stream is not None:
             output.append(create_stream(content_stream))
         output.append("endobj")
         return "\n".join(output)
 
     # pylint: disable=no-self-use
-    def content_stream(self) -> bytes:
-        "Subclasses can override this method to indicate the presence of a content stream"
-        return b""
+    def content_stream(self) -> Optional[bytes]:
+        "Return None for no stream; subclasses may return bytes, including an empty stream."
+        return None
 
     def _build_obj_dict(
         self, security_handler: Optional["StandardSecurityHandler"] = None
@@ -340,8 +369,8 @@ class PDFString(str):
             return _security_handler.encrypt_string(self, _obj_id)
         try:
             self.encode("ascii")
-            # => this string only contains ASCII characters, no need for special encoding:
-            return f"({self})"
+            # => this string only contains ASCII characters
+            return f"({escape_parens(self)})"
         except UnicodeEncodeError:
             pass
         if self.USE_HEX_ENCODING:
@@ -373,15 +402,14 @@ class PDFDate:
         _security_handler: Optional["StandardSecurityHandler"] = None,
         _obj_id: Optional[int] = None,
     ) -> str:
+        out_str = f"D:{self.date.year:04d}{self.date:%m%d%H%M%S}"
         if self.with_tz:
             assert self.date.tzinfo
             if self.date.tzinfo == timezone.utc:
-                out_str = f"D:{self.date:%Y%m%d%H%M%SZ}"
+                out_str += "Z"
             else:
-                out_str = f"D:{self.date:%Y%m%d%H%M%S%z}"
+                out_str += f"{self.date:%z}"
                 out_str = out_str[:-2] + "'" + out_str[-2:] + "'"
-        else:
-            out_str = f"D:{self.date:%Y%m%d%H%M%S}"
         if _security_handler and self.encrypt:
             assert _obj_id
             return _security_handler.encrypt_string(out_str, _obj_id)
@@ -394,10 +422,19 @@ class PDFArray(list[Any]):
         _security_handler: Optional["StandardSecurityHandler"] = None,
         _obj_id: Optional[int] = None,
     ) -> str:
-        if all(isinstance(elem, str) for elem in self):
+        if all(
+            isinstance(elem, str) and not hasattr(elem, "serialize") for elem in self
+        ):
             serialized_elems = " ".join(self)
-        elif all(isinstance(elem, (int, float)) for elem in self):
-            serialized_elems = " ".join(str(elem) for elem in self)
+        elif all(isinstance(elem, bool) for elem in self):
+            serialized_elems = " ".join(str(elem).lower() for elem in self)
+        elif all(elem is None for elem in self):
+            serialized_elems = " ".join("null" for _ in self)
+        elif all(
+            isinstance(elem, (int, float)) and not isinstance(elem, bool)
+            for elem in self
+        ):
+            serialized_elems = " ".join(_format_pdf_number(elem) for elem in self)
         else:
             serialized_chunks: list[str] = []
             for elem in self:
@@ -412,7 +449,9 @@ class PDFArray(list[Any]):
                 elif isinstance(elem, bool):
                     serialized_chunks.append(str(elem).lower())
                 elif isinstance(elem, (int, float)):
-                    serialized_chunks.append(str(elem))
+                    serialized_chunks.append(_format_pdf_number(elem))
+                elif elem is None:
+                    serialized_chunks.append("null")
                 else:
                     serialized_chunks.append(str(elem))
             serialized_elems = "\n".join(serialized_chunks)
@@ -467,7 +506,11 @@ class DestinationXYZ(Destination):
         left = round(self.left, 2) if isinstance(self.left, float) else self.left
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref
-        return f"[{self.page_ref} /XYZ {left} {top} {self.zoom}]"
+        return (
+            f"[{self.page_ref} /XYZ {_format_pdf_number(left)} "
+            f"{_format_pdf_number(top)} "
+            f"{_format_pdf_number(self.zoom)}]"
+        )
 
     def replace(
         self,

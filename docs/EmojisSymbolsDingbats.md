@@ -25,6 +25,8 @@ Another font supporting emojis is: [twemoji](https://github.com/13rac1/twemoji-c
 ## Color fonts and emojis
 A wide variety of color fonts are supported - SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1. If a loaded font provides color glyphs, `fpdf2` will render them automatically.
 
+Bitmap-only fonts using EBDT/EBLC (for example, monochrome or grayscale bitmap strikes) are also supported. These are rendered using the current text color, with grayscale values applied as alpha.
+
 To always draw emoji as outline/monochrome even if the font includes color glyphs, set: `FPDF.render_color_fonts = False`
 
 ## Symbols

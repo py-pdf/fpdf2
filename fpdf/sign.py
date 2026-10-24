@@ -12,7 +12,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Signing.html>
 
 import hashlib
 from datetime import timezone
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Iterable, Optional, cast
 from unittest.mock import patch
 
 from .syntax import Name, PDFDate, build_obj_dict, create_dictionary_string as pdf_dict
@@ -105,21 +105,22 @@ def sign_content(
     sign = patch("endesive.signer.datetime", mock_datetime)(signer.sign)
 
     contents = sign(
-        datau=None,
+        datau=b"",
         key=key,
         cert=cert,
-        othercerts=extra_certs,
+        othercerts=list(extra_certs),
         hashalgo=hashalgo,
         attrs=True,
         signed_value=content_hash.digest(),
     )
-    contents = _pkcs11_aligned(contents).encode("latin1")
+    # endesive returns DER bytes, despite its inferred dict return type.
+    contents = _pkcs11_aligned(cast(bytes, contents)).encode("latin1")
     # Sanity check, otherwise we will break the xref table:
     assert len(sig_placeholder) == len(contents)
     return buffer.replace(sig_placeholder, contents, 1)
 
 
-def _pkcs11_aligned(data: tuple[int, ...]) -> str:
+def _pkcs11_aligned(data: Iterable[int]) -> str:
     data_str = "".join(f"{i:02x}" for i in data)
     return data_str + "0" * (0x4000 - len(data_str))
 

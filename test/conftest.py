@@ -13,8 +13,8 @@ import logging
 import os
 import pathlib
 import shutil
-import sys
 import tracemalloc
+import zlib
 from typing import Optional
 import warnings
 
@@ -30,6 +30,12 @@ if not QPDF_AVAILABLE:
         "qpdf command not available on the $PATH, falling back to hash-based "
         "comparisons in tests"
     )
+
+USING_ZLIB_NG = (
+    hasattr(zlib, "ZLIBNG_VERSION")
+    or "zlib-ng" in getattr(zlib, "ZLIB_RUNTIME_VERSION", "").lower()
+    or "zlib-ng" in getattr(zlib, "ZLIB_VERSION", "").lower()
+)
 
 EPOCH = datetime(1969, 12, 31, 19, 00, 00).replace(tzinfo=timezone.utc)
 
@@ -123,11 +129,10 @@ def assert_pdf_equal(
         )
         actual_pdf.output(expected.open("wb"), linearize=linearize)
         return
-    # Force ignore_id_changes on Python 3.14
-    # CPython replaced zlib by zlib-ng on the Windows build
-    # and the compressed data is not 100% identical anymore.
+    # Force ignore_id_changes when Python is linked against zlib-ng,
+    # as the compressed data is not 100% identical to standard zlib.
     # https://github.com/python/cpython/pull/131438
-    if sys.version_info[:2] == (3, 14) and QPDF_AVAILABLE:
+    if USING_ZLIB_NG and QPDF_AVAILABLE:
         ignore_id_changes = True
     if isinstance(expected, pathlib.Path):
         expected_pdf_path = expected
@@ -194,8 +199,23 @@ def check_signature(pdf, trusted_cert_paths, linearize=False):
     for cert_filepath in trusted_cert_paths:
         with open(cert_filepath, "rb") as cert_file:
             trusted_certs.append(cert_file.read())
-    results = endesive_pdf.verify(pdf.output(linearize=linearize), trusted_certs)
-    for hash_ok, signature_ok, cert_ok in results:
+    pdf_data = pdf.output(linearize=linearize)
+    if hasattr(
+        getattr(endesive_pdf, "PDFVerifier", None), "verify_all_signatures"
+    ):  # endesive >= 3
+        results = endesive_pdf.PDFVerifier(
+            pdf_data, trusted_certs
+        ).verify_all_signatures()
+    else:
+        results = endesive_pdf.verify(pdf_data, trusted_certs)
+    assert results
+    for result in results:
+        if isinstance(result, tuple):  # endesive < 3
+            hash_ok, signature_ok, cert_ok = result
+        else:
+            hash_ok = result.hashok
+            signature_ok = result.signatureok
+            cert_ok = result.certok
         assert signature_ok
         assert hash_ok
         assert cert_ok

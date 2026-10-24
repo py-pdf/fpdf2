@@ -6,16 +6,18 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
+import contextlib
 import types
 import warnings
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Generator
 
 from .deprecation import get_stack_level
 from .errors import FPDFException
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
+    from .table import Table
 
 # One recorded call: function + positional args + keyword args
 CallRecord = tuple[Callable[..., Any], tuple[Any, ...], dict[str, Any]]
@@ -56,6 +58,18 @@ class FPDFRecorder:
             return CallRecorder(attr, self._calls)
         return attr
 
+    @contextlib.contextmanager
+    def table(self, *args: Any, **kwargs: Any) -> Generator["Table", None, None]:
+        """Record a completed table so it can be rendered again after a rewind.
+
+        Calls that build rows and cells are made on the yielded ``Table`` rather
+        than on this recorder. Recording only ``FPDF.table()`` would therefore
+        lose the table contents during replay.
+        """
+        with self.pdf.table(*args, **kwargs) as table:
+            yield table
+        self._calls.append((table.render, (), {}))
+
     def rewind(self) -> None:
         pdf_dict = vars(self.pdf)
         pdf_dict.clear()
@@ -67,7 +81,9 @@ class FPDFRecorder:
             func, args, kwargs = call
             try:
                 result = func(*args, **kwargs)
-                if isinstance(result, types.GeneratorType):
+                if isinstance(
+                    result, (contextlib.AbstractContextManager, types.GeneratorType)
+                ) or (hasattr(result, "__enter__") and hasattr(result, "__exit__")):
                     warnings.warn(
                         "Detected usage of a context manager inside an unbreakable() section, which is not supported",
                         stacklevel=get_stack_level(),

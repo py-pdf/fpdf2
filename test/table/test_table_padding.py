@@ -1,9 +1,12 @@
 from pathlib import Path
 
+import pytest
+
 from fpdf import FPDF
 from fpdf.enums import TableCellFillMode, VAlign
 from fpdf.fonts import FontFace
 from fpdf.table import draw_box_borders
+from fpdf.util import Padding
 
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -459,3 +462,35 @@ def test_table_draw_box_borders(tmp_path):
     box(140, 140, "B")
 
     assert_pdf_equal(pdf, HERE / "table_draw_box_borders.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "input_padding,expected",
+    [
+        (5, Padding(5.0, 5.0, 5.0, 5.0)),
+        (5.5, Padding(5.5, 5.5, 5.5, 5.5)),
+        ([5], Padding(5.0, 5.0, 5.0, 5.0)),
+        ((5,), Padding(5.0, 5.0, 5.0, 5.0)),
+        ((5, 10), Padding(5.0, 10.0, 5.0, 10.0)),
+        ([5, 10], Padding(5.0, 10.0, 5.0, 10.0)),
+        ((5, 10, 15), Padding(5.0, 10.0, 15.0, 10.0)),
+        ([5, 10, 15], Padding(5.0, 10.0, 15.0, 10.0)),
+        ((5, 10, 15, 20), Padding(5.0, 10.0, 15.0, 20.0)),
+        ([5, 10, 15, 20], Padding(5.0, 10.0, 15.0, 20.0)),
+    ],
+)
+def test_padding_new_valid(input_padding, expected):
+    result = Padding.new(input_padding)
+    assert result == expected
+    assert isinstance(result, Padding)
+
+
+def test_padding_new_identity():
+    p = Padding(1.0, 2.0, 3.0, 4.0)
+    assert Padding.new(p) is p
+
+
+@pytest.mark.parametrize("invalid_padding", [(), [], [1, 2, 3, 4, 5], "invalid"])
+def test_padding_new_invalid(invalid_padding):
+    with pytest.raises(ValueError):
+        Padding.new(invalid_padding)

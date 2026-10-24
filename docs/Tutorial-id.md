@@ -154,7 +154,7 @@ Contoh berikut adalah varian dari contoh sebelumnya, yang menunjukkan cara melet
 [Contoh teks Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Perbedaan utama dari tutorial sebelumnya adalah penggunaan 
-_method_ [`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column).
+_method_ [`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns).
 _Method_ tersebut mengumpulkan semua teks secara bertahap dan mendistribusikan ke sejumlah kolom yang diminta, secara otomatis memasukkan _page break_ jika diperlukan. Perlu diperhatikan bahwa saat _instance_ `TextColumns` aktif sebagai _context manager_, gaya teks dan properti font lainnya dapat diubah. Perubahan tersebut akan dibatasi sesuai pada _context_ dalam _context manager_. Setelah ditutup, pengaturan sebelumnya akan dikembalikan.
 
 

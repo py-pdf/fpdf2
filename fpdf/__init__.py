@@ -4,10 +4,12 @@ Gives direct access to some classes defined in submodules:
 
 * `fpdf.fpdf.FPDF`
 * `fpdf.enums.Align`
+* `fpdf.enums.ResourceAccessPolicy`
 * `fpdf.enums.TextMode`
 * `fpdf.enums.XPos`
 * `fpdf.enums.YPos`
 * `fpdf.errors.FPDFException`
+* `fpdf.errors.FPDFResourceAccessError`
 * `fpdf.fonts.FontFace`
 * `fpdf.fonts.TextStyle`
 * `fpdf.prefs.ViewerPreferences`
@@ -19,8 +21,8 @@ import sys
 import warnings
 
 from .deprecation import WarnOnDeprecatedModuleAttributes
-from .enums import Align, TextMode, XPos, YPos
-from .errors import FPDFException
+from .enums import Align, ResourceAccessPolicy, TextMode, XPos, YPos
+from .errors import FPDFException, FPDFResourceAccessError
 from .fonts import FontFace, TextStyle
 from .fpdf import (
     FPDF,
@@ -68,8 +70,10 @@ __all__ = [
     # Classes:
     "FPDF",
     "FPDFException",
+    "FPDFResourceAccessError",
     "FontFace",
     "Align",
+    "ResourceAccessPolicy",
     "TextMode",
     "XPos",
     "YPos",

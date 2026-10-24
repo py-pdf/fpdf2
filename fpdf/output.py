@@ -23,7 +23,7 @@ from io import BytesIO
 from fontTools import subset as ftsubset
 
 from .annotations import AnnotationDict, PDFAnnotation
-from .drawing import PaintSoftMask
+from .drawing import ImageSoftMask, PaintSoftMask
 from .drawing_primitives import Transform
 from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
@@ -35,6 +35,7 @@ from .outline import OutlineDictionary, OutlineItemDictionary, build_outline_obj
 from .pattern import Gradient, MeshShading, Pattern, Shading
 from .sign import Signature, sign_content
 from .syntax import (
+    _format_pdf_number,
     DestinationXYZ,
     Name,
     PDFArray,
@@ -48,7 +49,7 @@ from .syntax import (
     create_list_string as pdf_list,
     iobj_ref as pdf_ref,
 )
-from .util import int2roman, int_to_letters
+from .util import int2roman, int_to_letters, trim_trailing_zeros
 
 try:
     from endesive import signer
@@ -58,6 +59,7 @@ except ImportError:
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generator,
     ItemsView,
     Iterator,
     Literal,
@@ -308,6 +310,7 @@ class PDFCatalog(PDFObject):
         self.struct_tree_root: Optional[PDFObject] = None
         self.a_f: Optional[str] = None
         self.page_labels: Optional[str] = None
+        self.o_c_properties: Optional[str] = None
 
 
 class PDFResources(PDFObject):
@@ -319,6 +322,8 @@ class PDFResources(PDFObject):
         ext_g_state: Optional[str],
         shading: Optional[str],
         pattern: Optional[str],
+        properties: Optional[str] = None,
+        color_space: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.proc_set = proc_set
@@ -327,6 +332,25 @@ class PDFResources(PDFObject):
         self.ext_g_state = ext_g_state
         self.shading = shading
         self.pattern = pattern
+        self.properties = properties
+        self.color_space = color_space
+
+
+class PDFOptionalContentGroup(PDFObject):
+    "An Optional Content Group, used to show/hide content on screen or in print."
+
+    def __init__(self, name: str, on_view: bool, on_print: bool) -> None:
+        super().__init__()
+        self.type = Name("OCG")
+        self.name = PDFString(name)
+        # The /Usage entry is applied automatically by the viewer through the
+        # /AS usage-application array declared in the catalog's /OCProperties:
+        view_state = "ON" if on_view else "OFF"
+        print_state = "ON" if on_print else "OFF"
+        self.usage = Raw(
+            f"<< /View << /ViewState /{view_state} >>"
+            f" /Print << /PrintState /{print_state} >> >>"
+        )
 
 
 class PDFFontStream(PDFContentStream):
@@ -357,6 +381,7 @@ class PDFXObject(PDFContentStream):
         "decode",
         "decode_parms",
         "s_mask",
+        "image_mask",
     )
 
     def __init__(
@@ -365,11 +390,12 @@ class PDFXObject(PDFContentStream):
         subtype: str,
         width: float,
         height: float,
-        color_space: PDFArray | Name,
+        color_space: PDFArray | Name | None,
         bits_per_component: int,
         img_filter: Optional[str] = None,
         decode: Optional[str] = None,
         decode_parms: Optional[str] = None,
+        image_mask: bool = False,
     ) -> None:
         super().__init__(contents=contents)
         self.type = Name("XObject")
@@ -382,6 +408,7 @@ class PDFXObject(PDFContentStream):
         self.decode = decode
         self.decode_parms = decode_parms
         self.s_mask: Optional[PDFXObject] = None
+        self.image_mask = True if image_mask else None
 
 
 class PDFICCProfile(PDFContentStream):
@@ -729,6 +756,35 @@ class OutputIntentDictionary:
 ResourceTypes = Union[str, int, Name, "Gradient", "Pattern", "Shading", "MeshShading"]
 
 
+# Font families, including CSS generic ones, that are rendered by a core font
+FONT_FAMILY_ALIASES = {
+    # sans
+    "sans-serif": "helvetica",
+    "sans serif": "helvetica",
+    "arial": "helvetica",
+    "verdana": "helvetica",
+    "tahoma": "helvetica",
+    "segoe ui": "helvetica",
+    # serif
+    "serif": "times",
+    "times": "times",
+    "times new roman": "times",
+    "georgia": "times",
+    "cambria": "times",
+    "garamond": "times",
+    # mono
+    "monospace": "courier",
+    "courier": "courier",
+    "courier new": "courier",
+    "consolas": "courier",
+    "monaco": "courier",
+    # symbol
+    "symbol": "symbol",
+    "zapfdingbats": "zapfdingbats",
+    "zapf dingbats": "zapfdingbats",
+}
+
+
 class ResourceCatalog:
     "Manage the indexing of resources and association to the pages they are used"
 
@@ -745,12 +801,20 @@ class ResourceCatalog:
         self.resources_per_page: dict[
             tuple[int, PDFResourceType], set[ResourceTypes]
         ] = defaultdict(set)
+        self.drawing_pattern_matrix = Transform.identity()
+        self.uncolored_pattern = False
+        self.pattern_color_spaces: dict[str, str] = {}
         self.graphics_styles: dict[str, Name] = OrderedDict()
         self.soft_mask_xobjects: list[PDFContentStream] = []
         self.form_xobjects: list[tuple[int, PDFContentStream]] = []
         self.last_reserved_object_id: int = 0
         self.font_registry: dict[str, CoreFont | TTFFont] = {}
         self.next_xobject_index: int = 1
+        # Optional Content Groups, keyed by resource name (e.g. "OC1"):
+        self.optional_content_groups: "OrderedDict[str, dict[str, object]]" = (
+            OrderedDict()
+        )
+        self._ocg_names_by_state: dict[tuple[bool, bool], str] = {}
 
     def add(
         self,
@@ -801,7 +865,28 @@ class ResourceCatalog:
 
         return self.graphics_styles[style_str]
 
-    def register_soft_mask(self, soft_mask: PaintSoftMask) -> int:
+    def add_optional_content_group(
+        self, on_view: bool, on_print: bool, label: str, page_number: int
+    ) -> str:
+        """
+        Register an Optional Content Group for the given visibility and associate
+        it with a page. Groups sharing the same visibility are reused.
+        Returns the resource name (e.g. "OC1") to reference in a /OC marked sequence.
+        """
+        state = (on_view, on_print)
+        name = self._ocg_names_by_state.get(state)
+        if name is None:
+            name = f"OC{len(self.optional_content_groups) + 1}"
+            self.optional_content_groups[name] = {
+                "on_view": on_view,
+                "on_print": on_print,
+                "label": label,
+            }
+            self._ocg_names_by_state[state] = name
+        self.resources_per_page[(page_number, PDFResourceType.PROPERTIES)].add(name)
+        return name
+
+    def register_soft_mask(self, soft_mask: PaintSoftMask | ImageSoftMask) -> int:
         """Register a soft mask xobject and return its object id"""
         self.last_reserved_object_id += 1
         xobject = soft_mask_path_to_xobject(soft_mask, self)
@@ -820,6 +905,10 @@ class ResourceCatalog:
     def scan_stream(self, rendered: str) -> set[tuple[PDFResourceType, str]]:
         """Parse a content stream and return discovered resources"""
         found: set[tuple[PDFResourceType, str]] = set()
+
+        for name in self.pattern_color_spaces:
+            if re.search(rf"/{name}\s+(?:cs|CS)\b", rendered):
+                found.add((PDFResourceType.COLOR_SPACE, name))
 
         for m in self.GS_REGEX.finditer(rendered):
             found.add((PDFResourceType.EXT_G_STATE, m.group(1)))
@@ -880,6 +969,40 @@ class ResourceCatalog:
             return "Sh"
         raise ValueError(f"No prefix for resource type {resource_type}")
 
+    def resolve_font_family(self, font_family: str, font_style: str = "") -> str:
+        """
+        Resolve a family+style to the family of a concrete font, without adding it
+        to the font registry.
+        Behavior:
+          - `font_family` may be a comma-separated list: the first available is used
+          - Exact match (family.lower() + style.upper()) in registry: return family
+          - If `family` names a core font: return it
+          - If `family` is an alias/generic: return the core font it translates to
+          - Otherwise: raise KeyError
+        """
+        if not font_family:
+            raise KeyError("Empty font family")
+
+        style = "".join(sorted(font_style.upper()))
+
+        for candidate in font_family.strip().strip("'\"").split(","):
+            family = candidate.strip().strip("'\"").lower()
+
+            # 1) Exact match
+            if f"{family}{style}" in self.font_registry:
+                return family
+
+            # 2) Core-family direct hit?
+            if family in CORE_FONTS:
+                return family
+
+            # 3) Alias / generic mapping to core font
+            if family in FONT_FAMILY_ALIASES:
+                return FONT_FAMILY_ALIASES[family]
+
+        # 4) Fail: do not return anything
+        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
+
     def get_font_from_family(
         self, font_family: str, font_style: str = ""
     ) -> CoreFont | TTFFont:
@@ -894,67 +1017,16 @@ class ResourceCatalog:
         Notes:
           - For Symbol/ZapfDingbats, style is forced to "" (they don't support B/I).
         """
-        if not font_family:
-            raise KeyError("Empty font family")
-
+        family = self.resolve_font_family(font_family, font_style)
         style = "".join(sorted(font_style.upper()))
-
-        alias = {
-            # sans
-            "sans-serif": "helvetica",
-            "sans serif": "helvetica",
-            "arial": "helvetica",
-            "verdana": "helvetica",
-            "tahoma": "helvetica",
-            "segoe ui": "helvetica",
-            # serif
-            "serif": "times",
-            "times": "times",
-            "times new roman": "times",
-            "georgia": "times",
-            "cambria": "times",
-            "garamond": "times",
-            # mono
-            "monospace": "courier",
-            "courier": "courier",
-            "courier new": "courier",
-            "consolas": "courier",
-            "monaco": "courier",
-            # symbol
-            "symbol": "symbol",
-            "zapfdingbats": "zapfdingbats",
-            "zapf dingbats": "zapfdingbats",
-        }
-
-        for candidate in font_family.strip().strip("'\"").split(","):
-            family = candidate.strip().strip("'\"").lower()
-
-            # 1) Exact match
-            fontkey = f"{family}{style}"
-            if fontkey in self.font_registry:
-                return self.font_registry[fontkey]
-
-            # 2) Core-family direct hit?
-            if family in CORE_FONTS:
-                core_style = "" if family in {"symbol", "zapfdingbats"} else style
-                key = f"{family}{core_style}"
-                if key not in self.font_registry:
-                    i = len(self.font_registry) + 1
-                    self.font_registry[key] = CoreFont(i, key, core_style)
-                return self.font_registry[key]
-
-            # 3) Alias / generic mapping to core font
-            mapped = alias.get(family)
-            if mapped:
-                core_style = "" if mapped in {"symbol", "zapfdingbats"} else style
-                key = f"{mapped}{core_style}"
-                if key not in self.font_registry:
-                    i = len(self.font_registry) + 1
-                    self.font_registry[key] = CoreFont(i, key, core_style)
-                return self.font_registry[key]
-
-        # 4) Fail: do not return anything
-        raise KeyError(f"No suitable font for family={font_family!r}, style={style!r}")
+        if f"{family}{style}" in self.font_registry:
+            return self.font_registry[f"{family}{style}"]
+        core_style = "" if family in {"symbol", "zapfdingbats"} else style
+        key = f"{family}{core_style}"
+        if key not in self.font_registry:
+            i = len(self.font_registry) + 1
+            self.font_registry[key] = CoreFont(i, key, core_style)
+        return self.font_registry[key]
 
 
 class OutputProducer:
@@ -1003,9 +1075,11 @@ class OutputProducer:
         catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
         sig_annotation_obj = self._add_annotations_as_objects()
+        self._add_annotation_appearance_streams()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
             self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
+        self._add_optional_content_groups(catalog_obj)
         self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
@@ -1178,6 +1252,27 @@ class OutputProducer:
                         sig_annotation_obj = annot_obj
         return sig_annotation_obj
 
+    def _add_annotation_appearance_streams(self) -> None:
+        """Build a normal appearance stream (/AP << /N ... >>) for every annotation
+        that requested one. The appearance is a Form XObject whose content stream is
+        the bytes stored on the annotation; an empty stream yields a blank appearance,
+        which portably hides the annotation's default icon - cf. issue #561."""
+        for page_obj in self.fpdf.pages.values():
+            assert isinstance(page_obj.annots, PDFArray)
+            for annot_obj in page_obj.annots:
+                appearance_stream = getattr(annot_obj, "_appearance_stream", None)
+                if appearance_stream is None:
+                    continue
+                width, height = annot_obj._appearance_bbox
+                xobject = PDFContentStream(contents=appearance_stream)
+                xobject.type = Name("XObject")  # type: ignore[attr-defined]
+                xobject.subtype = Name("Form")  # type: ignore[attr-defined]
+                xobject.b_box = PDFArray(  # type: ignore[attr-defined]
+                    [0, 0, round(width, 2), round(height, 2)]
+                )
+                self._add_pdf_obj(xobject, "annotations")
+                annot_obj.a_p = Raw(f"<< /N {xobject.ref} >>")
+
     def _add_fonts(
         self,
         image_objects_per_index: dict[int, PDFXObject],
@@ -1230,9 +1325,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<00> <FF>\n"
                         "endcodespacerange\n"
-                        f"{len(bfChar)} beginbfchar\n"
-                        f"{''.join(bfChar)}"
-                        "endbfchar\n"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1338,13 +1431,43 @@ class OutputProducer:
                 self._add_pdf_obj(composite_font_obj, "fonts")
                 font_objs_per_index[font.i] = composite_font_obj
 
-                # A CIDFont whose glyph descriptions are based on
-                # TrueType font technology
+                # A CIDFont whose glyph descriptions are based on TrueType or CFF technology
+                is_cff_cid = font.is_cff and font.is_cid_keyed
+                if is_cff_cid and "CFF " in font.ttfont:
+                    ttfontstream = font.ttfont["CFF "].compile(font.ttfont)
+                code_to_cid: Optional[dict[int, int]] = None
+                cid_widths: Optional[dict[int, int]] = None
+                if is_cff_cid:
+                    code_to_cid = {}
+                    cid_widths = {}
+                    for glyph, code_mapped in font.subset.items():
+                        if glyph is None:
+                            continue
+                        if (
+                            glyph.glyph_name.startswith("cid")
+                            and glyph.glyph_name[3:].isdigit()
+                        ):
+                            cid = int(glyph.glyph_name[3:])
+                        else:
+                            cid = glyph.glyph_id
+                        if cid > 0xFFFF:
+                            LOGGER.warning(
+                                "Glyph CID %s exceeds 0xFFFF and cannot be encoded in a 2-byte CID font: %s",
+                                cid,
+                                font.fontkey,
+                            )
+                            continue
+                        code_to_cid[code_mapped] = cid
+                        cid_widths[cid] = glyph.glyph_width
                 cid_font_obj = PDFFont(
-                    subtype="CIDFontType2",
+                    subtype="CIDFontType0" if is_cff_cid else "CIDFontType2",
                     base_font=fontname,
                     d_w=font.desc.missing_width,
-                    w=_tt_font_widths(font),
+                    w=(
+                        _cid_font_widths(cid_widths)
+                        if is_cff_cid and cid_widths
+                        else _tt_font_widths(font)
+                    ),
                 )
                 self._add_pdf_obj(cid_font_obj, "fonts")
                 composite_font_obj.descendant_fonts = PDFArray([cid_font_obj])
@@ -1389,9 +1512,7 @@ class OutputProducer:
                         "1 begincodespacerange\n"
                         "<0000> <FFFF>\n"
                         "endcodespacerange\n"
-                        f"{len(bfChar)} beginbfchar\n"
-                        f"{''.join(bfChar)}"
-                        "endbfchar\n"
+                        f"{_build_cmap_blocks(bfChar, 'bfchar')}"
                         "endcmap\n"
                         "CMapName currentdict /CMap defineresource pop\n"
                         "end\n"
@@ -1401,7 +1522,54 @@ class OutputProducer:
                 self._add_pdf_obj(to_unicode_obj, "fonts")
                 composite_font_obj.to_unicode = to_unicode_obj
 
+                if is_cff_cid and code_to_cid:
+                    registry = "Adobe"
+                    ordering = "Identity"
+                    supplement = 0
+                    if font.cff_ros:
+                        registry, ordering, supplement = font.cff_ros
+                    cid_mapping = [
+                        f"<{code:04X}> {cid}\n"
+                        for code, cid in sorted(code_to_cid.items())
+                    ]
+                    encoding_cmap_obj = PDFContentStream(
+                        (
+                            "/CIDInit /ProcSet findresource begin\n"
+                            "12 dict begin\n"
+                            "begincmap\n"
+                            "/CIDSystemInfo\n"
+                            f"<</Registry ({registry})\n"
+                            f"/Ordering ({ordering})\n"
+                            f"/Supplement {supplement}\n"
+                            ">> def\n"
+                            f"/CMapName /{registry}-{ordering}-UCS def\n"
+                            "/CMapType 2 def\n"
+                            "1 begincodespacerange\n"
+                            "<0000> <FFFF>\n"
+                            "endcodespacerange\n"
+                            f"{_build_cmap_blocks(cid_mapping, 'cidchar')}"
+                            "endcmap\n"
+                            "CMapName currentdict /CMap defineresource pop\n"
+                            "end\n"
+                            "end"
+                        ).encode("latin-1")
+                    )
+                    encoding_cmap_obj.type = Name("CMap")  # type: ignore[attr-defined]
+                    encoding_cmap_obj.c_map_name = Name(  # type: ignore[attr-defined]
+                        f"{registry}-{ordering}-UCS"
+                    )
+                    encoding_cmap_obj.c_i_d_system_info = Raw(  # type: ignore[attr-defined]
+                        f"<< /Registry ({registry}) /Ordering ({ordering}) /Supplement {supplement} >>"
+                    )
+                    self._add_pdf_obj(encoding_cmap_obj, "fonts")
+                    composite_font_obj.encoding = encoding_cmap_obj  # type: ignore[assignment]
+
                 cid_system_info_obj = CIDSystemInfo()
+                if is_cff_cid and font.cff_ros:
+                    registry, ordering, supplement = font.cff_ros
+                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
+                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
+                    cid_system_info_obj.supplement = supplement
                 self._add_pdf_obj(cid_system_info_obj, "fonts")
                 cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
@@ -1410,24 +1578,49 @@ class OutputProducer:
                 self._add_pdf_obj(font_descriptor_obj, "fonts")
                 cid_font_obj.font_descriptor = font_descriptor_obj
 
-                # Embed CIDToGIDMap
-                # A specification of the mapping from CIDs to glyph indices
-                cid_to_gid_list = ["\x00"] * 256 * 256 * 2
-                for cc, glyph_i in code_to_glyph.items():
-                    cid_to_gid_list[cc * 2] = chr(glyph_i >> 8)
-                    cid_to_gid_list[cc * 2 + 1] = chr(glyph_i & 0xFF)
-                cid_to_gid_map = "".join(cid_to_gid_list)
+                if not is_cff_cid:
+                    # Embed CIDToGIDMap
+                    # A specification of the mapping from CIDs to glyph indices
+                    cid_to_gid_list = ["\x00"] * 256 * 256 * 2
+                    for cc, glyph_i in code_to_glyph.items():
+                        cid_to_gid_list[cc * 2] = chr(glyph_i >> 8)
+                        cid_to_gid_list[cc * 2 + 1] = chr(glyph_i & 0xFF)
+                    cid_to_gid_map = "".join(cid_to_gid_list)
 
-                # manage binary data as latin1 until PEP461-like function is implemented
-                cid_to_gid_map_obj = PDFContentStream(
-                    contents=cid_to_gid_map.encode("latin1"), compress=True
-                )
-                self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
-                cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
+                    # manage binary data as latin1 until PEP461-like function is implemented
+                    cid_to_gid_map_obj = PDFContentStream(
+                        contents=cid_to_gid_map.encode("latin1"), compress=True
+                    )
+                    self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
+                    cid_font_obj.c_i_d_to_g_i_d_map = cid_to_gid_map_obj
+
+                compliance = self.fpdf._compliance
+                if compliance and compliance.profile == "PDFA" and compliance.part == 1:
+                    # PDF/A-1 requires a CIDSet identifying the CIDs present in
+                    # the embedded font subset (veraPDF rule 6.3.5-3). It is
+                    # optional in later parts and deprecated since PDF 2.0.
+                    cids_present = {0}
+                    if is_cff_cid and code_to_cid:
+                        cids_present.update(code_to_cid.values())
+                    else:
+                        cids_present.update(code_to_glyph)
+                    cid_set = bytearray(max(cids_present) // 8 + 1)
+                    for cid in cids_present:
+                        cid_set[cid // 8] |= 0x80 >> (cid % 8)
+                    cid_set_obj = PDFContentStream(
+                        contents=bytes(cid_set), compress=True
+                    )
+                    self._add_pdf_obj(cid_set_obj, "fonts")
+                    font_descriptor_obj.c_i_d_set = cid_set_obj  # type: ignore[attr-defined]
 
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
+                if is_cff_cid:
+                    font_file_cs_obj.subtype = Name("CIDFontType0C")  # type: ignore[attr-defined]
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
-                font_descriptor_obj.font_file2 = font_file_cs_obj  # type: ignore[attr-defined]
+                if is_cff_cid:
+                    font_descriptor_obj.font_file3 = font_file_cs_obj  # type: ignore[attr-defined]
+                else:
+                    font_descriptor_obj.font_file2 = font_file_cs_obj  # type: ignore[attr-defined]
 
                 font.subset.pick.cache_clear()
                 font.subset.get_glyph.cache_clear()
@@ -1469,9 +1662,10 @@ class OutputProducer:
         return iccp_pdf_i
 
     def _add_image(self, info: dict[str, object]) -> PDFXObject:
-        color_space: Name | PDFArray = Name(info["cs"])
+        image_mask = bool(info.get("image_mask"))
+        color_space: Name | PDFArray | None = None if image_mask else Name(info["cs"])
         decode = None
-        iccp_i = info.get("iccp_i")
+        iccp_i = None if image_mask else info.get("iccp_i")
         if color_space == "Indexed":
             color_space = PDFArray(
                 ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]  # type: ignore[arg-type]
@@ -1482,6 +1676,8 @@ class OutputProducer:
         elif color_space == "DeviceCMYK":
             if info["inverted"] is True:
                 decode = "[1 0 1 0 1 0 1 0]"
+        if "decode" in info:
+            decode = cast(str, info["decode"])
 
         decode_parms = f"<<{info['dp']} /BitsPerComponent {info['bpc']}>>"
         img_obj = PDFXObject(
@@ -1494,11 +1690,12 @@ class OutputProducer:
             img_filter=cast(str, info["f"]),
             decode=decode,
             decode_parms=decode_parms,
+            image_mask=image_mask,
         )
         info["obj_id"] = self._add_pdf_obj(img_obj, "images")
 
         # Soft mask
-        if self.fpdf.allow_images_transparency and "smask" in info:
+        if self.fpdf.allow_images_transparency and "smask" in info and not image_mask:
             dp = f"/Predictor 15 /Colors 1 /Columns {info['w']}"
             img_obj.s_mask = self._add_image(
                 {
@@ -1513,7 +1710,7 @@ class OutputProducer:
             )
 
         # Palette
-        if "/Indexed" in color_space:
+        if isinstance(color_space, PDFArray) and "/Indexed" in color_space:
             assert isinstance(img_obj.color_space, PDFArray)
             pal_cs_obj = PDFContentStream(
                 contents=cast(bytes, info["pal"]), compress=self.fpdf.compress
@@ -1531,15 +1728,54 @@ class OutputProducer:
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
 
+    def _add_optional_content_groups(self, catalog_obj: PDFCatalog) -> None:
+        "Create the OCG objects and the catalog's /OCProperties configuration."
+        resource_catalog = self.fpdf._resource_catalog
+        self._ocg_objs_per_name: "OrderedDict[str, PDFOptionalContentGroup]" = (
+            OrderedDict()
+        )
+        for name, spec in resource_catalog.optional_content_groups.items():
+            ocg_obj = PDFOptionalContentGroup(
+                name=str(spec["label"]),
+                on_view=bool(spec["on_view"]),
+                on_print=bool(spec["on_print"]),
+            )
+            self._add_pdf_obj(ocg_obj, "optional_content_groups")
+            self._ocg_objs_per_name[name] = ocg_obj
+        if not self._ocg_objs_per_name:
+            return
+        all_refs = " ".join(obj.ref for obj in self._ocg_objs_per_name.values())
+        on_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        off_refs = " ".join(
+            obj.ref
+            for name, obj in self._ocg_objs_per_name.items()
+            if not resource_catalog.optional_content_groups[name]["on_view"]
+        )
+        catalog_obj.o_c_properties = Raw(
+            f"<< /OCGs [{all_refs}]"
+            f" /D << /ON [{on_refs}] /OFF [{off_refs}]"
+            f" /BaseState /ON /Order [{all_refs}]"
+            f" /AS [ << /Event /View /OCGs [{all_refs}] /Category [/View] >>"
+            f" << /Event /Print /OCGs [{all_refs}] /Category [/Print] >> ] >> >>"
+        )
+
     def _add_soft_masks(
         self,
         gfxstate_objs_per_name: dict[str, PDFExtGState],
         pattern_objs_per_name: dict[str, "Pattern"],
+        img_objs_per_index: dict[int, PDFXObject],
     ) -> None:
         """Append soft-mask Form XObjects after patterns exist so we can resolve /Pattern ids."""
         for soft_mask in self.fpdf._resource_catalog.soft_mask_xobjects:
             soft_mask.resources = soft_mask._path.get_resource_dictionary(  # type: ignore[attr-defined]
-                gfxstate_objs_per_name, pattern_objs_per_name
+                gfxstate_objs_per_name,
+                pattern_objs_per_name,
+                img_objs_per_index,
+                self.fpdf._resource_catalog.pattern_color_spaces,
             )
             self.pdf_objs.append(soft_mask)
 
@@ -1571,6 +1807,7 @@ class OutputProducer:
                     shading_objs_per_name,
                     font_objs_per_index,
                     img_objs_per_index,
+                    self.fpdf._resource_catalog.pattern_color_spaces,
                 )
 
     def _add_shadings(self) -> dict[str, Shading | MeshShading]:
@@ -1620,7 +1857,43 @@ class OutputProducer:
             shading_objs_per_name,
             font_objs_per_index,
         )
-        self._add_soft_masks(gfxstate_objs_per_name, pattern_objs_per_name)
+        self._add_soft_masks(
+            gfxstate_objs_per_name, pattern_objs_per_name, img_objs_per_index
+        )
+        # Tile streams have their own resource scope. Resolve references only
+        # after all resource objects (including nested patterns) have IDs.
+        for tile in pattern_objs_per_name.values():
+            if tile.pattern_type == 1:
+                used = tile._resources_used
+                resources = self._add_resources_dict(
+                    {
+                        i: obj
+                        for i, obj in font_objs_per_index.items()
+                        if (PDFResourceType.FONT, str(i)) in used
+                    },
+                    {
+                        i: obj
+                        for i, obj in img_objs_per_index.items()
+                        if (PDFResourceType.X_OBJECT, str(i)) in used
+                    },
+                    {
+                        name: obj
+                        for name, obj in gfxstate_objs_per_name.items()
+                        if (PDFResourceType.EXT_G_STATE, name) in used
+                    },
+                    {},
+                    {
+                        name: obj
+                        for name, obj in pattern_objs_per_name.items()
+                        if (PDFResourceType.PATTERN, name) in used
+                    },
+                    color_spaces={
+                        name: base
+                        for name, base in self.fpdf._resource_catalog.pattern_color_spaces.items()
+                        if (PDFResourceType.COLOR_SPACE, name) in used
+                    },
+                )
+                tile.resources = resources.ref
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
@@ -1629,6 +1902,8 @@ class OutputProducer:
                 gfxstate_objs_per_name,
                 shading_objs_per_name,
                 pattern_objs_per_name,
+                self._ocg_objs_per_name,
+                color_spaces=self.fpdf._resource_catalog.pattern_color_spaces,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
@@ -1666,6 +1941,12 @@ class OutputProducer:
                         page_number, PDFResourceType.PATTERN
                     )
                 }
+                page_properties_objs_per_name = {
+                    str(ocg_name): self._ocg_objs_per_name[str(ocg_name)]
+                    for ocg_name in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.PROPERTIES
+                    )
+                }
 
                 page_obj.resources = self._add_resources_dict(
                     page_font_objs_per_index,
@@ -1673,6 +1954,15 @@ class OutputProducer:
                     page_gfxstate_objs_per_name,
                     page_shading_objs_per_name,
                     page_pattern_objs_per_name,
+                    page_properties_objs_per_name,
+                    color_spaces={
+                        name: base
+                        for name, base in self.fpdf._resource_catalog.pattern_color_spaces.items()
+                        if name
+                        in self.fpdf._resource_catalog.get_resources_per_page(
+                            page_number, PDFResourceType.COLOR_SPACE
+                        )
+                    },
                 )
 
     def _add_resources_dict(
@@ -1682,6 +1972,8 @@ class OutputProducer:
         gfxstate_objs_per_name: dict[str, PDFExtGState],
         shading_objs_per_name: dict[str, Shading | MeshShading],
         pattern_objs_per_name: dict[str, Pattern],
+        properties_objs_per_name: Optional[dict[str, "PDFOptionalContentGroup"]] = None,
+        color_spaces: Optional[dict[str, str]] = None,
     ) -> PDFResources:
         # From section 10.1, "Procedure sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -1730,6 +2022,15 @@ class OutputProducer:
                 }
             )
 
+        properties = None
+        if properties_objs_per_name:
+            properties = pdf_dict(
+                {
+                    f"/{name}": pdf_ref(ocg_obj.id)
+                    for name, ocg_obj in sorted(properties_objs_per_name.items())
+                }
+            )
+
         resources_obj = PDFResources(
             proc_set=proc_set,
             font=font,
@@ -1737,6 +2038,17 @@ class OutputProducer:
             ext_g_state=ext_g_state,
             shading=shading,
             pattern=pattern,
+            properties=properties,
+            color_space=(
+                pdf_dict(
+                    {
+                        f"/{name}": f"[/Pattern /{base}]"
+                        for name, base in sorted(color_spaces.items())
+                    }
+                )
+                if color_spaces
+                else None
+            ),
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj
@@ -1945,7 +2257,7 @@ class OutputProducer:
         if fpdf.zoom_mode in ZOOM_CONFIGS:
             zoom_config = [
                 pdf_ref(first_page_obj.id),
-                *ZOOM_CONFIGS[fpdf.zoom_mode],  # type: ignore[index]
+                *ZOOM_CONFIGS[fpdf.zoom_mode],
             ]
         else:  # zoom_mode is a number, not one of the allowed strings:
             zoom_config = [
@@ -1953,7 +2265,7 @@ class OutputProducer:
                 "/XYZ",
                 "null",
                 "null",
-                str(cast(float, fpdf.zoom_mode) / 100),
+                _format_pdf_number(cast(float, fpdf.zoom_mode) / 100),
             ]
         catalog_obj.open_action = pdf_list(zoom_config)
         if struct_tree_root_obj:
@@ -2020,7 +2332,7 @@ class OutputProducer:
             )
 
     @contextmanager
-    def _trace_size(self, label: str) -> Iterator[None]:
+    def _trace_size(self, label: str) -> Generator[None, None, None]:
         prev_size = len(self.buffer)
         yield
         self.sections_size_per_trace_label[label] += len(self.buffer) - prev_size
@@ -2056,7 +2368,27 @@ def stream_content_for_raster_image(
     )
 
 
+def _build_cmap_blocks(
+    entries: list[str], operator: Literal["bfchar", "cidchar"]
+) -> str:
+    """Limit CMap mapping blocks to 100 entries (Adobe Technical Note #5014)."""
+    blocks: list[str] = []
+    for start in range(0, len(entries), 100):
+        chunk = entries[start : start + 100]
+        blocks.append(f"{len(chunk)} begin{operator}\n{''.join(chunk)}end{operator}\n")
+    return "".join(blocks)
+
+
 def _tt_font_widths(font: TTFFont) -> str:
+    cid_widths = {
+        cid: glyph.glyph_width
+        for glyph, cid in font.subset.items()
+        if glyph is not None
+    }
+    return _cid_font_widths(cid_widths)
+
+
+def _cid_font_widths(cid_widths: dict[int, int]) -> str:
     rangeid: int = 0
     range_: dict[int, list[int]] = {}
     range_interval: dict[int, bool] = {}
@@ -2064,37 +2396,31 @@ def _tt_font_widths(font: TTFFont) -> str:
     prevwidth: int = -1
     interval: bool = False
 
-    # Glyphs sorted by mapped character id
-    glyphs = dict(sorted(font.subset.items(), key=lambda item: item[1]))
-
-    for glyph in glyphs:
-        assert glyph is not None
-        cid_mapped = glyphs[glyph]
-        if cid_mapped == (prevcid + 1):
-            if glyph.glyph_width == prevwidth:
-                if glyph.glyph_width == range_[rangeid][0]:
-                    range_.setdefault(rangeid, []).append(glyph.glyph_width)
+    for cid, width in sorted(cid_widths.items()):
+        if cid == (prevcid + 1):
+            if width == prevwidth:
+                if width == range_[rangeid][0]:
+                    range_.setdefault(rangeid, []).append(width)
                 else:
                     range_[rangeid].pop()
-                    # new range
                     rangeid = prevcid
-                    range_[rangeid] = [prevwidth, glyph.glyph_width]
+                    range_[rangeid] = [prevwidth, width]
                 interval = True
                 range_interval[rangeid] = True
             else:
                 if interval:
-                    # new range
-                    rangeid = cid_mapped
-                    range_[rangeid] = [glyph.glyph_width]
+                    rangeid = cid
+                    range_[rangeid] = [width]
                 else:
-                    range_[rangeid].append(glyph.glyph_width)
+                    range_[rangeid].append(width)
                 interval = False
         else:
-            rangeid = cid_mapped
-            range_[rangeid] = [glyph.glyph_width]
+            rangeid = cid
+            range_[rangeid] = [width]
             interval = False
-        prevcid = cid_mapped
-        prevwidth = glyph.glyph_width
+        prevcid = cid
+        prevwidth = width
+
     prevk = -1
     nextk = -1
     prevint = False
@@ -2127,7 +2453,10 @@ def _tt_font_widths(font: TTFFont) -> str:
 
 def _dimensions_to_mediabox(dimensions: tuple[float, float]) -> str:
     width_pt, height_pt = dimensions
-    return f"[0 0 {width_pt:.2f} {height_pt:.2f}]"
+    return (
+        f"[0 0 {trim_trailing_zeros(f'{width_pt:.2f}')} "
+        f"{trim_trailing_zeros(f'{height_pt:.2f}')}]"
+    )
 
 
 def _sizeof_fmt(num: float, suffix: str = "B") -> str:
@@ -2140,7 +2469,7 @@ def _sizeof_fmt(num: float, suffix: str = "B") -> str:
 
 
 def soft_mask_path_to_xobject(
-    path: PaintSoftMask, resource_catalog: ResourceCatalog
+    path: PaintSoftMask | ImageSoftMask, resource_catalog: ResourceCatalog
 ) -> PDFContentStream:
     """Converts a PaintedSoftMask into a PDF XObject Form suitable for use as a soft mask."""
     xobject = PDFContentStream(contents=path.render(resource_catalog).encode("latin-1"))

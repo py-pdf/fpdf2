@@ -156,7 +156,7 @@ Dit voorbeeld is een variant van het vorige en laat zien hoe u de tekst over mee
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Het belangrijkste verschil met de vorige tutorial is het gebruik van de 
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) methode. 
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns) methode. 
 Het verzamelt alle tekst, mogelijk in stappen, en verdeelt deze over het gevraagde aantal kolommen, waarbij 
 indien nodig automatisch pagina-einden worden ingevoegd. Houd er rekening mee dat, hoewel de instantie `TextColumns`
 actief is als contextmanager, tekststijlen en andere lettertype-eigenschappen kunnen worden gewijzigd. 

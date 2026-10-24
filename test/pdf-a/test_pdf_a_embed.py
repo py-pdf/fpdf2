@@ -1,13 +1,12 @@
 import logging
 import pytest
-import sys
 
 from pathlib import Path
 
 from fpdf import FPDF
-from fpdf.enums import DocumentCompliance
+from fpdf.enums import DocumentCompliance, FileAttachmentAppearance
 from fpdf.errors import PDFAComplianceError
-from test.conftest import EPOCH, assert_pdf_equal
+from test.conftest import EPOCH, USING_ZLIB_NG, assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 DUMMY_TXT_FILE = b"fpdf2"
@@ -32,9 +31,20 @@ def test_pdfa1_forbids_embed(dc):
     )
 
 
+@pytest.mark.parametrize("dc", [DocumentCompliance.PDFA_1B, DocumentCompliance.PDFA_2B])
+def test_pdfa_forbids_file_attachment_hide_icon(dc):
+    pdf = FPDF(enforce_compliance=dc)
+    pdf.add_page()
+    with pytest.raises(PDFAComplianceError) as err:
+        pdf.file_attachment_annotation(
+            "test.txt", x=50, y=50, appearance=FileAttachmentAppearance.HIDDEN
+        )
+    assert "not allowed" in str(err.value)
+
+
 @pytest.mark.skipif(
-    sys.platform in ("cygwin", "win32") and sys.version_info[:2] == (3, 14),
-    reason="Skipped on Windows with Python 3.14 due to zlib compressed data differences",
+    USING_ZLIB_NG,
+    reason="Skipped when Python uses zlib-ng because compressed data differs",
 )
 @pytest.mark.parametrize(
     "dc",

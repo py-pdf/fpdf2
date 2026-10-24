@@ -278,6 +278,30 @@ test_svg_shape_tags = (
         id="polyline no points",
     ),
     pytest.param(
+        '<polyline points="1, 0 10, 10, -20"/>',
+        [M(1, 0), L(10, 10)],
+        no_error(),
+        id="polyline odd number of coordinates",
+    ),
+    pytest.param(
+        '<polyline points="1, 0 10, 10 x 20, 20"/>',
+        [M(1, 0), L(10, 10)],
+        no_error(),
+        id="polyline stops at an invalid coordinate",
+    ),
+    pytest.param(
+        '<polyline points="1, 0 10, 10,, 20, 20"/>',
+        [M(1, 0), L(10, 10)],
+        no_error(),
+        id="polyline stops at a doubled comma",
+    ),
+    pytest.param(
+        '<polyline points=""/>',
+        [],
+        no_error(),
+        id="polyline empty points",
+    ),
+    pytest.param(
         '<polygon points="1, 0 10, 10, -20, -50"/>',
         [M(1, 0), L(10, 10), L(-20, -50), Z()],
         no_error(),
@@ -290,6 +314,24 @@ test_svg_shape_tags = (
         id="polygon no points",
     ),
     pytest.param(
+        '<polygon points="1-2 10 10-20"/>',
+        [M(1, -2), L(10, 10), Z()],
+        no_error(),
+        id="polygon odd number of compact coordinates",
+    ),
+    pytest.param(
+        '<polygon points="1-2 10 10 20 x 30 30"/>',
+        [M(1, -2), L(10, 10), Z()],
+        no_error(),
+        id="polygon stops at an invalid coordinate after an odd one",
+    ),
+    pytest.param(
+        '<polygon points=" "/>',
+        [],
+        no_error(),
+        id="polygon empty points",
+    ),
+    pytest.param(
         '<circle r="10" fill="rgb(100, 200)"/>',
         [],
         pytest.raises(ValueError),
@@ -298,6 +340,36 @@ test_svg_shape_tags = (
 )
 
 test_svg_transforms = (
+    pytest.param(
+        "matrix(1e0,2E0,3e+0,4e0,5e1,-6E1)",
+        Transform(1, 2, 3, 4, 50, -60),
+        no_error(),
+        id="matrix exponents",
+    ),
+    pytest.param(
+        "scale(1e-3,2E+1)",
+        Transform.scaling(x=0.001, y=20),
+        no_error(),
+        id="scale exponents",
+    ),
+    pytest.param(
+        "rotate(3e1,1e2,-2E1)",
+        Transform.rotation_d(30).about(100, -20),
+        no_error(),
+        id="rotate exponents",
+    ),
+    pytest.param(
+        "skewX(3e1)",
+        Transform.shearing(x=math.tan(math.radians(30)), y=0),
+        no_error(),
+        id="skew exponents",
+    ),
+    pytest.param(
+        "translate(1e2,2E1) scale(2)",
+        Transform.scaling(x=2, y=2).translate(100, 20),
+        no_error(),
+        id="combined transforms with exponents",
+    ),
     pytest.param(
         "matrix(1,2,3,4,5,6)",
         Transform(1, 2, 3, 4, 5, 6),
@@ -459,6 +531,24 @@ test_svg_attribute_conversion = (
         id="fill color name",
     ),
     pytest.param(
+        '<path fill="rgb(100%, 0%, 0%)"/>',
+        Gs(fill_color="#f00"),
+        no_error(),
+        id="fill color rgb() percentages",
+    ),
+    pytest.param(
+        '<path fill="BLACK"/>',
+        Gs(fill_color="#000"),
+        no_error(),
+        id="fill color name uppercase",
+    ),
+    pytest.param(
+        '<path fill="transparent"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color transparent",
+    ),
+    pytest.param(
         '<path fill="#0007"/>',
         Gs(fill_color="#0007", fill_opacity=0x77 / 0xFF),
         no_error(),
@@ -513,6 +603,12 @@ test_svg_attribute_conversion = (
         id="fill-opacity too big",
     ),
     pytest.param(
+        '<path fill-opacity="50%"/>',
+        Gs(fill_opacity=0.5),
+        no_error(),
+        id="fill-opacity percentage",
+    ),
+    pytest.param(
         '<path fill-opacity="inherit"/>',
         Gs(fill_opacity=GraphicsStyle.INHERIT),
         no_error(),
@@ -541,6 +637,12 @@ test_svg_attribute_conversion = (
         Gs(stroke_color="#000"),
         no_error(),
         id="stroke color name",
+    ),
+    pytest.param(
+        '<path stroke="Transparent"/>',
+        Gs(stroke_color=None),
+        no_error(),
+        id="stroke color transparent",
     ),
     pytest.param(
         '<path stroke="#0007"/>',
@@ -723,6 +825,30 @@ test_svg_attribute_conversion = (
         id="stroke-opacity too big",
     ),
     pytest.param(
+        '<path stroke-opacity="150%"/>',
+        Gs(stroke_opacity=1.0),
+        no_error(),
+        id="stroke-opacity percentage too big",
+    ),
+    pytest.param(
+        '<path opacity="25%"/>',
+        Gs(fill_opacity=0.25, stroke_opacity=0.25),
+        no_error(),
+        id="opacity percentage",
+    ),
+    pytest.param(
+        '<path opacity="1.5"/>',
+        Gs(fill_opacity=1.0, stroke_opacity=1.0),
+        no_error(),
+        id="opacity too big",
+    ),
+    pytest.param(
+        '<path opacity="-1"/>',
+        Gs(fill_opacity=0.0, stroke_opacity=0.0),
+        no_error(),
+        id="opacity too small",
+    ),
+    pytest.param(
         '<path stroke-opacity="inherit"/>',
         Gs(stroke_opacity=GraphicsStyle.INHERIT),
         no_error(),
@@ -744,6 +870,7 @@ test_svg_attribute_conversion = (
 
 test_svg_sources = (
     pytest.param(svgfile("arcs01.svg"), id="SVG spec arcs01"),
+    pytest.param(svgfile("tilling_and_gradient.svg"), id="MDN tiling and gradients"),
     pytest.param(svgfile("arcs02.svg"), id="SVG spec arcs02"),
     pytest.param(svgfile("circle01.svg"), id="SVG spec circle01"),
     pytest.param(svgfile("cubic01.svg"), id="SVG spec cubic01 (modified)"),
@@ -792,6 +919,9 @@ test_svg_sources = (
     pytest.param(svgfile("gradient_multiple.svg"), id="Multiple gradients"),
     pytest.param(svgfile("gradient_opacity.svg"), id="Gradient with opacity"),
     pytest.param(svgfile("gradient_spread_methods.svg"), id="Gradient spread methods"),
+    # issue 1831
+    pytest.param(svgfile("sunburst.svg"), id="small arc round to zero"),
+    pytest.param(svgfile("symbol.svg"), id="symbol reused in different placements"),
 )
 
 svg_path_edge_cases = (

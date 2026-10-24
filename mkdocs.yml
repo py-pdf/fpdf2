@@ -96,6 +96,7 @@ plugins:
         - 'Tutorial-tr'
         - 'Tutorial-zh'
         - 'Tutorial-sl'
+        - 'Tutorial-pa'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
@@ -143,6 +144,8 @@ nav:
   - 'Türkçe Kılavuz':                 'Tutorial-tr.md'
   - '简体中文教程':                     'Tutorial-zh.md'
   - 'Vodnik po uporabi knjižnice':    'Tutorial-sl.md'
+  - 'Підручник українською мовою':    'Tutorial-ua.md'
+  - 'ਪੰਜਾਬੀ ਟਿਊਟੋਰੀਅਲ':              'Tutorial-pa.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
@@ -172,11 +175,13 @@ nav:
   - 'Charts & Graphs':                'Maths.md'
 - 'PDF Features':
   - 'Links':                          'Links.md'
+  - 'Named destinations':             'NamedDestinations.md'
   - 'Metadata':                       'Metadata.md'
   - 'Annotations':                    'Annotations.md'
   - 'Presentation Mode':              'Presentations.md'
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
   - 'Page Labels':                    'PageLabels.md'
+  - 'Optional content (layers)':      'OptionalContent.md'
   - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
@@ -192,10 +197,12 @@ nav:
   - 'Rendering spreadsheets as PDF tables': 'RenderingSpreadsheetsAsPDFTables.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Combine with Rough.js':          'CombineWithRoughJS.md'
+  - 'Database storage with SQLAlchemy': 'DatabaseStorage.md'
 - 'Development':
   - 'Development guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
   - 'fpdf2 internals':                'Internals.md'
+- 'Security considerations':          'Security.md'
 - 'API':                              'https://py-pdf.github.io/fpdf2/fpdf/'
 - 'Changelog':                        'https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md'
 - 'History':                          'History.md'

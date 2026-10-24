@@ -353,6 +353,17 @@ qpdf --qdf doc.pdf doc-qdf.pdf
 
 This is extremely useful to peek into the PDF document structure.
 
+### pdf-parser.py
+* [pdf-parser.py autonomous script on GitHub](https://github.com/DidierStevens/DidierStevensSuite/blob/master/pdf-parser.py)
+* [Documentation page on Didier Stevens blog](https://blog.didierstevens.com/programs/pdf-tools/)
+
+Usages examples :
+
+* display some stats on a PDF document: `pdf-parser.py file.pdf -a`
+* display a PDF document full structure: `pdf-parser.py file.pdf`
+* select only `Javascript` elements: `pdf-parser.py file.pdf -s Javascript`
+* extract a font file from object 9 in a PDF file: `pdf-parser.py file.pdf --object 9 --filter --dump dumped-9.ttf`
+
 ### pdfly
 `pdfly` is a very handy CLI tool to manipulate PDF files: [py-pdf/pdfly](https://github.com/py-pdf/pdfly?tab=readme-ov-file#usage).
 

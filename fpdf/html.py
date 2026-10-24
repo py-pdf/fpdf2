@@ -13,9 +13,9 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/HTML.html>
 import logging
 import re
 import warnings
+from dataclasses import replace
 from html.parser import HTMLParser
-from string import ascii_lowercase, ascii_uppercase
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
 
 from .deprecation import get_stack_level
 from .drawing_primitives import (
@@ -23,14 +23,21 @@ from .drawing_primitives import (
     DeviceGray,
     DeviceRGB,
     color_from_hex_string,
+    color_from_rgb_string,
     convert_to_device_color,
 )
 from .enums import Align, CharVPos, TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .fonts import FontFace, TextStyle
 from .outline import OutlineSection
-from .table import Row, Table
-from .util import get_scale_factor, int2roman
+from .table import Cell, Row, Table
+from .util import (
+    get_scale_factor,
+    int2roman,
+    int_to_letters,
+    resolve_length,
+    unit_splitter,
+)
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -41,6 +48,7 @@ MESSAGE_WAITING_WIN1252 = "\x95"  # MESSAGE WAITING character in Windows-1252 en
 BULLET_UNICODE = "•"  # U+2022
 DEGREE_SIGN_WIN1252 = "\xb0"  # DEGREE SIGN character in Windows-1252 encoding
 RING_OPERATOR_UNICODE = "∘"  # U+2218
+BLACK_SMALL_SQUARE_UNICODE = "▪"  # U+25AA
 HEADING_TAGS = ("title", "h1", "h2", "h3", "h4", "h5", "h6")
 # Some of the margin values below are fractions, in order to be fully backward-compatible,
 # and due to the _scale_units() conversion performed in HTML2FPDF constructor below.
@@ -305,11 +313,28 @@ def color_as_decimal(
     Convert a web color name to a (R, G, B) color tuple.
     cf. https://en.wikipedia.org/wiki/Web_colors#HTML_color_names
     """
-    if not color:
+    if not color or not color.strip():
         return None
+    color = color.strip()
+    # CSS functional notation, as written by many HTML editors: rgb(255, 0, 0)
+    if color.lower().startswith("rgb("):
+        return color_from_rgb_string(color.lower())
     # Checks if color is a name and gets the hex value
     hexcolor = COLOR_DICT.get(color.lower(), color)
+    # Like browsers, a legacy HTML color of six hex digits may omit the "#"
+    if re.fullmatch(r"[0-9a-fA-F]{6}", hexcolor):
+        hexcolor = "#" + hexcolor
     return color_from_hex_string(hexcolor)
+
+
+def _without_transparent(color: Optional[str]) -> Optional[str]:
+    """
+    A color or bgcolor attribute value, or None for "transparent": in these HTML
+    attributes it is an error that browsers ignore, keeping the inherited color.
+    """
+    if color is not None and color.strip().lower() == "transparent":
+        return None
+    return color
 
 
 def parse_css_style(style_attr: str) -> dict[str, str]:
@@ -325,10 +350,76 @@ def parse_css_style(style_attr: str) -> dict[str, str]:
     return style
 
 
+def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
+    """Parse a numeric HTML attribute length into points (pt)."""
+    if not val:
+        return 0.0
+    val_str = str(val).strip()
+    if not val_str:
+        return 0.0
+    try:
+        return resolve_length(val_str, default_unit=default_unit)
+    except (ValueError, KeyError):
+        return 0.0
+
+
+def _parse_html_span(val: str | None) -> int:
+    """Parse a colspan / rowspan attribute like browsers do: an invalid value or one below 1 means 1."""
+    match = re.match(r"\s*\+?(\d+)", val or "")
+    return max(int(match.group(1)), 1) if match else 1
+
+
+def _fill_missing_widths(
+    widths: Sequence[Optional[tuple[float, bool]]],
+    table_width_pt: float,
+    usable_width_pt: Optional[float] = None,
+) -> list[float]:
+    """
+    The column widths of a table whose first row gives a width (a number, and whether
+    it is a percentage of the table width) to only some of its columns. Like browsers,
+    the other columns share the space that the rest leave; if there is none, they get
+    the average width.
+
+    `usable_width_pt` is the table width without the gaps between its columns,
+    which is what the columns really share out. It defaults to the table width.
+    """
+    if usable_width_pt is None:
+        usable_width_pt = table_width_pt
+    given = [
+        table_width_pt * width / 100 if is_percentage else width
+        for width, is_percentage in (w for w in widths if w is not None)
+    ]
+    missing = widths.count(None)
+    left = usable_width_pt - sum(given)
+    share = left / missing if left > 0 else sum(given) / len(given)
+    filled = iter(given)
+    return [share if w is None else next(filled) for w in widths]
+
+
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
-    HTML_UNCLOSED_TAGS = ("br", "dd", "dt", "hr", "img", "li", "td", "tr")
+    # void elements, which never have an end tag, and elements whose end tag is optional
+    HTML_UNCLOSED_TAGS = (
+        "area",
+        "base",
+        "br",
+        "col",
+        "dd",
+        "dt",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "li",
+        "link",
+        "meta",
+        "source",
+        "td",
+        "tr",
+        "track",
+        "wbr",
+    )
     TABLE_LINE_HEIGHT = 1.3
 
     def __init__(
@@ -358,7 +449,7 @@ class HTML2FPDF(HTMLParser):
                 numeric indentation of `<dd>` elements - Set `tag_styles` instead
             table_line_separators (bool): enable horizontal line separators in `<table>`. Defaults to `False`.
             ul_bullet_char (str): bullet character preceding `<li>` items in `<ul>` lists.
-                You can also specify special bullet names like `"circle"` or `"disc"` (the default).
+                You can also specify special bullet names like `"circle"`, `"square"` or `"disc"` (the default).
                 Can also be configured using the HTML `type` attribute of `<ul>` tags.
             li_prefix_color (tuple, str, fpdf.drawing.DeviceCMYK, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): color for bullets
                 or numbers preceding `<li>` tags. This applies to both `<ul>` & `<ol>` lists.
@@ -424,11 +515,14 @@ class HTML2FPDF(HTMLParser):
         # <title>-related properties:
         self.render_title_tag = render_title_tag
         self._in_title = False
+        self._in_style_or_script = False
         # <table>-related properties:
         self.table_line_separators = table_line_separators
         self.table: Optional[Table] = (
             None  # becomes a Table instance when processing <table> tags
         )
+        # the width of each cell of the first row of the current table (None if it has none)
+        self.first_row_widths: list[Optional[tuple[float, bool]]] = []
         self.table_row: Optional[Row] = (
             None  # becomes a Row instance when processing <tr> tags
         )
@@ -565,10 +659,8 @@ class HTML2FPDF(HTMLParser):
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: Union[float, Align] = 0,
-        bullet: str = "",
+        bullet: Optional[str] = None,
     ) -> None:
-        # Note that currently top_margin is ignored if bullet is also provided,
-        # due to the behaviour of TextRegion._render_column_lines()
         self._end_paragraph()
         self.align = align
         if isinstance(indent, Align):
@@ -576,17 +668,42 @@ class HTML2FPDF(HTMLParser):
             if not self.align:
                 self.align = indent
             indent = 0
-        if not top_margin and not self.follows_heading:
+        if not top_margin and bullet is None and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
+        prev_family = self.pdf.font_family
+        prev_style = self.pdf.font_style
+        prev_size = self.pdf.font_size_pt
+
+        prev_underline = self.pdf.underline
+        prev_strikethrough = self.pdf.strikethrough
+        prev_current_font = self.pdf.current_font
+        prev_font_set = self.pdf.current_font_is_set_on_page
+        page = self.pdf.page
+        # Set page to 0 to prevent set_font from writing redundant Tf operators to the PDF stream
+        self.pdf.page = 0
+        self.pdf.set_font(
+            family=self.font_family,
+            style=self.font_emphasis.style,
+            size=self.font_size_pt,
+        )
+        self.pdf.page = page
+
         self._paragraph = self._column.paragraph(
             text_align=self.align if isinstance(self.align, Align) else None,
             line_height=line_height,
-            skip_leading_spaces=True,
+            skip_leading_spaces=not self._pre_formatted,
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
-            bullet_string=bullet,
+            bullet_string=bullet or "",
         )
+        self.pdf.font_family = prev_family
+        self.pdf.font_style = prev_style
+        self.pdf.font_size_pt = prev_size
+        self.pdf.current_font = prev_current_font
+        self.pdf.current_font_is_set_on_page = prev_font_set
+        self.pdf.underline = prev_underline
+        self.pdf.strikethrough = prev_strikethrough
         self.follows_trailing_space = True
         self.follows_heading = False
 
@@ -637,6 +754,9 @@ class HTML2FPDF(HTMLParser):
         self.follows_trailing_space = True
 
     def handle_data(self, data: str) -> None:
+        if self._in_style_or_script:
+            # like browsers, the content of <style> and <script> is never displayed
+            return
         if self._in_title:
             if self.pdf.title:
                 LOGGER.warning('Ignoring repeated <title> "%s"', data)
@@ -663,13 +783,18 @@ class HTML2FPDF(HTMLParser):
             if align is None and self.tr is not None:
                 align = self.tr.get("align")
             if align:
-                align = align.upper()
-            bgcolor_str = self.td_th.get("bgcolor")
+                try:
+                    align = Align.coerce(align)
+                except ValueError:
+                    # like browsers, and like <p>, ignore a value such as "middle",
+                    # keeping the default: <th> cells are centered
+                    align = Align.C if self.td_th.get("tag") == "th" else None
+            bgcolor_str = _without_transparent(self.td_th.get("bgcolor"))
             if bgcolor_str is None and self.tr is not None:
-                bgcolor_str = self.tr.get("bgcolor")
+                bgcolor_str = _without_transparent(self.tr.get("bgcolor"))
             bgcolor = color_as_decimal(bgcolor_str)
-            colspan = int(self.td_th.get("colspan") or "1")
-            rowspan = int(self.td_th.get("rowspan") or "1")
+            colspan = _parse_html_span(self.td_th.get("colspan"))
+            rowspan = _parse_html_span(self.td_th.get("rowspan"))
             emphasis = 0
             if self.td_th.get("b"):
                 emphasis |= TextEmphasis.B
@@ -752,7 +877,8 @@ class HTML2FPDF(HTMLParser):
         if tag in ("b", "i", "u") and self.td_th is not None:
             self.td_th[tag] = True
         if tag == "a":
-            self.href = attrs_dict["href"] or ""
+            # <a name="..."> and <a id="..."> are anchors, not links: no href means plain text
+            self.href = attrs_dict.get("href") or ""
             try:
                 page = int(self.href)
                 self.href = self.pdf.add_link(page=page)
@@ -764,10 +890,11 @@ class HTML2FPDF(HTMLParser):
             self._end_paragraph()
             width_str = css_style.get("width", attrs_dict.get("width"))
             if width_str:
-                if width_str[-1] == "%":
+                width_str = width_str.strip()
+                if width_str.endswith("%"):
                     hr_width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    hr_width = float(width_str) / self.pdf.k
+                    hr_width = _parse_html_dimension(width_str) / self.pdf.k
             else:
                 hr_width = self.pdf.epw
             # Centering:
@@ -865,7 +992,7 @@ class HTML2FPDF(HTMLParser):
             )
             if "color" in css_style:
                 self.font_color = color_as_decimal(css_style["color"])
-            elif "color" in attrs_dict:
+            elif _without_transparent(attrs_dict.get("color")) is not None:
                 # "color" attributes are not valid in HTML,
                 # but we support it for backward compatibility:
                 self.font_color = color_as_decimal(attrs_dict["color"])
@@ -943,14 +1070,15 @@ class HTML2FPDF(HTMLParser):
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
+            line_height = None
             if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(line_height_str))
+                    line_height = float(line_height_str)
                 except ValueError:
+                    # Invalid line-height: ignored, the default value is used
                     pass
-            else:
-                self.line_height_stack.append(None)
+            self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
                 if isinstance(tag_style, TextStyle):
@@ -978,21 +1106,26 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     start = 1
             self.bullet.append(start - 1)
-            self.ol_type[self.indent] = attrs_dict.get("type") or "1"
+            ol_type = attrs_dict.get("type") or "1"
+            # like browsers, an unknown type (they are case-sensitive) gives numbers
+            self.ol_type[self.indent] = (
+                ol_type if ol_type in ("1", "a", "A", "i", "I") else "1"
+            )
             line_height_str = css_style.get("line-height") or attrs_dict.get(
                 "line-height"
             )
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
+            line_height = None
             if line_height_str:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(line_height_str))
+                    line_height = float(line_height_str)
                 except ValueError:
+                    # Invalid line-height: ignored, the default value is used
                     pass
-            else:
-                self.line_height_stack.append(None)
+            self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
                 if isinstance(tag_style, TextStyle):
@@ -1022,6 +1155,11 @@ class HTML2FPDF(HTMLParser):
                 bullet = ul_prefix(bullet, self.pdf.is_ttf_font)
             if not isinstance(bullet, str):
                 bullet += 1
+                # like browsers, <li value="N"> numbers this item N and the next ones from there
+                try:
+                    bullet = int((attrs_dict.get("value") or "").strip())
+                except ValueError:
+                    pass
                 self.bullet[self.indent - 1] = bullet
                 ol_type = self.ol_type[self.indent]
                 bullet = f"{ol_prefix(ol_type, bullet)}."
@@ -1033,13 +1171,13 @@ class HTML2FPDF(HTMLParser):
             else:
                 b_margin = l_margin = t_margin = 0.0
             l_margin = self._normalize_l_margin(l_margin)
-            self._ln(t_margin)
             numeric_indent = 0.0 if isinstance(l_margin, Align) else l_margin
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
                 indent=numeric_indent * self.indent,
+                top_margin=t_margin,
                 bottom_margin=b_margin,
                 bullet=bullet,
             )
@@ -1053,12 +1191,14 @@ class HTML2FPDF(HTMLParser):
                     color=self.font_color,
                 )
             )
-            if "color" in attrs_dict:
+            if _without_transparent(attrs_dict.get("color")) is not None:
                 self.font_color = color_as_decimal(attrs_dict["color"])
             if "font-size" in css_style:
                 font_size_str = css_style.get("font-size") or ""
                 try:
-                    self.font_size_pt = float(font_size_str)
+                    # like browsers, a CSS length such as "14pt" or "12px";
+                    # a number without a unit is still read as points
+                    self.font_size_pt = resolve_length(font_size_str)
                 except ValueError:
                     pass
             elif "size" in attrs_dict:
@@ -1068,17 +1208,44 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     pass
             if "face" in attrs_dict:
-                font_family = attrs_dict.get("face") or ""
-                self.font_family = font_family.lower()
+                face = attrs_dict.get("face") or ""
+                # pylint: disable=protected-access
+                catalog = (
+                    self.pdf._resource_catalog  # pyright: ignore[reportPrivateUsage]
+                )
+                # bold and italic select the font file; underline and strikethrough do not
+                style = "".join(c for c in self.font_emphasis.style if c in "BI")
+                try:
+                    # like browsers, the first available font of a list such as
+                    # "Arial, Helvetica, sans-serif"; set_font() then adds it,
+                    # with its checks (such as PDF/A requiring embedded fonts)
+                    self.font_family = catalog.resolve_font_family(face, style)
+                except KeyError:
+                    # no font of the list is available: set_font() reports it, as before
+                    self.font_family = face.lower()
         if tag == "table":
+            if self.table is not None:
+                parent = self.td_th["tag"] if self.td_th is not None else "table"
+                raise NotImplementedError(
+                    f"Unsupported nested HTML tags inside <{parent}> element: <table>"
+                )
             self._end_paragraph()
             width: Optional[float] = None
             width_str = css_style.get("width") or attrs_dict.get("width")
             if width_str:
-                if width_str[-1] == "%":
+                width_str = width_str.strip()
+                if width_str.endswith("%"):
                     width = self.pdf.epw * float(width_str[:-1]) / 100
                 else:
-                    width = float(width_str) / self.pdf.k
+                    width = _parse_html_dimension(width_str) / self.pdf.k
+                if width <= 0:  # like browsers, an invalid width is ignored
+                    width = None
+                elif width > self.pdf.epw:
+                    LOGGER.warning(
+                        'Table width="%s" is wider than the page: using the page width',
+                        width_str,
+                    )
+                    width = self.pdf.epw
             if "border" not in attrs_dict:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
@@ -1099,12 +1266,31 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     borders_layout = "NONE"
             align = Align.coerce(attrs_dict.get("align") or "CENTER")
-            padding = (
-                float(attrs_dict["cellpadding"] or 0)
-                if "cellpadding" in attrs_dict
-                else None
-            )
-            spacing = float(attrs_dict.get("cellspacing") or 0)
+            padding = None
+            if "cellpadding" in attrs_dict:
+                pad_val = attrs_dict["cellpadding"]
+                match = unit_splitter.match((pad_val or "").strip())
+                if match and not match.group("unit"):
+                    try:
+                        padding = float(match.group("value"))
+                    except ValueError:
+                        padding = 0.0
+                else:
+                    padding = _parse_html_dimension(pad_val) / self.pdf.k
+
+            sp_val = attrs_dict.get("cellspacing")
+            if sp_val is not None:
+                match = unit_splitter.match((sp_val or "").strip())
+                if match and not match.group("unit"):
+                    try:
+                        spacing = float(match.group("value"))
+                    except ValueError:
+                        spacing = 0.0
+                else:
+                    spacing = _parse_html_dimension(sp_val) / self.pdf.k
+            else:
+                spacing = 0.0
+            self.first_row_widths = []
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -1144,27 +1330,37 @@ class HTML2FPDF(HTMLParser):
                     attrs_dict["height"],
                     tag,
                 )
+            cell_width: Optional[tuple[float, bool]] = None
             if "width" in attrs_dict:
-                width_str = attrs_dict["width"] or "0"
-                # pylint: disable=protected-access
+                width_str = (attrs_dict["width"] or "0").strip()
                 if len(self.table.rows) == 1:  # => first table row
-                    if width_str[-1] == "%":
-                        width = float(width_str[:-1])
+                    if width_str.endswith("%"):
+                        cell_width = (float(width_str[:-1]), True)
                     else:
-                        width = float(width_str)
-                    if not self.table._col_widths:
-                        self.table._col_widths = []
-                    assert isinstance(self.table._col_widths, list)
-                    self.table._col_widths.append(width)
+                        cell_width = (_parse_html_dimension(width_str), False)
                 else:
                     LOGGER.warning(
                         'Ignoring width="%s" specified on a <%s> that is not in the first <tr>',
                         width_str,
                         tag,
                     )
+            if len(self.table.rows) == 1:
+                # a cell that spans several columns gives each of them an equal part
+                span = _parse_html_span(attrs_dict.get("colspan"))
+                if cell_width is None:
+                    self.first_row_widths.extend([None] * span)
+                else:
+                    self.first_row_widths.extend(
+                        [(cell_width[0] / span, cell_width[1])] * span
+                    )
+                if cell_width is not None:
+                    # pylint: disable=protected-access
+                    self.table._col_widths = [
+                        w[0] for w in self.first_row_widths if w is not None
+                    ]
         if tag == "img" and "src" in attrs_dict:
-            width = float(attrs_dict.get("width") or 0) / self.pdf.k
-            height = float(attrs_dict.get("height") or 0) / self.pdf.k
+            width = _parse_html_dimension(attrs_dict.get("width")) / self.pdf.k
+            height = _parse_html_dimension(attrs_dict.get("height")) / self.pdf.k
             if self.table_row:  # => <img> in a <table>
                 if width or height:
                     LOGGER.warning(
@@ -1188,6 +1384,13 @@ class HTML2FPDF(HTMLParser):
             )
         if tag == "toc":
             self._end_paragraph()
+            self.pdf.set_font(
+                family=self.font_family,
+                size=self.font_size_pt,
+                style=self.font_emphasis.style,
+            )
+            if self.font_color != self.pdf.text_color and self.font_color is not None:
+                self.pdf.set_text_color(self.font_color)
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs_dict.get("pages") or "1")
             )
@@ -1197,6 +1400,8 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = CharVPos.SUB
         if tag == "title":
             self._in_title = True
+        if tag in ("style", "script"):
+            self._in_style_or_script = True
         if css_style.get("break-after") == "page":
             if tag in ("br", "hr", "img"):
                 self._end_paragraph()
@@ -1280,6 +1485,26 @@ class HTML2FPDF(HTMLParser):
             self.bullet.pop()
         if tag == "table":
             assert self.table is not None
+            # like browsers, a rowspan that goes past the last row stops at the last row
+            rows = self.table.rows
+            for i, row in enumerate(rows):
+                for j, cell in enumerate(row.cells):
+                    if isinstance(cell, Cell) and cell.rowspan > len(rows) - i:
+                        row.cells[j] = replace(cell, rowspan=len(rows) - i)
+            if None in self.first_row_widths and any(self.first_row_widths):
+                # some cells of the first row have no width: they share the rest
+                # pylint: disable=protected-access
+                table_width = float(self.table._width or self.pdf.epw)
+                usable_width = (
+                    table_width
+                    - (len(self.first_row_widths) - 1) * self.table._gutter_width
+                    - 2 * float(self.table._outer_border_margin[0])
+                )
+                self.table._col_widths = _fill_missing_widths(
+                    self.first_row_widths,
+                    table_width * self.pdf.k,
+                    usable_width * self.pdf.k,
+                )
             self.table.render()
             self.table = None
             self._ln()
@@ -1295,11 +1520,12 @@ class HTML2FPDF(HTMLParser):
             if "inserted" not in self.td_th:
                 # handle_data() was not called => we call it to produce an empty cell:
                 bgcolor = color_as_decimal(
-                    self.td_th.get("bgcolor") or self.tr.get("bgcolor", None)
+                    _without_transparent(self.td_th.get("bgcolor"))
+                    or _without_transparent(self.tr.get("bgcolor", None))
                 )
                 style = FontFace(fill_color=bgcolor) if bgcolor else None
-                colspan = int(self.td_th.get("colspan", "1"))
-                rowspan = int(self.td_th.get("rowspan", "1"))
+                colspan = _parse_html_span(self.td_th.get("colspan"))
+                rowspan = _parse_html_span(self.td_th.get("rowspan"))
                 self.table_row.cell(
                     text="", style=style, colspan=colspan, rowspan=rowspan
                 )
@@ -1317,6 +1543,8 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = CharVPos.LINE
         if tag == "title":
             self._in_title = False
+        if tag in ("style", "script"):
+            self._in_style_or_script = False
 
     def feed(self, data: str) -> None:
         super().feed(data)
@@ -1354,8 +1582,8 @@ class HTML2FPDF(HTMLParser):
         pdf.ln()
         for section in outline:
             link = pdf.add_link(page=section.page_number)
-            text = f'{" " * section.level * 2} {section.name}'
-            text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
+            text = f"{' ' * section.level * 2} {section.name}"
+            text += f" {'.' * (60 - section.level * 2 - len(section.name))} {section.page_number}"
             pdf.multi_cell(
                 w=pdf.epw,
                 h=pdf.font_size,
@@ -1392,10 +1620,18 @@ def _scale_units(
 
 
 def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
-    if ul_type == "disc":
+    # Like browsers, the keywords are case-insensitive: type="DISC" is a disc
+    keyword = ul_type.lower()
+    if keyword == "disc":
         return BULLET_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
-    if ul_type == "circle":
+    if keyword == "circle":
         return RING_OPERATOR_UNICODE if is_ttf_font else DEGREE_SIGN_WIN1252
+    if keyword == "square":
+        # Windows-1252 has no square, so core fonts fall back to the bullet
+        return BLACK_SMALL_SQUARE_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
+    if keyword == "none":
+        # like browsers, list items without a marker, still indented
+        return ""
     if len(ul_type) == 1:
         return ul_type
     raise NotImplementedError(f"Unsupported type: {ul_type}")
@@ -1404,10 +1640,12 @@ def ul_prefix(ul_type: str, is_ttf_font: bool) -> str:
 def ol_prefix(ol_type: str, index: int) -> int | str:
     if ol_type == "1":
         return index
-    if ol_type == "a":
-        return ascii_lowercase[index - 1]
-    if ol_type == "A":
-        return ascii_uppercase[index - 1]
+    if ol_type in ("a", "A"):
+        # Like browsers: a..z, then aa, ab..., and plain numbers below 1.
+        if index < 1:
+            return index
+        letters = int_to_letters(index - 1)
+        return letters.lower() if ol_type == "a" else letters
     if ol_type == "I":
         return int2roman(index)
     if ol_type == "i":

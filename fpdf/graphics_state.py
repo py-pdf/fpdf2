@@ -173,8 +173,11 @@ class GraphicsStateMixin:
         return self.__statestack[-1].font_style
 
     @font_style.setter
-    def font_style(self, v: str) -> None:
-        self.__statestack[-1].font_style = v
+    def font_style(self, style: str) -> None:
+        self._set_font_style(style)
+
+    def _set_font_style(self, style: str) -> None:
+        self.__statestack[-1].font_style = style
 
     @property
     def font_stretching(self) -> float:

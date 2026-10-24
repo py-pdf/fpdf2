@@ -1,5 +1,8 @@
+import contextlib
 from pathlib import Path
 from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
+
+import pytest
 
 from fpdf import FPDF
 from fpdf.recorder import FPDFRecorder
@@ -64,6 +67,27 @@ def test_recorder_preserve_pages_count():
     assert pdf.pages_count == 1
 
 
+def test_unbreakable_replays_table_after_page_break(tmp_path):
+    def render_table(pdf):
+        with pdf.table(text_align="CENTER") as table:
+            table.row(("Heading 1", "Heading 2"))
+            table.row(("Cell 1", "Cell 2"))
+
+    pdf = init_pdf()
+    pdf.set_y(pdf.page_break_trigger - 5)
+    with pdf.unbreakable() as recorder:
+        render_table(recorder)
+
+    assert recorder.page_break_triggered
+    assert pdf.pages_count == 2
+
+    expected = init_pdf()
+    expected.set_y(expected.page_break_trigger - 5)
+    expected.add_page()
+    render_table(expected)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_recorder_with_ttf_font(tmp_path):
     pdf = init_pdf()
     pdf.add_font(fname=str(HERE / "fonts" / "Roboto-Regular.ttf"))
@@ -77,3 +101,41 @@ def test_recorder_with_ttf_font(tmp_path):
     recorder.cell(w=recorder.epw, h=10, text="Hello again!", align="C")
     recorder.rewind()
     assert_pdf_equal(recorder, expected, tmp_path)
+
+
+class _CustomContextManager:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return None
+
+
+def _make_generator():
+    return (x for x in ())
+
+
+@contextlib.contextmanager
+def _sample_context_manager():
+    yield
+
+
+@pytest.mark.parametrize(
+    "cm_callable",
+    [
+        _make_generator,
+        _sample_context_manager,
+        _CustomContextManager,
+    ],
+    ids=["generator", "generator_context_manager", "custom_context_manager"],
+)
+def test_recorder_replay_warns_on_context_manager(cm_callable):
+    pdf = init_pdf()
+    recorder = FPDFRecorder(pdf)
+    setattr(pdf, "trigger_cm", cm_callable)
+    recorder.trigger_cm()
+    with pytest.warns(
+        UserWarning,
+        match=r"Detected usage of a context manager inside an unbreakable\(\) section",
+    ):
+        recorder.replay()

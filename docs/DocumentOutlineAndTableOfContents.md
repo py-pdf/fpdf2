@@ -67,7 +67,7 @@ pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 ---
 
 ## Using Outlines and ToC with HTML
-When using [`FPDF.write_html`](HTML.md), a document outline is automatically generated, and a ToC can be added with the `<toc>` tag.
+When using [`FPDF.write_html`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), a document outline is automatically generated, and a ToC can be added with the `<toc>` tag.
 
 To customize ToC styling, override the `render_toc` method in a subclass:
 

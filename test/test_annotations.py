@@ -1,13 +1,37 @@
+from io import BytesIO
 from pathlib import Path
 
+import pytest
+from pypdf import PdfReader
+
 from fpdf import FPDF
+from fpdf.annotations import AnnotationDict
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
-from fpdf.enums import AnnotationName
+from fpdf.enums import AnnotationFlag, AnnotationName
 from fpdf.syntax import DestinationXYZ
 
 from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
+
+
+@pytest.mark.parametrize(
+    "flags, expected",
+    [
+        (("PRINT", "PRINT"), 4),
+        ((AnnotationFlag.PRINT, "PRINT"), 4),
+        (("PRINT", "NO_ZOOM", "PRINT"), 12),
+        ((), 0),
+    ],
+)
+def test_text_annotation_repeated_flags(flags, expected):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.text_annotation(x=20, y=20, text="Annotation", flags=flags)
+
+    annotation = pdf.pages[1].annots[0]
+    assert annotation.f == expected
+    assert f"/F {expected}" in annotation.serialize()
 
 
 def test_text_annotation(tmp_path):
@@ -209,3 +233,36 @@ def test_free_text_annotation_width_parameter(tmp_path):
     pdf.set_font_size(12)
     pdf.free_text_annotation(text="This is a free text annotation.", w=80)
     assert_pdf_equal(pdf, HERE / "free_text_annotation_width_parameter.pdf", tmp_path)
+
+
+def test_annotation_numbers_preserve_rounding():
+    annotation = AnnotationDict(
+        subtype="Ink",
+        x=10.0,
+        y=20.1234,
+        width=30.0,
+        height=5.0,
+        border_width=1.0,
+        color=(0.0, 0.123456789012345, 1.0),
+        quad_points=(10.0, 20.1234),
+        ink_list=(10.0, 20.1234),
+    )
+    assert annotation.rect == "[10 15.12 40 20.12]"
+    assert annotation.border == "[0 0 1]"
+    assert annotation.c == "[0 0.123456789012345 1]"
+    assert annotation.quad_points == "[10 20.12]"
+    assert annotation.ink_list == "[[10 20.12]]"
+
+
+@pytest.mark.parametrize(
+    "color, border_width",
+    [((1e-5, 0.5, 1.0), 0), ((0.0, 0.5, 1.0), 1e-5)],
+)
+def test_annotation_small_numbers_are_valid_pdf_numbers(color, border_width):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.text_annotation(x=10, y=10, text="Note", color=color, border_width=border_width)
+    reader = PdfReader(BytesIO(pdf.output()))
+    annotation = reader.get_page(0)["/Annots"][0].get_object()
+    assert list(annotation["/C"]) == pytest.approx(color)
+    assert list(annotation["/Border"]) == pytest.approx([0, 0, border_width])

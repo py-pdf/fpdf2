@@ -105,7 +105,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 ההבדל העיקרי מהדוגמא הקודמת הוא השימוש במתודת ה
-[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). 
 היא אוספת את כל הטקסט, ומפזרת אותו על מספר העמודות המבוקש (לפעמים מגדילה אותו), ואוטומטית מעבירה עמוד כשצריך. שימו לב שבזמן שמופע של `TextColumns` פועל כמנהל הקשר (context manager), עיצוב של טקסט ואלמנטים נוספים עשויים להשתנות. שינויים אלה מוכלים בהקשר.
 ברגע שהמופע נסגר, ההגדרות הקודמות יוחלו שוב.
 

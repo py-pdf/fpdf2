@@ -1,3 +1,10 @@
+from io import BytesIO
+
+import pytest
+from xml.etree.ElementTree import fromstring
+from pypdf import PdfReader
+
+from fpdf import FPDF
 from fpdf.drawing import GradientPaint
 from fpdf.enums import GradientUnits
 from fpdf.svg import SVGObject
@@ -103,6 +110,49 @@ def test_gradient_with_opacity():
     svg_obj = SVGObject(svg)
 
     assert "#fade" in svg_obj.gradient_definitions
+
+
+@pytest.mark.parametrize("opacity", ["0.5", "50%"])
+def test_gradient_stop_opacity_multiplies_color_alpha(opacity):
+    gradient = fromstring(
+        '<linearGradient xmlns="http://www.w3.org/2000/svg">'
+        f'<stop offset="0" stop-color="#ff000080" stop-opacity="{opacity}" />'
+        '<stop offset="1" stop-color="blue" />'
+        "</linearGradient>"
+    )
+    # pylint: disable=protected-access
+    stops = SVGObject._parse_gradient_stops(gradient)
+    # pylint: enable=protected-access
+    assert len(stops) == 2
+    assert stops[0][1].a == pytest.approx((128 / 255) * 0.5)
+
+
+@pytest.mark.parametrize("gradient_type", ["linearGradient", "radialGradient"])
+def test_gradient_percentage_opacity_preserves_transparent_color(gradient_type):
+    svg = f"""
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <{gradient_type} id="fade">
+          <stop offset="0" stop-color="#ff000000" stop-opacity="50%" />
+          <stop offset="1" stop-color="blue" />
+        </{gradient_type}>
+      </defs>
+      <rect width="200" height="200" fill="url(#fade)" />
+    </svg>
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.image(svg.encode(), x=10, y=10, w=20)
+    page = PdfReader(BytesIO(pdf.output())).pages[0]
+    states = dict(page["/Resources"]["/ExtGState"])
+    mask = next(
+        state.get_object()["/SMask"]
+        for state in states.values()
+        if "/SMask" in state.get_object()
+    )
+    patterns = mask["/G"]["/Resources"]["/Pattern"]
+    shading = next(iter(patterns.values())).get_object()["/Shading"]
+    assert shading["/Function"]["/C0"] == [0]
 
 
 def test_gradient_units_objectBoundingBox():
@@ -228,6 +278,65 @@ def test_gradient_stops_with_style_attribute():
     svg_obj = SVGObject(svg)
 
     assert "#grad" in svg_obj.gradient_definitions
+
+
+@pytest.mark.parametrize("gradient_type", ["linearGradient", "radialGradient"])
+@pytest.mark.parametrize(
+    ("attribute", "style", "expected_opacity"),
+    [
+        ("50%", "", 0.5),
+        ("25%", "stop-opacity:80%", 0.8),
+        ("-0.25", "", 0),
+        ("-25%", "", 0),
+        ("0.5", "stop-opacity:-0.25", 0),
+        ("200%", "", 1),
+        ("0.9", "stop-opacity:200%", 1),
+        ("0.9", "stop-opacity:0.25", 0.25),
+        ("0.25", "stop-opacity:0", 0),
+        ("0.25", "stop-opacity:1", 1),
+        ("0", "stop-opacity:0.5", 0.5),
+        ("0.9", "stop-color:blue", 0.9),
+        ("0.9", "stop-opacity:invalid", 0.9),
+        ("0.9", "", 0.9),
+        (None, "stop-opacity:0.25", 0.25),
+        (None, "", 1),
+    ],
+)
+def test_gradient_stop_opacity_style_precedence(
+    gradient_type, attribute, style, expected_opacity
+):
+    opacity_attribute = f'stop-opacity="{attribute}"' if attribute is not None else ""
+    svg = f"""
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <{gradient_type} id="fade">
+          <stop offset="0" stop-color="red" {opacity_attribute} style="{style}" />
+          <stop offset="1" stop-color="blue" />
+        </{gradient_type}>
+      </defs>
+      <rect width="200" height="200" fill="url(#fade)" />
+    </svg>
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.image(svg.encode(), x=10, y=10, w=20)
+    page = PdfReader(BytesIO(pdf.output())).pages[0]
+    states = dict(page["/Resources"]["/ExtGState"])
+    masks = [
+        state.get_object()["/SMask"]
+        for state in states.values()
+        if "/SMask" in state.get_object()
+    ]
+    if expected_opacity == 1:
+        assert not masks
+    else:
+        assert len(masks) == 1
+        patterns = masks[0]["/G"]["/Resources"]["/Pattern"]
+        assert len(patterns) == 1
+        shading = next(iter(patterns.values())).get_object()["/Shading"]
+        assert shading["/ColorSpace"] == "/DeviceGray"
+        assert shading["/Function"]["/C0"] == [expected_opacity]
+        assert shading["/Function"]["/C1"] == [1]
 
 
 def test_gradient_without_id_is_skipped():

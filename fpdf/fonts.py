@@ -343,6 +343,11 @@ class TTFFont:
         "unicode_range",
         "palette_index",
         "is_compressed",
+        "is_cff",
+        "is_cid_keyed",
+        "is_symbol",
+        "cff_ros",
+        "collection_font_number",
     )
 
     def __init__(
@@ -354,6 +359,7 @@ class TTFFont:
         unicode_range: Optional[set[int]] = None,
         axes_dict: Optional[dict[str, float]] = None,
         palette_index: Optional[int] = None,
+        collection_font_number: int = 0,
     ):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
@@ -362,12 +368,16 @@ class TTFFont:
         self._hbfont: Optional["HarfBuzzFont"] = None
         self.fontkey = fontkey
         self.biggest_size_pt: float = 0
+        self.collection_font_number = collection_font_number
 
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
         try:
             self.ttfont = ttLib.TTFont(
-                self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
+                self.ttffile,
+                recalcTimestamp=False,
+                fontNumber=collection_font_number,
+                lazy=True,
             )
         except (
             ImportError,
@@ -399,6 +409,25 @@ class TTFFont:
         if self.is_compressed:
             # Normalize to SFNT output for embedding and HarfBuzz.
             self.ttfont.flavor = None
+        self.is_cff = "CFF " in self.ttfont or "CFF2" in self.ttfont
+        self.is_cid_keyed = False
+        self.is_symbol = False
+        self.cff_ros: Optional[tuple[str, str, int]] = None
+        if self.is_cff:
+            try:
+                cff_table = "CFF " if "CFF " in self.ttfont else "CFF2"
+                top_dict = self.ttfont[cff_table].cff.topDictIndex[0]
+                ros = getattr(top_dict, "ROS", None)
+                self.is_cid_keyed = ros is not None
+                if ros is not None:
+                    self.cff_ros = (str(ros[0]), str(ros[1]), int(ros[2]))
+            except (
+                KeyError,
+                AttributeError,
+                IndexError,
+                TypeError,
+            ):  # pragma: no cover
+                self.is_cid_keyed = False
         upem: float = float(self.ttfont["head"].unitsPerEm)
         self.scale: float = 1000 / upem
 
@@ -487,9 +516,13 @@ class TTFFont:
         # the unicode characters available on the font
         self.cmap: dict[int, str] = self.ttfont.getBestCmap()
         if not self.cmap:
-            raise NotImplementedError(
-                "Font not supported as it does not have a unicode cmap table - cf. issue #1396"
-            )
+            self.cmap = self._build_symbol_cmap()
+            if self.cmap:
+                self.is_symbol = True
+            else:
+                raise NotImplementedError(
+                    "Font not supported. No unicode cmap and no support for this non-standard charset."
+                )
 
         if unicode_range is not None and len(unicode_range) != 0:
             self.cmap = {
@@ -538,6 +571,7 @@ class TTFFont:
     @property
     def hbfont(self) -> "HarfBuzzFont":
         if not self._hbfont:
+
             if self.is_compressed:
                 # HarfBuzz cannot load compressed WOFF/WOFF2 files directly, so we
                 # re-serialize the fontTools TTFont to a raw SFNT byte buffer.
@@ -550,7 +584,7 @@ class TTFFont:
                 # temporary file as a last resort.
                 try:
                     blob = hb.Blob.from_bytes(ttfont_bytes)
-                    face = hb.Face(blob)
+                    face = hb.Face(blob=blob, index=self.collection_font_number)
                 except (AttributeError, RuntimeError):
                     import tempfile, os  # pylint: disable=import-outside-toplevel
 
@@ -562,7 +596,10 @@ class TTFFont:
                             tmp_name = tmp.name
                             tmp.write(ttfont_bytes)
                             tmp.flush()
-                        face = hb.Face(hb.Blob.from_file_path(tmp_name))
+                        face = hb.Face(
+                            blob=hb.Blob.from_file_path(tmp_name),
+                            index=self.collection_font_number,
+                        )
                     finally:
                         if tmp_name:
                             try:
@@ -579,7 +616,10 @@ class TTFFont:
             else:
                 # For regular TTF/OTF fonts, load directly from file path (faster)
                 self._hbfont = HarfBuzzFont(
-                    hb.Face(hb.Blob.from_file_path(self.ttffile))
+                    hb.Face(
+                        blob=hb.Blob.from_file_path(self.ttffile),
+                        index=self.collection_font_number,
+                    )
                 )
 
         return self._hbfont
@@ -608,6 +648,11 @@ class TTFFont:
         copy.ss = self.ss
         copy.emphasis = self.emphasis
         copy.is_compressed = self.is_compressed
+        copy.is_cff = self.is_cff
+        copy.is_cid_keyed = self.is_cid_keyed
+        copy.is_symbol = self.is_symbol
+        copy.cff_ros = self.cff_ros
+        copy.collection_font_number = self.collection_font_number
         # Attributes shared, to improve FPDFRecorder performances:
         copy.ttfont = self.ttfont
         copy.cmap = self.cmap
@@ -627,6 +672,45 @@ class TTFFont:
         self.ttfont.close()
         self._hbfont = None
 
+    def _build_symbol_cmap(self) -> dict[int, str]:
+        """
+        Build a Unicode cmap from a Microsoft Non-Standard Symbol cmap.
+        Maps bytes 0x00-0xFF to the PUA range U+F000-U+F0FF.
+        Reference: https://learn.microsoft.com/en-us/typography/opentype/otspec160/recom
+        """
+        try:
+            cmap_table = self.ttfont["cmap"]
+        except KeyError:  # pragma: no cover - defensive
+            return {}
+        symbol_table = None
+        for table in cmap_table.tables:
+            if table.platformID == 3 and table.platEncID == 0:
+                symbol_table = table
+                break
+        if not symbol_table:
+            return {}
+        mapping: dict[int, str] = {}
+        for code, glyph in symbol_table.cmap.items():
+            if code <= 0xFF:
+                mapping[0xF000 + code] = glyph
+            else:
+                mapping[code] = glyph
+        return mapping
+
+    def _map_symbol_text(self, text: str) -> str:
+        if not self.is_symbol:
+            return text
+        mapped_chars = []
+        for ch in text:
+            code = ord(ch)
+            if 0xF000 <= code <= 0xF0FF:
+                mapped_chars.append(ch)
+            elif 0x20 <= code <= 0xFF and code != 0x7F:
+                mapped_chars.append(chr(0xF000 + code))
+            else:
+                mapped_chars.append(ch)
+        return "".join(mapped_chars)
+
     def escape_text(self, text: str) -> str:
         if self.color_font:
             encoded = text.encode("latin-1", errors="replace")
@@ -641,9 +725,15 @@ class TTFFont:
     ) -> tuple[int, float]:
         if font_size_pt > self.biggest_size_pt:
             self.biggest_size_pt = font_size_pt
+        mapped_text = self._map_symbol_text(text)
         if text_shaping_params:
-            return self.shaped_text_width(text, font_size_pt, text_shaping_params)
-        return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
+            return self.shaped_text_width(
+                mapped_text, font_size_pt, text_shaping_params
+            )
+        return (
+            len(mapped_text),
+            sum(self.cw[ord(c)] for c in mapped_text) * font_size_pt * 0.001,
+        )
 
     def shaped_text_width(
         self,
@@ -682,6 +772,7 @@ class TTFFont:
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
+        text = self._map_symbol_text(text)
         self.hbfont.ptem = font_size_pt
         if TYPE_CHECKING:
             buf: HBBuffer
@@ -713,6 +804,7 @@ class TTFFont:
         return buf.glyph_infos, buf.glyph_positions
 
     def encode_text(self, text: str) -> str:
+        text = self._map_symbol_text(text)
         txt_mapped = ""
         for char in text:
             uni = ord(char)
@@ -922,6 +1014,8 @@ class SubsetMap:
             return Glyph(glyph, unicode, glyph_name, glyph_width)
         if unicode is None or not isinstance(unicode, int):
             return None
+        if self.font.is_symbol and 0x20 <= unicode <= 0xFF and unicode != 0x7F:
+            unicode = 0xF000 + unicode
         glyph_id = self.font.glyph_ids.get(unicode)
         if isinstance(unicode, int) and glyph_id is not None:
             return Glyph(
@@ -934,8 +1028,13 @@ class SubsetMap:
             glyph_id = next(iter(self.font.cmap))
             return Glyph(glyph_id, (0x00,), ".notdef", 0)
         if unicode == 0x20:
-            glyph_id = next(iter(self.font.cmap))
-            return Glyph(glyph_id, (0x20,), "space", int(self.font.cw[0x20]))
+            if 0x20 in self.font.cmap:
+                glyph_name = self.font.cmap[0x20]
+                glyph_id = self.font.glyph_ids.get(0x20, next(iter(self.font.cmap)))
+            else:
+                glyph_name = next(iter(self.font.cmap.values()))
+                glyph_id = next(iter(self.font.cmap))
+            return Glyph(glyph_id, (0x20,), glyph_name, int(self.font.cw[0x20]))
         return None
 
     def get_all_glyph_names(self) -> Sequence[str]:

@@ -223,6 +223,10 @@ or a [`FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) inst
 * **`wrapmode`**: optionally set wrapmode to `'CHAR'` to support multiline line wrapping on characters instead of words
     * _optional_
     * default: `'WORD'`
+* **`keep_aspect_ratio`**: keep the aspect ratio when scaling image to fit inside the bounds. See [Fitting an image inside a rectangle](https://py-pdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle) for details.
+    * _optional_
+    * default: `false` (in dicts/JSON) or `0` (in CSV)
+
 
 Fields that are not relevant to a specific element type will be ignored there,
 but if not left empty, they must still adhere to the specified data type (in dicts, string fields may be None).
@@ -315,7 +319,7 @@ rotated;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;;R;ROTATED;0;0;30.0
 ```
 
 Remember that each line represents an element and each field represents one of the properties of the element in the following order:
-`('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline', 'rotate', 'wrapmode')`
+`('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline', 'rotate', 'wrapmode', 'keep_aspect_ratio')`
 As noted above, most fields may be left empty, so a line is valid with only 6 items.
 The `empty_fields` line of the example demonstrates all that can be left away.
 In addition, for the barcode types, `x2` may be empty.

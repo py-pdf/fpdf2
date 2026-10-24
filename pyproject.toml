@@ -25,11 +25,11 @@ classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Operating System :: OS Independent",
   "Topic :: Printing",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -39,7 +39,6 @@ classifiers = [
 ]
 
 dependencies = [
-  "defusedxml",
   "Pillow>=8.3.2,!=9.2.*",  # minimum version tested in .github/workflows/continuous-integration-workflow.yml
                             # Version 9.2.0 is excluded due to DoS vulnerability with TIFF images: https://github.com/py-pdf/fpdf2/issues/628
                             # Version exclusion explained here: https://devpress.csdn.net/python/630462c0c67703293080c302.html
@@ -72,8 +71,11 @@ docs = [
 ]
 test = [
   "brotli",
-  "camelot-py[base]",
-  "endesive[full]",
+  "camelot-py",
+  # endesive 3 adds oscrypto via certvalidator; its OpenSSL detection is broken:
+  # https://github.com/wbond/oscrypto/issues/78
+  "endesive<3",
+  "pypdf",
   "pytest",
   "pytest-cov",
   "qrcode",
@@ -124,15 +126,12 @@ include_trailing_comma = true
 multi_line_output = 3
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.15"
 strict = true
 
 files = ["fpdf"]
 
 # Optional dependencies to ignore
-[[tool.mypy.overrides]]
-module = "defusedxml.ElementTree"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "endesive"
@@ -146,18 +145,10 @@ ignore_missing_imports = true
 module = "uharfbuzz"
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = "pymemtrace.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "pympler.*"
-ignore_missing_imports = true
-
 [tool.pyright]
 include = ["fpdf"]
 typeCheckingMode = "strict"
-pythonVersion = "3.14"
+pythonVersion = "3.15"
 reportMissingImports = true
 reportMissingTypeStubs = false
 reportUnnecessaryIsInstance = false
