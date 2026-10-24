@@ -1100,6 +1100,33 @@ def test_html_link_to_a_table():
     assert pdf.named_destinations["t"].top > (pdf.h - y_after) * pdf.k
 
 
+@pytest.mark.parametrize("space_left", [None, 5])
+def test_html_link_to_an_image(space_left):
+    "The destination of an <img id> is the top of the image, on the page where it is drawn."
+    pdf = FPDF()
+    pdf.add_page()
+    if space_left:  # not enough room: the image goes to the next page
+        pdf.set_y(pdf.h - pdf.b_margin - space_left)
+    tops = []
+    draw_image = pdf.image
+
+    def image(*args, **kwargs):
+        info = draw_image(*args, **kwargs)
+        tops.append((pdf.page, pdf.y - info.rendered_height))
+        return info
+
+    pdf.image = image
+    pdf.write_html(
+        '<a href="#logo">go</a>'
+        '<img id="logo" src="docs/fpdf2-logo.png" width="100" height="50">'
+    )
+    pdf.output()
+    destination = pdf.named_destinations["logo"]
+    page, top = tops[0]
+    assert destination.page_number == page == (2 if space_left else 1)
+    assert destination.top == pytest.approx((pdf.h - top) * pdf.k)
+
+
 def test_html_anchor_without_href(tmp_path):
     "An <a> without href, such as a named anchor, renders as plain text and is a link target."
     pdf = FPDF()

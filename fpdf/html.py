@@ -884,6 +884,18 @@ class HTML2FPDF(HTMLParser):
         del attrs
         css_style = parse_css_style(attrs_dict.get("style") or "")
         self._tags_stack.append(tag)
+        # like browsers, an id and the name of an <a> are targets for href="#..." links;
+        # the destination is set where the target is rendered (see _write_paragraph)
+        for anchor in (
+            attrs_dict.get("id"),
+            attrs_dict.get("name") if tag == "a" else None,
+        ):
+            if (
+                anchor
+                and anchor.strip()
+                and anchor.strip() not in self._pending_anchors
+            ):
+                self._pending_anchors.append(anchor.strip())
         if css_style.get("break-before") == "page":
             self._end_paragraph()
             # pylint: disable=protected-access
@@ -1385,17 +1397,22 @@ class HTML2FPDF(HTMLParser):
                 self.table_row.cell(img=attrs_dict["src"], img_fill_width=True)
                 assert self.td_th is not None
                 self.td_th["inserted"] = True
+                self._set_anchors(self._pending_anchors)
                 return
             x: float | Align = self.pdf.get_x()
             if self.align:
                 x = self.align
-            self.pdf.image(
+            info = self.pdf.image(
                 self.image_map(attrs_dict["src"] or ""),
                 x=x,
                 w=width,
                 h=height,
                 link=self.href,
             )
+            # targets point to the top of the image, after any page break it caused
+            for anchor in self._pending_anchors:
+                self.pdf.set_link(name=anchor, y=self.pdf.y - info.rendered_height)
+            self._pending_anchors.clear()
         if tag == "toc":
             self._end_paragraph()
             self.pdf.set_font(
@@ -1408,18 +1425,6 @@ class HTML2FPDF(HTMLParser):
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs_dict.get("pages") or "1")
             )
-        # like browsers, an id and the name of an <a> are targets for href="#..." links;
-        # the destination is set where the following text is rendered (see _write_paragraph)
-        for anchor in (
-            attrs_dict.get("id"),
-            attrs_dict.get("name") if tag == "a" else None,
-        ):
-            if (
-                anchor
-                and anchor.strip()
-                and anchor.strip() not in self._pending_anchors
-            ):
-                self._pending_anchors.append(anchor.strip())
         if tag == "table" or self.table is not None:
             # table cells are not rendered as paragraphs: the table position is used
             self._set_anchors(self._pending_anchors)
