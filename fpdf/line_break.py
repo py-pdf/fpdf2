@@ -76,6 +76,8 @@ class Fragment:
         self.graphics_state = graphics_state
         self.k = k
         self.link = link
+        # named destinations to set where the first character of this fragment is rendered
+        self.anchors: Sequence[str] = ()
 
     def __repr__(self) -> str:
         return (
@@ -582,6 +584,8 @@ class TextLine(NamedTuple):
     trailing_nl: bool = False
     trailing_form_feed: bool = False
     indent: float = 0
+    # named destinations whose text starts on this line
+    anchors: Sequence[str] = ()
 
     def get_ordered_fragments(self) -> list[Fragment]:
         if not self.fragments:
@@ -867,8 +871,23 @@ class MultiLineBreak:
         self.indent = indent
         self._is_first_line = True
 
-    # pylint: disable=too-many-return-statements
     def get_line(self) -> Optional[TextLine]:
+        start = (self.fragment_index, self.character_index)
+        line = self._get_line()
+        if line is None:
+            return None
+        # the anchors of the fragments whose first character is on this line
+        end = (self.fragment_index, self.character_index)
+        anchors = [
+            anchor
+            for index in range(start[0], min(end[0] + 1, len(self.fragments)))
+            if start <= (index, 0) < end
+            for anchor in self.fragments[index].anchors
+        ]
+        return line._replace(anchors=tuple(anchors)) if anchors else line
+
+    # pylint: disable=too-many-return-statements
+    def _get_line(self) -> Optional[TextLine]:
         first_char = True  # "Tw" ignores the first character in a text object.
         idx_last_forced_break = self.idx_last_forced_break
         self.idx_last_forced_break = None

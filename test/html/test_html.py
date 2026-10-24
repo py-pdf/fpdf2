@@ -1150,6 +1150,37 @@ def test_html_link_to_an_image(space_left):
     assert destination.top == pytest.approx((pdf.h - top) * pdf.k)
 
 
+def test_html_inline_anchor_after_a_page_break():
+    """An inline target points to its own line, not the paragraph's first line."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#target">Go to target</a>'
+        "<p>" + "words " * 1100 + '<a id="target">TARGET</a></p>'
+    )
+    pdf.output()
+
+    assert pdf.pages_count == 2
+    assert pdf.named_destinations["target"].page_number == 2
+
+
+def test_html_anchor_on_a_table_moved_to_the_next_page():
+    """A table target follows the table when layout causes a page break."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_y(pdf.h - pdf.b_margin - 3)
+    pdf.write_html(
+        '<table id="target"><tr><td>TARGET</td></tr></table>'
+        '<a href="#target">Back to table</a>'
+    )
+    pdf.output()
+
+    assert pdf.pages_count == 2
+    destination = pdf.named_destinations["target"]
+    assert destination.page_number == 2
+    assert destination.top == pytest.approx((pdf.h - pdf.t_margin) * pdf.k)
+
+
 def test_html_anchor_without_href(tmp_path):
     "An <a> without href, such as a named anchor, renders as plain text and is a link target."
     pdf = FPDF()

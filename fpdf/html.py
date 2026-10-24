@@ -517,6 +517,8 @@ class HTML2FPDF(HTMLParser):
         self._in_title = False
         # id / <a name> targets waiting for the next text to be rendered:
         self._pending_anchors: list[str] = []
+        # those of a <table> or its cells, set once the table is rendered:
+        self._table_anchors: list[str] = []
         self._in_style_or_script = False
         # <table>-related properties:
         self.table_line_separators = table_line_separators
@@ -718,6 +720,8 @@ class HTML2FPDF(HTMLParser):
         paragraph = self._paragraph
         self._column.end_paragraph()
         self._column.render()
+        # anchors of text that rendered nothing (e.g. only spaces): current position
+        self._set_anchors(paragraph.unrendered_anchors)
         self._set_anchors(paragraph.anchors)
         self._paragraph = None
         self.follows_trailing_space = True
@@ -1405,7 +1409,8 @@ class HTML2FPDF(HTMLParser):
                 self.table_row.cell(img=attrs_dict["src"], img_fill_width=True)
                 assert self.td_th is not None
                 self.td_th["inserted"] = True
-                self._set_anchors(self._pending_anchors)
+                self._table_anchors.extend(self._pending_anchors)
+                self._pending_anchors.clear()
                 return
             x: float | Align = self.pdf.get_x()
             if self.align:
@@ -1435,7 +1440,8 @@ class HTML2FPDF(HTMLParser):
             )
         if tag == "table" or self.table is not None:
             # table cells are not rendered as paragraphs: the table position is used
-            self._set_anchors(self._pending_anchors)
+            self._table_anchors.extend(self._pending_anchors)
+            self._pending_anchors.clear()
         if tag == "sup":
             self.pdf.char_vpos = CharVPos.SUP
         if tag == "sub":
@@ -1548,6 +1554,11 @@ class HTML2FPDF(HTMLParser):
                     usable_width * self.pdf.k,
                 )
             self.table.render()
+            # table targets: where its first row was rendered, after any page break
+            page, y = self.table.first_row_position or (self.pdf.page, self.pdf.y)
+            for anchor in self._table_anchors:
+                self.pdf.set_link(name=anchor, y=y, page=page)
+            self._table_anchors.clear()
             self.table = None
             self._ln()
         if tag == "tr":
