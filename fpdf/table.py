@@ -889,7 +889,8 @@ class Row:
             style,
             img,
             img_fill_width,
-            colspan,
+            # a colspan below 1 spans one column, like a rowspan below 1 spans one row
+            max(colspan, 1),
             rowspan,
             padding,
             link,
