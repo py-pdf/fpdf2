@@ -151,6 +151,18 @@ def test_inserting_link_to_non_existing_page():
         pdf.output()
 
 
+def test_inserting_link_with_an_invalid_index():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=12)
+    with pytest.raises(ValueError) as error:
+        pdf.cell(text="Page 1", link=999)
+    assert str(error.value) == (
+        "Link with an invalid index: 999 (doc #links=0)"
+        " - internal links must be created with add_link()"
+    )
+
+
 def test_inserting_link_with_no_page_number():
     pdf = FPDF()
     link = pdf.add_link()
