@@ -146,6 +146,16 @@ def test_add_font_uppercase():
     assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
 
 
+def test_add_font_repeated_style_letters():
+    "A style letter given twice is the same style, as in set_font()."
+    pdf = FPDF()
+    pdf.add_font("DejaVu", style="BB", fname=HERE / "DejaVuSans-Bold.ttf")
+    pdf.add_page()
+    pdf.set_font("DejaVu", style="B")
+    assert pdf.font_family == "dejavu"
+    assert pdf.font_style == "B"
+
+
 def test_add_font_missing_notdef_glyph(caplog):
     pdf = FPDF()
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular-without-notdef.ttf")

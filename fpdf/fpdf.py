@@ -2668,7 +2668,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if unicode_range is not None:
             parsed_unicode_range = get_parsed_unicode_range(unicode_range)
 
-        style = "".join(sorted(style.upper()))
+        # a repeated letter means the same style: "BB" is bold
+        style = "".join(sorted(set(style.upper())))
         if any(letter not in "BI" for letter in style):
             raise ValueError(
                 f"Unknown style provided (only B & I letters are allowed): {style}"
@@ -2755,7 +2756,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         family = family.lower()
         if isinstance(style, TextEmphasis):
             style = style.style
-        style = "".join(sorted(style.upper()))
+        # a repeated letter means the same style: "BB" is bold
+        style = "".join(sorted(set(style.upper())))
         if any(letter not in "BISU" for letter in style):
             raise ValueError(
                 f"Unknown style provided (only B/I/S/U letters are allowed): {style}"
