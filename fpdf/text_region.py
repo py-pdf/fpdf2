@@ -764,6 +764,10 @@ class TextColumns(TextRegion, TextColumnarMixin):
         balance: bool = False,
         **kwargs: Any,
     ) -> None:
+        if ncols < 1:
+            raise ValueError(
+                f"'ncols' parameter must be equal or greater than 1: {ncols}"
+            )
         super().__init__(pdf, *args, **kwargs)
         self._cur_column = 0
         self._ncols = ncols
