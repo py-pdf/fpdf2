@@ -470,6 +470,36 @@ def test_table_text_align_tuple_too_short():
     )
 
 
+@pytest.mark.parametrize("colspan", [0, -1])
+def test_table_colspan_below_one(tmp_path, colspan):
+    "A colspan below 1 spans one column, like a rowspan below 1 spans one row."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        row = table.row()
+        row.cell("A", colspan=colspan)
+        row.cell("B")
+        row = table.row()
+        row.cell("C")
+        row.cell("D")
+    with pdf.table(first_row_as_headings=False) as table:
+        table.row().cell("only cell", colspan=colspan)
+    expected = FPDF()
+    expected.add_page()
+    expected.set_font("Times", size=16)
+    with expected.table() as table:
+        row = table.row()
+        row.cell("A")
+        row.cell("B")
+        row = table.row()
+        row.cell("C")
+        row.cell("D")
+    with expected.table(first_row_as_headings=False) as table:
+        table.row().cell("only cell")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_table_capture_font_settings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
