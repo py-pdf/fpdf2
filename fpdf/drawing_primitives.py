@@ -366,6 +366,10 @@ def color_from_hex_string(hexstr: str) -> DeviceRGB | DeviceGray:
 
     hlen = len(hexstr)
 
+    # int(..., 16) also accepts "_", "+", "-" and spaces: "#1 2345" would give #012345
+    if any(char not in "0123456789abcdefABCDEF" for char in hexstr[1:]):
+        raise ValueError(f"{hexstr} could not be interpreted as a RGB(A) hex string")
+
     if hlen == 4:  # #RGB
         r = int(hexstr[1] * 2, 16)
         g = int(hexstr[2] * 2, 16)

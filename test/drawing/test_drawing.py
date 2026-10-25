@@ -232,6 +232,13 @@ class TestColors:
         else:
             assert color_from_hex_string(hex_string) == result
 
+    def test_hex_string_parser_error_message(self):
+        with pytest.raises(ValueError) as error:
+            color_from_hex_string("#xyz")
+        assert (
+            str(error.value) == "#xyz could not be interpreted as a RGB(A) hex string"
+        )
+
     @pytest.mark.parametrize("rgb_string, result", parameters.rgb_colors)
     def test_rgb_string_parser(self, rgb_string, result):
         if isinstance(result, type) and issubclass(result, Exception):
