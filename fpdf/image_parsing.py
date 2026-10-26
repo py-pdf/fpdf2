@@ -45,9 +45,16 @@ from .svg import SVGLimits, SVGObject
 from .util import ImageType
 
 try:
-    from PIL import Image, ImageCms, TiffImagePlugin, features as PIL_features
+    from PIL import (
+        Image,
+        ImageChops,
+        ImageCms,
+        TiffImagePlugin,
+        features as PIL_features,
+    )
 except ImportError:
     Image = None  # type: ignore[assignment]
+    ImageChops = None  # type: ignore[assignment]
     ImageCms = None  # type: ignore[assignment]
     TiffImagePlugin = None  # type: ignore[assignment]
     PIL_features = None  # type: ignore[assignment]
@@ -581,6 +588,24 @@ def get_svg_info(
     return filename, svg, info
 
 
+def _from_16_bit_grayscale(img: "PILImage") -> "PILImage":
+    """
+    Scale a 16-bit grayscale image, such as a 16-bit grayscale PNG, down to 8 bits.
+    Converting it with `convert("RGBA")` instead clips every value above 255 to white.
+    A tRNS color key becomes an alpha channel.
+    """
+    if img.mode != "I":
+        img = img.convert("I")
+    gray = img.point(lambda value: value * (1 / 256)).convert("L")
+    key = img.info.get("transparency")
+    if key is None:
+        return gray
+    # 0 for the key, and at least 255 (clipped to 255) for any other value
+    above = img.point(lambda value: value * 255 + (-key * 255)).convert("L")
+    below = img.point(lambda value: value * -255 + key * 255).convert("L")
+    return Image.merge("LA", (gray, ImageChops.lighter(above, below)))
+
+
 def get_img_info(
     filename: str | BinaryIO | Path,
     img: "PILImage | bytes | BinaryIO | Path | str | None" = None,
@@ -619,6 +644,10 @@ def get_img_info(
         img = Image.open(img_raw_data)
         is_pil_img = False
     assert _is_pil_image(img)
+    # Pillow opens 16-bit grayscale PNG files in mode "I;16", or "I" before 10.3.0
+    is_16_bit_grayscale = img.mode in ("I;16", "I;16B", "I;16L") or (
+        img.mode == "I" and img.format == "PNG"
+    )
 
     img_altered = False
     if dims:
@@ -638,6 +667,10 @@ def get_img_info(
 
     if img.mode in ("P", "PA") and image_filter != "FlateDecode":
         img = img.convert("RGBA")
+
+    if is_16_bit_grayscale:
+        img = _from_16_bit_grayscale(img)
+        img_altered = True
 
     if img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA", "CMYK"):
         img = img.convert("RGBA")

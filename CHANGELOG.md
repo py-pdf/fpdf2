@@ -24,6 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
+* 16-bit grayscale images, like 16-bit grayscale PNG files, are scaled down to 8 bits instead of being converted to RGBA, which made every value above 255 white, and keep the transparency of their tRNS color key
 * Tables inside `FPDF.unbreakable()` are replayed with their rows and cells intact when the block is moved to a new page - _cf._ [issue #1230](https://github.com/py-pdf/fpdf2/issues/1230) - thanks to @alphaZytx
 * `FPDF.table()` raises a clear `ValueError` naming the column when `text_align` is a tuple with fewer values than the table has columns, like it does for `col_widths`, instead of an `IndexError` - thanks to @RavSinghChandan
 * `FPDF.table()`: a cell with a `colspan` below 1 spans one column, like a `rowspan` below 1 already spans one row, instead of raising `ZeroDivisionError` or `FPDFException` or breaking the column layout - thanks to @RavSinghChandan
