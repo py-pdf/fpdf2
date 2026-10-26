@@ -124,7 +124,7 @@ class FlexTemplate:
             if e["type"].upper() == "T":
                 if "x2" not in e and "w" in e:
                     e["x2"] = e.get("x1", 0) + e["w"]
-            
+
                 if "y2" not in e and "h" in e and "y1" in e:
                     e["y2"] = e["y1"] + e["h"]
 
@@ -433,13 +433,13 @@ class FlexTemplate:
             )
         width = w if w is not None else x2 - (x1 if x1 is not None else pdf.get_x())
         height = h if h is not None else y2 - (y1 if y1 is not None else pdf.get_y())
-        
+
         cell_kwargs = {}
         if new_x is not None:
             cell_kwargs["new_x"] = new_x
         if new_y is not None:
             cell_kwargs["new_y"] = new_y
-            
+
         if multiline is None:  # write without wrapping/trimming (default)
             pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill, **cell_kwargs,)
         elif multiline:  # automatic word - warp
