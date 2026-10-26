@@ -83,6 +83,10 @@ class FlexTemplate:
             "type": (str, type(None)),
             "x1": (int, float),
             "y1": (int, float),
+            "w": (int, float),
+            "h": (int, float),
+            "new_x": (str, type(None)),
+            "new_y": (str, type(None)),
             "x2": (int, float),
             "y2": (int, float),
             "font": (str, type(None)),
@@ -108,28 +112,44 @@ class FlexTemplate:
             # priority is optional, but we need a default for sorting.
             if not "priority" in e:
                 e["priority"] = 0
-            for k in ("name", "type", "x1", "y1", "y2"):
+            for k in ("name", "type"):
                 if k not in e:
-                    if e["type"] == "C39":
-                        # lots of legacy special casing.
-                        # We need to do that here, so that rotation and scaling
-                        # still work.
-                        if k == "x1" and "x" in e:
-                            e["x1"] = e["x"]
-                            continue
-                        if k == "y1" and "y" in e:
-                            e["y1"] = e["y"]
-                            continue
-                        if k == "y2" and "h" in e:
-                            e["y2"] = e["y1"] + e["h"]
-                            continue
                     raise KeyError(f"Mandatory key '{k}' missing in input data")
-            # x2 is optional for barcode types, but needed for offset rendering
+            # Text elements may use cursor-relative positioning and cell dimensions
+            # (w/h) instead of the legacy bounding box (x1/y1/x2/y2).
+            cursor_text = e["type"].upper() == "T" and (
+                "new_x" in e or "new_y" in e or "x1" not in e or "y1" not in e
+            )
+            # Text elements may specify dimensions using w/h instead of x2/y2.
+            if e["type"].upper() == "T":
+                if "x2" not in e and "w" in e:
+                    e["x2"] = e.get("x1", 0) + e["w"]
+            
+                if "y2" not in e and "h" in e and "y1" in e:
+                    e["y2"] = e["y1"] + e["h"]
+
+            if e["type"] == "C39":
+                # Preserve legacy aliases, including support for rotation/scaling.
+                if "x1" not in e and "x" in e:
+                    e["x1"] = e["x"]
+                if "y1" not in e and "y" in e:
+                    e["y1"] = e["y"]
+                if "y2" not in e and "h" in e and "y1" in e:
+                    e["y2"] = e["y1"] + e["h"]
+            for k in ("x1", "y1", "x2", "y2"):
+                if k not in e and not cursor_text:
+                    raise KeyError(f"Mandatory key '{k}' missing in input data")
+            # x2 is optional for barcode types and cursor-positioned text.
             if "x2" not in e:
-                if e["type"] in ["BC", "C39"]:
-                    e["x2"] = 0
+                if e["type"] in ["BC", "C39"] or cursor_text or "w" in e:
+                    e["x2"] = e.get("x1", 0) + e.get("w", 0)
                 else:
                     raise KeyError("Mandatory key 'x2' missing in input data")
+            if cursor_text and "y2" not in e:
+                if "h" in e:
+                    e["y2"] = e.get("y1", 0) + e["h"]
+                else:
+                    e["y2"] = e.get("y1", 0)
             if not "size" in e and e["type"] == "C39":
                 if "w" in e:
                     e["size"] = e["w"]
@@ -357,10 +377,12 @@ class FlexTemplate:
     def _text(
         self,
         *_: Any,
-        x1: float = 0,
-        y1: float = 0,
+        x1: Optional[float] = None,
+        y1: Optional[float] = None,
         x2: float = 0,
         y2: float = 0,
+        w: Optional[float] = None,
+        h: Optional[float] = None,
         text: str = "",
         font: str = "helvetica",
         size: float = 10,
@@ -373,9 +395,11 @@ class FlexTemplate:
         background: Optional[int] = None,
         multiline: Optional[bool] = None,
         wrapmode: str = "WORD",
+        new_x: Optional[str] = None,
+        new_y: Optional[str] = None,
         **__: Any,
     ) -> None:
-        if not text:
+        if not text and new_x is None and new_y is None:
             return
         pdf = self.pdf
         if pdf.text_color != _rgb_as_str(foreground):  # type: ignore[comparison-overlap]
@@ -400,10 +424,24 @@ class FlexTemplate:
         if underline:
             style += "U"
         pdf.set_font(font, style, size * scale)
-        pdf.set_xy(x1, y1)
-        width, height = x2 - x1, y2 - y1
+        # Omitted coordinates deliberately mean "leave the current cursor
+        # coordinate unchanged", not coordinate zero.
+        if x1 is not None or y1 is not None:
+            pdf.set_xy(
+                pdf.get_x() if x1 is None else x1,
+                pdf.get_y() if y1 is None else y1,
+            )
+        width = w if w is not None else x2 - (x1 if x1 is not None else pdf.get_x())
+        height = h if h is not None else y2 - (y1 if y1 is not None else pdf.get_y())
+        
+        cell_kwargs = {}
+        if new_x is not None:
+            cell_kwargs["new_x"] = new_x
+        if new_y is not None:
+            cell_kwargs["new_y"] = new_y
+            
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill)
+            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill, **cell_kwargs,)
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
                 w=width,
@@ -413,6 +451,7 @@ class FlexTemplate:
                 align=align,
                 fill=fill,
                 wrapmode=WrapMode.coerce(wrapmode),
+                **cell_kwargs,
             )
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(  # type: ignore[index,assignment]
@@ -424,7 +463,7 @@ class FlexTemplate:
                 dry_run=True,
                 output="LINES",
             )[0]
-            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill)
+            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill, **cell_kwargs,)
 
     def _line(
         self,
@@ -705,15 +744,29 @@ class FlexTemplate:
             for element in sorted_elements:
                 ele = element.copy()  # don't want to modify the callers original
                 ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
-                if scale != 1.0:
+                cursor_text = ele["type"].upper() == "T" and (
+                    "new_x" in ele or "new_y" in ele or "x1" not in ele or "y1" not in ele
+                )
+                if cursor_text:
+                    # Keep omitted x1/y1 omitted so _text() preserves the cursor.
+                    if scale != 1.0:
+                        if "w" in ele:
+                            ele["w"] *= scale
+                        if "h" in ele:
+                            ele["h"] *= scale
+                    if offsetx and "x1" in ele:
+                        ele["x1"] += offsetx
+                    if offsety and "y1" in ele:
+                        ele["y1"] += offsety
+                elif scale != 1.0:
                     ele["x1"] = ele["x1"] * scale
                     ele["y1"] = ele["y1"] * scale
                     ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
                     ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
-                if offsetx:
+                if offsetx and not cursor_text:
                     ele["x1"] = ele["x1"] + offsetx
                     ele["x2"] = ele["x2"] + offsetx
-                if offsety:
+                if offsety and not cursor_text:
                     ele["y1"] = ele["y1"] + offsety
                     ele["y2"] = ele["y2"] + offsety
                 ele["scale"] = scale
