@@ -64,7 +64,7 @@ top of these primitives.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L58-L62" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L58-L62" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def check_range(value: Number, minimum: float = 0.0, maximum: float = 1.0) -&gt; Number:
     if not minimum &lt;= value &lt;= maximum:
@@ -81,7 +81,7 @@ top of these primitives.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L318-L343" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L322-L347" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def cmyk8(
     c: Number, m: Number, y: Number, k: Number, a: Optional[Number] = None
@@ -143,7 +143,7 @@ DeviceCMYK color representation.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L346-L400" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L350-L404" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def color_from_hex_string(hexstr: str) -&gt; DeviceRGB | DeviceGray:
     &#34;&#34;&#34;
@@ -225,7 +225,7 @@ DeviceRGB representation of the color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L403-L442" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L407-L446" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def color_from_rgb_string(rgbstr: str) -&gt; DeviceRGB | DeviceGray:
     &#34;&#34;&#34;
@@ -288,7 +288,7 @@ DeviceRGB representation of the color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L299-L315" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L299-L319" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def convert_to_device_color(
     r: Number | Color | str | Sequence[Number] | DeviceCMYK | DeviceGray | DeviceRGB,
@@ -304,6 +304,10 @@ DeviceRGB representation of the color.</p></div>
     if isinstance(r, Sequence):
         assert not isinstance(r, str)
         r, g, b = r
+    # checked before scaling, so that the error shows the value that was passed
+    for component in (r,) if g == -1 else (r, g, b):
+        if not 0 &lt;= component &lt;= 255:
+            raise ValueError(f&#34;color component {component} not in range [0, 255]&#34;)
     if (r, g, b) == (0, 0, 0) or g == -1:
         return DeviceGray(r / 255)
     return DeviceRGB(r / 255, g / 255, b / 255)</code></pre>
@@ -317,7 +321,7 @@ DeviceRGB representation of the color.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L277-L296" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L277-L296" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def gray8(g: Number, a: Optional[Number] = None) -&gt; DeviceGray:
     &#34;&#34;&#34;
@@ -368,7 +372,7 @@ DeviceGray color representation.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L249-L274" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L249-L274" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rgb8(
     r: Number, g: Number, b: Number, a: Optional[Number] = None
@@ -434,7 +438,7 @@ DeviceRGB color representation.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceCMYK:
@@ -482,7 +486,7 @@ class DeviceCMYK:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceCMYK:
@@ -532,7 +536,7 @@ transparency rather than specifying fully transparent or fully opaque.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceCMYK:
@@ -579,7 +583,7 @@ class DeviceCMYK:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L224-L227" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L224-L227" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def colors(self) -&gt; tuple[float, float, float, float]:
@@ -593,7 +597,7 @@ def colors(self) -&gt; tuple[float, float, float, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceCMYK:
@@ -640,7 +644,7 @@ class DeviceCMYK:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceCMYK:
@@ -687,7 +691,7 @@ class DeviceCMYK:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L219-L222" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L219-L222" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def operator(self) -&gt; str:
@@ -701,7 +705,7 @@ def operator(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L194-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceCMYK:
@@ -753,7 +757,7 @@ class DeviceCMYK:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L229-L230" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L229-L230" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
     return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
@@ -770,7 +774,7 @@ class DeviceCMYK:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L145-L177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L145-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceGray:
@@ -814,7 +818,7 @@ class DeviceGray:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L145-L177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L145-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceGray:
@@ -860,7 +864,7 @@ transparency rather than specifying fully transparent or fully opaque.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L166-L169" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L166-L169" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def colors(self) -&gt; tuple[float, float, float]:
@@ -874,7 +878,7 @@ def colors(self) -&gt; tuple[float, float, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L171-L174" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L171-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def colors255(self) -&gt; tuple[float, float, float]:
@@ -888,7 +892,7 @@ def colors255(self) -&gt; tuple[float, float, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L145-L177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L145-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceGray:
@@ -932,7 +936,7 @@ class DeviceGray:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L161-L164" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L161-L164" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def operator(self) -&gt; str:
@@ -951,7 +955,7 @@ def operator(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L176-L177" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L176-L177" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
     return f&#34;{number_to_str(self.g)} {self.operator}&#34;</code></pre>
@@ -968,7 +972,7 @@ def operator(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceRGB:
@@ -1040,7 +1044,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceRGB:
@@ -1114,7 +1118,7 @@ transparency rather than specifying fully transparent or fully opaque.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceRGB:
@@ -1185,7 +1189,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L112-L115" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L112-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def colors(self) -&gt; tuple[float, float, float]:
@@ -1199,7 +1203,7 @@ def colors(self) -&gt; tuple[float, float, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L117-L120" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L117-L120" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def colors255(self) -&gt; tuple[float, float, float]:
@@ -1213,7 +1217,7 @@ def colors255(self) -&gt; tuple[float, float, float]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceRGB:
@@ -1284,7 +1288,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L107-L110" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L107-L110" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def operator(self) -&gt; str:
@@ -1298,7 +1302,7 @@ def operator(self) -&gt; str:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L70-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True, init=False)
 class DeviceRGB:
@@ -1374,7 +1378,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L125-L126" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L125-L126" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def is_achromatic(self) -&gt; bool:
     return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9</code></pre>
@@ -1388,7 +1392,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L122-L123" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L122-L123" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
     return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.operator}&#34;</code></pre>
@@ -1402,7 +1406,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L128-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L128-L130" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def to_gray(self) -&gt; &#34;DeviceGray&#34;:
     # sRGB luminance
@@ -1420,7 +1424,7 @@ class DeviceRGB:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L445-L675" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L449-L679" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True)
 class Point:
@@ -1662,7 +1666,7 @@ class Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L445-L675" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L449-L679" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True)
 class Point:
@@ -1903,7 +1907,7 @@ class Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L445-L675" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L449-L679" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True)
 class Point:
@@ -2149,7 +2153,7 @@ class Point:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L521-L538" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L525-L542" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -2190,7 +2194,7 @@ A Point which is the sum of the two source points.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L611-L630" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L615-L634" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -2236,7 +2240,7 @@ A Point whose coordinates are the result of the division.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L647-L672" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L651-L676" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Point&#34;:
@@ -2292,7 +2296,7 @@ A Point whose coordinates are the result of applying the transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L568-L584" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L572-L588" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __mul__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -2331,7 +2335,7 @@ A Point whose coordinates are the result of the multiplication.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L558-L566" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L562-L570" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __neg__(self) -&gt; &#34;Point&#34;:
@@ -2355,7 +2359,7 @@ A Point whose coordinates are this points coordinates negated.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L586-L588" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L590-L592" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __rmul__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -2370,7 +2374,7 @@ def __rmul__(self, other: Number) -&gt; &#34;Point&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L540-L556" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L544-L560" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
@@ -2409,7 +2413,7 @@ A Point which is the difference of the two source points.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L590-L609" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L594-L613" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
@@ -2455,7 +2459,7 @@ A Point whose coordinates are the result of the division.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L480-L507" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L484-L511" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def angle(self, other: &#34;Point&#34;) -&gt; float:
     &#34;&#34;&#34;
@@ -2515,7 +2519,7 @@ The scalar angle between the two points <strong>in radians</strong>.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L462-L478" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L466-L482" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def dot(self, other: &#34;Point&#34;) -&gt; float:
     &#34;&#34;&#34;
@@ -2559,7 +2563,7 @@ The scalar result of the dot product computation.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L509-L519" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L513-L523" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def mag(self) -&gt; float:
     &#34;&#34;&#34;
@@ -2587,7 +2591,7 @@ The scalar result of the distance computation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L457-L460" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L461-L464" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self) -&gt; str:
     &#34;&#34;&#34;Render the point to the string `&#34;x y&#34;` for emitting to a PDF.&#34;&#34;&#34;
@@ -2606,7 +2610,7 @@ The scalar result of the distance computation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L678-L1132" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L682-L1136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True, slots=True)
 class Transform:
@@ -3251,7 +3255,7 @@ A Transform representing the specified translation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1077-L1098" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1081-L1102" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Transform&#34;:
@@ -3294,7 +3298,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1048-L1070" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1052-L1074" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __mul__(self, other: Number) -&gt; &#34;Transform&#34;:
@@ -3338,7 +3342,7 @@ A Transform with the modified parameters.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1072-L1075" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1076-L1079" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@force_document
 def __rmul__(self, other: Number) -&gt; &#34;Transform&#34;:
@@ -3354,7 +3358,7 @@ def __rmul__(self, other: Number) -&gt; &#34;Transform&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1004-L1023" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1008-L1027" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def about(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -3405,7 +3409,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1025-L1046" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1029-L1050" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def inverse(self) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -3448,7 +3452,7 @@ A Transform representing the inverse of this transform.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1100-L1115" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1104-L1119" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, last_item: &#34;Renderable&#34;) -&gt; tuple[str, &#34;Renderable&#34;]:
     &#34;&#34;&#34;
@@ -3485,7 +3489,7 @@ A tuple of <code>(str, last_item)</code>. <code>last_item</code> is returned unc
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L943-L958" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L947-L962" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rotate(self, theta: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -3528,7 +3532,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L960-L976" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L964-L980" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def rotate_d(self, theta_d: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -3573,7 +3577,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1125-L1132" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1129-L1136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def row_norms(self) -&gt; tuple[float, float]:
     &#34;&#34;&#34;
@@ -3596,7 +3600,7 @@ bounding boxes to account for stroke width under the CTM.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L923-L941" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L927-L945" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def scale(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -3646,7 +3650,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L978-L994" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L982-L998" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def shear(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
@@ -3692,7 +3696,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L996-L998" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1000-L1002" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def skew(self, ax: Number = 0, ay: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;Compose with a skew (radians).&#34;&#34;&#34;
@@ -3707,7 +3711,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L1000-L1002" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L1004-L1006" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def skew_d(self, ax_d: Number = 0, ay_d: Optional[Number] = None) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;Compose with a skew (degrees).&#34;&#34;&#34;
@@ -3722,7 +3726,7 @@ A Transform representing the composed transform.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ed1e22790b4736ad47a9828082137f4a5b434759/fpdf/drawing_primitives.py#L906-L921" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/de1d235a184f3e3a470bb5760ff203ceb979f5a0/fpdf/drawing_primitives.py#L910-L925" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def translate(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
     &#34;&#34;&#34;
