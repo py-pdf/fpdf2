@@ -2284,6 +2284,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        if numSides < 1:
+            raise ValueError(
+                f"'numSides' parameter must be equal or greater than 1: {numSides}"
+            )
         radius = polyWidth / 2
         centerX = x + radius
         centerY = y - radius
