@@ -3536,7 +3536,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y_max = max(ink_list[1::2])
         annotation = AnnotationDict(
             "Ink",
-            x=y_min,
+            x=x_min,
             y=y_max,
             width=x_max - x_min,
             height=y_max - y_min,
