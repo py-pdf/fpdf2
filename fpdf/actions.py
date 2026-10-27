@@ -13,7 +13,7 @@ class Action(ABC):
     def __init__(self, next_action: Optional["Action"] = None) -> None:
         """
         Args:
-            next (PDFObject | str): optional reference to another Action to trigger after this one
+            next_action (PDFObject | str): optional reference to another Action to trigger after this one
         """
         self.next = next_action
 
