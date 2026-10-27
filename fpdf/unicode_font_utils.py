@@ -10,9 +10,12 @@ in non-backward-compatible ways.
 """
 
 import platform
+from contextlib import suppress
 from pathlib import Path
-from typing import List, Optional, Tuple, Dict
+from typing import Dict, List, Optional, Set, Tuple
 import logging
+
+from fontTools import ttLib
 
 from .unicode_script import get_unicode_script, UnicodeScript
 
@@ -190,21 +193,16 @@ class UnicodeFontManager:
         # Get fonts for the specific script
         preferred_fonts = script_fonts.get(script, ["dejavusans", "dejavuserif"])
 
-        # Find available fonts from the preferred list
+        # Find available fonts from the preferred list. No generic fallback is
+        # added: a font is only worth recommending once we have verified that it
+        # actually contains the glyphs the text needs (see font_file_covers and
+        # get_font_recommendation_for_text). Recommending a font merely because
+        # it is installed could send the user back to the same encoding error.
         for font_name in preferred_fonts:
             if font_name in self.available_fonts:
                 recommendations.append(
                     (font_name, str(self.available_fonts[font_name]))
                 )
-
-        # If no specific fonts found, recommend DejaVu fonts (most comprehensive Unicode support)
-        if not recommendations:
-            for fallback in ["dejavusans", "dejavuserif", "arial", "helvetica"]:
-                if fallback in self.available_fonts:
-                    recommendations.append(
-                        (fallback, str(self.available_fonts[fallback]))
-                    )
-                    break
 
         return recommendations
 
@@ -232,6 +230,11 @@ class UnicodeFontManager:
         """
         Get a font recommendation for the given text based on its Unicode script.
 
+        A candidate font is only returned once its character map has been
+        verified to contain every character of the detected script present in
+        the text. If no installed candidate covers those characters, None is
+        returned rather than a guess that might fail the same way.
+
         Returns:
             (font_name, file_path) tuple for the recommended font, or None if no recommendation.
         """
@@ -239,8 +242,15 @@ class UnicodeFontManager:
         if not script:
             return None
 
-        recommendations = self.get_recommended_fonts_for_script(script)
-        return recommendations[0] if recommendations else None
+        # The characters that actually drove the recommendation and that the
+        # suggested font must be able to render.
+        required = {ch for ch in text if get_unicode_script(ch) == script}
+
+        for font_name, file_path in self.get_recommended_fonts_for_script(script):
+            if font_file_covers(Path(file_path), required):
+                return (font_name, file_path)
+
+        return None
 
     def list_available_unicode_fonts(self) -> Dict[str, str]:
         """
@@ -250,6 +260,43 @@ class UnicodeFontManager:
             Dictionary mapping font names to file paths.
         """
         return {name: str(path) for name, path in self.available_fonts.items()}
+
+
+def font_file_covers(font_path: Path, characters: Set[str]) -> bool:
+    """
+    Return True if the font file has a glyph for every character in `characters`.
+
+    The font's character map is inspected with fontTools. Collection files
+    (.ttc/.otc) count as covering the characters if any of their member fonts do.
+    Any failure to open or parse the font, or a font without a usable character
+    map, is treated as "not covered" so that an unreadable or unsuitable font is
+    never recommended.
+    """
+    if not characters:
+        return False
+
+    codepoints = {ord(ch) for ch in characters}
+    fonts: List[ttLib.TTFont] = []
+    try:
+        if font_path.suffix.lower() in (".ttc", ".otc"):
+            collection = ttLib.TTCollection(str(font_path), lazy=True)
+            members = collection.fonts  # pyright: ignore[reportUnknownMemberType]
+            fonts = list(members)  # pyright: ignore[reportUnknownArgumentType]
+        else:
+            fonts = [ttLib.TTFont(str(font_path), fontNumber=0, lazy=True)]
+        for font in fonts:
+            cmap: Optional[Dict[int, str]] = font.getBestCmap()
+            if cmap and codepoints.issubset(cmap.keys()):
+                return True
+    except Exception:  # pylint: disable=broad-exception-caught
+        # Unreadable / corrupt / cmap-less fonts must never be recommended.
+        return False
+    finally:
+        for font in fonts:
+            with suppress(Exception):
+                font.close()
+
+    return False
 
 
 def get_unicode_font_recommendation(text: str) -> Optional[Tuple[str, str]]:
@@ -266,40 +313,35 @@ def get_unicode_font_recommendation(text: str) -> Optional[Tuple[str, str]]:
     return manager.get_font_recommendation_for_text(text)
 
 
-def suggest_unicode_font_for_error(error_text: str, font_name: str) -> str:
+def suggest_unicode_font_for_error(error_text: str, font_name: str) -> Optional[str]:
     """
-    Generate a helpful error message suggesting Unicode fonts when encoding errors occur.
+    Generate a helpful error message suggesting a Unicode font when encoding errors occur.
+
+    A font is only suggested when one is installed whose character map is verified
+    to cover the offending characters. When no such font is found, None is returned
+    so the caller can fall back to the generic "Please consider using a Unicode
+    font." message instead of naming a font that might not work.
 
     Args:
         error_text: The text that caused the encoding error.
         font_name: The name of the font that failed.
 
     Returns:
-        A helpful error message with font suggestions.
+        A helpful error message naming a verified font, or None if none was found.
     """
     manager = UnicodeFontManager()
     script = manager.detect_script_in_text(error_text)
-
     if not script:
-        return (
-            f"The text contains characters that cannot be encoded with the '{font_name}' font. "
-            "Consider using a Unicode font like DejaVu Sans or Arial."
-        )
+        return None
 
+    recommendation = manager.get_font_recommendation_for_text(error_text)
+    if recommendation is None:
+        return None
+
+    font_name_rec, font_path = recommendation
     script_name = script.name.replace("_", " ").title()
-    recommendations = manager.get_recommended_fonts_for_script(script)
-
-    if recommendations:
-        font_name_rec, font_path = recommendations[0]
-        message = (
-            f"The text contains {script_name} characters that cannot be encoded with the '{font_name}' font. "
-            f"Consider using a Unicode font like '{font_name_rec}' instead.\n"
-            f"To use it, add the font with: pdf.add_font('{font_name_rec}', '', '{font_path}')"
-        )
-    else:
-        message = (
-            f"The text contains {script_name} characters that cannot be encoded with the '{font_name}' font. "
-            "Consider using a Unicode font like DejaVu Sans or Arial."
-        )
-
-    return message
+    return (
+        f"The text contains {script_name} characters that cannot be encoded with the '{font_name}' font. "
+        f"Consider using a Unicode font like '{font_name_rec}' instead.\n"
+        f"To use it, add the font with: pdf.add_font('{font_name_rec}', '', {font_path!r})"
+    )

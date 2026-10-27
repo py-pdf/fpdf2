@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fpdf.unicode_font_utils import (
     UnicodeFontManager,
+    font_file_covers,
     get_unicode_font_recommendation,
     suggest_unicode_font_for_error,
 )
@@ -109,38 +110,46 @@ def test_get_unicode_font_recommendation():
 
 
 def test_suggest_unicode_font_for_error_cyrillic():
-    """Test error suggestion for Cyrillic text."""
-    error_text = "Привет, мир!"
-    font_name = "helvetica"
-
-    suggestion = suggest_unicode_font_for_error(error_text, font_name)
-    assert isinstance(suggestion, str)
-    assert "Cyrillic" in suggestion
-    assert "helvetica" in suggestion
-    assert "Unicode font" in suggestion
+    """A suggestion, when returned, names the script, the failing font and a replacement."""
+    suggestion = suggest_unicode_font_for_error("Привет, мир!", "helvetica")
+    # A suggestion is only returned when an installed font is verified to cover
+    # the characters, so None is valid on a host without such a font.
+    if suggestion is not None:
+        assert "Cyrillic" in suggestion
+        assert "helvetica" in suggestion
+        assert "Unicode font" in suggestion
+        assert "pdf.add_font(" in suggestion
 
 
 def test_suggest_unicode_font_for_error_arabic():
-    """Test error suggestion for Arabic text."""
-    error_text = "مرحبا بالعالم"
-    font_name = "times"
-
-    suggestion = suggest_unicode_font_for_error(error_text, font_name)
-    assert isinstance(suggestion, str)
-    assert "Arabic" in suggestion
-    assert "times" in suggestion
-    assert "Unicode font" in suggestion
+    """A suggestion for Arabic text, when returned, is well-formed."""
+    suggestion = suggest_unicode_font_for_error("مرحبا بالعالم", "times")
+    if suggestion is not None:
+        assert "Arabic" in suggestion
+        assert "times" in suggestion
+        assert "Unicode font" in suggestion
 
 
 def test_suggest_unicode_font_for_error_no_script():
-    """Test error suggestion for text with no specific script."""
-    error_text = "Hello World 123"
-    font_name = "courier"
+    """Latin-only / no-script text yields no font suggestion (caller uses the generic message)."""
+    assert suggest_unicode_font_for_error("Hello World 123", "courier") is None
 
-    suggestion = suggest_unicode_font_for_error(error_text, font_name)
-    assert isinstance(suggestion, str)
-    assert "courier" in suggestion
-    assert "Unicode font" in suggestion
+
+def test_font_file_covers_verifies_glyph_coverage():
+    """font_file_covers inspects the actual character map, not just that a font exists."""
+    dejavu = Path(__file__).parent / "DejaVuSans.ttf"
+    assert dejavu.exists()
+    # DejaVu Sans covers Latin and Cyrillic...
+    assert font_file_covers(dejavu, {"A", "П"}) is True
+    # ...but not Han ideographs.
+    assert font_file_covers(dejavu, {"你"}) is False
+    # An empty requirement is never treated as covered.
+    assert font_file_covers(dejavu, set()) is False
+
+
+def test_font_file_covers_unreadable_file_is_safe():
+    """A path that cannot be read is treated as not covering, so it is never recommended."""
+    assert font_file_covers(Path("/no/such/font.ttf"), {"A"}) is False
 
 
 def test_unicode_font_manager_with_real_fonts():

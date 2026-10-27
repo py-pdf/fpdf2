@@ -82,10 +82,18 @@ def demonstrate_error_handling():
     print(f"Font that failed: {font_name}")
     print()
 
-    # Get helpful error suggestion
+    # Get helpful error suggestion. A suggestion is only returned when an
+    # installed font is verified to cover the offending characters; otherwise
+    # fpdf2 falls back to the generic "Please consider using a Unicode font."
     suggestion = suggest_unicode_font_for_error(error_text, font_name)
-    print("Helpful error message:")
-    print(suggestion)
+    if suggestion:
+        print("Helpful error message:")
+        print(suggestion)
+    else:
+        print(
+            "No installed font was verified to cover these characters; fpdf2 "
+            "falls back to: 'Please consider using a Unicode font.'"
+        )
     print()
 
 
@@ -116,43 +124,37 @@ def create_multilingual_pdf():
     y_position = 20
 
     for script_name, text in test_texts:
-        # Get font recommendation for this text
+        # Get a font recommendation for this text. It is only returned when an
+        # installed font is verified to actually cover the characters.
         recommendation = manager.get_font_recommendation_for_text(text)
+        script = manager.detect_script_in_text(text)
 
+        pdf.set_y(y_position)
         if recommendation:
             font_name, font_path = recommendation
-            try:
-                # Add the recommended font
-                pdf.add_font(font_name, "", font_path)
-                pdf.set_font(font_name, size=12)
-
-                # Add text
-                pdf.set_y(y_position)
-                pdf.cell(0, 8, f"{script_name}: {text}", new_x="LMARGIN", new_y="NEXT")
-
-                print(f"✓ {script_name}: Using {font_name}")
-                y_position += 10
-
-            except Exception as e:
-                # Fallback to default font
-                pdf.set_font("helvetica", size=12)
-                pdf.set_y(y_position)
-                pdf.cell(
-                    0,
-                    8,
-                    f"{script_name}: [Font not available] {text}",
-                    new_x="LMARGIN",
-                    new_y="NEXT",
-                )
-                print(f"✗ {script_name}: Font not available ({e})")
-                y_position += 10
-        else:
-            # Use default font for Latin text
+            pdf.add_font(font_name, "", font_path)
+            pdf.set_font(font_name, size=12)
+            pdf.cell(0, 8, f"{script_name}: {text}", new_x="LMARGIN", new_y="NEXT")
+            print(f"✓ {script_name}: Using {font_name}")
+        elif script is None:
+            # Latin text: the built-in font can render it.
             pdf.set_font("helvetica", size=12)
-            pdf.set_y(y_position)
             pdf.cell(0, 8, f"{script_name}: {text}", new_x="LMARGIN", new_y="NEXT")
             print(f"• {script_name}: Using default font")
-            y_position += 10
+        else:
+            # A non-Latin script with no installed font verified to cover it.
+            # Render an ASCII note instead of the unsupported text, which the
+            # built-in font could not encode.
+            pdf.set_font("helvetica", size=12)
+            pdf.cell(
+                0,
+                8,
+                f"{script_name}: [no Unicode font covering this script found on this system]",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+            print(f"✗ {script_name}: no verified Unicode font available")
+        y_position += 10
 
     # Save the PDF
     filename = "multilingual_unicode_demo.pdf"
