@@ -2330,6 +2330,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill.
             * `DF` or `FD`: draw and fill.
         """
+        if corners < 1:
+            raise ValueError(
+                f"'corners' parameter must be equal or greater than 1: {corners}"
+            )
         th = math.radians(rotate_degrees)
         point_list: list[tuple[float, float]] = []
         for i in range(0, (corners * 2) + 1):
