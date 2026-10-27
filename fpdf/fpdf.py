@@ -1119,6 +1119,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Enable `fpdf.output.PDFPageLabel` to be inserted on every page.
         This will be displayed by some PDF readers to identify pages.
         """
+        if label_start is not None and label_start < 1:
+            raise ValueError(
+                f"'label_start' parameter must be equal or greater than 1: {label_start}"
+            )
         current_page_label = None
         if self.page in self.pages:
             current_page_label = self.pages[self.page].get_page_label()
@@ -1185,7 +1189,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 - "a": Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).
             label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
             label_start (int): Starting number for the first page of a page label range.
+                Must be equal or greater than 1.
         """
+        if label_start is not None and label_start < 1:
+            raise ValueError(
+                f"'label_start' parameter must be equal or greater than 1: {label_start}"
+            )
+
         if self._active_tiling_patterns:
             raise FPDFException("Finish use_pattern() before changing pages")
 

@@ -71,6 +71,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `set_text_color()`, `set_fill_color()` and `set_draw_color()` report a component outside 0-255 as given: `set_text_color(300)` now raises `ValueError: color component 300 not in range [0, 255]` instead of `1.1764705882352942 not in range [0.0, 1.0]` - thanks to @RavSinghChandan
 * An internal link with an index that `FPDF.add_link()` did not return now raises a clear `ValueError`, like a link without a page number, instead of a bare `AssertionError` (or a `KeyError` with `python -O`) - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer writes the content of `<style>` and `<script>` elements into the document as text, like browsers, so an HTML page or email with a `<style>` block no longer shows its CSS - thanks to @RavSinghChandan
+* `FPDF.add_page()` and `FPDF.set_page_label()` raise `ValueError: 'label_start' parameter must be equal or greater than 1` for a `label_start` below 1, instead of writing an invalid `/St` value that the PDF specification requires to be 1 or greater - thanks to @RavSinghChandan
 * `FPDF.write_html()` raises `NotImplementedError: Unsupported nested HTML tags inside <td> element: <table>` for a `<table>` nested in a table cell, like for the other unsupported nested tags, instead of a bare `AssertionError` with no message - thanks to @RavSinghChandan
 
 ### Changed
