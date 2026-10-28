@@ -650,6 +650,10 @@ def get_img_info(
     )
 
     img_altered = False
+    # Before resizing, so that the tRNS color key is compared with the original values
+    if is_16_bit_grayscale:
+        img = _from_16_bit_grayscale(img)
+        img_altered = True
     if dims:
         img = img.resize(dims, resample=RESAMPLE)  # type: ignore[arg-type]
         img_altered = True
@@ -667,10 +671,6 @@ def get_img_info(
 
     if img.mode in ("P", "PA") and image_filter != "FlateDecode":
         img = img.convert("RGBA")
-
-    if is_16_bit_grayscale:
-        img = _from_16_bit_grayscale(img)
-        img_altered = True
 
     if img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA", "CMYK"):
         img = img.convert("RGBA")
