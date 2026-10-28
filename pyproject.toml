@@ -74,7 +74,7 @@ test = [
   "camelot-py",
   # endesive 3 adds oscrypto via certvalidator; its OpenSSL detection is broken:
   # https://github.com/wbond/oscrypto/issues/78
-  "endesive<3",
+  "endesive<4",
   "pypdf",
   "pytest",
   "pytest-cov",
