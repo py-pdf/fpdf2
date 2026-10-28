@@ -387,6 +387,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ryanlcruz"><img src="https://avatars.githubusercontent.com/u/211577945?v=4?s=100" width="100px;" alt="Ryan L. Cruz"/><br /><sub><b>Ryan L. Cruz</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=ryanlcruz" title="Documentation">📖</a> <a href="#translation-ryanlcruz" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://mmporong.github.io/robotics-garden"><img src="https://avatars.githubusercontent.com/u/74720422?v=4?s=100" width="100px;" alt="Lim Jooyoung"/><br /><sub><b>Lim Jooyoung</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=mmporong" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
