@@ -1509,8 +1509,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            width (float): the width in user unit
+            width (float): the width in user unit. Must be zero or a positive number.
         """
+        if width < 0:
+            raise ValueError(f"Line width must be zero or a positive number: {width}")
         if width != self.line_width:
             self.line_width = width
             if self.page > 0:
