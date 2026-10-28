@@ -818,7 +818,7 @@ def test_flextemplate_leak(tmp_path):  # issue #570
 
 
 def test_flextemplate_wrapmode(tmp_path):
-    """Test that wrap mode can optionally be used to set wrapping using characters instead of words""",
+    """Test that wrap mode can optionally be used to set wrapping using characters instead of words"""
 
     pdf = FPDF()
     pdf.add_page()
