@@ -110,6 +110,20 @@ def test_page_label(tmp_path):
     assert_pdf_equal(pdf, HERE / "page_label.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("label_start", [0, -2])
+def test_page_label_start_below_one(label_start):
+    pdf = fpdf.FPDF()
+    with pytest.raises(
+        ValueError, match="'label_start' parameter must be equal or greater than 1"
+    ):
+        pdf.add_page(label_style="D", label_start=label_start)
+    pdf.add_page()
+    with pytest.raises(
+        ValueError, match="'label_start' parameter must be equal or greater than 1"
+    ):
+        pdf.set_page_label(label_style="D", label_start=label_start)
+
+
 def test_alias_with_shaping(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
