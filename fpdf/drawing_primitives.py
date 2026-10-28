@@ -310,6 +310,10 @@ def convert_to_device_color(
     if isinstance(r, Sequence):
         assert not isinstance(r, str)
         r, g, b = r
+    # checked before scaling, so that the error shows the value that was passed
+    for component in (r,) if g == -1 else (r, g, b):
+        if not 0 <= component <= 255:
+            raise ValueError(f"color component {component} not in range [0, 255]")
     if (r, g, b) == (0, 0, 0) or g == -1:
         return DeviceGray(r / 255)
     return DeviceRGB(r / 255, g / 255, b / 255)
@@ -365,6 +369,10 @@ def color_from_hex_string(hexstr: str) -> DeviceRGB | DeviceGray:
         raise ValueError(f"{hexstr} does not start with #")
 
     hlen = len(hexstr)
+
+    # int(..., 16) also accepts "_", "+", "-" and spaces: "#1 2345" would give #012345
+    if any(char not in "0123456789abcdefABCDEF" for char in hexstr[1:]):
+        raise ValueError(f"{hexstr} could not be interpreted as a RGB(A) hex string")
 
     if hlen == 4:  # #RGB
         r = int(hexstr[1] * 2, 16)

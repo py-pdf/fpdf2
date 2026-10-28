@@ -1119,6 +1119,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Enable `fpdf.output.PDFPageLabel` to be inserted on every page.
         This will be displayed by some PDF readers to identify pages.
         """
+        if label_start is not None and label_start < 1:
+            raise ValueError(
+                f"'label_start' parameter must be equal or greater than 1: {label_start}"
+            )
         current_page_label = None
         if self.page in self.pages:
             current_page_label = self.pages[self.page].get_page_label()
@@ -1185,7 +1189,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 - "a": Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).
             label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
             label_start (int): Starting number for the first page of a page label range.
+                Must be equal or greater than 1.
         """
+        if label_start is not None and label_start < 1:
+            raise ValueError(
+                f"'label_start' parameter must be equal or greater than 1: {label_start}"
+            )
+
         if self._active_tiling_patterns:
             raise FPDFException("Finish use_pattern() before changing pages")
 
@@ -2284,6 +2294,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        if numSides < 1:
+            raise ValueError(
+                f"'numSides' parameter must be equal or greater than 1: {numSides}"
+            )
         radius = polyWidth / 2
         centerX = x + radius
         centerY = y - radius
@@ -2330,6 +2344,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill.
             * `DF` or `FD`: draw and fill.
         """
+        if corners < 1:
+            raise ValueError(
+                f"'corners' parameter must be equal or greater than 1: {corners}"
+            )
         th = math.radians(rotate_degrees)
         point_list: list[tuple[float, float]] = []
         for i in range(0, (corners * 2) + 1):
@@ -2668,7 +2686,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if unicode_range is not None:
             parsed_unicode_range = get_parsed_unicode_range(unicode_range)
 
-        style = "".join(sorted(style.upper()))
+        # a repeated letter means the same style: "BB" is bold
+        style = "".join(sorted(set(style.upper())))
         if any(letter not in "BI" for letter in style):
             raise ValueError(
                 f"Unknown style provided (only B & I letters are allowed): {style}"
@@ -2755,7 +2774,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         family = family.lower()
         if isinstance(style, TextEmphasis):
             style = style.style
-        style = "".join(sorted(style.upper()))
+        # a repeated letter means the same style: "BB" is bold
+        style = "".join(sorted(set(style.upper())))
         if any(letter not in "BISU" for letter in style):
             raise ValueError(
                 f"Unknown style provided (only B/I/S/U letters are allowed): {style}"
@@ -3534,7 +3554,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y_max = max(ink_list[1::2])
         annotation = AnnotationDict(
             "Ink",
-            x=y_min,
+            x=x_min,
             y=y_max,
             width=x_max - x_min,
             height=y_max - y_min,

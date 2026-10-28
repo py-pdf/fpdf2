@@ -24,11 +24,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
 ### Fixed
-* 16-bit grayscale images, like 16-bit grayscale PNG files, are scaled down to 8 bits instead of being converted to RGBA, which made every value above 255 white, and keep the transparency of their tRNS color key
+* 16-bit grayscale images, like 16-bit grayscale PNG files, are scaled down to 8 bits instead of being converted to RGBA, which made every value above 255 white, and keep the transparency of their tRNS color key - thanks to @wleeaf
+* Docstrings of `PaintedPath.line_relative()`, `horizontal_line_relative()`, `vertical_line_relative()` and `Action` name their arguments as the signatures do (`dx`, `dy`, `next_action`) - thanks to @mmporong
 * Tables inside `FPDF.unbreakable()` are replayed with their rows and cells intact when the block is moved to a new page - _cf._ [issue #1230](https://github.com/py-pdf/fpdf2/issues/1230) - thanks to @alphaZytx
 * `FPDF.table()` raises a clear `ValueError` naming the column when `text_align` is a tuple with fewer values than the table has columns, like it does for `col_widths`, instead of an `IndexError` - thanks to @RavSinghChandan
 * `FPDF.table()`: a cell with a `colspan` below 1 spans one column, like a `rowspan` below 1 already spans one row, instead of raising `ZeroDivisionError` or `FPDFException` or breaking the column layout - thanks to @RavSinghChandan
 * Synchronize `font_style` and `emphasis` setters with font selection and state tracking - _cf._ [issue #1223](https://github.com/py-pdf/fpdf2/issues/1223)
+* `FPDF.set_font()` and `FPDF.add_font()` treat a repeated style letter as the same style: `style="BB"` is bold, instead of raising `FPDFException: Undefined font: helveticaBB` - thanks to @RavSinghChandan
 * Document outlines count all visible descendants and link siblings by parent, retaining bookmarks when the hierarchy starts below the top level. - thanks to @xiehuanyi
 * Annotation colors and border widths are serialized as PDF numbers without exponent notation. - thanks to @xiehuanyi
 * Checksums for compressed embedded files are calculated from the original file bytes, as required by the PDF specification. - thanks to @xiehuanyi
@@ -44,7 +46,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * SVG byte strings and `BytesIO` inputs accept a UTF-8 BOM and XML whitespace after `<svg` or `<?xml`, instead of being sent to the raster image loader. - thanks to @xiehuanyi
 * SVG import: a `<polygon>` or `<polyline>` whose `points` has an error (an invalid coordinate or an odd number of them) is drawn up to the last complete point before it, and one with empty `points` draws nothing, as the SVG specification says, instead of raising `IndexError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` ignores an unsupported `align` value on `<td>`, `<th>` and `<tr>`, such as `middle`, like it already does for `<p>`, instead of raising `ValueError` - thanks to @RavSinghChandan
+* `FPDF.regular_polygon()` raises `ValueError: 'numSides' parameter must be equal or greater than 1` for `numSides` below 1, instead of silently writing a path with no points (a bare `h S`, which closes a path that was never started) - thanks to @RavSinghChandan
 * Bulleted text-column paragraphs now honor their top margins, indented paragraphs retain the column's right boundary, and HTML list items honor their `TextStyle.t_margin` - based on [PR #1218](https://github.com/py-pdf/fpdf2/pull/1218)
+* `FPDF.text_columns()` raises a clear `ValueError` for `ncols` below 1, like `insert_toc_placeholder()` does for `pages`, instead of a `ZeroDivisionError` or an unrelated `Not enough horizontal space` error when rendering - thanks to @RavSinghChandan
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError`
 * `FPDF.write_html()` reads a CSS `font-size` on `<font>` with its unit, like browsers, as in `style="font-size: 14pt"` or `"12px"`, instead of silently ignoring it; a number without a unit is still in points - thanks to @RavSinghChandan
 * `FPDF.write_html()` supports `<ul type="square">`, the third standard HTML bullet type, instead of raising `NotImplementedError`: Unicode fonts use ▪ and core fonts fall back to the bullet - thanks to @RavSinghChandan
@@ -67,9 +71,14 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * warning detection during `FPDFRecorder.replay()` now correctly identifies context managers (`contextlib.AbstractContextManager`, `@contextmanager`, custom context managers) within `unbreakable()` sections
 * SVG import: `opacity`, `fill-opacity` and `stroke-opacity` accept percentages (`50%`), and an out-of-range `opacity` is clamped to 0-1 like the other two instead of raising `ValueError` - thanks to @RavSinghChandan
 * css `rgb()` colors accept percentages, as in `rgb(100%, 0%, 50%)` (clamped to 0%-100%), in SVG import and `FPDF.write_html()` instead of raising `ValueError` - thanks to @RavSinghChandan
+* hex color strings, such as in `set_fill_color("#...")`, must contain only hexadecimal digits: `"#1 2345"` and `"#+12345"` were silently read as `#012345`, and `"#xyz"` raised an unclear `invalid literal for int()` error; all now raise `ValueError: ... could not be interpreted as a RGB(A) hex string` - thanks to @RavSinghChandan
+* `FPDF.ink_annotation()` computes the horizontal position of the annotation rectangle (`/Rect`) from the x coordinates of the path instead of the y coordinates, so the rectangle encloses the drawn path; it could previously lie outside the page - thanks to @RavSinghChandan
 * `FPDF.embed_file()` accepts empty byte content and rejects simultaneous path and byte sources even when the bytes are empty.
+* `FPDF.star()` raises `ValueError: 'corners' parameter must be equal or greater than 1` for `corners` below 1, instead of a bare `ZeroDivisionError` for `corners=0` and silently drawing nothing for a negative value - thanks to @RavSinghChandan
+* `set_text_color()`, `set_fill_color()` and `set_draw_color()` report a component outside 0-255 as given: `set_text_color(300)` now raises `ValueError: color component 300 not in range [0, 255]` instead of `1.1764705882352942 not in range [0.0, 1.0]` - thanks to @RavSinghChandan
 * An internal link with an index that `FPDF.add_link()` did not return now raises a clear `ValueError`, like a link without a page number, instead of a bare `AssertionError` (or a `KeyError` with `python -O`) - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer writes the content of `<style>` and `<script>` elements into the document as text, like browsers, so an HTML page or email with a `<style>` block no longer shows its CSS - thanks to @RavSinghChandan
+* `FPDF.add_page()` and `FPDF.set_page_label()` raise `ValueError: 'label_start' parameter must be equal or greater than 1` for a `label_start` below 1, instead of writing an invalid `/St` value that the PDF specification requires to be 1 or greater - thanks to @RavSinghChandan
 * `FPDF.write_html()` raises `NotImplementedError: Unsupported nested HTML tags inside <td> element: <table>` for a `<table>` nested in a table cell, like for the other unsupported nested tags, instead of a bare `AssertionError` with no message - thanks to @RavSinghChandan
 
 ### Changed
