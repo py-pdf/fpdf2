@@ -851,11 +851,12 @@ def test_html_transparent_color_is_ignored(tmp_path, html, plain):
         ),
     ],
 )
-def test_html_invalid_css_color_is_ignored(tmp_path, html, plain):
+def test_html_invalid_css_color_is_ignored(caplog, tmp_path, html, plain):
     "Like browsers, an invalid CSS color is ignored: the color it would replace is kept."
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(html)
+    assert "Ignoring invalid CSS color" in caplog.text
     expected = FPDF()
     expected.add_page()
     expected.write_html(plain)

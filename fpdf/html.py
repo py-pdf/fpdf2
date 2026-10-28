@@ -340,13 +340,14 @@ def _without_transparent(color: Optional[str]) -> Optional[str]:
 def _css_color(color: Optional[str]) -> Optional[DeviceRGB | DeviceGray]:
     """
     The color of a CSS declaration, or None if it is missing or invalid:
-    like browsers, an invalid CSS declaration is ignored.
+    like browsers, an invalid CSS declaration is ignored, with a warning.
     """
     if color is None:
         return None
     try:
         return color_as_decimal(color)
     except ValueError:
+        LOGGER.warning('Ignoring invalid CSS color "%s"', color)
         return None
 
 
