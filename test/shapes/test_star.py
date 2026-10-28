@@ -98,3 +98,14 @@ def test_star_invalid_style():
 
     with pytest.raises(ValueError):
         pdf.star(x=15, y=15, r_in=5, r_out=15, corners=3, rotate_degrees=0, style="N")
+
+
+@pytest.mark.parametrize("corners", [0, -3])
+def test_star_invalid_corners(corners):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+
+    with pytest.raises(
+        ValueError, match="'corners' parameter must be equal or greater than 1"
+    ):
+        pdf.star(x=15, y=15, r_in=5, r_out=15, corners=corners)

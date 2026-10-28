@@ -204,6 +204,14 @@ def test_ink_annotation_empty_coords():
     with pytest.raises(ValueError, match="coords must contain at least one point"):
         pdf.ink_annotation([])
 
+        
+def test_ink_annotation_rect_encloses_the_path():
+    pdf = FPDF(unit="pt")
+    pdf.add_page()
+    annotation = pdf.ink_annotation([(100, 50), (200, 150)])
+    # page height is 841.89pt: y=150 and y=50 become 691.89 and 791.89
+    assert annotation.rect == "[100 691.89 200 791.89]"
+
 
 def test_free_text_annotation_all_parameters(tmp_path):
     pdf = FPDF()
