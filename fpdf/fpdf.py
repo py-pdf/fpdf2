@@ -814,12 +814,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             zoom: either "fullpage", "fullwidth", "real", "default",
                 or a number indicating the zooming factor to use, interpreted as a percentage.
+                The number must be zero or positive: zero keeps the viewer's current zoom.
                 The zoom level set by default is "default".
             layout (fpdf.enums.PageLayout, str): allowed layout aliases are "single", "continuous", "two" or "default",
                 meaning to use the viewer default mode.
                 The layout set by default is "continuous".
         """
-        if zoom in ZOOM_CONFIGS or not isinstance(zoom, str):
+        if zoom in ZOOM_CONFIGS:
+            self.zoom_mode: str | float = zoom
+        elif not isinstance(zoom, str):
+            if not (isinstance(zoom, (int, float)) and zoom >= 0):
+                raise FPDFException(f"Incorrect zoom display mode: {zoom}")
             self.zoom_mode = zoom
         elif zoom != "default":
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
