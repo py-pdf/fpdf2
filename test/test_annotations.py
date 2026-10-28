@@ -204,7 +204,7 @@ def test_ink_annotation_empty_coords():
     with pytest.raises(ValueError, match="coords must contain at least one point"):
         pdf.ink_annotation([])
 
-        
+
 def test_ink_annotation_rect_encloses_the_path():
     pdf = FPDF(unit="pt")
     pdf.add_page()
