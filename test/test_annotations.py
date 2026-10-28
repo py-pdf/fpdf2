@@ -198,6 +198,13 @@ def test_ink_annotation(tmp_path):
     assert_pdf_equal(pdf, HERE / "ink_annotation.pdf", tmp_path)
 
 
+def test_ink_annotation_empty_coords():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="coords must contain at least one point"):
+        pdf.ink_annotation([])
+
+
 def test_free_text_annotation_all_parameters(tmp_path):
     pdf = FPDF()
     pdf.add_page()
