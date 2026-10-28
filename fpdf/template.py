@@ -136,15 +136,13 @@ class FlexTemplate:
                     e["y1"] = e["y"]
                 if "y2" not in e and "h" in e and "y1" in e:
                     e["y2"] = e["y1"] + e["h"]
+            # x2 is optional for barcode types and cursor-positioned text.
+            if "x2" not in e:
+                if e["type"] in ["BC", "C39"]:
+                    e["x2"] = 0
             for k in ("x1", "y1", "x2", "y2"):
                 if k not in e and not cursor_text:
                     raise KeyError(f"Mandatory key '{k}' missing in input data")
-            # x2 is optional for barcode types and cursor-positioned text.
-            if "x2" not in e:
-                if e["type"] in ["BC", "C39"] or cursor_text or "w" in e:
-                    e["x2"] = e.get("x1", 0) + e.get("w", 0)
-                else:
-                    raise KeyError("Mandatory key 'x2' missing in input data")
             if cursor_text and "y2" not in e:
                 if "h" in e:
                     e["y2"] = e.get("y1", 0) + e["h"]
