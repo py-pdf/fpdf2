@@ -441,7 +441,15 @@ class FlexTemplate:
             cell_kwargs["new_y"] = new_y
 
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill, **cell_kwargs,)
+            pdf.cell(
+                w=width,
+                h=height,
+                text=text,
+                border=0,
+                align=align,
+                fill=fill,
+                **cell_kwargs,
+            )
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
                 w=width,
@@ -463,7 +471,15 @@ class FlexTemplate:
                 dry_run=True,
                 output="LINES",
             )[0]
-            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill, **cell_kwargs,)
+            pdf.cell(
+                w=width,
+                h=height,
+                text=text,
+                border=0,
+                align=align,
+                fill=fill,
+                **cell_kwargs,
+            )
 
     def _line(
         self,
@@ -745,7 +761,10 @@ class FlexTemplate:
                 ele = element.copy()  # don't want to modify the callers original
                 ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
                 cursor_text = ele["type"].upper() == "T" and (
-                    "new_x" in ele or "new_y" in ele or "x1" not in ele or "y1" not in ele
+                    "new_x" in ele
+                    or "new_y" in ele
+                    or "x1" not in ele
+                    or "y1" not in ele
                 )
                 if cursor_text:
                     # Keep omitted x1/y1 omitted so _text() preserves the cursor.
