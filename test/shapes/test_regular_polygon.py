@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 import fpdf
 from fpdf.enums import StrokeJoinStyle
 from test.conftest import assert_pdf_equal
@@ -12,6 +14,16 @@ def test_regular_polygon(tmp_path):
     pdf.add_page()
     draw_regular_polygon(pdf)
     assert_pdf_equal(pdf, HERE / "regular_polygon.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("num_sides", [0, -2])
+def test_regular_polygon_invalid_num_sides(num_sides):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(
+        ValueError, match="'numSides' parameter must be equal or greater than 1"
+    ):
+        pdf.regular_polygon(x=10, y=20, numSides=num_sides, polyWidth=10)
 
 
 def test_regular_polygon_with_round_joins(tmp_path):
