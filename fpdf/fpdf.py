@@ -273,10 +273,16 @@ def get_page_format(
         raise FPDFPageFormatException(str(format), one=True)
 
     try:
-        return format[0] * k, format[1] * k
+        width, height = format[0] * k, format[1] * k
+        positive = width > 0 and height > 0
     except Exception as e:
         args = f"{format}, {k}"
         raise FPDFPageFormatException(f"Arguments must be numbers: {args}") from e
+    if not positive:
+        raise FPDFPageFormatException(
+            f"Width and height must be positive numbers: {format}"
+        )
+    return width, height
 
 
 def check_page(fn: Callable[P, R]) -> Callable[P, R]:
