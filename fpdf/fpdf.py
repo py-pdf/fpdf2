@@ -2901,8 +2901,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         By default, no stretching is set (which is equivalent to a value of 100).
 
         Args:
-            stretching (float): horizontal stretching (scaling) in percents.
+            stretching (float): horizontal stretching (scaling) in percents. Must be a positive number.
         """
+        if stretching <= 0:
+            raise ValueError(f"Stretching must be a positive number: {stretching}")
         if self.font_stretching == stretching:
             return
         self.font_stretching = stretching

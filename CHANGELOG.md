@@ -81,6 +81,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * An internal link with an index that `FPDF.add_link()` did not return now raises a clear `ValueError`, like a link without a page number, instead of a bare `AssertionError` (or a `KeyError` with `python -O`) - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer writes the content of `<style>` and `<script>` elements into the document as text, like browsers, so an HTML page or email with a `<style>` block no longer shows its CSS - thanks to @RavSinghChandan
 * `FPDF.add_page()` and `FPDF.set_page_label()` raise `ValueError: 'label_start' parameter must be equal or greater than 1` for a `label_start` below 1, instead of writing an invalid `/St` value that the PDF specification requires to be 1 or greater - thanks to @RavSinghChandan
+* `FPDF.set_stretching()` raises `ValueError: Stretching must be a positive number` for a stretching of zero or below, instead of laying out text with no width: justified text was all put on a single line, and other text raised an unrelated `Not enough horizontal space to render a single character` error - thanks to @RavSinghChandan
 * `FPDF.write_html()` raises `NotImplementedError: Unsupported nested HTML tags inside <td> element: <table>` for a `<table>` nested in a table cell, like for the other unsupported nested tags, instead of a bare `AssertionError` with no message - thanks to @RavSinghChandan
 
 ### Changed
