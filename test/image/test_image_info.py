@@ -3,6 +3,8 @@ import zlib
 from io import BytesIO
 from pathlib import Path
 
+from PIL import Image
+
 import fpdf
 
 HERE = Path(__file__).resolve().parent
@@ -101,4 +103,64 @@ def test_get_img_info_data_gray():
         b"\x80?5442\xe0O\r\x0b\x162\xe0O\r\x07\x0e2\xe0O\r\x0f\x1e2\xe0O\r\xff\xfe2"
         b"\xe0O\r\xf7\xee2\xe0O\r\xfb\xf62\xe0O\r\xf3\xe62\xe0O\ru\xb5\x0c\xf8SC\\,"
         b"\x03\xfe\xd4`g\xcb\x80?5\xc8\xc92\xe0O\rL\xcc\x00\x17\xb3\xfc\x18"
+    )
+
+
+def test_get_img_info_16_bit_grayscale():
+    # Converted to RGBA, every value above 255 used to be clipped to white
+    path = HERE / "png_test_suite" / "basn0g16.png"
+    info = fpdf.image_parsing.get_img_info(BytesIO(path.read_bytes()))
+    assert info["cs"] == "DeviceGray"
+    with Image.open(path) as img:
+        high_bytes = img.tobytes("raw", "I;16B")[::2]
+    data = zlib.decompress(info["data"])
+    # Each row starts with its PNG filter type
+    pixels = b"".join(data[i + 1 : i + 33] for i in range(0, len(data), 33))
+    assert sum(a != b for a, b in zip(pixels, high_bytes)) == 0
+
+
+def test_get_img_info_16_bit_grayscale_with_trns():
+    # Only the pixels with the tRNS value are transparent
+    path = HERE / "png_test_suite" / "tbwn0g16.png"
+    info = fpdf.image_parsing.get_img_info(BytesIO(path.read_bytes()))
+    with Image.open(path) as img:
+        key = img.info["transparency"]
+        values = img.tobytes("raw", "I;16B")
+    transparent = [
+        int.from_bytes(values[i : i + 2], "big") == key
+        for i in range(0, len(values), 2)
+    ]
+    smask = zlib.decompress(info["smask"])
+    alpha = b"".join(smask[i + 1 : i + 33] for i in range(0, len(smask), 33))
+    assert sum((a == 0) != t for a, t in zip(alpha, transparent)) == 0
+    assert 0 < sum(transparent) < len(transparent)
+
+
+def test_get_img_info_16_bit_grayscale_with_trns_and_dims():
+    # The tRNS color key is applied before resizing, so resampled values don't hide it
+    path = HERE / "png_test_suite" / "tbwn0g16.png"
+
+    def alpha(info, width):
+        smask = zlib.decompress(info["smask"])
+        return b"".join(
+            smask[i + 1 : i + 1 + width] for i in range(0, len(smask), width + 1)
+        )
+
+    full = fpdf.image_parsing.get_img_info(BytesIO(path.read_bytes()))
+    resized = fpdf.image_parsing.get_img_info(BytesIO(path.read_bytes()), dims=(16, 16))
+    expected = (
+        Image.frombytes("L", (32, 32), alpha(full, 32))
+        .resize((16, 16), resample=fpdf.image_parsing.RESAMPLE)
+        .tobytes()
+    )
+    assert alpha(resized, 16) == expected
+
+
+def test_get_img_info_32_bit_integer_image():
+    # Only 16-bit grayscale images are scaled down: other "I" images keep their values
+    img = Image.new("I", (3, 1))
+    img.putdata([0, 128, 255])
+    info = fpdf.image_parsing.get_img_info("in-memory", img)
+    assert zlib.decompress(info["data"]) == bytes(
+        [0, 0, 0, 0, 128, 128, 128, 255, 255, 255]
     )
