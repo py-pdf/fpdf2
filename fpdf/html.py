@@ -337,6 +337,19 @@ def _without_transparent(color: Optional[str]) -> Optional[str]:
     return color
 
 
+def _css_color(color: Optional[str]) -> Optional[DeviceRGB | DeviceGray]:
+    """
+    The color of a CSS declaration, or None if it is missing or invalid:
+    like browsers, an invalid CSS declaration is ignored.
+    """
+    if color is None:
+        return None
+    try:
+        return color_as_decimal(color)
+    except ValueError:
+        return None
+
+
 def parse_css_style(style_attr: str) -> dict[str, str]:
     """Parse `style="..."` HTML attributes, and return a dict of key-value"""
     style: dict[str, str] = {}
@@ -990,8 +1003,9 @@ class HTML2FPDF(HTMLParser):
                 bottom_margin=b_margin * hsize,
                 indent=l_margin,
             )
-            if "color" in css_style:
-                self.font_color = color_as_decimal(css_style["color"])
+            css_color = _css_color(css_style.get("color"))
+            if css_color is not None:
+                self.font_color = css_color
             elif _without_transparent(attrs_dict.get("color")) is not None:
                 # "color" attributes are not valid in HTML,
                 # but we support it for backward compatibility:
