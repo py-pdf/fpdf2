@@ -777,16 +777,14 @@ def test_flextempalte_floating(tmp_path):
 
     pdf_temp = FPDF()
     pdf_temp.add_page()
-    pdf_temp.set_font('helvetica', size=12)
+    pdf_temp.set_font("helvetica", size=12)
     pdf_temp.set_left_margin(20)
 
     f = FlexTemplate(pdf_temp, elements=elements)
     f.render()
 
-    assert_pdf_equal(
-        pdf_temp, HERE / "flextemplate_floating_template.pdf", tmp_path)
-    assert_pdf_equal(
-        pdf_mc, HERE / "flextemplate_floating_multicell.pdf", tmp_path)
+    assert_pdf_equal(pdf_temp, HERE / "flextemplate_floating_template.pdf", tmp_path)
+    assert_pdf_equal(pdf_mc, HERE / "flextemplate_floating_multicell.pdf", tmp_path)
     # the following test does not work even though the two pdfs are visually
     # equal. In the template case, the output is wrapped by "q" ... "Q"
     # used to store the and restore the graphics state.
