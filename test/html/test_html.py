@@ -790,6 +790,24 @@ def test_html_font_css_font_size(tmp_path, html, equivalent):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<font size="-3">text</font>',
+        '<font style="font-size: -5px">text</font>',
+    ],
+)
+def test_html_font_negative_size_is_ignored(tmp_path, html):
+    "Like browsers, a negative font size is ignored: the current size is kept."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html("<font>text</font>")
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_table_bgcolor_without_hash(tmp_path):
     pdf = FPDF()
     pdf.add_page()

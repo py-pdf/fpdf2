@@ -2775,7 +2775,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 of one or several letters among B (bold), I (italic), S (strikethrough) and U (underline).
                 Bold and italic styles do not apply to Symbol and ZapfDingbats fonts.
             size (float): in points. The default value is the current size.
+                Must be zero or a positive number.
         """
+        if size < 0:
+            raise ValueError(f"Font size must be zero or a positive number: {size}")
         if not family:
             family = self.font_family
 
@@ -2855,8 +2858,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Configure the font size in points
 
         Args:
-            size (float): font size in points
+            size (float): font size in points. Must be zero or a positive number.
         """
+        if size < 0:
+            raise ValueError(f"Font size must be zero or a positive number: {size}")
         if FloatTolerance.equal(self.font_size_pt, size):
             return
         self.font_size_pt = size
