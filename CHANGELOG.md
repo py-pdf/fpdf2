@@ -60,6 +60,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` accepts css `rgb(R, G, B)` colors, and colors with surrounding spaces, in `color` and `bgcolor` attributes instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` accepts a legacy HTML color of six hex digits without the leading `#`, like browsers do, as in `bgcolor="eeeeee"` or `<font color="ff0000">`, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` ignores `color="transparent"` and `bgcolor="transparent"` like browsers, keeping the inherited text or background color, instead of raising `ValueError` - thanks to @RavSinghChandan
+* `FPDF.write_html()` ignores an invalid CSS `color` on a heading, like browsers, as in `<h1 style="color: nope">`, keeping the `color` attribute or the heading's default color, instead of raising `ValueError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` no longer raises `IndexError` on an `<ol type="a">` or `<ol type="A">` list with more than 26 items: like browsers, letters continue with `aa`, `ab`... and a `start` below 1 shows as a number - thanks to @RavSinghChandan
 * `FPDF.write_html()` numbers an `<ol>` with an unknown `type`, such as `type="disc"`, as 1, 2, 3, like browsers, instead of raising `NotImplementedError` - thanks to @RavSinghChandan
 * `FPDF.write_html()` supports `<li value="N">` in ordered lists: like browsers, the item is numbered N and the following ones continue from it - thanks to @RavSinghChandan
