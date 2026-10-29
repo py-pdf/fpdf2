@@ -618,3 +618,15 @@ def test_tcols_ncols_below_one(ncols):
         str(error.value)
         == f"'ncols' parameter must be equal or greater than 1: {ncols}"
     )
+
+
+@pytest.mark.parametrize("gutter", [-1, -0.5])
+def test_tcols_negative_gutter(gutter):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError) as error:
+        pdf.text_columns(ncols=2, gutter=gutter)
+    assert (
+        str(error.value)
+        == f"'gutter' parameter must be equal or greater than 0: {gutter}"
+    )
