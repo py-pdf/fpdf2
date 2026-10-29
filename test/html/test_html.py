@@ -1497,11 +1497,15 @@ def test_bulleted_paragraphs():
     bad_bullet_string = "我"
     with pytest.raises(FPDFException) as error:
         text_columns.paragraph(indent=1, bullet_string=bad_bullet_string)
-    expected_msg = (
+    # The message begins with a deterministic description of the offending
+    # character; the trailing font suggestion varies with the fonts installed on
+    # the host, so only the stable prefix and keyword are asserted.
+    message = str(error.value)
+    assert message.startswith(
         f'Character "{bad_bullet_string}" at index {0} in text is outside the range of characters '
-        f'supported by the font used: "{pdf.font_family+pdf.font_style}". Please consider using a Unicode font.'
+        f'supported by the font used: "{pdf.font_family+pdf.font_style}".'
     )
-    assert str(error.value) == expected_msg
+    assert "Unicode font" in message
 
 
 @pytest.mark.parametrize("margin", [0, 2, 10])

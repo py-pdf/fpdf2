@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for unordered lists in `multi_cell(markdown=True)`, using `*`, `-` or `+` as bullet markers - _cf._ [issue #654](https://github.com/py-pdf/fpdf2/issues/654)
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 * Python 3.15 is now officially supported
+* Unicode font detection and enhanced error handling: when text cannot be encoded with the current font, the `FPDFUnicodeEncodingException` message now identifies the Unicode script (Cyrillic, Arabic, Chinese, etc.) and suggests a suitable font available on the system, via the new internal `UnicodeFontManager` - _cf._ [PR #1563](https://github.com/py-pdf/fpdf2/pull/1563) - thanks to @otreci4sgelt0nas
 ### Fixed
 * 16-bit grayscale images, like 16-bit grayscale PNG files, are scaled down to 8 bits instead of being converted to RGBA, which made every value above 255 white, and keep the transparency of their tRNS color key - thanks to @wleeaf
 * Docstrings of `PaintedPath.line_relative()`, `horizontal_line_relative()`, `vertical_line_relative()` and `Action` name their arguments as the signatures do (`dx`, `dy`, `next_action`) - thanks to @mmporong
