@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 import fpdf
 from test.conftest import assert_pdf_equal
 from fpdf.drawing import DeviceGray
@@ -29,6 +31,18 @@ def test_add_page_duration(tmp_path):
     pdf.add_page()
     pdf.cell(text="Page 3")
     assert_pdf_equal(pdf, HERE / "add_page_duration.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("duration", [-1, -0.5])
+def test_add_page_negative_duration(duration):
+    pdf = fpdf.FPDF()
+    with pytest.raises(ValueError) as error:
+        pdf.add_page(duration=duration)
+    assert (
+        str(error.value)
+        == f"'duration' parameter must be equal or greater than 0: {duration}"
+    )
+    assert pdf.page == 0
 
 
 def test_break_or_add_page(tmp_path):

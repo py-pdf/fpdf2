@@ -1207,6 +1207,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
+        if duration < 0:
+            raise ValueError(
+                f"'duration' parameter must be equal or greater than 0: {duration}"
+            )
 
         if self._active_tiling_patterns:
             raise FPDFException("Finish use_pattern() before changing pages")
