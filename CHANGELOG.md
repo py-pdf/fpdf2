@@ -36,6 +36,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Annotation colors and border widths are serialized as PDF numbers without exponent notation. - thanks to @xiehuanyi
 * Checksums for compressed embedded files are calculated from the original file bytes, as required by the PDF specification. - thanks to @xiehuanyi
 * Repeated annotation flags no longer change unrelated flag bits; annotation flags are combined with bitwise OR. - thanks to @xiehuanyi
+* `FPDF.ink_annotation()` raises a clear `ValueError` for an empty `coords` sequence, instead of `ValueError: min() iterable argument is empty` - _cf._ [issue #2072](https://github.com/py-pdf/fpdf2/issues/2072) - thanks to @agustin18
 * SVG images with a zero width or height disable rendering instead of using viewport dimensions. - thanks to @xiehuanyi
 * `FPDF.write_html()` uses the first available font of a `<font face>` list, like browsers, as in `face="Arial, Helvetica, sans-serif"`, with the generic `serif`, `sans-serif` and `monospace` families rendered by the core fonts, instead of raising `FPDFException: Undefined font` - thanks to @RavSinghChandan
 * SVG gradient `stop-opacity` accepts percentages, clamps out-of-range values to 0-1, and combines with the color's alpha channel instead of replacing it. - thanks to @xiehuanyi
