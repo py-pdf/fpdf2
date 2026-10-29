@@ -16,7 +16,7 @@ import warnings
 from typing import Any, Optional, Sequence
 
 from .deprecation import get_stack_level
-from .enums import WrapMode
+from .enums import WrapMode, XPos, YPos
 from .errors import FPDFException
 from .fpdf import FPDF
 
@@ -432,11 +432,10 @@ class FlexTemplate:
         width = w if w is not None else x2 - (x1 if x1 is not None else pdf.get_x())
         height = h if h is not None else y2 - (y1 if y1 is not None else pdf.get_y())
 
-        cell_kwargs = {}
-        if new_x is not None:
-            cell_kwargs["new_x"] = new_x
-        if new_y is not None:
-            cell_kwargs["new_y"] = new_y
+        # set default values, because cell() does not know how to
+        # treat None as value for new_x, new_y
+        new_xx = XPos.RIGHT if new_x is None else new_x
+        new_yy = YPos.TOP if new_y is None else new_y
 
         if multiline is None:  # write without wrapping/trimming (default)
             pdf.cell(
@@ -446,7 +445,8 @@ class FlexTemplate:
                 border=0,
                 align=align,
                 fill=fill,
-                **cell_kwargs,
+                new_x=new_xx,
+                new_y=new_yy,
             )
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
@@ -457,7 +457,8 @@ class FlexTemplate:
                 align=align,
                 fill=fill,
                 wrapmode=WrapMode.coerce(wrapmode),
-                **cell_kwargs,
+                new_x=new_xx,
+                new_y=new_yy,
             )
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(  # type: ignore[index,assignment]
@@ -476,7 +477,8 @@ class FlexTemplate:
                 border=0,
                 align=align,
                 fill=fill,
-                **cell_kwargs,
+                new_x=new_xx,
+                new_y=new_yy,
             )
 
     def _line(
