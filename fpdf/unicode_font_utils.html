@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>fpdf.unicode_font_utils API documentation</title>
+<meta name="description" content="Unicode font utilities for fpdf2 …">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>fpdf.unicode_font_utils</code></h1>
+</header>
+<section id="section-intro">
+<p>Unicode font utilities for fpdf2.</p>
+<p>This module provides utilities for automatic Unicode font detection and management,
+helping users work with non-Latin scripts like Cyrillic, Arabic, Chinese, etc.</p>
+<p>The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="fpdf.unicode_font_utils.font_file_covers"><code class="name flex">
+<span>def <span class="ident">font_file_covers</span></span>(<span>font_path: pathlib.Path, characters: Set[str]) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L265-L299" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def font_file_covers(font_path: Path, characters: Set[str]) -&gt; bool:
+    &#34;&#34;&#34;
+    Return True if the font file has a glyph for every character in `characters`.
+
+    The font&#39;s character map is inspected with fontTools. Collection files
+    (.ttc/.otc) count as covering the characters if any of their member fonts do.
+    Any failure to open or parse the font, or a font without a usable character
+    map, is treated as &#34;not covered&#34; so that an unreadable or unsuitable font is
+    never recommended.
+    &#34;&#34;&#34;
+    if not characters:
+        return False
+
+    codepoints = {ord(ch) for ch in characters}
+    fonts: List[ttLib.TTFont] = []
+    try:
+        if font_path.suffix.lower() in (&#34;.ttc&#34;, &#34;.otc&#34;):
+            collection = ttLib.TTCollection(str(font_path), lazy=True)
+            members = collection.fonts  # pyright: ignore[reportUnknownMemberType]
+            fonts = list(members)  # pyright: ignore[reportUnknownArgumentType]
+        else:
+            fonts = [ttLib.TTFont(str(font_path), fontNumber=0, lazy=True)]
+        for font in fonts:
+            cmap: Optional[Dict[int, str]] = font.getBestCmap()
+            if cmap and codepoints.issubset(cmap.keys()):
+                return True
+    except Exception:  # pylint: disable=broad-exception-caught
+        # Unreadable / corrupt / cmap-less fonts must never be recommended.
+        return False
+    finally:
+        for font in fonts:
+            with suppress(Exception):
+                font.close()
+
+    return False</code></pre>
+</details>
+<div class="desc"><p>Return True if the font file has a glyph for every character in <code>characters</code>.</p>
+<p>The font's character map is inspected with fontTools. Collection files
+(.ttc/.otc) count as covering the characters if any of their member fonts do.
+Any failure to open or parse the font, or a font without a usable character
+map, is treated as "not covered" so that an unreadable or unsuitable font is
+never recommended.</p></div>
+</dd>
+<dt id="fpdf.unicode_font_utils.get_unicode_font_recommendation"><code class="name flex">
+<span>def <span class="ident">get_unicode_font_recommendation</span></span>(<span>text: str) ‑> Tuple[str, str] | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L302-L313" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_unicode_font_recommendation(text: str) -&gt; Optional[Tuple[str, str]]:
+    &#34;&#34;&#34;
+    Convenience function to get a Unicode font recommendation for text.
+
+    Args:
+        text: The text to analyze for Unicode script detection.
+
+    Returns:
+        (font_name, file_path) tuple for the recommended font, or None if no recommendation.
+    &#34;&#34;&#34;
+    manager = UnicodeFontManager()
+    return manager.get_font_recommendation_for_text(text)</code></pre>
+</details>
+<div class="desc"><p>Convenience function to get a Unicode font recommendation for text.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>text</code></strong></dt>
+<dd>The text to analyze for Unicode script detection.</dd>
+</dl>
+<p>Returns
+-----=
+(font_name, file_path) tuple for the recommended font, or None if no recommendation.</p></div>
+</dd>
+<dt id="fpdf.unicode_font_utils.suggest_unicode_font_for_error"><code class="name flex">
+<span>def <span class="ident">suggest_unicode_font_for_error</span></span>(<span>error_text: str, font_name: str) ‑> str | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L316-L347" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def suggest_unicode_font_for_error(error_text: str, font_name: str) -&gt; Optional[str]:
+    &#34;&#34;&#34;
+    Generate a helpful error message suggesting a Unicode font when encoding errors occur.
+
+    A font is only suggested when one is installed whose character map is verified
+    to cover the offending characters. When no such font is found, None is returned
+    so the caller can fall back to the generic &#34;Please consider using a Unicode
+    font.&#34; message instead of naming a font that might not work.
+
+    Args:
+        error_text: The text that caused the encoding error.
+        font_name: The name of the font that failed.
+
+    Returns:
+        A helpful error message naming a verified font, or None if none was found.
+    &#34;&#34;&#34;
+    manager = UnicodeFontManager()
+    script = manager.detect_script_in_text(error_text)
+    if not script:
+        return None
+
+    recommendation = manager.get_font_recommendation_for_text(error_text)
+    if recommendation is None:
+        return None
+
+    font_name_rec, font_path = recommendation
+    script_name = script.name.replace(&#34;_&#34;, &#34; &#34;).title()
+    return (
+        f&#34;The text contains {script_name} characters that cannot be encoded with the &#39;{font_name}&#39; font. &#34;
+        f&#34;Consider using a Unicode font like &#39;{font_name_rec}&#39; instead.\n&#34;
+        f&#34;To use it, add the font with: pdf.add_font(&#39;{font_name_rec}&#39;, &#39;&#39;, {font_path!r})&#34;
+    )</code></pre>
+</details>
+<div class="desc"><p>Generate a helpful error message suggesting a Unicode font when encoding errors occur.</p>
+<p>A font is only suggested when one is installed whose character map is verified
+to cover the offending characters. When no such font is found, None is returned
+so the caller can fall back to the generic "Please consider using a Unicode
+font." message instead of naming a font that might not work.</p>
+<dl>
+<dt>Args</dt>
+<dt>-----=</dt>
+<dt><strong><code>error_text</code></strong></dt>
+<dd>The text that caused the encoding error.</dd>
+<dt><strong><code>font_name</code></strong></dt>
+<dd>The name of the font that failed.</dd>
+</dl>
+<p>Returns
+-----=
+A helpful error message naming a verified font, or None if none was found.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="fpdf.unicode_font_utils.UnicodeFontManager"><code class="flex name class">
+<span>class <span class="ident">UnicodeFontManager</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L25-L262" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class UnicodeFontManager:
+    &#34;&#34;&#34;
+    Manages Unicode font detection and provides recommendations for different scripts.
+    &#34;&#34;&#34;
+
+    def __init__(self) -&gt; None:
+        self.system = platform.system().lower()
+        self.font_paths = self._get_system_font_paths()
+        # The filesystem scan is deferred: it is potentially expensive (it walks
+        # every system font directory) and is only needed when a recommendation
+        # is actually requested. See the `available_fonts` property below.
+        self._available_fonts: Optional[Dict[str, Path]] = None
+        self._available_fonts_loaded = False
+
+    @property
+    def available_fonts(self) -&gt; Dict[str, Path]:
+        &#34;&#34;&#34;Mapping of font name to file path, scanned lazily on first access.&#34;&#34;&#34;
+        if not self._available_fonts_loaded:
+            self._available_fonts = self._scan_available_fonts()
+            self._available_fonts_loaded = True
+        assert self._available_fonts is not None
+        return self._available_fonts
+
+    def _get_system_font_paths(self) -&gt; List[Path]:
+        &#34;&#34;&#34;Get common font paths for the current system.&#34;&#34;&#34;
+        paths: List[Path] = []
+
+        if self.system == &#34;darwin&#34;:  # macOS
+            paths.extend(
+                [
+                    Path(&#34;/System/Library/Fonts&#34;),
+                    Path(&#34;/Library/Fonts&#34;),
+                    Path.home() / &#34;Library/Fonts&#34;,
+                ]
+            )
+        elif self.system == &#34;linux&#34;:
+            paths.extend(
+                [
+                    Path(&#34;/usr/share/fonts&#34;),
+                    Path(&#34;/usr/local/share/fonts&#34;),
+                    Path.home() / &#34;.fonts&#34;,
+                    Path.home() / &#34;.local/share/fonts&#34;,
+                ]
+            )
+        elif self.system == &#34;windows&#34;:
+            paths.extend(
+                [
+                    Path(&#34;C:/Windows/Fonts&#34;),
+                    Path.home() / &#34;AppData/Local/Microsoft/Windows/Fonts&#34;,
+                ]
+            )
+
+        return [p for p in paths if p.exists()]
+
+    def _scan_available_fonts(self) -&gt; Dict[str, Path]:
+        &#34;&#34;&#34;Scan for available TrueType/OpenType fonts.&#34;&#34;&#34;
+        fonts: Dict[str, Path] = {}
+
+        for font_dir in self.font_paths:
+            for font_file in font_dir.rglob(&#34;*.ttf&#34;):
+                font_name = font_file.stem.lower()
+                if font_name not in fonts:  # Prefer first found
+                    fonts[font_name] = font_file
+            for font_file in font_dir.rglob(&#34;*.otf&#34;):
+                font_name = font_file.stem.lower()
+                if font_name not in fonts:  # Prefer first found
+                    fonts[font_name] = font_file
+            for font_file in font_dir.rglob(&#34;*.ttc&#34;):
+                font_name = font_file.stem.lower()
+                if font_name not in fonts:  # Prefer first found
+                    fonts[font_name] = font_file
+
+        return fonts
+
+    def get_recommended_fonts_for_script(
+        self, script: UnicodeScript
+    ) -&gt; List[Tuple[str, str]]:
+        &#34;&#34;&#34;
+        Get recommended font names and their file paths for a specific Unicode script.
+
+        Returns:
+            List of (font_name, file_path) tuples, ordered by preference.
+        &#34;&#34;&#34;
+        recommendations: List[Tuple[str, str]] = []
+
+        # Define font recommendations by script
+        script_fonts: Dict[UnicodeScript, List[str]] = {
+            UnicodeScript.CYRILLIC: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;dejavusanscondensed&#34;,
+                &#34;arial&#34;,
+                &#34;helvetica&#34;,
+                &#34;liberationsans&#34;,
+                &#34;liberationserif&#34;,
+                &#34;notosans&#34;,
+                &#34;notoserif&#34;,
+                &#34;roboto&#34;,
+                &#34;opensans&#34;,
+            ],
+            UnicodeScript.ARABIC: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosansarabic&#34;,
+                &#34;notoserifarabic&#34;,
+                &#34;amiri&#34;,
+                &#34;scheherazade&#34;,
+                &#34;lateef&#34;,
+            ],
+            UnicodeScript.HAN: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosanscjk&#34;,
+                &#34;notoserifcjk&#34;,
+                &#34;sourcehansans&#34;,
+                &#34;sourcehanserif&#34;,
+                &#34;fireflysung&#34;,
+            ],
+            UnicodeScript.HANGUL: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosanskr&#34;,
+                &#34;notoserifkr&#34;,
+                &#34;nanumgothic&#34;,
+                &#34;nanummyeongjo&#34;,
+            ],
+            UnicodeScript.HIRAGANA: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosansjp&#34;,
+                &#34;notoserifjp&#34;,
+                &#34;sourcehansans&#34;,
+                &#34;sourcehanserif&#34;,
+            ],
+            UnicodeScript.KATAKANA: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosansjp&#34;,
+                &#34;notoserifjp&#34;,
+                &#34;sourcehansans&#34;,
+                &#34;sourcehanserif&#34;,
+            ],
+            UnicodeScript.DEVANAGARI: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosansdevanagari&#34;,
+                &#34;notoserifdevanagari&#34;,
+                &#34;gargi&#34;,
+                &#34;lohitdevanagari&#34;,
+            ],
+            UnicodeScript.THAI: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosansthai&#34;,
+                &#34;notoserifthai&#34;,
+                &#34;waree&#34;,
+                &#34;garuda&#34;,
+            ],
+            UnicodeScript.HEBREW: [
+                &#34;dejavusans&#34;,
+                &#34;dejavuserif&#34;,
+                &#34;notosanshebrew&#34;,
+                &#34;notoserifhebrew&#34;,
+                &#34;frankruehl&#34;,
+                &#34;david&#34;,
+            ],
+        }
+
+        # Get fonts for the specific script
+        preferred_fonts = script_fonts.get(script, [&#34;dejavusans&#34;, &#34;dejavuserif&#34;])
+
+        # Find available fonts from the preferred list. No generic fallback is
+        # added: a font is only worth recommending once we have verified that it
+        # actually contains the glyphs the text needs (see font_file_covers and
+        # get_font_recommendation_for_text). Recommending a font merely because
+        # it is installed could send the user back to the same encoding error.
+        for font_name in preferred_fonts:
+            if font_name in self.available_fonts:
+                recommendations.append(
+                    (font_name, str(self.available_fonts[font_name]))
+                )
+
+        return recommendations
+
+    @staticmethod
+    def detect_script_in_text(text: str) -&gt; Optional[UnicodeScript]:
+        &#34;&#34;&#34;
+        Detect the primary Unicode script in the given text.
+
+        Returns:
+            The most common non-Latin Unicode script in the text, or None if only Latin/Common scripts are found.
+        &#34;&#34;&#34;
+        script_counts: Dict[UnicodeScript, int] = {}
+
+        for char in text:
+            script = get_unicode_script(char)
+            if script not in (UnicodeScript.COMMON, UnicodeScript.LATIN):
+                script_counts[script] = script_counts.get(script, 0) + 1
+
+        if not script_counts:
+            return None
+
+        return max(script_counts.items(), key=lambda x: x[1])[0]
+
+    def get_font_recommendation_for_text(self, text: str) -&gt; Optional[Tuple[str, str]]:
+        &#34;&#34;&#34;
+        Get a font recommendation for the given text based on its Unicode script.
+
+        A candidate font is only returned once its character map has been
+        verified to contain every character of the detected script present in
+        the text. If no installed candidate covers those characters, None is
+        returned rather than a guess that might fail the same way.
+
+        Returns:
+            (font_name, file_path) tuple for the recommended font, or None if no recommendation.
+        &#34;&#34;&#34;
+        script = self.detect_script_in_text(text)
+        if not script:
+            return None
+
+        # The characters that actually drove the recommendation and that the
+        # suggested font must be able to render.
+        required = {ch for ch in text if get_unicode_script(ch) == script}
+
+        for font_name, file_path in self.get_recommended_fonts_for_script(script):
+            if font_file_covers(Path(file_path), required):
+                return (font_name, file_path)
+
+        return None
+
+    def list_available_unicode_fonts(self) -&gt; Dict[str, str]:
+        &#34;&#34;&#34;
+        List all available Unicode-capable fonts.
+
+        Returns:
+            Dictionary mapping font names to file paths.
+        &#34;&#34;&#34;
+        return {name: str(path) for name, path in self.available_fonts.items()}</code></pre>
+</details>
+<div class="desc"><p>Manages Unicode font detection and provides recommendations for different scripts.</p></div>
+<h3>Static methods</h3>
+<dl>
+<dt id="fpdf.unicode_font_utils.UnicodeFontManager.detect_script_in_text"><code class="name flex">
+<span>def <span class="ident">detect_script_in_text</span></span>(<span>text: str) ‑> <a title="fpdf.unicode_script.UnicodeScript" href="unicode_script.html#fpdf.unicode_script.UnicodeScript">UnicodeScript</a> | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L209-L227" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@staticmethod
+def detect_script_in_text(text: str) -&gt; Optional[UnicodeScript]:
+    &#34;&#34;&#34;
+    Detect the primary Unicode script in the given text.
+
+    Returns:
+        The most common non-Latin Unicode script in the text, or None if only Latin/Common scripts are found.
+    &#34;&#34;&#34;
+    script_counts: Dict[UnicodeScript, int] = {}
+
+    for char in text:
+        script = get_unicode_script(char)
+        if script not in (UnicodeScript.COMMON, UnicodeScript.LATIN):
+            script_counts[script] = script_counts.get(script, 0) + 1
+
+    if not script_counts:
+        return None
+
+    return max(script_counts.items(), key=lambda x: x[1])[0]</code></pre>
+</details>
+<div class="desc"><p>Detect the primary Unicode script in the given text.</p>
+<p>Returns
+-----=
+The most common non-Latin Unicode script in the text, or None if only Latin/Common scripts are found.</p></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.unicode_font_utils.UnicodeFontManager.available_fonts"><code class="name">prop <span class="ident">available_fonts</span> : Dict[str, pathlib.Path]</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L39-L46" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def available_fonts(self) -&gt; Dict[str, Path]:
+    &#34;&#34;&#34;Mapping of font name to file path, scanned lazily on first access.&#34;&#34;&#34;
+    if not self._available_fonts_loaded:
+        self._available_fonts = self._scan_available_fonts()
+        self._available_fonts_loaded = True
+    assert self._available_fonts is not None
+    return self._available_fonts</code></pre>
+</details>
+<div class="desc"><p>Mapping of font name to file path, scanned lazily on first access.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.unicode_font_utils.UnicodeFontManager.get_font_recommendation_for_text"><code class="name flex">
+<span>def <span class="ident">get_font_recommendation_for_text</span></span>(<span>self, text: str) ‑> Tuple[str, str] | None</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L229-L253" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_font_recommendation_for_text(self, text: str) -&gt; Optional[Tuple[str, str]]:
+    &#34;&#34;&#34;
+    Get a font recommendation for the given text based on its Unicode script.
+
+    A candidate font is only returned once its character map has been
+    verified to contain every character of the detected script present in
+    the text. If no installed candidate covers those characters, None is
+    returned rather than a guess that might fail the same way.
+
+    Returns:
+        (font_name, file_path) tuple for the recommended font, or None if no recommendation.
+    &#34;&#34;&#34;
+    script = self.detect_script_in_text(text)
+    if not script:
+        return None
+
+    # The characters that actually drove the recommendation and that the
+    # suggested font must be able to render.
+    required = {ch for ch in text if get_unicode_script(ch) == script}
+
+    for font_name, file_path in self.get_recommended_fonts_for_script(script):
+        if font_file_covers(Path(file_path), required):
+            return (font_name, file_path)
+
+    return None</code></pre>
+</details>
+<div class="desc"><p>Get a font recommendation for the given text based on its Unicode script.</p>
+<p>A candidate font is only returned once its character map has been
+verified to contain every character of the detected script present in
+the text. If no installed candidate covers those characters, None is
+returned rather than a guess that might fail the same way.</p>
+<p>Returns
+-----=
+(font_name, file_path) tuple for the recommended font, or None if no recommendation.</p></div>
+</dd>
+<dt id="fpdf.unicode_font_utils.UnicodeFontManager.get_recommended_fonts_for_script"><code class="name flex">
+<span>def <span class="ident">get_recommended_fonts_for_script</span></span>(<span>self,<br>script: <a title="fpdf.unicode_script.UnicodeScript" href="unicode_script.html#fpdf.unicode_script.UnicodeScript">UnicodeScript</a>) ‑> List[Tuple[str, str]]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L99-L207" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_recommended_fonts_for_script(
+    self, script: UnicodeScript
+) -&gt; List[Tuple[str, str]]:
+    &#34;&#34;&#34;
+    Get recommended font names and their file paths for a specific Unicode script.
+
+    Returns:
+        List of (font_name, file_path) tuples, ordered by preference.
+    &#34;&#34;&#34;
+    recommendations: List[Tuple[str, str]] = []
+
+    # Define font recommendations by script
+    script_fonts: Dict[UnicodeScript, List[str]] = {
+        UnicodeScript.CYRILLIC: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;dejavusanscondensed&#34;,
+            &#34;arial&#34;,
+            &#34;helvetica&#34;,
+            &#34;liberationsans&#34;,
+            &#34;liberationserif&#34;,
+            &#34;notosans&#34;,
+            &#34;notoserif&#34;,
+            &#34;roboto&#34;,
+            &#34;opensans&#34;,
+        ],
+        UnicodeScript.ARABIC: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosansarabic&#34;,
+            &#34;notoserifarabic&#34;,
+            &#34;amiri&#34;,
+            &#34;scheherazade&#34;,
+            &#34;lateef&#34;,
+        ],
+        UnicodeScript.HAN: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosanscjk&#34;,
+            &#34;notoserifcjk&#34;,
+            &#34;sourcehansans&#34;,
+            &#34;sourcehanserif&#34;,
+            &#34;fireflysung&#34;,
+        ],
+        UnicodeScript.HANGUL: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosanskr&#34;,
+            &#34;notoserifkr&#34;,
+            &#34;nanumgothic&#34;,
+            &#34;nanummyeongjo&#34;,
+        ],
+        UnicodeScript.HIRAGANA: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosansjp&#34;,
+            &#34;notoserifjp&#34;,
+            &#34;sourcehansans&#34;,
+            &#34;sourcehanserif&#34;,
+        ],
+        UnicodeScript.KATAKANA: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosansjp&#34;,
+            &#34;notoserifjp&#34;,
+            &#34;sourcehansans&#34;,
+            &#34;sourcehanserif&#34;,
+        ],
+        UnicodeScript.DEVANAGARI: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosansdevanagari&#34;,
+            &#34;notoserifdevanagari&#34;,
+            &#34;gargi&#34;,
+            &#34;lohitdevanagari&#34;,
+        ],
+        UnicodeScript.THAI: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosansthai&#34;,
+            &#34;notoserifthai&#34;,
+            &#34;waree&#34;,
+            &#34;garuda&#34;,
+        ],
+        UnicodeScript.HEBREW: [
+            &#34;dejavusans&#34;,
+            &#34;dejavuserif&#34;,
+            &#34;notosanshebrew&#34;,
+            &#34;notoserifhebrew&#34;,
+            &#34;frankruehl&#34;,
+            &#34;david&#34;,
+        ],
+    }
+
+    # Get fonts for the specific script
+    preferred_fonts = script_fonts.get(script, [&#34;dejavusans&#34;, &#34;dejavuserif&#34;])
+
+    # Find available fonts from the preferred list. No generic fallback is
+    # added: a font is only worth recommending once we have verified that it
+    # actually contains the glyphs the text needs (see font_file_covers and
+    # get_font_recommendation_for_text). Recommending a font merely because
+    # it is installed could send the user back to the same encoding error.
+    for font_name in preferred_fonts:
+        if font_name in self.available_fonts:
+            recommendations.append(
+                (font_name, str(self.available_fonts[font_name]))
+            )
+
+    return recommendations</code></pre>
+</details>
+<div class="desc"><p>Get recommended font names and their file paths for a specific Unicode script.</p>
+<p>Returns
+-----=
+List of (font_name, file_path) tuples, ordered by preference.</p></div>
+</dd>
+<dt id="fpdf.unicode_font_utils.UnicodeFontManager.list_available_unicode_fonts"><code class="name flex">
+<span>def <span class="ident">list_available_unicode_fonts</span></span>(<span>self) ‑> Dict[str, str]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/unicode_font_utils.py#L255-L262" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def list_available_unicode_fonts(self) -&gt; Dict[str, str]:
+    &#34;&#34;&#34;
+    List all available Unicode-capable fonts.
+
+    Returns:
+        Dictionary mapping font names to file paths.
+    &#34;&#34;&#34;
+    return {name: str(path) for name, path in self.available_fonts.items()}</code></pre>
+</details>
+<div class="desc"><p>List all available Unicode-capable fonts.</p>
+<p>Returns
+-----=
+Dictionary mapping font names to file paths.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="fpdf" href="index.html">fpdf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="fpdf.unicode_font_utils.font_file_covers" href="#fpdf.unicode_font_utils.font_file_covers">font_file_covers</a></code></li>
+<li><code><a title="fpdf.unicode_font_utils.get_unicode_font_recommendation" href="#fpdf.unicode_font_utils.get_unicode_font_recommendation">get_unicode_font_recommendation</a></code></li>
+<li><code><a title="fpdf.unicode_font_utils.suggest_unicode_font_for_error" href="#fpdf.unicode_font_utils.suggest_unicode_font_for_error">suggest_unicode_font_for_error</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="fpdf.unicode_font_utils.UnicodeFontManager" href="#fpdf.unicode_font_utils.UnicodeFontManager">UnicodeFontManager</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.unicode_font_utils.UnicodeFontManager.available_fonts" href="#fpdf.unicode_font_utils.UnicodeFontManager.available_fonts">available_fonts</a></code></li>
+<li><code><a title="fpdf.unicode_font_utils.UnicodeFontManager.detect_script_in_text" href="#fpdf.unicode_font_utils.UnicodeFontManager.detect_script_in_text">detect_script_in_text</a></code></li>
+<li><code><a title="fpdf.unicode_font_utils.UnicodeFontManager.get_font_recommendation_for_text" href="#fpdf.unicode_font_utils.UnicodeFontManager.get_font_recommendation_for_text">get_font_recommendation_for_text</a></code></li>
+<li><code><a title="fpdf.unicode_font_utils.UnicodeFontManager.get_recommended_fonts_for_script" href="#fpdf.unicode_font_utils.UnicodeFontManager.get_recommended_fonts_for_script">get_recommended_fonts_for_script</a></code></li>
+<li><code><a title="fpdf.unicode_font_utils.UnicodeFontManager.list_available_unicode_fonts" href="#fpdf.unicode_font_utils.UnicodeFontManager.list_available_unicode_fonts">list_available_unicode_fonts</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

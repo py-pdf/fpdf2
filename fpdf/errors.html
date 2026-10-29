@@ -54,7 +54,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L59-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L72-L73" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ComplianceError(FPDFException):
     &#34;&#34;&#34;Base class for standards-compliance violations (PDF/A, PDF/X, etc.).&#34;&#34;&#34;</code></pre>
@@ -79,7 +79,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L1-L2" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L4-L5" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFException(Exception):
     pass</code></pre>
@@ -107,7 +107,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L9-L36" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L12-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFPageFormatException(FPDFException):
     &#34;&#34;&#34;Error is thrown when a bad page format is given&#34;&#34;&#34;
@@ -154,7 +154,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L5-L6" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L8-L9" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFResourceAccessError(FPDFException):
     &#34;&#34;&#34;Raised when loading a resource violates the active resource access policy.&#34;&#34;&#34;</code></pre>
@@ -175,7 +175,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L67-L68" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L80-L81" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFSvgLimitExceeded(FPDFException):
     &#34;&#34;&#34;Raised when an SVG file exceeds the configured limits for use depth or resolved elements.&#34;&#34;&#34;</code></pre>
@@ -190,32 +190,42 @@ el.replaceWith(d);
 </dd>
 <dt id="fpdf.errors.FPDFUnicodeEncodingException"><code class="flex name class">
 <span>class <span class="ident">FPDFUnicodeEncodingException</span></span>
-<span>(</span><span>text_index: int, character: str, font_name: str)</span>
+<span>(</span><span>text_index: int, character: str, font_name: str, suggestion: str | None = None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L39-L56" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L42-L69" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FPDFUnicodeEncodingException(FPDFException):
     &#34;&#34;&#34;Error is thrown when a character that cannot be encoded by the chosen encoder is provided&#34;&#34;&#34;
 
-    def __init__(self, text_index: int, character: str, font_name: str) -&gt; None:
+    def __init__(
+        self,
+        text_index: int,
+        character: str,
+        font_name: str,
+        suggestion: Optional[str] = None,
+    ) -&gt; None:
         super().__init__()
         self.text_index = text_index
         self.character = character
         self.font_name = font_name
+        self.suggestion = suggestion
 
     def __repr__(self) -&gt; str:
-        return f&#34;{self.__class__.__name__}({repr(self.text_index), repr(self.character), repr(self.font_name)})&#34;
+        return f&#34;{self.__class__.__name__}({repr(self.text_index)}, {repr(self.character)}, {repr(self.font_name)}, {repr(self.suggestion)})&#34;
 
     def __str__(self) -&gt; str:
-        return (
+        base_message = (
             f&#39;Character &#34;{self.character}&#34; at index {self.text_index} in text is outside the range of characters&#39;
             f&#39; supported by the font used: &#34;{self.font_name}&#34;.&#39;
-            &#34; Please consider using a Unicode font.&#34;
-        )</code></pre>
+        )
+
+        if self.suggestion:
+            return f&#34;{base_message}\n\n{self.suggestion}&#34;
+        return f&#34;{base_message} Please consider using a Unicode font.&#34;</code></pre>
 </details>
 <div class="desc"><p>Error is thrown when a character that cannot be encoded by the chosen encoder is provided</p></div>
 <h3>Ancestors</h3>
@@ -233,7 +243,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/728b00a209cc919b3ba3338886a1d95fe2e62e06/fpdf/errors.py#L63-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/a4185642fd8be2a95592c235bc878b4a21d6a461/fpdf/errors.py#L76-L77" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFAComplianceError(ComplianceError):
     &#34;&#34;&#34;Raised when an operation would produce a PDF that violates the selected PDF/A profile.&#34;&#34;&#34;</code></pre>
