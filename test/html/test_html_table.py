@@ -532,6 +532,26 @@ def test_html_table_invalid_or_zero_widths(table_content):
     assert len(pdf.pages) == 1
 
 
+@pytest.mark.parametrize(
+    "table",
+    [
+        '<table width="{width}"><tr><td>a</td></tr></table>',
+        '<table><tr><td width="{width}">a</td><td>b</td></tr></table>',
+        '<table><tr><th width="{width}">a</th><td>b</td></tr></table>',
+    ],
+)
+@pytest.mark.parametrize("width", ["x%", "%"])
+def test_html_table_invalid_percentage_width(tmp_path, table, width):
+    "An invalid percentage width is handled like any other invalid width."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(table.format(width=width))
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(table.format(width="invalid"))
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 SPAN_TABLES = {
     "colspan": "<table><tr><td{attr}>{text}</td><td>b</td></tr>"
     "<tr><td>c</td><td>d</td><td>e</td></tr></table>",
