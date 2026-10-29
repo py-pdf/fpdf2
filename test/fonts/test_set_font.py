@@ -43,6 +43,17 @@ def test_set_unknown_style():
     )
 
 
+def test_set_font_repeated_style_letters():
+    "A style letter given twice is the same style: 'BB' is bold, not an unknown font."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", style="BB")
+    assert pdf.font_style == "B"
+    pdf.set_font("Times", style="ibIu")
+    assert pdf.font_style == "BI"
+    assert pdf.underline
+
+
 def test_set_builtin_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()

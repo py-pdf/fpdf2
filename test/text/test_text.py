@@ -56,6 +56,15 @@ def test_text_stretch_spacing(tmp_path):
     assert_pdf_equal(doc, HERE / "text_stretch_spacing.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("stretching", [0, -50])
+def test_text_stretching_not_positive(stretching):
+    doc = FPDF()
+    doc.add_page()
+
+    with pytest.raises(ValueError, match="Stretching must be a positive number"):
+        doc.set_stretching(stretching)
+
+
 def test_text_text_mode(tmp_path):
     doc = FPDF()
     doc.add_page()
@@ -72,6 +81,20 @@ def test_text_text_mode(tmp_path):
         doc.text_mode = mode
         doc.text(20, 20 + 20 * i, f"Text mode: {mode}")
     assert_pdf_equal(doc, HERE / "text_text_mode.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "set_color", ["set_text_color", "set_fill_color", "set_draw_color"]
+)
+@pytest.mark.parametrize(
+    "args, value", [((300,), 300), ((0, 256, 0), 256), ((-5, 0, 0), -5)]
+)
+def test_color_component_out_of_range(set_color, args, value):
+    doc = FPDF()
+    doc.add_page()
+    with pytest.raises(ValueError) as error:
+        getattr(doc, set_color)(*args)
+    assert str(error.value) == f"color component {value} not in range [0, 255]"
 
 
 def test_text_color(tmp_path):

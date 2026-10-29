@@ -34,6 +34,14 @@ def test_setting_zoom_raises_correct_error():
         doc.set_display_mode("foo")
 
 
+@pytest.mark.parametrize("zoom", [-50, -0.5, float("nan"), None])
+def test_setting_invalid_numeric_zoom_raises_correct_error(zoom):
+    doc = FPDF()
+    with pytest.raises(FPDFException) as error:
+        doc.set_display_mode(zoom)
+    assert str(error.value) == f"Incorrect zoom display mode: {zoom}"
+
+
 @pytest.mark.parametrize("page_layout", PageLayout.__members__.keys())
 def test_page_layout(page_layout, tmp_path):
     pdf = FPDF()
