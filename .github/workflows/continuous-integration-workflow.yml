@@ -134,7 +134,7 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
+          if [[ "${{ matrix.platform }}" == "ubuntu-26.04" ]]; then
           echo "Running with --trace-memory-usage (Ubuntu)"
             pytest -vv --trace-memory-usage
           else
