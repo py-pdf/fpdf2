@@ -31,6 +31,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.table()`: a cell with a `colspan` below 1 spans one column, like a `rowspan` below 1 already spans one row, instead of raising `ZeroDivisionError` or `FPDFException` or breaking the column layout - thanks to @RavSinghChandan
 * Synchronize `font_style` and `emphasis` setters with font selection and state tracking - _cf._ [issue #1223](https://github.com/py-pdf/fpdf2/issues/1223)
 * `FPDF.table()` raises `ValueError: ... is not a valid TableBordersLayout` for an unknown `borders_layout` name, like it does for `cell_fill_mode` and `v_align`, instead of a bare `AttributeError` - thanks to @RavSinghChandan
+* `FPDF.table()` raises a clear `ValueError` for a negative `gutter_height` or `gutter_width`, instead of silently drawing rows or columns on top of each other; `FPDF.write_html()` ignores a negative `<table cellspacing>`, like browsers do - thanks to @RavSinghChandan
 * `FPDF.set_font()` and `FPDF.add_font()` treat a repeated style letter as the same style: `style="BB"` is bold, instead of raising `FPDFException: Undefined font: helveticaBB` - thanks to @RavSinghChandan
 * Document outlines count all visible descendants and link siblings by parent, retaining bookmarks when the hierarchy starts below the top level. - thanks to @xiehuanyi
 * Annotation colors and border widths are serialized as PDF numbers without exponent notation. - thanks to @xiehuanyi
