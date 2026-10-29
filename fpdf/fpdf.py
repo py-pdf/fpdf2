@@ -708,8 +708,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
-        self.set_margins(margin, margin)
         self.set_auto_page_break(self.auto_page_break, margin)
+        self.set_margins(margin, margin)
 
     def set_margins(self, left: float, top: float, right: float = -1) -> None:
         """
@@ -770,8 +770,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             auto (bool): enable or disable this mode
             margin (float): optional bottom margin (distance from the bottom of the page)
-                in the unit specified to FPDF constructor
+                in the unit specified to FPDF constructor. Must be zero or a positive number.
         """
+        if margin < 0:
+            raise ValueError(
+                f"Bottom margin must be zero or a positive number: {margin}"
+            )
         self.auto_page_break: bool = auto
         self.b_margin: float = margin
         self.page_break_trigger: float = self.h - self.b_margin
