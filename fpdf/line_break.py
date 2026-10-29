@@ -549,7 +549,7 @@ class TotalPagesSubstitutionFragment(Fragment):
                 f"{(h - pos_y) * self.k:.2f} Tm"
             )
 
-            if self.graphics_state.text_shaping:
+            if self.is_ttf_font and self.text_shaping_parameters:
                 args = list(self._render_args)
                 args[3] += shift
                 self._render_args = tuple(args)

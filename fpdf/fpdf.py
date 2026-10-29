@@ -203,7 +203,7 @@ if TYPE_CHECKING:
     from .prefs import ViewerPreferences
 
 # Public global variables:
-FPDF_VERSION = "2.8.9"
+FPDF_VERSION = "2.9.0"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),  # 297mm × 420mm
@@ -834,7 +834,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if zoom in ZOOM_CONFIGS:
             self.zoom_mode: str | float = zoom
         elif not isinstance(zoom, str):
-            if not (isinstance(zoom, (int, float)) and zoom >= 0):
+            if not (
+                isinstance(zoom, (int, float)) and math.isfinite(zoom) and zoom >= 0
+            ):
                 raise FPDFException(f"Incorrect zoom display mode: {zoom}")
             self.zoom_mode = zoom
         elif zoom != "default":
