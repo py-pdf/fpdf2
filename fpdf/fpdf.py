@@ -2959,6 +2959,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._fallback_font_ids = fallback_font_ids
         self._fallback_font_exact_match = exact_match
 
+    def _link_page(self, page: int) -> int:
+        """Page number of a link destination: -1 means the current page"""
+        if page == -1:
+            return self.page
+        if page < 0:
+            # A negative index would silently point to a page counted from the end of the document
+            raise ValueError(
+                f"Invalid page number for a link: {page} - use -1 for the current page"
+            )
+        return page
+
     def add_link(
         self,
         y: float = 0,
@@ -2992,7 +3003,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         # Create destination
         link = DestinationXYZ(
-            self.page if page == -1 else page,
+            self._link_page(page),
             top=self.h_pt - y * self.k,
             left=x * self.k,
             zoom=zoom,
@@ -3062,7 +3073,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if name and link is None:
             # Create the destination
             dest = DestinationXYZ(
-                self.page if page == -1 else page,
+                self._link_page(page),
                 top=self.h_pt - y * self.k,
                 left=x * self.k,
                 zoom=zoom,
@@ -3078,7 +3089,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # as a reference to self.links[link] is kept in self.pages[].annots:
         assert link is not None
         destination = self.links[link]
-        destination.page_number = self.page if page == -1 else page
+        destination.page_number = self._link_page(page)
         destination.top = self.h_pt - y * self.k
         destination.left = x * self.k
         destination.zoom = zoom
