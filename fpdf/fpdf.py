@@ -203,7 +203,7 @@ if TYPE_CHECKING:
     from .prefs import ViewerPreferences
 
 # Public global variables:
-FPDF_VERSION = "2.8.9"
+FPDF_VERSION = "2.9.0"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),  # 297mm × 420mm
@@ -708,8 +708,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
-        self.set_margins(margin, margin)
         self.set_auto_page_break(self.auto_page_break, margin)
+        self.set_margins(margin, margin)
 
     def set_margins(self, left: float, top: float, right: float = -1) -> None:
         """
@@ -770,8 +770,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             auto (bool): enable or disable this mode
             margin (float): optional bottom margin (distance from the bottom of the page)
-                in the unit specified to FPDF constructor
+                in the unit specified to FPDF constructor. Must be zero or a positive number.
         """
+        if margin < 0:
+            raise ValueError(
+                f"Bottom margin must be zero or a positive number: {margin}"
+            )
         self.auto_page_break: bool = auto
         self.b_margin: float = margin
         self.page_break_trigger: float = self.h - self.b_margin
@@ -830,7 +834,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if zoom in ZOOM_CONFIGS:
             self.zoom_mode: str | float = zoom
         elif not isinstance(zoom, str):
-            if not (isinstance(zoom, (int, float)) and zoom >= 0):
+            if not (
+                isinstance(zoom, (int, float)) and math.isfinite(zoom) and zoom >= 0
+            ):
                 raise FPDFException(f"Incorrect zoom display mode: {zoom}")
             self.zoom_mode = zoom
         elif zoom != "default":
