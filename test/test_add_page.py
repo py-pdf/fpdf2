@@ -135,3 +135,35 @@ def test_margin_negative_changes_no_margin():
     ):
         pdf.set_margin(-5)
     assert (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.b_margin) == margins
+
+
+@pytest.mark.parametrize(
+    "side, setter",
+    [
+        ("Left", lambda pdf: pdf.set_left_margin(-5)),
+        ("Top", lambda pdf: pdf.set_top_margin(-5)),
+        ("Right", lambda pdf: pdf.set_right_margin(-5)),
+        ("Left", lambda pdf: pdf.set_margins(-5, 10)),
+        ("Top", lambda pdf: pdf.set_margins(10, -5)),
+        ("Right", lambda pdf: pdf.set_margins(10, 10, -5)),
+    ],
+)
+def test_negative_margin_changes_no_margin(side, setter):
+    """A negative left, top or right margin raises, and leaves all the margins and the position unchanged."""
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    state = (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.x, pdf.y)
+
+    with pytest.raises(
+        ValueError, match=f"{side} margin must be zero or a positive number"
+    ):
+        setter(pdf)
+    assert (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.x, pdf.y) == state
+
+
+def test_set_margins_default_right_margin():
+    """Without a right margin, set_margins() uses the left margin for it."""
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_margins(15, 20)
+    assert (pdf.l_margin, pdf.t_margin, pdf.r_margin) == (15, 20, 15)
