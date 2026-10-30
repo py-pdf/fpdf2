@@ -513,6 +513,17 @@ def test_html_table_cellpadding_cellspacing_units():
     assert len(pdf2.pages) == 1
 
 
+@pytest.mark.parametrize("cellspacing", ["-2", "-2px"])
+def test_html_table_negative_cellspacing_is_ignored(cellspacing):
+    pdf = FPDF()
+    pdf.add_page()
+    parser = HTML2FPDF(pdf)
+    parser.feed(f'<table cellspacing="{cellspacing}"><tr><td>Cell</td></tr>')
+    # pylint: disable=protected-access
+    assert parser.table._gutter_width == 0
+    assert parser.table._gutter_height == 0
+
+
 @pytest.mark.parametrize(
     "table_content",
     [

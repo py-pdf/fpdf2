@@ -129,6 +129,15 @@ class Table:
         self._initial_style: Optional[FontFace] = None
         self.rows: list[Row] = []
 
+        if gutter_height < 0:
+            raise ValueError(
+                f"gutter_height must be zero or a positive number: {gutter_height}"
+            )
+        if gutter_width < 0:
+            raise ValueError(
+                f"gutter_width must be zero or a positive number: {gutter_width}"
+            )
+
         if padding is None:
             self._padding = Padding.new(0)
         else:
