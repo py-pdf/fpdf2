@@ -17,6 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.9.1] - Not yet released
+### Added
+* `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
@@ -26,7 +28,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code) - thanks to @Lucas-C
 * Python 3.15 is now officially supported - thanks to @andersonhc
 * Unicode font detection and enhanced error handling: when text cannot be encoded with the current font, the `FPDFUnicodeEncodingException` message now identifies the Unicode script (Cyrillic, Arabic, Chinese, etc.) and suggests a suitable font available on the system, via the new internal `UnicodeFontManager` - _cf._ [PR #1563](https://github.com/py-pdf/fpdf2/pull/1563) - thanks to @otreci4sgelt0nas
-* `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
 * `None` values in PDF dictionaries are serialized as `null` instead of an invalid Python literal - _cf._ [PR #1980](https://github.com/py-pdf/fpdf2/pull/1980) - thanks to @agustin18
 * Homogeneous arrays of PDF string and name objects use their PDF serialization, including encryption when applicable - _cf._ [PR #2004](https://github.com/py-pdf/fpdf2/pull/2004) - thanks to @xiehuanyi and @andersonhc
