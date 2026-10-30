@@ -791,6 +791,56 @@ def test_flextempalte_floating(tmp_path):
     # assert_pdf_equal(pdf_temp, pdf_mc, tmp_path)
 
 
+def test_flextempalte_floating_scaled(tmp_path):
+    elements = [
+        {
+            "name": "xxx",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "cursor",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LEFT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LEFT",
+            "priority": 2,
+            "multiline": False,
+        },
+    ]
+
+    pdf_temp = FPDF()
+    pdf_temp.add_page()
+    pdf_temp.set_font("helvetica", size=12)
+    pdf_temp.set_left_margin(20)
+    pdf_temp.set_y(50)
+
+    f = FlexTemplate(pdf_temp, elements=elements)
+    f.render(scale=2.0)
+
+    assert_pdf_equal(
+        pdf_temp, HERE / "flextemplate_floating_template_scaled.pdf", tmp_path
+    )
+
+
 def test_flextemplate_leak(tmp_path):  # issue #570
     # rendering a template should not change the current graphics context.
     pdf = FPDF()

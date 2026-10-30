@@ -756,6 +756,11 @@ class FlexTemplate:
             scale (float): Scale the inserted template by this factor.
         """
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
+
+        # make sure scaling is considered if the first element in the template
+        # has no x1 and/or y1 coordinate
+        if scale != 1.0:
+            self.pdf.set_xy(self.pdf.get_x() * scale, self.pdf.get_y() * scale)
         with self.pdf.local_context():
             for element in sorted_elements:
                 ele = element.copy()  # don't want to modify the callers original
