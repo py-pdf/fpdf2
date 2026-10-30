@@ -34,7 +34,9 @@ def test_setting_zoom_raises_correct_error():
         doc.set_display_mode("foo")
 
 
-@pytest.mark.parametrize("zoom", [-50, -0.5, float("nan"), None])
+@pytest.mark.parametrize(
+    "zoom", [-50, -0.5, float("nan"), float("inf"), -float("inf"), None]
+)
 def test_setting_invalid_numeric_zoom_raises_correct_error(zoom):
     doc = FPDF()
     with pytest.raises(FPDFException) as error:
@@ -91,3 +93,11 @@ def test_page_mode_zoom_numeric(tmp_path):
         HERE / "page-mode-zoom_numeric.pdf",
         tmp_path,
     )
+
+
+@pytest.mark.parametrize("zoom", [0, 25, 125.5])
+def test_finite_numeric_zoom_is_serialized(zoom):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_display_mode(zoom)
+    assert f"/XYZ null null {zoom / 100:g}".encode() in pdf.output()

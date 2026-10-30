@@ -130,6 +130,7 @@ from .errors import (
     FPDFUnicodeEncodingException,
     PDFAComplianceError,
 )
+from .unicode_font_utils import suggest_unicode_font_for_error
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin, StateStackType
 from .html import HTML2FPDF
@@ -202,7 +203,7 @@ if TYPE_CHECKING:
     from .prefs import ViewerPreferences
 
 # Public global variables:
-FPDF_VERSION = "2.8.9"
+FPDF_VERSION = "2.9.0"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),  # 297mm × 420mm
@@ -707,8 +708,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
-        self.set_margins(margin, margin)
         self.set_auto_page_break(self.auto_page_break, margin)
+        self.set_margins(margin, margin)
 
     def set_margins(self, left: float, top: float, right: float = -1) -> None:
         """
@@ -769,8 +770,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             auto (bool): enable or disable this mode
             margin (float): optional bottom margin (distance from the bottom of the page)
-                in the unit specified to FPDF constructor
+                in the unit specified to FPDF constructor. Must be zero or a positive number.
         """
+        if margin < 0:
+            raise ValueError(
+                f"Bottom margin must be zero or a positive number: {margin}"
+            )
         self.auto_page_break: bool = auto
         self.b_margin: float = margin
         self.page_break_trigger: float = self.h - self.b_margin
@@ -829,7 +834,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if zoom in ZOOM_CONFIGS:
             self.zoom_mode: str | float = zoom
         elif not isinstance(zoom, str):
-            if not (isinstance(zoom, (int, float)) and zoom >= 0):
+            if not (
+                isinstance(zoom, (int, float)) and math.isfinite(zoom) and zoom >= 0
+            ):
                 raise FPDFException(f"Incorrect zoom display mode: {zoom}")
             self.zoom_mode = zoom
         elif zoom != "default":
@@ -2906,8 +2913,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         By default, no stretching is set (which is equivalent to a value of 100).
 
         Args:
-            stretching (float): horizontal stretching (scaling) in percents.
+            stretching (float): horizontal stretching (scaling) in percents. Must be a positive number.
         """
+        if stretching <= 0:
+            raise ValueError(f"Stretching must be a positive number: {stretching}")
         if self.font_stretching == stretching:
             return
         self.font_stretching = stretching
@@ -3560,6 +3569,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
             border_width (float): thickness of the path stroke.
         """
+        if not coords:
+            raise ValueError("coords must contain at least one point")
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])
         y_min = min(ink_list[1::2])
@@ -6270,10 +6281,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             try:
                 return text.encode(self.core_fonts_encoding).decode("latin-1")
             except UnicodeEncodeError as error:
+                font_name = self.font_family + self.font_style
+                suggestion = suggest_unicode_font_for_error(text, font_name)
                 raise FPDFUnicodeEncodingException(
                     text_index=error.start,
                     character=text[error.start],
-                    font_name=self.font_family + self.font_style,
+                    font_name=font_name,
+                    suggestion=suggestion,
                 ) from error
         return text
 

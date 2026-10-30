@@ -163,7 +163,7 @@ Other methods can also insert internal links:
 * [FPDF.link](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
 * [FPDF.write_html](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) using anchor tags: `<a href="page number">link text</a>`
 
-The unit tests `test_internal_links()` in [test_links.py](https://github.com/py-pdf/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
+The unit test `test_internal_links()` in [test_links.py](https://github.com/py-pdf/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
 
 
 ## Links to other documents on the filesystem ##

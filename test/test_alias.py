@@ -362,3 +362,17 @@ def test_alias_alignment(tmp_path):
             new_y="NEXT",
         )
     assert_pdf_equal(pdf, HERE / "alias_alignment.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("align", ["L", "C", "R"])
+def test_core_font_alias_alignment_with_shaping(tmp_path, align):
+    pdfs = []
+    for shaping in (False, True):
+        pdf = fpdf.FPDF()
+        pdf.set_font("Helvetica", size=12)
+        pdf.set_text_shaping(shaping)
+        pdf.alias_nb_pages(align=align)
+        pdf.add_page()
+        pdf.cell(text="Page {nb} of total")
+        pdfs.append(pdf)
+    assert_pdf_equal(pdfs[0], pdfs[1], tmp_path)
