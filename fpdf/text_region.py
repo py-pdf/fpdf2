@@ -768,6 +768,10 @@ class TextColumns(TextRegion, TextColumnarMixin):
             raise ValueError(
                 f"'ncols' parameter must be equal or greater than 1: {ncols}"
             )
+        if gutter < 0:
+            raise ValueError(
+                f"'gutter' parameter must be equal or greater than 0: {gutter}"
+            )
         super().__init__(pdf, *args, **kwargs)
         self._cur_column = 0
         self._ncols = ncols
