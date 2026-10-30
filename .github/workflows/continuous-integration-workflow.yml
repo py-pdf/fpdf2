@@ -93,7 +93,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
-        platform: [ubuntu-26.04, windows-latest, macos-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
     steps:
@@ -134,7 +134,7 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          if [[ "${{ matrix.platform }}" == "ubuntu-26.04" ]]; then
+          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
           echo "Running with --trace-memory-usage (Ubuntu)"
             pytest -vv --trace-memory-usage
           else
