@@ -859,6 +859,28 @@ def test_html_transparent_color_is_ignored(tmp_path, html, plain):
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
+@pytest.mark.parametrize(
+    "html, plain",
+    [
+        ('<h1 style="color: nope">a</h1>', "<h1>a</h1>"),
+        (
+            '<h2 style="color: #zz0000" color="#00ff00">a</h2>',
+            '<h2 color="#00ff00">a</h2>',
+        ),
+    ],
+)
+def test_html_invalid_css_color_is_ignored(caplog, tmp_path, html, plain):
+    "Like browsers, an invalid CSS color is ignored: the color it would replace is kept."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    assert "Ignoring invalid CSS color" in caplog.text
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(plain)
+    assert_pdf_equal(pdf, expected, tmp_path)
+
+
 def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf = FPDF()
     pdf.add_page()
@@ -1493,11 +1515,15 @@ def test_bulleted_paragraphs():
     bad_bullet_string = "我"
     with pytest.raises(FPDFException) as error:
         text_columns.paragraph(indent=1, bullet_string=bad_bullet_string)
-    expected_msg = (
+    # The message begins with a deterministic description of the offending
+    # character; the trailing font suggestion varies with the fonts installed on
+    # the host, so only the stable prefix and keyword are asserted.
+    message = str(error.value)
+    assert message.startswith(
         f'Character "{bad_bullet_string}" at index {0} in text is outside the range of characters '
-        f'supported by the font used: "{pdf.font_family+pdf.font_style}". Please consider using a Unicode font.'
+        f'supported by the font used: "{pdf.font_family+pdf.font_style}".'
     )
-    assert str(error.value) == expected_msg
+    assert "Unicode font" in message
 
 
 @pytest.mark.parametrize("margin", [0, 2, 10])
@@ -1838,3 +1864,32 @@ def test_html_img_and_hr_dimension_units(html_snippet):
     pdf.add_page()
     pdf.write_html(html_snippet)
     assert len(pdf.pages) == 1
+
+
+@pytest.mark.parametrize("unit", ["mm", "pt", "in"])
+@pytest.mark.parametrize(
+    "scientific, decimal",
+    [("1e0", "1"), ("1e1px", "10px"), ("1E-2pt", "0.01pt")],
+)
+@pytest.mark.parametrize(
+    "template",
+    [
+        '<hr width="{value}">',
+        '<table width="{value}"><tr><td></td><td></td></tr></table>',
+        '<table cellpadding="{value}"><tr><td></td><td></td></tr></table>',
+        '<table cellspacing="{value}"><tr><td></td><td></td></tr></table>',
+        '<img src="{image}" width="{value}" height="10">',
+        '<img src="{image}" width="10" height="{value}">',
+    ],
+)
+def test_html_scientific_dimensions_match_decimals(
+    tmp_path, unit, scientific, decimal, template
+):
+    image = HERE.parent / "image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
+    pdfs = []
+    for value in (scientific, decimal):
+        pdf = FPDF(unit=unit)
+        pdf.add_page()
+        pdf.write_html(template.format(value=value, image=image))
+        pdfs.append(pdf)
+    assert_pdf_equal(pdfs[0], pdfs[1], tmp_path)

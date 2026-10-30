@@ -457,6 +457,17 @@ def test_table_align(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_align.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("borders_layout", ["BOGUS", "ALL_LINES"])
+def test_table_with_invalid_borders_layout(borders_layout):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError) as error:
+        with pdf.table(TABLE_DATA, borders_layout=borders_layout):
+            pass
+    assert str(error.value) == f"{borders_layout} is not a valid TableBordersLayout"
+
+
 def test_table_text_align_tuple_too_short():
     pdf = FPDF()
     pdf.add_page()
