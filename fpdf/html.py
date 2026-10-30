@@ -1316,6 +1316,9 @@ class HTML2FPDF(HTMLParser):
                         spacing = 0.0
                 else:
                     spacing = _parse_html_dimension(sp_val) / self.pdf.k
+                if spacing < 0:
+                    # An invalid (negative) cellspacing is ignored, like browsers do
+                    spacing = 0.0
             else:
                 spacing = 0.0
             self.first_row_widths = []

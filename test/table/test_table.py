@@ -468,6 +468,17 @@ def test_table_with_invalid_borders_layout(borders_layout):
     assert str(error.value) == f"{borders_layout} is not a valid TableBordersLayout"
 
 
+@pytest.mark.parametrize("gutter", ["gutter_height", "gutter_width"])
+def test_table_with_negative_gutter(gutter):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError) as error:
+        with pdf.table(TABLE_DATA, **{gutter: -2}):
+            pass
+    assert str(error.value) == f"{gutter} must be zero or a positive number: -2"
+
+
 def test_table_text_align_tuple_too_short():
     pdf = FPDF()
     pdf.add_page()
