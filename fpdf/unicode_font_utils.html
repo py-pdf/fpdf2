@@ -57,7 +57,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L265-L299" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L265-L299" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def font_file_covers(font_path: Path, characters: Set[str]) -&gt; bool:
     &#34;&#34;&#34;
@@ -109,7 +109,7 @@ never recommended.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L302-L313" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L302-L313" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_unicode_font_recommendation(text: str) -&gt; Optional[Tuple[str, str]]:
     &#34;&#34;&#34;
@@ -142,7 +142,7 @@ never recommended.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L316-L347" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L316-L347" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def suggest_unicode_font_for_error(error_text: str, font_name: str) -&gt; Optional[str]:
     &#34;&#34;&#34;
@@ -206,7 +206,7 @@ A helpful error message naming a verified font, or None if none was found.</p></
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L25-L262" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L25-L262" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class UnicodeFontManager:
     &#34;&#34;&#34;
@@ -457,7 +457,7 @@ A helpful error message naming a verified font, or None if none was found.</p></
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L209-L227" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L209-L227" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@staticmethod
 def detect_script_in_text(text: str) -&gt; Optional[UnicodeScript]:
@@ -492,7 +492,7 @@ The most common non-Latin Unicode script in the text, or None if only Latin/Comm
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L39-L46" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L39-L46" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def available_fonts(self) -&gt; Dict[str, Path]:
@@ -515,7 +515,7 @@ def available_fonts(self) -&gt; Dict[str, Path]:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L229-L253" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L229-L253" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_font_recommendation_for_text(self, text: str) -&gt; Optional[Tuple[str, str]]:
     &#34;&#34;&#34;
@@ -559,7 +559,7 @@ returned rather than a guess that might fail the same way.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L99-L207" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L99-L207" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_recommended_fonts_for_script(
     self, script: UnicodeScript
@@ -683,7 +683,7 @@ List of (font_name, file_path) tuples, ordered by preference.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/c6e7fe021511db5d770b3a8a2e8d7d818ed40222/fpdf/unicode_font_utils.py#L255-L262" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/e1093ac9f23adbb191a251f9710d6c7e7b19c2b4/fpdf/unicode_font_utils.py#L255-L262" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def list_available_unicode_fonts(self) -&gt; Dict[str, str]:
     &#34;&#34;&#34;
