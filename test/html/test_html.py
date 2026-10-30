@@ -1863,3 +1863,32 @@ def test_html_hr_invalid_percentage_width(tmp_path, width):
         render_html('<hr width="invalid">'),
         tmp_path,
     )
+
+
+@pytest.mark.parametrize("unit", ["mm", "pt", "in"])
+@pytest.mark.parametrize(
+    "scientific, decimal",
+    [("1e0", "1"), ("1e1px", "10px"), ("1E-2pt", "0.01pt")],
+)
+@pytest.mark.parametrize(
+    "template",
+    [
+        '<hr width="{value}">',
+        '<table width="{value}"><tr><td></td><td></td></tr></table>',
+        '<table cellpadding="{value}"><tr><td></td><td></td></tr></table>',
+        '<table cellspacing="{value}"><tr><td></td><td></td></tr></table>',
+        '<img src="{image}" width="{value}" height="10">',
+        '<img src="{image}" width="10" height="{value}">',
+    ],
+)
+def test_html_scientific_dimensions_match_decimals(
+    tmp_path, unit, scientific, decimal, template
+):
+    image = HERE.parent / "image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
+    pdfs = []
+    for value in (scientific, decimal):
+        pdf = FPDF(unit=unit)
+        pdf.add_page()
+        pdf.write_html(template.format(value=value, image=image))
+        pdfs.append(pdf)
+    assert_pdf_equal(pdfs[0], pdfs[1], tmp_path)
