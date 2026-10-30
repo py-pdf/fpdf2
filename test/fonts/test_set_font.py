@@ -54,6 +54,18 @@ def test_set_font_repeated_style_letters():
     assert pdf.underline
 
 
+@pytest.mark.parametrize("size", [-0.5, -12])
+def test_set_font_negative_size(size):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=12)
+    with pytest.raises(ValueError, match="Font size must be zero or a positive number"):
+        pdf.set_font("Times", size=size)
+    with pytest.raises(ValueError, match="Font size must be zero or a positive number"):
+        pdf.set_font_size(size)
+    assert pdf.font_size_pt == 12
+
+
 def test_set_builtin_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()
