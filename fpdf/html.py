@@ -1229,13 +1229,18 @@ class HTML2FPDF(HTMLParser):
                 try:
                     # like browsers, a CSS length such as "14pt" or "12px";
                     # a number without a unit is still read as points
-                    self.font_size_pt = resolve_length(font_size_str)
+                    font_size = resolve_length(font_size_str)
+                    # like browsers, a negative font size is ignored
+                    if font_size >= 0:
+                        self.font_size_pt = font_size
                 except ValueError:
                     pass
             elif "size" in attrs_dict:
                 font_size_str = attrs_dict.get("size") or ""
                 try:
-                    self.font_size_pt = float(font_size_str)
+                    font_size = float(font_size_str)
+                    if font_size >= 0:
+                        self.font_size_pt = font_size
                 except ValueError:
                     pass
             if "face" in attrs_dict:

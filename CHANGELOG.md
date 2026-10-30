@@ -19,6 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.9.1] - Not yet released
 ### Fixed
 * `FPDF.write_html()` handles an invalid percentage width, such as `width="x%"`, on `<table>`, `<td>`, `<th>` and `<hr>` like any other invalid width, instead of raising `ValueError: could not convert string to float` - thanks to @RavSinghChandan
+* `FPDF.set_font()` and `FPDF.set_font_size()` raise `ValueError: Font size must be zero or a positive number` for a negative size, like `set_line_width()` does for a negative width, instead of writing a negative font size: text was mirrored and each line of `multi_cell()` moved up the page, above the top margin; `FPDF.write_html()` ignores a negative `<font size>` or CSS `font-size`, like browsers - thanks to @RavSinghChandan
+* `FPDF.text_columns()` raises a clear `ValueError` for a negative `gutter`, like it does for `ncols` below 1, instead of silently laying out overlapping columns whose text is printed on top of each other - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
