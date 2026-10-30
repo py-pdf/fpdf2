@@ -28,6 +28,7 @@ extend-exclude = [
     "*.pdf",
     "*.svg",
     "docs/Tutorial-*.md",
+    ".all-contributorsrc",
 ]
 
 [type.md]
