@@ -18,6 +18,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.1] - Not yet released
 
+### Fixed
+* `FPDF.text_columns()` raises a clear `ValueError` for a negative `gutter`, like it does for `ncols` below 1, instead of silently laying out overlapping columns whose text is printed on top of each other - thanks to @RavSinghChandan
+
 ## [2.9.0] - 2026-10-29
 ### Added
 * support for `transform`, `style`, `opacity`, and `preserveAspectRatio="none"` on SVG `<image>` tags - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537) - thanks to @agustin18
@@ -60,7 +63,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.regular_polygon()` raises `ValueError: 'numSides' parameter must be equal or greater than 1` for `numSides` below 1, instead of silently writing a path with no points (a bare `h S`, which closes a path that was never started) - thanks to @RavSinghChandan
 * Bulleted text-column paragraphs now honor their top margins, indented paragraphs retain the column's right boundary, and HTML list items honor their `TextStyle.t_margin` - based on [PR #1218](https://github.com/py-pdf/fpdf2/pull/1218) - thanks to @andersonhc and @gmischler
 * `FPDF.text_columns()` raises a clear `ValueError` for `ncols` below 1, like `insert_toc_placeholder()` does for `pages`, instead of a `ZeroDivisionError` or an unrelated `Not enough horizontal space` error when rendering - thanks to @RavSinghChandan
-* `FPDF.text_columns()` raises a clear `ValueError` for a negative `gutter`, like it does for `ncols` below 1, instead of silently laying out overlapping columns whose text is printed on top of each other - thanks to @RavSinghChandan
 * `FPDF()` and `FPDF.add_page()` raise `FPDFPageFormatException: Width and height must be positive numbers` for a page `format` whose width or height is zero or negative, such as `(0, 0)`, instead of writing a page with an empty or inverted `/MediaBox` - thanks to @RavSinghChandan
 * `FPDF.write_html()` now supports CSS length units (`px`, `pt`) and surrounding whitespace in dimension attributes for `<table>`, `<td>`, `<th>`, `<hr>`, and `<img>` elements without raising `ValueError` - thanks to @agustin18
 * `FPDF.write_html()` reads a CSS `font-size` on `<font>` with its unit, like browsers, as in `style="font-size: 14pt"` or `"12px"`, instead of silently ignoring it; a number without a unit is still in points - thanks to @RavSinghChandan
