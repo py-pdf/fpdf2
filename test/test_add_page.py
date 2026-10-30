@@ -33,6 +33,18 @@ def test_add_page_duration(tmp_path):
     assert_pdf_equal(pdf, HERE / "add_page_duration.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("duration", [-1, -0.5])
+def test_add_page_negative_duration(duration):
+    pdf = fpdf.FPDF()
+    with pytest.raises(ValueError) as error:
+        pdf.add_page(duration=duration)
+    assert (
+        str(error.value)
+        == f"'duration' parameter must be equal or greater than 0: {duration}"
+    )
+    assert pdf.page == 0
+
+
 def test_break_or_add_page(tmp_path):
     pdf = fpdf.FPDF()
     pdf.set_auto_page_break(auto=True, margin=0)
