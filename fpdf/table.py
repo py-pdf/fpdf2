@@ -131,6 +131,15 @@ class Table:
         # (page, y) where the first row was rendered, set by render()
         self.first_row_position: Optional[tuple[int, float]] = None
 
+        if gutter_height < 0:
+            raise ValueError(
+                f"gutter_height must be zero or a positive number: {gutter_height}"
+            )
+        if gutter_width < 0:
+            raise ValueError(
+                f"gutter_width must be zero or a positive number: {gutter_width}"
+            )
+
         if padding is None:
             self._padding = Padding.new(0)
         else:
