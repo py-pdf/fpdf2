@@ -17,6 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.9.1] - Not yet released
+### Added
+* `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
 * `FPDF.add_page()` raises a clear `ValueError` for a negative `duration`, like it does for `label_start` below 1, instead of writing an invalid `/Dur` value into the PDF - thanks to @RavSinghChandan
 * `FPDF.table()` raises a clear `ValueError` for a negative `gutter_height` or `gutter_width`, instead of silently drawing rows or columns on top of each other; `FPDF.write_html()` ignores a negative `<table cellspacing>`, like browsers do - thanks to @RavSinghChandan
