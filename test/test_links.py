@@ -163,6 +163,24 @@ def test_inserting_link_with_an_invalid_index():
     )
 
 
+@pytest.mark.parametrize("page", [-2, -5])
+def test_link_to_negative_page(page):
+    """A negative page other than -1 (the current page) raises, for every way of setting a link destination."""
+    pdf = FPDF()
+    for _ in range(3):
+        pdf.add_page()
+    link = pdf.add_link()
+    for set_destination in (
+        lambda: pdf.add_link(page=page),
+        lambda: pdf.set_link(link, page=page),
+        lambda: pdf.set_link(name="target", page=page),
+    ):
+        with pytest.raises(ValueError, match=f"Invalid page number for a link: {page}"):
+            set_destination()
+    assert pdf.links[link].page_number == 3
+    assert "target" not in pdf.named_destinations
+
+
 def test_inserting_link_with_no_page_number():
     pdf = FPDF()
     link = pdf.add_link()
