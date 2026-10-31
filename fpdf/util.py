@@ -183,6 +183,8 @@ def get_scale_factor(unit: str | Number) -> float:
         ValueError
     """
     if isinstance(unit, NumberClass):
+        if unit <= 0:
+            raise ValueError(f"Unit must be a positive number: {unit}")
         return float(unit)
 
     if unit == "pt":

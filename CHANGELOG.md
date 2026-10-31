@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.1] - Not yet released
 ### Fixed
+* `FPDF()` and `convert_unit()` raise `ValueError: Unit must be a positive number` for a numeric `unit` of zero or below, instead of a `ZeroDivisionError` or an unrelated error about the bottom margin - thanks to @RavSinghChandan
 * `FPDF.add_page()` raises a clear `ValueError` for a negative `duration`, like it does for `label_start` below 1, instead of writing an invalid `/Dur` value into the PDF - thanks to @RavSinghChandan
 * `FPDF.write_html()` handles an invalid percentage width, such as `width="x%"`, on `<table>`, `<td>`, `<th>` and `<hr>` like any other invalid width, instead of raising `ValueError: could not convert string to float` - thanks to @RavSinghChandan
 * `FPDF.table()` raises a clear `ValueError` for a negative `gutter_height` or `gutter_width`, instead of silently drawing rows or columns on top of each other; `FPDF.write_html()` ignores a negative `<table cellspacing>`, like browsers do - thanks to @RavSinghChandan
