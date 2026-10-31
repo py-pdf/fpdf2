@@ -204,6 +204,19 @@ class Table:
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
         # Starting with some sanity checks:
         self._cols_count = max(row.cols_count for row in self.rows) if self.rows else 0
+        if self._width is not None and self._width <= 0:
+            raise ValueError(
+                f"Invalid value provided width={self._width}: it must be a positive number"
+            )
+        if isinstance(self._col_widths, NumberClass):
+            if self._col_widths <= 0:
+                raise ValueError(
+                    f"Invalid value provided col_widths={self._col_widths}: it must be a positive number"
+                )
+        elif self._col_widths and any(width < 0 for width in self._col_widths):
+            raise ValueError(
+                f"Invalid value provided col_widths={self._col_widths}: column widths can not be negative"
+            )
         if (
             self._col_widths
             and not isinstance(self._col_widths, NumberClass)
