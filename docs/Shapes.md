@@ -92,7 +92,7 @@ y = 10
 pdf.rect(60, y, 33, 28, round_corners=True, style="D")
 
 pdf.set_fill_color(0, 255, 0)
-pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="DF")
+pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT",), style="DF")
 
 pdf.set_fill_color(255, 255, 0)
 pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="F")

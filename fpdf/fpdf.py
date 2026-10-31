@@ -2069,19 +2069,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
         # Update points based on which corners are rounded
-        if Corner.TOP_RIGHT in round_corners_list:
+        if Corner.TOP_LEFT in round_corners_list:
             point_1 = (x + r, y)
             point_8 = (x, y + r)
 
-        if Corner.TOP_LEFT in round_corners_list:
+        if Corner.TOP_RIGHT in round_corners_list:
             point_2 = (x + w - r, y)
             _point_3 = (x + w, y + r)
 
-        if Corner.BOTTOM_LEFT in round_corners_list:
+        if Corner.BOTTOM_RIGHT in round_corners_list:
             point_4 = (x + w, y + h - r)
             _point_5 = (x + w - r, y + h)
 
-        if Corner.BOTTOM_RIGHT in round_corners_list:
+        if Corner.BOTTOM_LEFT in round_corners_list:
             point_6 = (x + r, y + h)
             _point_7 = (x, y + h - r)
 
@@ -2092,29 +2092,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Top edge: point_1 to point_2
         self._out(f"{point_2[0] * self.k:.2f} {(self.h - point_2[1]) * self.k:.2f} l")
 
-        # Top-left corner arc
-        if Corner.TOP_LEFT in round_corners_list:
+        # Top-right corner arc
+        if Corner.TOP_RIGHT in round_corners_list:
             self._draw_arc_segment(x + w - 2 * r, y, 2 * r, 270, 0)
 
         # Right edge: point_3 to point_4
         self._out(f"{point_4[0] * self.k:.2f} {(self.h - point_4[1]) * self.k:.2f} l")
 
-        # Bottom-left corner arc
-        if Corner.BOTTOM_LEFT in round_corners_list:
+        # Bottom-right corner arc
+        if Corner.BOTTOM_RIGHT in round_corners_list:
             self._draw_arc_segment(x + w - 2 * r, y + h - 2 * r, 2 * r, 0, 90)
 
         # Bottom edge: point_5 to point_6
         self._out(f"{point_6[0] * self.k:.2f} {(self.h - point_6[1]) * self.k:.2f} l")
 
-        # Bottom-right corner arc
-        if Corner.BOTTOM_RIGHT in round_corners_list:
+        # Bottom-left corner arc
+        if Corner.BOTTOM_LEFT in round_corners_list:
             self._draw_arc_segment(x, y + h - 2 * r, 2 * r, 90, 180)
 
         # Left edge: point_7 to point_8
         self._out(f"{point_8[0] * self.k:.2f} {(self.h - point_8[1]) * self.k:.2f} l")
 
-        # Top-right corner arc
-        if Corner.TOP_RIGHT in round_corners_list:
+        # Top-left corner arc
+        if Corner.TOP_LEFT in round_corners_list:
             self._draw_arc_segment(x, y, 2 * r, 180, 270)
 
         # Close path and apply style
