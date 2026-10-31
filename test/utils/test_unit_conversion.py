@@ -1,5 +1,7 @@
 import math
 
+import pytest
+
 from fpdf.util import convert_unit
 
 
@@ -71,3 +73,11 @@ def test_convert_unit_crazy():
         ((25.399999999999995, 25.399999999999995), (215.89999999999998, 279.4)),
         ((50.79999999999999, 50.79999999999999), (279.4, 215.89999999999998)),
     )
+
+
+@pytest.mark.parametrize("unit", [0, -72])
+def test_convert_unit_not_a_positive_number(unit):
+    with pytest.raises(ValueError) as e:
+        convert_unit(1, unit, "mm")
+
+    assert str(e.value) == f"Unit must be a positive number: {unit}"

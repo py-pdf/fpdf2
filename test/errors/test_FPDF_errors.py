@@ -73,6 +73,15 @@ def test_units():
     assert fpdf.FPDF(unit="mm").k == pytest.approx(2.83464566929)
     assert fpdf.FPDF(unit="cm").k == pytest.approx(28.3464566929)
     assert fpdf.FPDF(unit="in").k == pytest.approx(72)
+    assert fpdf.FPDF(unit=2).k == pytest.approx(2)
+
+
+@pytest.mark.parametrize("unit", [0, -1, -72.0])
+def test_unit_not_a_positive_number(unit):
+    with pytest.raises(ValueError) as e:
+        fpdf.FPDF(unit=unit)
+
+    assert str(e.value) == f"Unit must be a positive number: {unit}"
 
 
 def test_doc_option_only_core_fonts_encoding():
