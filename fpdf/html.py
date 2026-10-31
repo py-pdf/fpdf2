@@ -377,6 +377,14 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
         return 0.0
 
 
+def _parse_html_percentage(val: str) -> float:
+    """Parse an HTML percentage such as "50%"; an invalid one is 0, like an invalid length."""
+    try:
+        return float(val[:-1])
+    except ValueError:
+        return 0.0
+
+
 def _parse_html_span(val: str | None) -> int:
     """Parse a colspan / rowspan attribute like browsers do: an invalid value or one below 1 means 1."""
     match = re.match(r"\s*\+?(\d+)", val or "")
@@ -906,7 +914,7 @@ class HTML2FPDF(HTMLParser):
             if width_str:
                 width_str = width_str.strip()
                 if width_str.endswith("%"):
-                    hr_width = self.pdf.epw * float(width_str[:-1]) / 100
+                    hr_width = self.pdf.epw * _parse_html_percentage(width_str) / 100
                 else:
                     hr_width = _parse_html_dimension(width_str) / self.pdf.k
             else:
@@ -1263,7 +1271,7 @@ class HTML2FPDF(HTMLParser):
             if width_str:
                 width_str = width_str.strip()
                 if width_str.endswith("%"):
-                    width = self.pdf.epw * float(width_str[:-1]) / 100
+                    width = self.pdf.epw * _parse_html_percentage(width_str) / 100
                 else:
                     width = _parse_html_dimension(width_str) / self.pdf.k
                 if width <= 0:  # like browsers, an invalid width is ignored
@@ -1366,7 +1374,7 @@ class HTML2FPDF(HTMLParser):
                 width_str = (attrs_dict["width"] or "0").strip()
                 if len(self.table.rows) == 1:  # => first table row
                     if width_str.endswith("%"):
-                        cell_width = (float(width_str[:-1]), True)
+                        cell_width = (_parse_html_percentage(width_str), True)
                     else:
                         cell_width = (_parse_html_dimension(width_str), False)
                 else:
