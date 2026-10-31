@@ -1866,6 +1866,23 @@ def test_html_img_and_hr_dimension_units(html_snippet):
     assert len(pdf.pages) == 1
 
 
+def render_html(html):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    return pdf
+
+
+@pytest.mark.parametrize("width", ["x%", "%"])
+def test_html_hr_invalid_percentage_width(tmp_path, width):
+    "An invalid percentage width is handled like any other invalid width."
+    assert_pdf_equal(
+        render_html(f'<hr width="{width}">'),
+        render_html('<hr width="invalid">'),
+        tmp_path,
+    )
+
+
 @pytest.mark.parametrize("unit", ["mm", "pt", "in"])
 @pytest.mark.parametrize(
     "scientific, decimal",
