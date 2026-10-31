@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.9.1] - Not yet released
 ### Fixed
 * `FPDF.add_page()` raises a clear `ValueError` for a negative `duration`, like it does for `label_start` below 1, instead of writing an invalid `/Dur` value into the PDF - thanks to @RavSinghChandan
+* `FPDF.rect()` rounds the corners named in `round_corners`: `TOP_LEFT` rounded the top right corner, `BOTTOM_LEFT` the bottom right one, and so on; the example of the documentation also passed `("BOTTOM_RIGHT")` instead of a tuple - thanks to @RavSinghChandan
 * `FPDF.table()` raises a clear `ValueError` for a negative `gutter_height` or `gutter_width`, instead of silently drawing rows or columns on top of each other; `FPDF.write_html()` ignores a negative `<table cellspacing>`, like browsers do - thanks to @RavSinghChandan
 * `FPDF.set_font()` and `FPDF.set_font_size()` raise `ValueError: Font size must be zero or a positive number` for a negative size, like `set_line_width()` does for a negative width, instead of writing a negative font size: text was mirrored and each line of `multi_cell()` moved up the page, above the top margin; `FPDF.write_html()` ignores a negative `<font size>` or CSS `font-size`, like browsers - thanks to @RavSinghChandan
 * `FPDF.text_columns()` raises a clear `ValueError` for a negative `gutter`, like it does for `ncols` below 1, instead of silently laying out overlapping columns whose text is printed on top of each other - thanks to @RavSinghChandan
