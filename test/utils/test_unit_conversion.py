@@ -75,7 +75,7 @@ def test_convert_unit_crazy():
     )
 
 
-@pytest.mark.parametrize("unit", [0, -72])
+@pytest.mark.parametrize("unit", [0, -72, float("nan"), float("inf")])
 def test_convert_unit_not_a_positive_number(unit):
     with pytest.raises(ValueError) as e:
         convert_unit(1, unit, "mm")

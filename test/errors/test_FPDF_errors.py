@@ -76,7 +76,7 @@ def test_units():
     assert fpdf.FPDF(unit=2).k == pytest.approx(2)
 
 
-@pytest.mark.parametrize("unit", [0, -1, -72.0])
+@pytest.mark.parametrize("unit", [0, -1, -72.0, float("nan"), float("inf")])
 def test_unit_not_a_positive_number(unit):
     with pytest.raises(ValueError) as e:
         fpdf.FPDF(unit=unit)

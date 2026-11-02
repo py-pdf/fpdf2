@@ -7,6 +7,7 @@ in non-backward-compatible ways.
 """
 
 import decimal
+import math
 import re
 
 # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2 (min Python is 3.11)
@@ -183,7 +184,7 @@ def get_scale_factor(unit: str | Number) -> float:
         ValueError
     """
     if isinstance(unit, NumberClass):
-        if unit <= 0:
+        if not math.isfinite(unit) or unit <= 0:
             raise ValueError(f"Unit must be a positive number: {unit}")
         return float(unit)
 
