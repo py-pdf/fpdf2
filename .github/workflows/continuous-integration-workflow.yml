@@ -133,14 +133,15 @@ jobs:
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
-          # Executing all tests:
-          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
-          echo "Running with --trace-memory-usage (Ubuntu)"
-            pytest -vv --trace-memory-usage
-          else
-            echo "Running without trace-memory-usage (${{ matrix.platform }})"
-            pytest -vv
+          # Keep performance checks serial to avoid competition between workers.
+          pytest_args=(-vv)
+          if [[ -z "$CHECK_EXEC_TIME" && -z "$CHECK_RSS_MEMORY" ]]; then
+            pytest_args+=(-n auto --dist=worksteal)
           fi
+          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
+            pytest_args+=(--trace-memory-usage)
+          fi
+          pytest "${pytest_args[@]}"
       - name: Upload coverage report to codecov.io ☑
         # We only upload coverage ONCE, for a single parallel execution / Python version:
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
