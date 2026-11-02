@@ -286,6 +286,11 @@ def get_page_format(
     return width, height
 
 
+def _check_margin(name: str, margin: float) -> None:
+    if margin < 0:
+        raise ValueError(f"{name} margin must be zero or a positive number: {margin}")
+
+
 def check_page(fn: Callable[P, R]) -> Callable[P, R]:
     """Decorator to protect drawing methods"""
 
@@ -722,6 +727,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             top (float): top margin in the unit specified to FPDF constructor
             right (float): optional right margin in the unit specified to FPDF constructor
         """
+        # Check every margin first, so that an invalid one does not leave the others changed
+        _check_margin("Left", left)
+        _check_margin("Top", top)
+        if right != -1:
+            _check_margin("Right", right)
         self.set_left_margin(left)
         if self.y < top or self.y == self.t_margin:
             self.y = top
@@ -738,6 +748,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
+        _check_margin("Left", margin)
         if self.x < margin or self.x == self.l_margin:
             self.x = margin
         self.l_margin = margin
@@ -749,6 +760,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
+        _check_margin("Top", margin)
         self.t_margin = margin
 
     def set_right_margin(self, margin: float) -> None:
@@ -758,6 +770,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
+        _check_margin("Right", margin)
         self.r_margin = margin
 
     def set_auto_page_break(self, auto: bool, margin: float = 0) -> None:
