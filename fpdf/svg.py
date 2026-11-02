@@ -1139,6 +1139,7 @@ class SVGObject:
         self.cross_references: dict[str, Any] = {}
         self._cross_reference_costs: dict[str, int] = {}
         self.symbol_info: dict[str, SymbolInfo] = {}
+        self._markers_in_progress: set[str] = set()
         self.css_class_styles: dict[str, dict[str, Any]] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
             {}
@@ -1157,6 +1158,12 @@ class SVGObject:
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
             if element.tag in xmlns_lookup("svg", "pattern")
+            and element.attrib.get("id")
+        }
+        self._marker_elements = {
+            "#" + element.attrib["id"]: element
+            for element in svg_tree.iter()
+            if element.tag in xmlns_lookup("svg", "marker")
             and element.attrib.get("id")
         }
         self._pattern_parents = {
@@ -2041,6 +2048,9 @@ class SVGObject:
             elif child.tag in xmlns_lookup("svg", "pattern"):
                 # Definitions are resolved lazily, including forward references.
                 continue
+            elif child.tag in xmlns_lookup("svg", "marker"):
+                # Markers are resolved lazily at the referencing line.
+                continue
             elif child.tag in xmlns_lookup("svg", "clipPath"):
                 try:
                     clip_id = child.attrib["id"]
@@ -2229,7 +2239,7 @@ class SVGObject:
         if child.tag in xmlns_lookup("svg", "defs"):
             self.handle_defs(child)
         elif child.tag in xmlns_lookup(
-            "svg", "pattern", "linearGradient", "radialGradient"
+            "svg", "pattern", "linearGradient", "radialGradient", "marker"
         ):
             return
         elif child.tag in xmlns_lookup("svg", "style"):
@@ -2256,6 +2266,8 @@ class SVGObject:
             path = self.build_shape(child)
             self._apply_inherited_pattern(path, child, inherited_style)
             pdf_group.add_item(path, False)
+            if child.tag in xmlns_lookup("svg", "line"):
+                self._build_line_marker_end(pdf_group, child, path)
         elif child.tag in xmlns_lookup("svg", "use"):
             pdf_group.add_item(self.build_xref(child, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "image"):
@@ -2327,6 +2339,67 @@ class SVGObject:
         self.apply_clipping_path(shape_path, shape, style_map)
         self.update_xref(shape.attrib.get("id"), shape_path)
         return shape_path
+
+    @force_nodocument
+    def _build_line_marker_end(
+        self, pdf_group: GraphicsContext, line: "Element", line_path: PaintedPath
+    ) -> None:
+        style_map = self._style_map_for(line)
+        marker_value = _get_attr_or_style(line, "marker-end", style_map)
+        marker_id = self._extract_gradient_id(marker_value)
+        if marker_id is None:
+            return
+        marker = self._marker_elements.get(marker_id)
+        if marker is None:
+            LOGGER.warning("Ignoring missing SVG marker reference: %s", marker_id)
+            return
+        if marker.attrib.get("markerUnits", "strokeWidth") != "userSpaceOnUse":
+            LOGGER.warning(
+                "Ignoring SVG marker %s: only markerUnits=\"userSpaceOnUse\" is supported",
+                marker_id,
+            )
+            return
+        if marker.attrib.get("viewBox"):
+            LOGGER.warning(
+                "Ignoring SVG marker %s: marker viewBox is not yet supported",
+                marker_id,
+            )
+            return
+        if marker.attrib.get("orient", "0") != "auto":
+            LOGGER.warning(
+                "Ignoring SVG marker %s: only orient=\"auto\" is supported",
+                marker_id,
+            )
+            return
+
+        if marker_id in self._markers_in_progress:
+            raise ValueError(f"Cyclic SVG marker reference: {marker_id}")
+        max_depth = self.svg_limits.max_use_depth
+        if max_depth is not None and len(self._markers_in_progress) >= max_depth:
+            raise FPDFSvgLimitExceeded("SVG marker reference exceeds max_use_depth")
+        self._markers_in_progress.add(marker_id)
+        try:
+            marker_group = self.build_group(marker)
+        finally:
+            self._markers_in_progress.remove(marker_id)
+        x1 = resolve_length(line.attrib["x1"])
+        y1 = resolve_length(line.attrib["y1"])
+        x2 = resolve_length(line.attrib["x2"])
+        y2 = resolve_length(line.attrib["y2"])
+        angle = math.atan2(y2 - y1, x2 - x1)
+        ref_x = resolve_length(marker.attrib.get("refX", "0"))
+        ref_y = resolve_length(marker.attrib.get("refY", "0"))
+        placement = (
+            Transform.translation(-ref_x, -ref_y)
+            @ Transform.rotation(theta=angle)
+            @ Transform.translation(x2, y2)
+        )
+        if line_path.transform is not None:
+            placement = placement @ line_path.transform
+        if marker_group.transform is not None:
+            placement = marker_group.transform @ placement
+        marker_group.transform = placement
+        pdf_group.add_item(marker_group, False)
 
     @force_nodocument
     def build_clipping_path(self, shape: "Element", clip_id: Optional[str]) -> None:
