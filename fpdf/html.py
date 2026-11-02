@@ -11,6 +11,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/HTML.html>
 # pyright: reportPrivateUsage=false
 
 import logging
+import math
 import re
 import warnings
 from dataclasses import replace
@@ -1230,8 +1231,8 @@ class HTML2FPDF(HTMLParser):
                     # like browsers, a CSS length such as "14pt" or "12px";
                     # a number without a unit is still read as points
                     font_size = resolve_length(font_size_str)
-                    # like browsers, a negative font size is ignored
-                    if font_size >= 0:
+                    # like browsers, a negative or infinite font size is ignored
+                    if math.isfinite(font_size) and font_size >= 0:
                         self.font_size_pt = font_size
                 except ValueError:
                     pass
@@ -1239,7 +1240,7 @@ class HTML2FPDF(HTMLParser):
                 font_size_str = attrs_dict.get("size") or ""
                 try:
                     font_size = float(font_size_str)
-                    if font_size >= 0:
+                    if math.isfinite(font_size) and font_size >= 0:
                         self.font_size_pt = font_size
                 except ValueError:
                     pass
