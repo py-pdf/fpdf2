@@ -337,6 +337,20 @@ def _without_transparent(color: Optional[str]) -> Optional[str]:
     return color
 
 
+def _css_color(color: Optional[str]) -> Optional[DeviceRGB | DeviceGray]:
+    """
+    The color of a CSS declaration, or None if it is missing or invalid:
+    like browsers, an invalid CSS declaration is ignored, with a warning.
+    """
+    if color is None:
+        return None
+    try:
+        return color_as_decimal(color)
+    except ValueError:
+        LOGGER.warning('Ignoring invalid CSS color "%s"', color)
+        return None
+
+
 def parse_css_style(style_attr: str) -> dict[str, str]:
     """Parse `style="..."` HTML attributes, and return a dict of key-value"""
     style: dict[str, str] = {}
@@ -360,6 +374,14 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
     try:
         return resolve_length(val_str, default_unit=default_unit)
     except (ValueError, KeyError):
+        return 0.0
+
+
+def _parse_html_percentage(val: str) -> float:
+    """Parse an HTML percentage such as "50%"; an invalid one is 0, like an invalid length."""
+    try:
+        return float(val[:-1])
+    except ValueError:
         return 0.0
 
 
@@ -892,7 +914,7 @@ class HTML2FPDF(HTMLParser):
             if width_str:
                 width_str = width_str.strip()
                 if width_str.endswith("%"):
-                    hr_width = self.pdf.epw * float(width_str[:-1]) / 100
+                    hr_width = self.pdf.epw * _parse_html_percentage(width_str) / 100
                 else:
                     hr_width = _parse_html_dimension(width_str) / self.pdf.k
             else:
@@ -990,8 +1012,9 @@ class HTML2FPDF(HTMLParser):
                 bottom_margin=b_margin * hsize,
                 indent=l_margin,
             )
-            if "color" in css_style:
-                self.font_color = color_as_decimal(css_style["color"])
+            css_color = _css_color(css_style.get("color"))
+            if css_color is not None:
+                self.font_color = css_color
             elif _without_transparent(attrs_dict.get("color")) is not None:
                 # "color" attributes are not valid in HTML,
                 # but we support it for backward compatibility:
@@ -1206,13 +1229,18 @@ class HTML2FPDF(HTMLParser):
                 try:
                     # like browsers, a CSS length such as "14pt" or "12px";
                     # a number without a unit is still read as points
-                    self.font_size_pt = resolve_length(font_size_str)
+                    font_size = resolve_length(font_size_str)
+                    # like browsers, a negative font size is ignored
+                    if font_size >= 0:
+                        self.font_size_pt = font_size
                 except ValueError:
                     pass
             elif "size" in attrs_dict:
                 font_size_str = attrs_dict.get("size") or ""
                 try:
-                    self.font_size_pt = float(font_size_str)
+                    font_size = float(font_size_str)
+                    if font_size >= 0:
+                        self.font_size_pt = font_size
                 except ValueError:
                     pass
             if "face" in attrs_dict:
@@ -1243,7 +1271,7 @@ class HTML2FPDF(HTMLParser):
             if width_str:
                 width_str = width_str.strip()
                 if width_str.endswith("%"):
-                    width = self.pdf.epw * float(width_str[:-1]) / 100
+                    width = self.pdf.epw * _parse_html_percentage(width_str) / 100
                 else:
                     width = _parse_html_dimension(width_str) / self.pdf.k
                 if width <= 0:  # like browsers, an invalid width is ignored
@@ -1296,6 +1324,9 @@ class HTML2FPDF(HTMLParser):
                         spacing = 0.0
                 else:
                     spacing = _parse_html_dimension(sp_val) / self.pdf.k
+                if spacing < 0:
+                    # An invalid (negative) cellspacing is ignored, like browsers do
+                    spacing = 0.0
             else:
                 spacing = 0.0
             self.first_row_widths = []
@@ -1343,7 +1374,7 @@ class HTML2FPDF(HTMLParser):
                 width_str = (attrs_dict["width"] or "0").strip()
                 if len(self.table.rows) == 1:  # => first table row
                     if width_str.endswith("%"):
-                        cell_width = (float(width_str[:-1]), True)
+                        cell_width = (_parse_html_percentage(width_str), True)
                     else:
                         cell_width = (_parse_html_dimension(width_str), False)
                 else:

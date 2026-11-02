@@ -822,7 +822,7 @@ class TableBordersLayout(abc.ABC):
                 coerced_value = getattr(cls, value.upper())
                 if isinstance(coerced_value, cls):
                     return coerced_value
-            except ValueError:
+            except AttributeError:
                 pass
 
         raise ValueError(f"{value} is not a valid {cls.__name__}")

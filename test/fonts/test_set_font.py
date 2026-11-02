@@ -43,6 +43,29 @@ def test_set_unknown_style():
     )
 
 
+def test_set_font_repeated_style_letters():
+    "A style letter given twice is the same style: 'BB' is bold, not an unknown font."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", style="BB")
+    assert pdf.font_style == "B"
+    pdf.set_font("Times", style="ibIu")
+    assert pdf.font_style == "BI"
+    assert pdf.underline
+
+
+@pytest.mark.parametrize("size", [-0.5, -12])
+def test_set_font_negative_size(size):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=12)
+    with pytest.raises(ValueError, match="Font size must be zero or a positive number"):
+        pdf.set_font("Times", size=size)
+    with pytest.raises(ValueError, match="Font size must be zero or a positive number"):
+        pdf.set_font_size(size)
+    assert pdf.font_size_pt == 12
+
+
 def test_set_builtin_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()

@@ -130,6 +130,7 @@ from .errors import (
     FPDFUnicodeEncodingException,
     PDFAComplianceError,
 )
+from .unicode_font_utils import suggest_unicode_font_for_error
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin, StateStackType
 from .html import HTML2FPDF
@@ -202,7 +203,7 @@ if TYPE_CHECKING:
     from .prefs import ViewerPreferences
 
 # Public global variables:
-FPDF_VERSION = "2.8.9"
+FPDF_VERSION = "2.9.0"
 __version__ = FPDF_VERSION
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),  # 297mm × 420mm
@@ -273,10 +274,16 @@ def get_page_format(
         raise FPDFPageFormatException(str(format), one=True)
 
     try:
-        return format[0] * k, format[1] * k
+        width, height = format[0] * k, format[1] * k
+        positive = width > 0 and height > 0
     except Exception as e:
         args = f"{format}, {k}"
         raise FPDFPageFormatException(f"Arguments must be numbers: {args}") from e
+    if not positive:
+        raise FPDFPageFormatException(
+            f"Width and height must be positive numbers: {format}"
+        )
+    return width, height
 
 
 def check_page(fn: Callable[P, R]) -> Callable[P, R]:
@@ -701,8 +708,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
-        self.set_margins(margin, margin)
         self.set_auto_page_break(self.auto_page_break, margin)
+        self.set_margins(margin, margin)
 
     def set_margins(self, left: float, top: float, right: float = -1) -> None:
         """
@@ -763,8 +770,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             auto (bool): enable or disable this mode
             margin (float): optional bottom margin (distance from the bottom of the page)
-                in the unit specified to FPDF constructor
+                in the unit specified to FPDF constructor. Must be zero or a positive number.
         """
+        if margin < 0:
+            raise ValueError(
+                f"Bottom margin must be zero or a positive number: {margin}"
+            )
         self.auto_page_break: bool = auto
         self.b_margin: float = margin
         self.page_break_trigger: float = self.h - self.b_margin
@@ -814,12 +825,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             zoom: either "fullpage", "fullwidth", "real", "default",
                 or a number indicating the zooming factor to use, interpreted as a percentage.
+                The number must be zero or positive: zero keeps the viewer's current zoom.
                 The zoom level set by default is "default".
             layout (fpdf.enums.PageLayout, str): allowed layout aliases are "single", "continuous", "two" or "default",
                 meaning to use the viewer default mode.
                 The layout set by default is "continuous".
         """
-        if zoom in ZOOM_CONFIGS or not isinstance(zoom, str):
+        if zoom in ZOOM_CONFIGS:
+            self.zoom_mode: str | float = zoom
+        elif not isinstance(zoom, str):
+            if not (
+                isinstance(zoom, (int, float)) and math.isfinite(zoom) and zoom >= 0
+            ):
+                raise FPDFException(f"Incorrect zoom display mode: {zoom}")
             self.zoom_mode = zoom
         elif zoom != "default":
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
@@ -1119,6 +1137,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Enable `fpdf.output.PDFPageLabel` to be inserted on every page.
         This will be displayed by some PDF readers to identify pages.
         """
+        if label_start is not None and label_start < 1:
+            raise ValueError(
+                f"'label_start' parameter must be equal or greater than 1: {label_start}"
+            )
         current_page_label = None
         if self.page in self.pages:
             current_page_label = self.pages[self.page].get_page_label()
@@ -1185,7 +1207,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 - "a": Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).
             label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
             label_start (int): Starting number for the first page of a page label range.
+                Must be equal or greater than 1.
         """
+        if label_start is not None and label_start < 1:
+            raise ValueError(
+                f"'label_start' parameter must be equal or greater than 1: {label_start}"
+            )
+        if duration < 0:
+            raise ValueError(
+                f"'duration' parameter must be equal or greater than 0: {duration}"
+            )
+
         if self._active_tiling_patterns:
             raise FPDFException("Finish use_pattern() before changing pages")
 
@@ -1499,8 +1531,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            width (float): the width in user unit
+            width (float): the width in user unit. Must be zero or a positive number.
         """
+        if width < 0:
+            raise ValueError(f"Line width must be zero or a positive number: {width}")
         if width != self.line_width:
             self.line_width = width
             if self.page > 0:
@@ -2284,6 +2318,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        if numSides < 1:
+            raise ValueError(
+                f"'numSides' parameter must be equal or greater than 1: {numSides}"
+            )
         radius = polyWidth / 2
         centerX = x + radius
         centerY = y - radius
@@ -2330,6 +2368,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill.
             * `DF` or `FD`: draw and fill.
         """
+        if corners < 1:
+            raise ValueError(
+                f"'corners' parameter must be equal or greater than 1: {corners}"
+            )
         th = math.radians(rotate_degrees)
         point_list: list[tuple[float, float]] = []
         for i in range(0, (corners * 2) + 1):
@@ -2668,7 +2710,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if unicode_range is not None:
             parsed_unicode_range = get_parsed_unicode_range(unicode_range)
 
-        style = "".join(sorted(style.upper()))
+        # a repeated letter means the same style: "BB" is bold
+        style = "".join(sorted(set(style.upper())))
         if any(letter not in "BI" for letter in style):
             raise ValueError(
                 f"Unknown style provided (only B & I letters are allowed): {style}"
@@ -2748,14 +2791,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 of one or several letters among B (bold), I (italic), S (strikethrough) and U (underline).
                 Bold and italic styles do not apply to Symbol and ZapfDingbats fonts.
             size (float): in points. The default value is the current size.
+                Must be zero or a positive number.
         """
+        if size < 0:
+            raise ValueError(f"Font size must be zero or a positive number: {size}")
         if not family:
             family = self.font_family
 
         family = family.lower()
         if isinstance(style, TextEmphasis):
             style = style.style
-        style = "".join(sorted(style.upper()))
+        # a repeated letter means the same style: "BB" is bold
+        style = "".join(sorted(set(style.upper())))
         if any(letter not in "BISU" for letter in style):
             raise ValueError(
                 f"Unknown style provided (only B/I/S/U letters are allowed): {style}"
@@ -2827,8 +2874,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Configure the font size in points
 
         Args:
-            size (float): font size in points
+            size (float): font size in points. Must be zero or a positive number.
         """
+        if size < 0:
+            raise ValueError(f"Font size must be zero or a positive number: {size}")
         if FloatTolerance.equal(self.font_size_pt, size):
             return
         self.font_size_pt = size
@@ -2873,8 +2922,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         By default, no stretching is set (which is equivalent to a value of 100).
 
         Args:
-            stretching (float): horizontal stretching (scaling) in percents.
+            stretching (float): horizontal stretching (scaling) in percents. Must be a positive number.
         """
+        if stretching <= 0:
+            raise ValueError(f"Stretching must be a positive number: {stretching}")
         if self.font_stretching == stretching:
             return
         self.font_stretching = stretching
@@ -3527,6 +3578,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
             border_width (float): thickness of the path stroke.
         """
+        if not coords:
+            raise ValueError("coords must contain at least one point")
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])
         y_min = min(ink_list[1::2])
@@ -3534,7 +3587,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y_max = max(ink_list[1::2])
         annotation = AnnotationDict(
             "Ink",
-            x=y_min,
+            x=x_min,
             y=y_max,
             width=x_max - x_min,
             height=y_max - y_min,
@@ -6237,10 +6290,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             try:
                 return text.encode(self.core_fonts_encoding).decode("latin-1")
             except UnicodeEncodeError as error:
+                font_name = self.font_family + self.font_style
+                suggestion = suggest_unicode_font_for_error(text, font_name)
                 raise FPDFUnicodeEncodingException(
                     text_index=error.start,
                     character=text[error.start],
-                    font_name=self.font_family + self.font_style,
+                    font_name=font_name,
+                    suggestion=suggestion,
                 ) from error
         return text
 

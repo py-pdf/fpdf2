@@ -513,6 +513,17 @@ def test_html_table_cellpadding_cellspacing_units():
     assert len(pdf2.pages) == 1
 
 
+@pytest.mark.parametrize("cellspacing", ["-2", "-2px"])
+def test_html_table_negative_cellspacing_is_ignored(cellspacing):
+    pdf = FPDF()
+    pdf.add_page()
+    parser = HTML2FPDF(pdf)
+    parser.feed(f'<table cellspacing="{cellspacing}"><tr><td>Cell</td></tr>')
+    # pylint: disable=protected-access
+    assert parser.table._gutter_width == 0
+    assert parser.table._gutter_height == 0
+
+
 @pytest.mark.parametrize(
     "table_content",
     [
@@ -530,6 +541,26 @@ def test_html_table_invalid_or_zero_widths(table_content):
     html = f"<table>{table_content}</table>"
     pdf.write_html(html)
     assert len(pdf.pages) == 1
+
+
+@pytest.mark.parametrize(
+    "table",
+    [
+        '<table width="{width}"><tr><td>a</td></tr></table>',
+        '<table><tr><td width="{width}">a</td><td>b</td></tr></table>',
+        '<table><tr><th width="{width}">a</th><td>b</td></tr></table>',
+    ],
+)
+@pytest.mark.parametrize("width", ["x%", "%"])
+def test_html_table_invalid_percentage_width(tmp_path, table, width):
+    "An invalid percentage width is handled like any other invalid width."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(table.format(width=width))
+    expected = FPDF()
+    expected.add_page()
+    expected.write_html(table.format(width="invalid"))
+    assert_pdf_equal(pdf, expected, tmp_path)
 
 
 SPAN_TABLES = {
@@ -585,11 +616,12 @@ def test_html_table_wider_than_the_page_uses_the_page_width(tmp_path, caplog, wi
     assert_pdf_equal(pdf, expected, tmp_path)
 
 
-@pytest.mark.parametrize("width", ["-50%", "-10"])
-def test_html_table_with_a_negative_width_ignores_it(tmp_path, width):
+@pytest.mark.parametrize("width", ["-50%", "-10", "0", "0%", ' style="width: -50%"'])
+def test_html_table_with_a_nonpositive_width_ignores_it(tmp_path, width):
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(f'<table width="{width}"><tr><td>a</td><td>b</td></tr></table>')
+    attribute = width if width.startswith(" ") else f' width="{width}"'
+    pdf.write_html(f"<table{attribute}><tr><td>a</td><td>b</td></tr></table>")
     expected = FPDF()
     expected.add_page()
     expected.write_html("<table><tr><td>a</td><td>b</td></tr></table>")

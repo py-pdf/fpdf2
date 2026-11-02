@@ -27,11 +27,15 @@ def test_encoding_exception():
     with pytest.raises(FPDFUnicodeEncodingException) as error:
         pdf.cell(text="Joséō")
         # This should through an error since Helvetica is a latin-1 encoder and the ō is out of range.
-    msg = (
-        'Character "ō" at index 4 in text is outside the range of characters supported by the font '
-        'used: "helvetica". Please consider using a Unicode font.'
+    # The exception message starts with a deterministic description of the
+    # offending character, followed by a font suggestion whose exact wording can
+    # depend on the fonts installed on the host, so we only assert on the stable parts.
+    message = str(error.value)
+    assert message.startswith(
+        'Character "ō" at index 4 in text is outside the range of characters '
+        'supported by the font used: "helvetica".'
     )
-    assert str(error.value) == msg
+    assert "Unicode font" in message
 
 
 def test_orientation_portrait_landscape():

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 import fpdf
 from test.conftest import assert_pdf_equal
 from fpdf.drawing import DeviceGray
@@ -29,6 +31,18 @@ def test_add_page_duration(tmp_path):
     pdf.add_page()
     pdf.cell(text="Page 3")
     assert_pdf_equal(pdf, HERE / "add_page_duration.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("duration", [-1, -0.5])
+def test_add_page_negative_duration(duration):
+    pdf = fpdf.FPDF()
+    with pytest.raises(ValueError) as error:
+        pdf.add_page(duration=duration)
+    assert (
+        str(error.value)
+        == f"'duration' parameter must be equal or greater than 0: {duration}"
+    )
+    assert pdf.page == 0
 
 
 def test_break_or_add_page(tmp_path):
@@ -108,3 +122,28 @@ def test_new_page_graphics_state(tmp_path):
     pdf.add_page()
     draw_stuff()
     assert_pdf_equal(pdf, HERE / "new_page_graphics_state.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("margin", [-0.5, -20])
+def test_auto_page_break_negative_margin(margin):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    b_margin = pdf.b_margin
+
+    with pytest.raises(
+        ValueError, match="Bottom margin must be zero or a positive number"
+    ):
+        pdf.set_auto_page_break(auto=True, margin=margin)
+    assert pdf.b_margin == b_margin
+
+
+def test_margin_negative_changes_no_margin():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    margins = (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.b_margin)
+
+    with pytest.raises(
+        ValueError, match="Bottom margin must be zero or a positive number"
+    ):
+        pdf.set_margin(-5)
+    assert (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.b_margin) == margins

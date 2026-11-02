@@ -1,7 +1,7 @@
 import pytest
 
 from fpdf.errors import FPDFPageFormatException
-from fpdf.fpdf import get_page_format
+from fpdf.fpdf import FPDF, get_page_format
 
 
 def test_page_format_ok():
@@ -29,3 +29,17 @@ def test_page_format_error():
 
     assert "FPDFPageFormatException" in str(error.value)
     assert "Arguments must be numbers: " in str(error.value)
+
+
+@pytest.mark.parametrize("page_format", [(0, 0), (-100, 200), (210, 0)])
+def test_page_format_not_positive(page_format):
+    with pytest.raises(FPDFPageFormatException) as error:
+        get_page_format(page_format, k=1)
+
+    assert "Width and height must be positive numbers" in str(error.value)
+
+    pdf = FPDF()
+    with pytest.raises(FPDFPageFormatException) as error:
+        pdf.add_page(format=page_format)
+
+    assert "Width and height must be positive numbers" in str(error.value)

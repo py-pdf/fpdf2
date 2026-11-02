@@ -91,6 +91,16 @@ def test_insert_png_monochromatic(tmp_path):
     assert_pdf_equal(pdf, HERE / "image_types_insert_png_monochromatic.pdf", tmp_path)
 
 
+def test_insert_png_16_bit_grayscale(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.image(HERE / "../png_test_suite/basn0g16.png", x=15, y=15, h=60)
+    pdf.image(HERE / "../png_test_suite/tbwn0g16.png", x=95, y=15, h=60)
+    assert_pdf_equal(
+        pdf, HERE / "image_types_insert_png_16_bit_grayscale.pdf", tmp_path
+    )
+
+
 def test_transcode_monochrome_and_libtiff_support_custom_tags():
     # Fails under WSL on my computer (Lucas), with this error:
     #   AttributeError: module 'PIL._imaging' has no attribute 'libtiff_support_custom_tags'

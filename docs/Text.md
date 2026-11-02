@@ -18,6 +18,9 @@ Text regions allow to insert flowing text into a predefined region on the page. 
 The currently implemented type of text regions is [text_columns()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns), which defines one or several columns that can be filled sequentially or height-balanced.
 
 ## Typography and Language Specific Concepts
+
+Rendering text in non-Latin scripts (Cyrillic, Arabic, Chinese, etc.) requires a Unicode font that contains the relevant glyphs. If you use a built-in font instead, `fpdf2` raises an `FPDFUnicodeEncodingException` whose message names the offending character and, where possible, suggests a suitable Unicode font already installed on your system. See [Automatic font detection and helpful error messages](Unicode.md#automatic-font-detection-and-helpful-error-messages) in the Unicode guide, and the runnable `tutorial/unicode_font_detection.py` example it links to.
+
 ### Supported Features
 With supporting Unicode fonts, `fpdf2` should handle the following text shaping features correctly. More details can be found in [TextShaping](TextShaping.md).
 

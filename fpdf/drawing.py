@@ -3313,9 +3313,9 @@ class PaintedPath:
         previous path element.
 
         Args:
-            x (Number): abscissa the line's end point relative to the end point of the
+            dx (Number): abscissa the line's end point relative to the end point of the
                 previous path element.
-            y (Number): ordinate of the line's end point relative to the end point of
+            dy (Number): ordinate of the line's end point relative to the end point of
                 the previous path element.
 
         Returns:
@@ -3345,7 +3345,7 @@ class PaintedPath:
         element.
 
         Args:
-            x (Number): abscissa of the line's end point relative to the end point of
+            dx (Number): abscissa of the line's end point relative to the end point of
                 the previous path element.
 
         Returns:
@@ -3375,7 +3375,7 @@ class PaintedPath:
         element.
 
         Args:
-            y (Number): ordinate of the line's end point relative to the end point of
+            dy (Number): ordinate of the line's end point relative to the end point of
                 the previous path element.
 
         Returns:

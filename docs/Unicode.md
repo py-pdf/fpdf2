@@ -45,6 +45,19 @@ So if you want to create documents with any characters other than those common i
 Note that even if you have a font eg. named "Courier" installed as a system font on your computer, by default this will not be used. You'll have to explicitly call eg. `.add_font("Courier2", fname=r"C:\Windows\Fonts\cour.ttf")` to make it available. If the name is really the same (ignoring case), then you'll have to use a suitable variation, since trying to overwrite one of the "standard" names with `.add_font()` will result in an error.
 
 
+### Automatic font detection and helpful error messages ###
+
+When text cannot be encoded with the current font, the `FPDFUnicodeEncodingException` raised by `fpdf2` does more than report the offending character: it identifies the Unicode script of the text (Cyrillic, Arabic, Chinese, Devanagari, etc.) and, when a suitable font is found **already installed on the machine running the code**, suggests one together with the exact `add_font()` call to use. For example, rather than only _"Character "θ" ... Please consider using a Unicode font"_, you may get a message pointing you to a specific font file and the line of code that enables it.
+
+The suggestions prefer freely-licensed, broad-coverage font families such as [DejaVu](https://dejavu-fonts.github.io/), [Noto](https://fonts.google.com/noto) and Liberation. `fpdf2` never bundles or distributes these fonts — it only points to fonts that are already present on your system, so no additional font licensing obligations are introduced by this feature. You remain responsible for the licensing of whichever font you ultimately embed in your document.
+
+This behaviour is powered by the internal `UnicodeFontManager` helper. It is not part of the public API and may change without notice, but the same detection logic is available through the convenience functions `get_unicode_font_recommendation(text)` and `suggest_unicode_font_for_error(text, font_name)` in `fpdf.unicode_font_utils`. A runnable walk-through is provided in the tutorial below:
+
+```python
+{% include "../tutorial/unicode_font_detection.py" %}
+```
+
+
 ### Adding and Using Fonts ###
 
 Before using a Unicode font, you need to load it from a font file. Usually you'll have call `add_font()` for each style of the same font family you want to use. The styles that fpdf2 understands are:

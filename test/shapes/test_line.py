@@ -1,4 +1,5 @@
 from pathlib import Path
+import pytest
 from pytest import warns
 
 import fpdf
@@ -78,3 +79,14 @@ def test_dash(tmp_path):
         pdf.dashed_line(x, y, x + 100, y + 80, 6, 17)
 
     assert_pdf_equal(pdf, HERE / "class_dash.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("width", [-0.1, -2])
+def test_line_width_below_zero(width):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+
+    with pytest.raises(
+        ValueError, match="Line width must be zero or a positive number"
+    ):
+        pdf.set_line_width(width)
