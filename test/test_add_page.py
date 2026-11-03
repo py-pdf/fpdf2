@@ -33,7 +33,7 @@ def test_add_page_duration(tmp_path):
     assert_pdf_equal(pdf, HERE / "add_page_duration.pdf", tmp_path)
 
 
-@pytest.mark.parametrize("duration", [-1, -0.5])
+@pytest.mark.parametrize("duration", [-1, -0.5, float("nan"), float("inf")])
 def test_add_page_negative_duration(duration):
     pdf = fpdf.FPDF()
     with pytest.raises(ValueError) as error:
