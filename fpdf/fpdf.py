@@ -2815,7 +2815,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             size (float): in points. The default value is the current size.
                 Must be zero or a positive number.
         """
-        if size < 0:
+        if not math.isfinite(size) or size < 0:
             raise ValueError(f"Font size must be zero or a positive number: {size}")
         if not family:
             family = self.font_family
@@ -2898,7 +2898,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             size (float): font size in points. Must be zero or a positive number.
         """
-        if size < 0:
+        if not math.isfinite(size) or size < 0:
             raise ValueError(f"Font size must be zero or a positive number: {size}")
         if FloatTolerance.equal(self.font_size_pt, size):
             return
@@ -2946,7 +2946,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             stretching (float): horizontal stretching (scaling) in percents. Must be a positive number.
         """
-        if stretching <= 0:
+        if not math.isfinite(stretching) or stretching <= 0:
             raise ValueError(f"Stretching must be a positive number: {stretching}")
         if self.font_stretching == stretching:
             return

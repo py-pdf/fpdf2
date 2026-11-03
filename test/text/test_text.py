@@ -56,7 +56,7 @@ def test_text_stretch_spacing(tmp_path):
     assert_pdf_equal(doc, HERE / "text_stretch_spacing.pdf", tmp_path)
 
 
-@pytest.mark.parametrize("stretching", [0, -50])
+@pytest.mark.parametrize("stretching", [0, -50, float("nan"), float("inf")])
 def test_text_stretching_not_positive(stretching):
     doc = FPDF()
     doc.add_page()

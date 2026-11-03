@@ -795,10 +795,11 @@ def test_html_font_css_font_size(tmp_path, html, equivalent):
     [
         '<font size="-3">text</font>',
         '<font style="font-size: -5px">text</font>',
+        '<font size="inf">text</font>',
     ],
 )
 def test_html_font_negative_size_is_ignored(tmp_path, html):
-    "Like browsers, a negative font size is ignored: the current size is kept."
+    "Like browsers, a negative or infinite font size is ignored: the current size is kept."
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(html)
