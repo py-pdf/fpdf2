@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.1] - Not yet released
 ### Fixed
+* `FPDF()` and `convert_unit()` raise `ValueError: Unit must be a positive number` for a numeric `unit` of zero or below, NaN or infinity, instead of a `ZeroDivisionError` or an unrelated error about the bottom margin - thanks to @RavSinghChandan
 * Make SVG unit test collection deterministic, enabling parallel test runs with `pytest-xdist` - _cf._ [PR #2097](https://github.com/py-pdf/fpdf2/pull/2097) - thanks to @gringus
 * `FPDF.add_page()` raises a clear `ValueError` for a negative `duration`, like it does for `label_start` below 1, instead of writing an invalid `/Dur` value into the PDF - thanks to @RavSinghChandan
 * `FPDF.rect()` rounds the corners named in `round_corners`: `TOP_LEFT` rounded the top right corner, `BOTTOM_LEFT` the bottom right one, and so on; the example of the documentation also passed `("BOTTOM_RIGHT")` instead of a tuple - thanks to @RavSinghChandan
