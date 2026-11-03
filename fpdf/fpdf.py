@@ -1572,6 +1572,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if isinstance(background, DeviceRGB):
                 self.page_background = background.colors255
             else:
+                if isinstance(background, tuple):
+                    # Checked now, so that an invalid color does not only fail on the next add_page()
+                    if len(background) not in (1, 3):
+                        raise ValueError(
+                            f"background color must be a grey level or 3 RGB components: {background}"
+                        )
+                    convert_to_device_color(*background)
                 self.page_background = background
         else:
             raise TypeError(

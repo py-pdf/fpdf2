@@ -28,6 +28,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.set_margins()`, `FPDF.set_left_margin()`, `FPDF.set_top_margin()` and `FPDF.set_right_margin()` raise a clear `ValueError` for a negative margin, like `FPDF.set_auto_page_break()` does for the bottom one, instead of writing text off the page - thanks to @RavSinghChandan
 * `FPDF.text_columns()` raises a clear `ValueError` for a negative `gutter`, like it does for `ncols` below 1, instead of silently laying out overlapping columns whose text is printed on top of each other - thanks to @RavSinghChandan
 * `FPDF.table()` raises a clear `ValueError` for a `width` or a single `col_widths` that is zero or negative, or a negative value in `col_widths`, instead of failing with an unrelated "Not enough horizontal space to render a single character" error - thanks to @RavSinghChandan
+* `FPDF.set_page_background()` raises a clear `ValueError` for a color tuple with a component outside [0, 255] or with neither 1 nor 3 values, like `FPDF.set_fill_color()` does, instead of failing only on the next `add_page()` (with a misleading `color component -1` message for 2 values, or a `TypeError` for 4) - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
