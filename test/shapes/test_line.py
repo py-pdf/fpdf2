@@ -90,3 +90,14 @@ def test_line_width_below_zero(width):
         ValueError, match="Line width must be zero or a positive number"
     ):
         pdf.set_line_width(width)
+
+
+@pytest.mark.parametrize("width", [float("nan"), float("inf")])
+def test_line_width_not_finite(width):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+
+    with pytest.raises(
+        ValueError, match="Line width must be zero or a positive number"
+    ):
+        pdf.set_line_width(width)

@@ -55,3 +55,10 @@ def test_dash_pattern_badinput():
         pdf.set_dash_pattern(gap="hu")
     with raises(ValueError):
         pdf.set_dash_pattern(phase=None)
+    for value in (float("nan"), float("inf")):
+        with raises(ValueError):
+            pdf.set_dash_pattern(dash=value)
+        with raises(ValueError):
+            pdf.set_dash_pattern(dash=1, gap=value)
+        with raises(ValueError):
+            pdf.set_dash_pattern(dash=1, phase=value)

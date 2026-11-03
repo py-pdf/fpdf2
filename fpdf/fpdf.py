@@ -1546,7 +1546,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             width (float): the width in user unit. Must be zero or a positive number.
         """
-        if width < 0:
+        if not math.isfinite(width) or width < 0:
             raise ValueError(f"Line width must be zero or a positive number: {width}")
         if width != self.line_width:
             self.line_width = width
@@ -1801,11 +1801,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Omitting 'dash' (= 0) resets the pattern to a solid line.
         """
-        if not (isinstance(dash, (int, float)) and dash >= 0):
+        if not (isinstance(dash, (int, float)) and math.isfinite(dash) and dash >= 0):
             raise ValueError("Dash length must be zero or a positive number.")
-        if not (isinstance(gap, (int, float)) and gap >= 0):
+        if not (isinstance(gap, (int, float)) and math.isfinite(gap) and gap >= 0):
             raise ValueError("gap length must be zero or a positive number.")
-        if not (isinstance(phase, (int, float)) and phase >= 0):
+        if not (
+            isinstance(phase, (int, float)) and math.isfinite(phase) and phase >= 0
+        ):
             raise ValueError("Phase must be zero or a positive number.")
 
         pattern: dict[str, float] = dict(
