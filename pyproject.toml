@@ -76,6 +76,7 @@ test = [
   "pypdf",
   "pytest",
   "pytest-cov",
+  "pytest-xdist",
   "qrcode",
   "tabula-py",
   "uharfbuzz"
