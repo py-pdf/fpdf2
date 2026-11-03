@@ -30,7 +30,11 @@ def assert_style_match(lhs, rhs):
 
 class TestUnits:
     @pytest.mark.parametrize(
-        "name", [pytest.param(name, id=name) for name in fpdf.svg.relative_length_units]
+        "name",
+        [
+            pytest.param(name, id=name)
+            for name in sorted(fpdf.svg.relative_length_units)
+        ],
     )
     def test_resolve_relative_length_units(self, name):
         with pytest.raises(ValueError):

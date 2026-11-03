@@ -1964,6 +1964,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "gringus",
+      "name": "Marcin Deranek",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3704589?v=4",
+      "profile": "https://github.com/gringus",
+      "contributions": [
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
