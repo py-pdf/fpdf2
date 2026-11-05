@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.1] - Not yet released
 ### Fixed
+* documentation: ten code examples that failed when run as written now work with fpdf2 2.9.0: `fpdf.drawing.gray8` (moved to `fpdf.drawing_primitives`), `PDFICCProfileObject` (now `PDFICCProfile`) and an undefined `icc_file`, `TableBorderStyle`/`TableCellStyle` imported from `fpdf.table` and a custom `TableBordersLayout` built with a lambda instead of a subclass, `LinearGradient`/`RadialGradient` given a `pdf` argument they no longer take, `ink_annotation(contents=...)` instead of `text=...`, two examples without `add_page()` and an unclosed `<p>` in the ToC example; the `FlexTemplate` example also lost a stray `:` that made it invalid Python
 * `FPDF()` and `convert_unit()` raise `ValueError: Unit must be a positive number` for a numeric `unit` of zero or below, NaN or infinity, instead of a `ZeroDivisionError` or an unrelated error about the bottom margin - thanks to @RavSinghChandan
 * Make SVG unit test collection deterministic, enabling parallel test runs with `pytest-xdist` - _cf._ [PR #2097](https://github.com/py-pdf/fpdf2/pull/2097) - thanks to @gringus
 * `FPDF.add_page()` raises a clear `ValueError` for a negative `duration`, like it does for `label_start` below 1, instead of writing an invalid `/Dur` value into the PDF - thanks to @RavSinghChandan
@@ -32,6 +33,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.set_font()`, `FPDF.set_font_size()` and `FPDF.set_stretching()` also raise their `ValueError` for NaN or infinity, instead of writing `nan Tz` or an infinite font size into the page, which is not a valid PDF number; `FPDF.write_html()` ignores an infinite `<font size>`, like a negative one - thanks to @RavSinghChandan
 * `FPDF.set_line_width()` and `FPDF.set_dash_pattern()` also raise their `ValueError` for NaN or infinity, instead of writing `nan w` or an infinite dash length into the page, which is not a valid PDF number - thanks to @RavSinghChandan
 * `FPDF.set_page_background()` raises a clear `ValueError` for a color tuple with a component outside [0, 255] or with neither 1 nor 3 values, like `FPDF.set_fill_color()` does, instead of failing only on the next `add_page()` (with a misleading `color component -1` message for 2 values, or a `TypeError` for 4) - thanks to @RavSinghChandan
+* `FPDF.set_margins()`, `FPDF.set_left_margin()`, `FPDF.set_top_margin()`, `FPDF.set_right_margin()` and `FPDF.set_auto_page_break()` also raise their `ValueError` for a NaN or infinite margin, instead of writing `nan` coordinates for every cell into the page - thanks to @RavSinghChandan
 * `FPDF.text_columns()` also raises its `ValueError` for a NaN or infinite `gutter`, instead of silently dropping all the text after the first line - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
