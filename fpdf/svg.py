@@ -277,6 +277,8 @@ def convert_stroke_width(incoming: str) -> Optional[float]:
 @force_nodocument
 def convert_miterlimit(incoming: str) -> float:
     val = float(incoming)
+    if not math.isfinite(val):
+        raise ValueError(f"miter limit {incoming} must be a finite number")
     if val < 1.0:
         raise ValueError(f"miter limit {incoming} cannot be less than 1")
     return val

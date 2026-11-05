@@ -801,6 +801,18 @@ test_svg_attribute_conversion = (
         id="stroke-miterlimit too small",
     ),
     pytest.param(
+        '<path stroke-miterlimit="nan"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-miterlimit NaN",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="inf"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-miterlimit infinite",
+    ),
+    pytest.param(
         '<path stroke-miterlimit="bad"/>',
         Gs(),
         pytest.raises(ValueError),
