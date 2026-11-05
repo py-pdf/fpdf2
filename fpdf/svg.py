@@ -1375,18 +1375,20 @@ class SVGObject:
         value = value.strip()
 
         if value.endswith("%"):
-            return float(value[:-1]) / 100.0
-
-        try:
-            return float(value)
-        except ValueError:
+            coordinate = float(value[:-1]) / 100.0
+        else:
             try:
-                return resolve_length(value)
+                coordinate = float(value)
             except ValueError:
-                LOGGER.warning(
-                    "Could not parse gradient coordinate '%s', using 0", value
-                )
-                return 0.0
+                try:
+                    coordinate = resolve_length(value)
+                except ValueError:
+                    coordinate = math.nan
+
+        if not math.isfinite(coordinate):
+            LOGGER.warning("Could not parse gradient coordinate '%s', using 0", value)
+            return 0.0
+        return coordinate
 
     @force_nodocument
     @staticmethod
