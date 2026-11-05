@@ -240,21 +240,21 @@ _New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CH
 
 The dedicated method for adding output intent to a PDF is [`add_output_intent()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent).
 
-You can optionally provide a [`PDFICCProfileObject`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.PDFICCProfile) as `icc_profile`.
+You can optionally provide a [`PDFICCProfile`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.PDFICCProfile) as `icc_profile`.
 
 Example:
 ```python
 from pathlib import Path
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import PDFICCProfileObject
+from fpdf.output import PDFICCProfile
 
 HERE = Path(__file__).resolve().parent
 
 pdf = FPDF()
 
 with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
-    icc_profile = PDFICCProfileObject(
+    icc_profile = PDFICCProfile(
         contents=iccp_file.read(), n=3, alternate="DeviceRGB"
     )
 
@@ -263,7 +263,7 @@ pdf.add_output_intent(
     "sRGB",
     'IEC 61966-2-1:1999',
     "http://www.color.org",
-    icc_file,
+    icc_profile,
     "sRGB2014 (v2)",
 )
 ```
@@ -321,6 +321,7 @@ from fpdf import FPDF
 
 pdf = FPDF()
 pdf.allow_images_transparency = False
+pdf.add_page()
 pdf.set_font("Helvetica", size=15)
 pdf.cell(w=pdf.epw, h=30, text="Text behind. " * 6)
 pdf.image("docs/fpdf2-logo.png", x=0)

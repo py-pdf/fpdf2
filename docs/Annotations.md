@@ -85,8 +85,9 @@ Those annotations allow to draw paths around parts of a document to highlight th
 from fpdf import FPDF
 
 pdf = FPDF()
+pdf.add_page()
 pdf.ink_annotation([(100, 200), (200, 100), (300, 200), (200, 300), (100, 200)],
-                   title="Lucas", contents="Hello world!")
+                   title="Lucas", text="Hello world!")
 pdf.output("ink_annotation_demo.pdf")
 ```
 
