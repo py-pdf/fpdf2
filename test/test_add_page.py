@@ -173,6 +173,37 @@ def test_negative_margin_changes_no_margin(side, setter):
     assert (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.x, pdf.y) == state
 
 
+@pytest.mark.parametrize("margin", [float("nan"), float("inf")])
+@pytest.mark.parametrize(
+    "side, setter",
+    [
+        ("Left", lambda pdf, m: pdf.set_left_margin(m)),
+        ("Top", lambda pdf, m: pdf.set_top_margin(m)),
+        ("Right", lambda pdf, m: pdf.set_right_margin(m)),
+        ("Left", lambda pdf, m: pdf.set_margins(m, 10)),
+        ("Bottom", lambda pdf, m: pdf.set_auto_page_break(auto=True, margin=m)),
+    ],
+)
+def test_not_finite_margin_changes_no_margin(side, setter, margin):
+    """A NaN or infinite margin raises, and leaves all the margins and the position unchanged."""
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    state = (pdf.l_margin, pdf.t_margin, pdf.r_margin, pdf.b_margin, pdf.x, pdf.y)
+
+    with pytest.raises(
+        ValueError, match=f"{side} margin must be zero or a positive number"
+    ):
+        setter(pdf, margin)
+    assert (
+        pdf.l_margin,
+        pdf.t_margin,
+        pdf.r_margin,
+        pdf.b_margin,
+        pdf.x,
+        pdf.y,
+    ) == state
+
+
 def test_set_margins_default_right_margin():
     """Without a right margin, set_margins() uses the left margin for it."""
     pdf = fpdf.FPDF()

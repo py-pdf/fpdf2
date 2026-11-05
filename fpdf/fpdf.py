@@ -287,7 +287,7 @@ def get_page_format(
 
 
 def _check_margin(name: str, margin: float) -> None:
-    if margin < 0:
+    if not math.isfinite(margin) or margin < 0:
         raise ValueError(f"{name} margin must be zero or a positive number: {margin}")
 
 
@@ -785,7 +785,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             margin (float): optional bottom margin (distance from the bottom of the page)
                 in the unit specified to FPDF constructor. Must be zero or a positive number.
         """
-        if margin < 0:
+        if not math.isfinite(margin) or margin < 0:
             raise ValueError(
                 f"Bottom margin must be zero or a positive number: {margin}"
             )
