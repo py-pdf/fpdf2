@@ -33,6 +33,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.set_line_width()` and `FPDF.set_dash_pattern()` also raise their `ValueError` for NaN or infinity, instead of writing `nan w` or an infinite dash length into the page, which is not a valid PDF number - thanks to @RavSinghChandan
 * `FPDF.set_page_background()` raises a clear `ValueError` for a color tuple with a component outside [0, 255] or with neither 1 nor 3 values, like `FPDF.set_fill_color()` does, instead of failing only on the next `add_page()` (with a misleading `color component -1` message for 2 values, or a `TypeError` for 4) - thanks to @RavSinghChandan
 * `FPDF.set_char_spacing()` raises a clear `ValueError` for NaN or infinity, instead of writing `nan Tc` into the page, which is not a valid PDF number; negative spacing is still allowed - thanks to @RavSinghChandan
+* `FPDF.set_margins()`, `FPDF.set_left_margin()`, `FPDF.set_top_margin()`, `FPDF.set_right_margin()` and `FPDF.set_auto_page_break()` also raise their `ValueError` for a NaN or infinite margin, instead of writing `nan` coordinates for every cell into the page - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
