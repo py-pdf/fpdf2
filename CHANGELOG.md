@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.1] - Not yet released
 ### Fixed
+* documentation: ten code examples that failed when run as written now work with fpdf2 2.9.0: `fpdf.drawing.gray8` (moved to `fpdf.drawing_primitives`), `PDFICCProfileObject` (now `PDFICCProfile`) and an undefined `icc_file`, `TableBorderStyle`/`TableCellStyle` imported from `fpdf.table` and a custom `TableBordersLayout` built with a lambda instead of a subclass, `LinearGradient`/`RadialGradient` given a `pdf` argument they no longer take, `ink_annotation(contents=...)` instead of `text=...`, two examples without `add_page()` and an unclosed `<p>` in the ToC example; the `FlexTemplate` example also lost a stray `:` that made it invalid Python
 * `FPDF()` and `convert_unit()` raise `ValueError: Unit must be a positive number` for a numeric `unit` of zero or below, NaN or infinity, instead of a `ZeroDivisionError` or an unrelated error about the bottom margin - thanks to @RavSinghChandan
 * Make SVG unit test collection deterministic, enabling parallel test runs with `pytest-xdist` - _cf._ [PR #2097](https://github.com/py-pdf/fpdf2/pull/2097) - thanks to @gringus
 * `FPDF.add_page()` raises a clear `ValueError` for a negative `duration`, like it does for `label_start` below 1, instead of writing an invalid `/Dur` value into the PDF - thanks to @RavSinghChandan

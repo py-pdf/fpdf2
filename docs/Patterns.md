@@ -133,7 +133,6 @@ pdf.add_page()
 
 # Define a linear gradient
 linear_grad = LinearGradient(
-    pdf,
     from_x=10,                        # Starting x-coordinate
     from_y=0,                         # Starting y-coordinate
     to_x=100,                         # Ending x-coordinate
@@ -170,7 +169,6 @@ pdf.add_page()
 
 # Define a radial gradient
 radial_grad = RadialGradient(
-    pdf,
     start_circle_x=30,               # Center X of inner circle
     start_circle_y=30,               # Center Y of inner circle
     start_circle_radius=0,           # Radius of inner circle
