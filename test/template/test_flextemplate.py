@@ -497,6 +497,350 @@ def test_flextemplate_elements(tmp_path):
     assert_pdf_equal(pdf, HERE / "flextemplate_elements.pdf", tmp_path)
 
 
+def test_flextempalte_floating(tmp_path):
+    a = "2026-10-10"
+    b = "S0000"
+    c = "test " * 50
+
+    pdf_mc = FPDF()
+    pdf_mc.add_page()
+
+    pdf_mc.set_font("helvetica", size=12)
+    pdf_mc.set_left_margin(20)
+
+    pdf_mc.set_xy(20, 10)
+    pdf_mc.multi_cell(text=a, w=115, h=5, align="L", new_y="TOP")
+
+    pdf_mc.set_x(80)
+    pdf_mc.multi_cell(w=110.0, h=5.0, align="R", text=b, new_x="LMARGIN", new_y="NEXT")
+    #
+    pdf_mc.multi_cell(text=c, w=170, h=5, align="L", new_x="LEFT", new_y="NEXT")
+    pdf_mc.multi_cell(text="", w=12, h=5, align="L", new_x="LMARGIN", new_y="NEXT")
+    pdf_mc.multi_cell(
+        text="LMARING", w=30, h=5, align="L", new_x="CENTER", new_y="NEXT"
+    )
+    pdf_mc.multi_cell(text="CENTER", w=30, h=5, align="L", new_x="END", new_y="NEXT")
+    pdf_mc.multi_cell(text="END", w=30, h=5, align="L", new_x="RIGHT", new_y="NEXT")
+    pdf_mc.multi_cell(text="RIGHT", w=30, h=5, align="L", new_x="START", new_y="NEXT")
+    pdf_mc.multi_cell(text="START", w=30, h=5, align="L", new_x="LEFT", new_y="NEXT")
+    pdf_mc.multi_cell(text="LEFT", w=30, h=5, align="L", new_x="RMARGIN", new_y="NEXT")
+    pdf_mc.multi_cell(
+        text="RMARGIN", w=30, h=5, align="L", new_x="LMARGIN", new_y="NEXT"
+    )
+
+    pdf_mc.multi_cell(text="LMARING", w=30, h=5, align="L", new_x="END", new_y="TOP")
+    pdf_mc.multi_cell(text="TOP", w=10, h=5, align="L", new_x="END", new_y="LAST")
+    pdf_mc.multi_cell(text="LAST", w=10, h=5, align="L", new_x="END", new_y="LAST")
+
+    elements = [
+        {
+            "name": "a",
+            "type": "T",
+            "x1": 20,
+            "y1": 10,
+            "w": 115,
+            "h": 5.0,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": a,
+            "priority": 2,
+            "multiline": False,
+        },
+        {
+            "name": "b",
+            "type": "T",
+            "x1": 80.0,
+            "w": 110,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "R",
+            "text": b,
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "c",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": c,
+            "priority": 2,
+            "multiline": True,
+            "wrapmode": "WORD",
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "xxx",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LMARING",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "CENTER",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "CENTER",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "END",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "END",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "RIGHT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "RIGHT",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "START",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "START",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LEFT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LEFT",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "RMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "RMARGIN",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LMARING",
+            "priority": 2,
+            "multiline": True,
+            "new_x": "END",
+            "new_y": "TOP",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 10,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "TOP",
+            "priority": 2,
+            "multiline": True,
+            "new_x": "END",
+            "new_y": "LAST",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 10,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LAST",
+            "priority": 2,
+            "multiline": True,
+            "new_x": "END",
+            "new_y": "NEXT",
+        },
+    ]
+
+    pdf_temp = FPDF()
+    pdf_temp.add_page()
+    pdf_temp.set_font("helvetica", size=12)
+    pdf_temp.set_left_margin(20)
+
+    f = FlexTemplate(pdf_temp, elements=elements)
+    f.render()
+
+    assert_pdf_equal(pdf_temp, HERE / "flextemplate_floating_template.pdf", tmp_path)
+    assert_pdf_equal(pdf_mc, HERE / "flextemplate_floating_multicell.pdf", tmp_path)
+    # the following test does not work even though the two pdfs are visually
+    # equal. In the template case, the output is wrapped by "q" ... "Q"
+    # used to store the and restore the graphics state.
+    # assert_pdf_equal(pdf_temp, pdf_mc, tmp_path)
+
+
+def test_flextempalte_floating_scaled(tmp_path):
+    elements = [
+        {
+            "name": "xxx",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "cursor",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LEFT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LEFT",
+            "priority": 2,
+            "multiline": False,
+        },
+    ]
+
+    pdf_temp = FPDF()
+    pdf_temp.add_page()
+    pdf_temp.set_font("helvetica", size=12)
+    pdf_temp.set_left_margin(20)
+    pdf_temp.set_y(50)
+
+    f = FlexTemplate(pdf_temp, elements=elements)
+    f.render(scale=2.0)
+
+    assert_pdf_equal(
+        pdf_temp, HERE / "flextemplate_floating_template_scaled.pdf", tmp_path
+    )
+
+
 def test_flextemplate_leak(tmp_path):  # issue #570
     # rendering a template should not change the current graphics context.
     pdf = FPDF()
