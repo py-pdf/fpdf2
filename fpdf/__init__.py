@@ -21,7 +21,7 @@ import sys
 import warnings
 
 from .deprecation import WarnOnDeprecatedModuleAttributes
-from .enums import Align, ResourceAccessPolicy, TextMode, XPos, YPos
+from .enums import Align, ResourceAccessPolicy, TextMode, VAlign, XPos, YPos
 from .errors import FPDFException, FPDFResourceAccessError
 from .fonts import FontFace, TextStyle
 from .fpdf import (
@@ -73,6 +73,7 @@ __all__ = [
     "FPDFResourceAccessError",
     "FontFace",
     "Align",
+    "VAlign",
     "ResourceAccessPolicy",
     "TextMode",
     "XPos",
