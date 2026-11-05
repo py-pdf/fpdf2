@@ -59,7 +59,7 @@ pdf.add_page()
 
 with pdf.new_path() as path:
     path.style.fill_color = '#A070D0'
-    path.style.stroke_color = fpdf.drawing.gray8(210)
+    path.style.stroke_color = fpdf.drawing_primitives.gray8(210)
     path.style.stroke_width = 1
     path.style.stroke_opacity = 0.75
     path.style.stroke_join_style = 'round'
@@ -114,7 +114,7 @@ pdf.add_page()
 
 with pdf.new_path() as path:
     path.style.fill_color = "#A070D0"
-    path.style.stroke_color = fpdf.drawing.gray8(210)
+    path.style.stroke_color = fpdf.drawing_primitives.gray8(210)
     path.style.stroke_width = 1
     path.style.stroke_opacity = 0.75
     path.style.stroke_join_style = "round"
@@ -168,7 +168,7 @@ clipping_path.rectangle(x=2.5, y=2.5, w=5, h=5, rx=1, ry=1)
 
 with pdf.new_path() as path:
     path.style.fill_color = "#A070D0"
-    path.style.stroke_color = fpdf.drawing.gray8(210)
+    path.style.stroke_color = fpdf.drawing_primitives.gray8(210)
     path.style.stroke_width = 1
     path.style.stroke_opacity = 0.75
     path.style.stroke_join_style = "round"
