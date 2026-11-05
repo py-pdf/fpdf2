@@ -1169,6 +1169,7 @@ class SVGObject:
             if self.viewbox
             else (float(self.width or 300), float(self.height or 150))
         )
+        self._viewport_stack = [self.pattern_viewport]
         self._check_svg_limits(svg_tree)
         self.convert_graphics(svg_tree)
 
@@ -2019,6 +2020,8 @@ class SVGObject:
                 self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "switch"):
                 self.build_switch(child)
+            elif child.tag in xmlns_lookup("svg", "svg"):
+                self.build_nested_svg(child)
             elif child.tag in xmlns_lookup("svg", "symbol"):
                 self.build_symbol(child)
             elif child.tag in xmlns_lookup("svg", "a"):
@@ -2080,6 +2083,94 @@ class SVGObject:
                     width=resolve_optional_length(symbol.attrib.get("width")),
                     height=resolve_optional_length(symbol.attrib.get("height")),
                 )
+        return group
+
+    @force_nodocument
+    def build_nested_svg(
+        self,
+        nested_svg: "Element",
+        inherited_style: Optional[dict[str, Any]] = None,
+    ) -> GraphicsContext:
+        """Render a nested ``<svg>`` element in its own viewport."""
+        parent_width, parent_height = self._viewport_stack[-1]
+
+        def coordinate(name: str, axis_size: float, default: str) -> float:
+            value = nested_svg.attrib.get(name, default).strip()
+            if value.endswith("%"):
+                return float(value[:-1]) * axis_size / 100
+            return resolve_length(value)
+
+        x = coordinate("x", parent_width, "0")
+        y = coordinate("y", parent_height, "0")
+        width = coordinate("width", parent_width, "100%")
+        height = coordinate("height", parent_height, "100%")
+        if width <= 0 or height <= 0:
+            group = GraphicsContext()
+            self.update_xref(nested_svg.attrib.get("id"), group)
+            return group
+
+        self._viewport_stack.append((width, height))
+        try:
+            content_group = self.build_group(nested_svg, None, inherited_style)
+        finally:
+            self._viewport_stack.pop()
+
+        element_transform = content_group.transform
+        content_group.transform = None
+        viewbox = nested_svg.attrib.get("viewBox")
+        if viewbox:
+            vx, vy, vw, vh = parse_viewbox(viewbox)
+            if vw == 0 or vh == 0:
+                group = GraphicsContext()
+                self.update_xref(nested_svg.attrib.get("id"), group)
+                return group
+
+            scale_x, scale_y = width / vw, height / vh
+            preserve = nested_svg.attrib.get(
+                "preserveAspectRatio", "xMidYMid meet"
+            ).split()
+            if preserve and preserve[0] == "defer":
+                preserve = preserve[1:]
+            alignment = preserve[0] if preserve else "xMidYMid"
+            offset_x = offset_y = 0.0
+            if alignment != "none":
+                ratio = (
+                    max(scale_x, scale_y)
+                    if "slice" in preserve
+                    else min(scale_x, scale_y)
+                )
+                scale_x = scale_y = ratio
+                extra_x, extra_y = width - vw * ratio, height - vh * ratio
+                offset_x = extra_x * (
+                    0 if "xMin" in alignment else 1 if "xMax" in alignment else 0.5
+                )
+                offset_y = extra_y * (
+                    0 if "YMin" in alignment else 1 if "YMax" in alignment else 0.5
+                )
+            content_group.transform = (
+                Transform.translation(-vx, -vy)
+                @ Transform.scaling(scale_x, scale_y)
+                @ Transform.translation(offset_x, offset_y)
+            )
+
+        viewport_group = GraphicsContext()
+        viewport_group.transform = Transform.translation(x, y)
+        overflow = _get_attr_or_style(
+            nested_svg, "overflow", self._style_map_for(nested_svg)
+        )
+        if overflow != "visible":
+            clipping_path = ClippingPath()
+            clipping_path.rectangle(0, 0, width, height)
+            viewport_group.clipping_path = clipping_path
+        viewport_group.add_item(content_group, False)
+
+        if element_transform is None:
+            group = viewport_group
+        else:
+            group = GraphicsContext()
+            group.transform = element_transform
+            group.add_item(viewport_group, False)
+        self.update_xref(nested_svg.attrib.get("id"), group)
         return group
 
     # this assumes xrefs only reference already-defined ids.
@@ -2241,6 +2332,8 @@ class SVGObject:
             pdf_group.add_item(self.build_group(child, None, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "switch"):
             pdf_group.add_item(self.build_switch(child, inherited_style), False)
+        elif child.tag in xmlns_lookup("svg", "svg"):
+            pdf_group.add_item(self.build_nested_svg(child, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "a"):
             # <a> tags aren't supported but we need to recurse into them to
             # render nested elements.

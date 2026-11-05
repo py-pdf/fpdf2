@@ -251,6 +251,7 @@ logging.getLogger("fpdf.svg").propagate = False
 - `<image>` elements (raster images with `transform`, `style`, `opacity`, and `preserveAspectRatio="none"`)
 - basic cross-references, with `defs` tags anywhere in the SVG code
 - basic `<switch>` elements, selecting the first child without conditional processing attributes
+- basic nested `<svg>` elements, including viewport positioning and `viewBox` scaling
 - stroke & fill coloring and opacity
 - basic stroke styling
 - basic CSS styling via `style="..."` attributes and class rules in `<style>` tags
@@ -271,7 +272,7 @@ There are some common SVG features that are currently **unsupported**, but that 
 
 - `<marker>`
 - `<pattern>`
-- embedded non-image content (including nested SVGs)
+- embedded non-image content in `<image>` elements
 - `<textPath>`
 - many standard attributes
 - complex CSS selectors or external *.css files.
