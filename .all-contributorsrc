@@ -1973,6 +1973,15 @@
       "contributions": [
         "test"
       ]
+    },
+    {
+      "login": "fstandhartinger",
+      "name": "Florian Standhartinger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1905188?v=4",
+      "profile": "https://github.com/fstandhartinger",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
