@@ -391,6 +391,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="http://wleeaf.dev"><img src="https://avatars.githubusercontent.com/u/179125857?v=4?s=100" width="100px;" alt="Wleeaf"/><br /><sub><b>Wleeaf</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=wleeaf" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/otreci4sgelt0nas"><img src="https://avatars.githubusercontent.com/u/96852897?v=4?s=100" width="100px;" alt="otreci4sgelt0nas"/><br /><sub><b>otreci4sgelt0nas</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=otreci4sgelt0nas" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/gringus"><img src="https://avatars.githubusercontent.com/u/3704589?v=4?s=100" width="100px;" alt="Marcin Deranek"/><br /><sub><b>Marcin Deranek</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=gringus" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/fstandhartinger"><img src="https://avatars.githubusercontent.com/u/1905188?v=4?s=100" width="100px;" alt="Florian Standhartinger"/><br /><sub><b>Florian Standhartinger</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=fstandhartinger" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
