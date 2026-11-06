@@ -551,7 +551,7 @@ def test_html_table_invalid_or_zero_widths(table_content):
         '<table><tr><th width="{width}">a</th><td>b</td></tr></table>',
     ],
 )
-@pytest.mark.parametrize("width", ["x%", "%", "nan%", "inf%"])
+@pytest.mark.parametrize("width", ["x%", "%", "nan%", "inf%", "-inf%"])
 def test_html_table_invalid_percentage_width(tmp_path, table, width):
     "An invalid percentage width is handled like any other invalid width."
     pdf = FPDF()
