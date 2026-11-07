@@ -1874,7 +1874,7 @@ def render_html(html):
     return pdf
 
 
-@pytest.mark.parametrize("width", ["x%", "%"])
+@pytest.mark.parametrize("width", ["x%", "%", "nan%", "inf%", "-inf%"])
 def test_html_hr_invalid_percentage_width(tmp_path, width):
     "An invalid percentage width is handled like any other invalid width."
     assert_pdf_equal(
