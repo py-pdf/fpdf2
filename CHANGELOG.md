@@ -43,6 +43,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.table()` also raises its `ValueError` for a NaN or infinite `width`, `col_widths`, `gutter_height` or `gutter_width`, instead of writing `nan` coordinates into the page - thanks to @RavSinghChandan
 * `FPDF.text_columns()` also raises its `ValueError` for a NaN or infinite `gutter`, instead of silently dropping all the text after the first line - thanks to @RavSinghChandan
 * `FPDF.add_page()` also raises its `ValueError` for a NaN or infinite `duration`, instead of writing `/Dur nan` or `/Dur inf` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
+* `FPDF.write_html()` ignores a NaN or infinite `line-height` on `<p>`, `<ul>` and `<ol>`, like an invalid one, instead of hanging forever for `inf` or dropping the list items for `nan` - thanks to @RavSinghChandan
 * `FPDF.set_x()`, `FPDF.set_y()` and `FPDF.set_xy()` raise a clear `ValueError` for a NaN or infinite coordinate, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
 * `FPDF.rect_clip()` and `FPDF.elliptic_clip()` restore the font state when the context exits, so text rendered after the clip is no longer dropped - _cf._ [issue #2123](https://github.com/py-pdf/fpdf2/issues/2123) - thanks to @agustin18
 
