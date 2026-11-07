@@ -646,6 +646,24 @@ text-text-text-text-text-text-text-text-text-text-</p>
     assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("line_height", ["nan", "inf", "-inf"])
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<p line-height="{line_height}">a</p><p>b</p>',
+        '<ul line-height="{line_height}"><li>a</li><li>b</li></ul>',
+        '<ol line-height="{line_height}"><li>a</li><li>b</li></ol>',
+    ],
+)
+def test_html_non_finite_line_height(tmp_path, html, line_height):
+    "A NaN or infinite line-height is ignored, like an invalid one."
+    assert_pdf_equal(
+        render_html(html.format(line_height=line_height)),
+        render_html(html.format(line_height="x")),
+        tmp_path,
+    )
+
+
 def test_html_img_not_overlapping(tmp_path):
     pdf = FPDF()
     pdf.add_page()
