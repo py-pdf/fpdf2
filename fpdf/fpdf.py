@@ -1226,7 +1226,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
-        if duration < 0:
+        if not math.isfinite(duration) or duration < 0:
             raise ValueError(
                 f"'duration' parameter must be equal or greater than 0: {duration}"
             )
