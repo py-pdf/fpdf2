@@ -43,6 +43,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.table()` also raises its `ValueError` for a NaN or infinite `width`, `col_widths`, `gutter_height` or `gutter_width`, instead of writing `nan` coordinates into the page - thanks to @RavSinghChandan
 * `FPDF.text_columns()` also raises its `ValueError` for a NaN or infinite `gutter`, instead of silently dropping all the text after the first line - thanks to @RavSinghChandan
 * `FPDF.add_page()` also raises its `ValueError` for a NaN or infinite `duration`, instead of writing `/Dur nan` or `/Dur inf` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
+* `FPDF.rect()` raises a clear `ValueError` for a NaN or infinite `corner_radius` with `round_corners`, instead of `cannot convert float NaN to integer` - thanks to @RavSinghChandan
 * `FPDF.arc()` and `FPDF.solid_arc()` raise a clear `ValueError` for a zero, NaN or infinite axis, or a NaN or infinite angle, instead of a `ZeroDivisionError` or `cannot convert float NaN to integer` - thanks to @RavSinghChandan
 * `FPDF.link()`, `FPDF.text_annotation()` and the other annotation methods raise a clear `ValueError` for a NaN or infinite position or size, instead of writing `/Rect [nan ...]` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
 * `FPDF.write_html()` ignores a NaN or infinite `line-height` on `<p>`, `<ul>` and `<ol>`, like an invalid one, instead of hanging forever for `inf` or dropping the list items for `nan` - thanks to @RavSinghChandan

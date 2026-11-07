@@ -2050,6 +2050,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
         if round_corners is not False:
+            if not math.isfinite(corner_radius):
+                raise ValueError(
+                    f"corner_radius must be a finite number: {corner_radius}"
+                )
             self._draw_rounded_rect(x, y, w, h, style, round_corners, corner_radius)
         else:
             self._out(
