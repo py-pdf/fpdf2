@@ -1,7 +1,6 @@
 """Tests related to positioning self.x and self.y on the page.
 implemented:
 * ln()
-to be implemented:
 * set_x()
 * set_y()
 * set_xy()
@@ -124,3 +123,41 @@ def test_ln_with_zero_h():
     assert math.isclose(
         pdf.y, prev_y
     ), f"ln() after call with 0 (zero) h parameter moves by y axis ({pdf.y} vs.{prev_y})"
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize(
+    "setter",
+    [
+        lambda pdf, value: pdf.set_x(value),
+        lambda pdf, value: pdf.set_y(value),
+        lambda pdf, value: pdf.set_xy(value, 20),
+        lambda pdf, value: pdf.set_xy(10, value),
+    ],
+)
+def test_not_finite_position_changes_no_position(setter, value):
+    """A NaN or infinite coordinate raises, and leaves the position unchanged."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_xy(10, 20)
+    state = (pdf.x, pdf.y)
+
+    with pytest.raises(ValueError, match="must be a finite number"):
+        setter(pdf, value)
+    assert (pdf.x, pdf.y) == state
+
+
+def test_negative_positions_are_relative_to_the_right_and_bottom():
+    pdf = FPDF()
+    pdf.add_page()
+
+    pdf.set_x(-10)
+    assert math.isclose(pdf.x, pdf.w - 10)
+
+    pdf.set_y(-20)
+    assert pdf.x == pdf.l_margin
+    assert math.isclose(pdf.y, pdf.h - 20)
+
+    pdf.set_xy(-30, -40)
+    assert math.isclose(pdf.x, pdf.w - 30)
+    assert math.isclose(pdf.y, pdf.h - 40)
