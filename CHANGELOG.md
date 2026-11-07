@@ -51,6 +51,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.set_x()`, `FPDF.set_y()` and `FPDF.set_xy()` raise a clear `ValueError` for a NaN or infinite coordinate, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
 * `FPDF.rect_clip()` and `FPDF.elliptic_clip()` restore the font state when the context exits, so text rendered after the clip is no longer dropped - _cf._ [issue #2123](https://github.com/py-pdf/fpdf2/issues/2123) - thanks to @agustin18
 * SVG paths and `PaintedPath.arc_to()` omit an elliptical arc whose end point is its start point, as the SVG specification requires, instead of raising `ZeroDivisionError` - thanks to @RavSinghChandan
+* `FPDF.ink_annotation()` raises a clear `ValueError` for a NaN or infinite point in `coords`, instead of writing it into `/InkList`, which is not a valid PDF number - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
