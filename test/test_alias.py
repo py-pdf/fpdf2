@@ -110,7 +110,7 @@ def test_page_label(tmp_path):
     assert_pdf_equal(pdf, HERE / "page_label.pdf", tmp_path)
 
 
-@pytest.mark.parametrize("label_start", [0, -2])
+@pytest.mark.parametrize("label_start", [0, -2, float("nan"), float("inf")])
 def test_page_label_start_below_one(label_start):
     pdf = fpdf.FPDF()
     with pytest.raises(

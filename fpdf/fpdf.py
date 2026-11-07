@@ -1155,7 +1155,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Enable `fpdf.output.PDFPageLabel` to be inserted on every page.
         This will be displayed by some PDF readers to identify pages.
         """
-        if label_start is not None and label_start < 1:
+        if label_start is not None and (
+            not math.isfinite(label_start) or label_start < 1
+        ):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
@@ -1227,7 +1229,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             label_start (int): Starting number for the first page of a page label range.
                 Must be equal or greater than 1.
         """
-        if label_start is not None and label_start < 1:
+        if label_start is not None and (
+            not math.isfinite(label_start) or label_start < 1
+        ):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
