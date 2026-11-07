@@ -494,6 +494,16 @@ class TestSVGObject:
         symbol_use = svg.base_group.path_items[0]
         assert tuple(symbol_use.transform) == pytest.approx((40, 0, 0, 20, 5, 5))
 
+    @pytest.mark.parametrize("viewbox", ["0 0 nan 2", "0 0 2 inf"])
+    def test_svg_symbol_not_finite_viewbox(self, viewbox):
+        with pytest.raises(ValueError, match="invalid viewBox"):
+            fpdf.svg.SVGObject(
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20">'
+                f'<symbol id="myDot" width="10" height="10" viewBox="{viewbox}">'
+                '<circle cx="1" cy="1" r="1"/></symbol>'
+                '<use href="#myDot" x="5" y="5"/></svg>'
+            )
+
     def test_svg_symbol_viewbox_origin_is_translated_before_scaling(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 20">'

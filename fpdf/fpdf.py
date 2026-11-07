@@ -291,6 +291,11 @@ def _check_margin(name: str, margin: float) -> None:
         raise ValueError(f"{name} margin must be zero or a positive number: {margin}")
 
 
+def _check_coordinate(name: str, value: float) -> None:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be a finite number: {value}")
+
+
 def check_page(fn: Callable[P, R]) -> Callable[P, R]:
     """Decorator to protect drawing methods"""
 
@@ -6291,6 +6296,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             x (float): the new current abscissa
         """
+        _check_coordinate("x", x)
         self.x = x if x >= 0 else self.w + x
 
     def get_y(self) -> float:
@@ -6309,6 +6315,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             y (float): the new current ordinate
         """
+        _check_coordinate("y", y)
         self.x = self.l_margin
         self.y = y if y >= 0 else self.h + y
 
@@ -6321,6 +6328,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x (float): the new current abscissa
             y (float): the new current ordinate
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
         self.set_y(y)
         self.set_x(x)
 
@@ -6756,6 +6765,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): width of the clipping region
             h (float): height of the clipping region
         """
+        prev_font_set = self.current_font_is_set_on_page
         self._out(
             (
                 f"q {x * self.k:.2f} {(self.h - y - h) * self.k:.2f} {w * self.k:.2f} "
@@ -6764,6 +6774,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         yield
         self._out("Q")
+        self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
@@ -6780,10 +6791,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): ellipse width
             h (float): ellipse height
         """
+        prev_font_set = self.current_font_is_set_on_page
         self._out("q")
         self._draw_ellipse(x, y, w, h, "W n")
         yield
         self._out("Q")
+        self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
