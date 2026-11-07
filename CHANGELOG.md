@@ -35,10 +35,20 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.set_page_background()` raises a clear `ValueError` for a color tuple with a component outside [0, 255] or with neither 1 nor 3 values, like `FPDF.set_fill_color()` does, instead of failing only on the next `add_page()` (with a misleading `color component -1` message for 2 values, or a `TypeError` for 4) - thanks to @RavSinghChandan
 * `FPDF.set_char_spacing()` raises a clear `ValueError` for NaN or infinity, instead of writing `nan Tc` into the page, which is not a valid PDF number; negative spacing is still allowed - thanks to @RavSinghChandan
 * `FPDF.set_margins()`, `FPDF.set_left_margin()`, `FPDF.set_top_margin()`, `FPDF.set_right_margin()` and `FPDF.set_auto_page_break()` also raise their `ValueError` for a NaN or infinite margin, instead of writing `nan` coordinates for every cell into the page - thanks to @RavSinghChandan
+* `FPDF.write_html()` also handles a NaN or infinite percentage width, such as `<th width="nan%">`, like any other invalid width, instead of writing `nan` coordinates into the page - thanks to @RavSinghChandan
+* SVG images read a NaN or infinite gradient coordinate, such as `<linearGradient x1="nan">`, as 0 with a warning, like any other invalid coordinate, instead of writing `/Coords [nan 0 1 0]` into the PDF, which is not a valid PDF number - thanks to @RavSinghChandan
+* `GraphicsStyle.stroke_dash_pattern` and `GraphicsStyle.stroke_dash_phase` raise a clear `ValueError` for NaN or infinity, so an SVG `stroke-dasharray="nan 2"` or `stroke-dashoffset="inf"` no longer writes `[nan 2] 0 d` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
+* SVG images raise a clear `ValueError` for a NaN or infinite `stroke-miterlimit`, like they do for one below 1, instead of writing `/ML nan` into the PDF, which is not a valid PDF number - thanks to @RavSinghChandan
+* SVG images raise `ValueError: invalid viewBox` for a `viewBox` with a NaN or infinite value, like they do for a negative width or height, instead of writing `nan` coordinates into the page - thanks to @RavSinghChandan
 * `FPDF.table()` also raises its `ValueError` for a NaN or infinite `width`, `col_widths`, `gutter_height` or `gutter_width`, instead of writing `nan` coordinates into the page - thanks to @RavSinghChandan
 * `FPDF.text_columns()` also raises its `ValueError` for a NaN or infinite `gutter`, instead of silently dropping all the text after the first line - thanks to @RavSinghChandan
 * `FPDF.add_page()` also raises its `ValueError` for a NaN or infinite `duration`, instead of writing `/Dur nan` or `/Dur inf` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
 * `FPDF.rect()` raises a clear `ValueError` for a NaN or infinite `corner_radius` with `round_corners`, instead of `cannot convert float NaN to integer` - thanks to @RavSinghChandan
+* `FPDF.arc()` and `FPDF.solid_arc()` raise a clear `ValueError` for a zero, NaN or infinite axis, or a NaN or infinite angle, instead of a `ZeroDivisionError` or `cannot convert float NaN to integer` - thanks to @RavSinghChandan
+* `FPDF.link()`, `FPDF.text_annotation()` and the other annotation methods raise a clear `ValueError` for a NaN or infinite position or size, instead of writing `/Rect [nan ...]` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
+* `FPDF.write_html()` ignores a NaN or infinite `line-height` on `<p>`, `<ul>` and `<ol>`, like an invalid one, instead of hanging forever for `inf` or dropping the list items for `nan` - thanks to @RavSinghChandan
+* `FPDF.set_x()`, `FPDF.set_y()` and `FPDF.set_xy()` raise a clear `ValueError` for a NaN or infinite coordinate, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
+* `FPDF.rect_clip()` and `FPDF.elliptic_clip()` restore the font state when the context exits, so text rendered after the clip is no longer dropped - _cf._ [issue #2123](https://github.com/py-pdf/fpdf2/issues/2123) - thanks to @agustin18
 
 ## [2.9.0] - 2026-10-29
 ### Added
