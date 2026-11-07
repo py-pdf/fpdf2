@@ -1098,6 +1098,10 @@ class GraphicsStyle:
                     f"stroke_dash_pattern {value!r} must be a number or sequence of numbers"
                 ) from None
             result = (*accum,)
+        if isinstance(result, tuple) and not all(math.isfinite(v) for v in result):
+            raise ValueError(
+                f"stroke_dash_pattern {value!r} must only contain finite numbers"
+            )
         super().__setattr__("_stroke_dash_pattern", result)
 
     @property
@@ -1111,6 +1115,8 @@ class GraphicsStyle:
 
     @stroke_dash_phase.setter
     def stroke_dash_phase(self, value: InheritType | Number) -> None:
+        if isinstance(value, NumberClass) and not math.isfinite(value):
+            raise ValueError(f"stroke_dash_phase {value!r} must be a finite number")
         if value is self.INHERIT or isinstance(value, NumberClass):
             return super().__setattr__("_stroke_dash_phase", value)
 

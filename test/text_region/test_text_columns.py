@@ -620,7 +620,7 @@ def test_tcols_ncols_below_one(ncols):
     )
 
 
-@pytest.mark.parametrize("gutter", [-1, -0.5])
+@pytest.mark.parametrize("gutter", [-1, -0.5, float("nan"), float("inf")])
 def test_tcols_negative_gutter(gutter):
     pdf = FPDF()
     pdf.add_page()
