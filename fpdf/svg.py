@@ -189,6 +189,8 @@ def parse_viewbox(viewbox: str) -> tuple[float, float, float, float]:
     parts = [float(num) for num in NUMBER_SPLIT.split(viewbox.strip()) if num]
     if len(parts) != 4:
         raise ValueError(f"invalid viewBox {viewbox}")
+    if not all(math.isfinite(part) for part in parts):
+        raise ValueError(f"invalid viewBox {viewbox}")
     vx, vy, vw, vh = parts
     if (vw < 0) or (vh < 0):
         raise ValueError(f"invalid negative width/height in viewBox {viewbox}")
@@ -277,6 +279,8 @@ def convert_stroke_width(incoming: str) -> Optional[float]:
 @force_nodocument
 def convert_miterlimit(incoming: str) -> float:
     val = float(incoming)
+    if not math.isfinite(val):
+        raise ValueError(f"miter limit {incoming} must be a finite number")
     if val < 1.0:
         raise ValueError(f"miter limit {incoming} cannot be less than 1")
     return val
@@ -1816,11 +1820,7 @@ class SVGObject:
         if viewbox is None:
             self.viewbox = None
         else:
-            viewbox = viewbox.strip()
-            vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
-            if (vw < 0) or (vh < 0):
-                raise ValueError(f"invalid negative width/height in viewbox {viewbox}")
-
+            vx, vy, vw, vh = parse_viewbox(viewbox)
             self.viewbox = [vx, vy, vw, vh]
 
     @force_nodocument

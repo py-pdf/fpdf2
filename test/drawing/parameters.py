@@ -514,7 +514,22 @@ invalid_styles = (
         id="invalid string in stroke_dash_pattern",
     ),
     pytest.param(
+        "stroke_dash_pattern", float("nan"), ValueError, id="NaN stroke_dash_pattern"
+    ),
+    pytest.param(
+        "stroke_dash_pattern",
+        [0.5, float("inf")],
+        ValueError,
+        id="infinite value in stroke_dash_pattern",
+    ),
+    pytest.param(
         "stroke_dash_phase", "123", TypeError, id="invalid string stroke_dash_phase"
+    ),
+    pytest.param(
+        "stroke_dash_phase", float("nan"), ValueError, id="NaN stroke_dash_phase"
+    ),
+    pytest.param(
+        "stroke_dash_phase", float("-inf"), ValueError, id="infinite stroke_dash_phase"
     ),
     pytest.param(
         "stroke_miter_limit", "123", TypeError, id="invalid string stroke_miter_limit"

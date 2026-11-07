@@ -768,7 +768,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
             raise ValueError(
                 f"'ncols' parameter must be equal or greater than 1: {ncols}"
             )
-        if gutter < 0:
+        if not math.isfinite(gutter) or gutter < 0:
             raise ValueError(
                 f"'gutter' parameter must be equal or greater than 0: {gutter}"
             )
