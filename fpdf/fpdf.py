@@ -1226,7 +1226,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
-        if duration < 0:
+        if not math.isfinite(duration) or duration < 0:
             raise ValueError(
                 f"'duration' parameter must be equal or greater than 0: {duration}"
             )
@@ -2930,8 +2930,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         By default, no spacing is set (which is equivalent to a value of 0).
 
         Args:
-            spacing (float): horizontal spacing in document units
+            spacing (float): horizontal spacing in document units. Must be a finite number.
         """
+        if not math.isfinite(spacing):
+            raise ValueError(f"Character spacing must be a finite number: {spacing}")
         if self.char_spacing == spacing:
             return
         self.char_spacing = spacing
