@@ -1,6 +1,9 @@
 """Test for round corners rendering - including thick borders and fill artifacts"""
 
 from pathlib import Path
+
+import pytest
+
 import fpdf
 from test.conftest import assert_pdf_equal
 
@@ -76,3 +79,14 @@ def test_round_corners_fill_only(tmp_path):
     pdf.rect(50, 40, 120, 70, style="F", round_corners=True, corner_radius=12)
 
     assert_pdf_equal(pdf, HERE / "round_corners_fill_only.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("corner_radius", [float("nan"), float("inf")])
+@pytest.mark.parametrize("round_corners", [True, ("TOP_LEFT",)])
+def test_round_corners_non_finite_radius(round_corners, corner_radius):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="corner_radius must be a finite number"):
+        pdf.rect(
+            10, 10, 20, 20, round_corners=round_corners, corner_radius=corner_radius
+        )
