@@ -38,6 +38,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.table()` also raises its `ValueError` for a NaN or infinite `width`, `col_widths`, `gutter_height` or `gutter_width`, instead of writing `nan` coordinates into the page - thanks to @RavSinghChandan
 * `FPDF.text_columns()` also raises its `ValueError` for a NaN or infinite `gutter`, instead of silently dropping all the text after the first line - thanks to @RavSinghChandan
 * `FPDF.add_page()` also raises its `ValueError` for a NaN or infinite `duration`, instead of writing `/Dur nan` or `/Dur inf` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
+* `FPDF.write_html()` ignores a NaN or infinite `line-height` on `<p>`, `<ul>` and `<ol>`, like an invalid one, instead of hanging forever for `inf` or dropping the list items for `nan` - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
