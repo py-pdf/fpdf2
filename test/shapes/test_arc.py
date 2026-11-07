@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 import fpdf
 from test.conftest import assert_pdf_equal
 
@@ -287,3 +289,25 @@ def test_arc_start_from_center_and_end_at_center(tmp_path):
     assert_pdf_equal(
         pdf, HERE / "class_arc_start_from_center_and_end_at_center.pdf", tmp_path
     )
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"a": 0},
+        {"a": float("nan")},
+        {"a": float("inf")},
+        {"b": 0},
+        {"b": float("nan")},
+        {"start_angle": float("nan")},
+        {"end_angle": float("inf")},
+        {"inclination": float("nan")},
+    ],
+)
+@pytest.mark.parametrize("method", ["arc", "solid_arc"])
+def test_arc_invalid_size_or_angle(method, kwargs):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    params = {"x": 10, "y": 10, "a": size, "start_angle": 0, "end_angle": 90}
+    with pytest.raises(ValueError, match="must be"):
+        getattr(pdf, method)(**{**params, **kwargs})

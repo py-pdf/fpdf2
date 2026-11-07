@@ -381,15 +381,27 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
 def _parse_html_percentage(val: str) -> float:
     """Parse an HTML percentage such as "50%"; an invalid one is 0, like an invalid length."""
     try:
-        return float(val[:-1])
+        percentage = float(val[:-1])
     except ValueError:
         return 0.0
+    return percentage if math.isfinite(percentage) else 0.0
 
 
 def _parse_html_span(val: str | None) -> int:
     """Parse a colspan / rowspan attribute like browsers do: an invalid value or one below 1 means 1."""
     match = re.match(r"\s*\+?(\d+)", val or "")
     return max(int(match.group(1)), 1) if match else 1
+
+
+def _parse_line_height(val: str | None) -> float | None:
+    """Parse a line-height; an invalid or non-finite one is None, so the default is used."""
+    if not val:
+        return None
+    try:
+        line_height = float(val)
+    except ValueError:
+        return None
+    return line_height if math.isfinite(line_height) else None
 
 
 def _fill_missing_widths(
@@ -951,13 +963,8 @@ class HTML2FPDF(HTMLParser):
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            line_height: Optional[float] = None
-            if line_height_str:
-                try:
-                    # YYY parse and convert non-float line_height values
-                    line_height = float(line_height_str)
-                except ValueError:
-                    line_height = None
+            # YYY parse and convert non-float line_height values
+            line_height = _parse_line_height(line_height_str)
             tag_style = self.tag_styles[tag]
             if tag_style.color is not None and tag_style.color != self.font_color:
                 self.font_color = tag_style.color
@@ -1102,14 +1109,9 @@ class HTML2FPDF(HTMLParser):
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            line_height = None
-            if line_height_str:
-                try:
-                    # YYY parse and convert non-float line_height values
-                    line_height = float(line_height_str)
-                except ValueError:
-                    # Invalid line-height: ignored, the default value is used
-                    pass
+            # YYY parse and convert non-float line_height values
+            # Invalid line-height: ignored, the default value is used
+            line_height = _parse_line_height(line_height_str)
             self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
@@ -1149,14 +1151,9 @@ class HTML2FPDF(HTMLParser):
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            line_height = None
-            if line_height_str:
-                try:
-                    # YYY parse and convert non-float line_height values
-                    line_height = float(line_height_str)
-                except ValueError:
-                    # Invalid line-height: ignored, the default value is used
-                    pass
+            # YYY parse and convert non-float line_height values
+            # Invalid line-height: ignored, the default value is used
+            line_height = _parse_line_height(line_height_str)
             self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
