@@ -17,6 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.9.1] - Not yet released
+### Added
+* `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
 * documentation: ten code examples that failed when run as written now work with fpdf2 2.9.0: `fpdf.drawing.gray8` (moved to `fpdf.drawing_primitives`), `PDFICCProfileObject` (now `PDFICCProfile`) and an undefined `icc_file`, `TableBorderStyle`/`TableCellStyle` imported from `fpdf.table` and a custom `TableBordersLayout` built with a lambda instead of a subclass, `LinearGradient`/`RadialGradient` given a `pdf` argument they no longer take, `ink_annotation(contents=...)` instead of `text=...`, two examples without `add_page()` and an unclosed `<p>` in the ToC example; the `FlexTemplate` example also lost a stray `:` that made it invalid Python
 * `FPDF()` and `convert_unit()` raise `ValueError: Unit must be a positive number` for a numeric `unit` of zero or below, NaN or infinity, instead of a `ZeroDivisionError` or an unrelated error about the bottom margin - thanks to @RavSinghChandan
