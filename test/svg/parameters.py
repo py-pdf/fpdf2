@@ -813,6 +813,18 @@ test_svg_attribute_conversion = (
         id="stroke-miterlimit too small",
     ),
     pytest.param(
+        '<path stroke-miterlimit="nan"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-miterlimit NaN",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="inf"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-miterlimit infinite",
+    ),
+    pytest.param(
         '<path stroke-miterlimit="bad"/>',
         Gs(),
         pytest.raises(ValueError),
@@ -1282,6 +1294,27 @@ svg_shape_info_tests = (
         None,
         pytest.raises(ValueError),
         id="invalid viewbox",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 nan 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="NaN viewbox width",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 90 inf", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="infinite viewbox height",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="-inf 0 90 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="infinite viewbox origin",
     ),
 )
 
