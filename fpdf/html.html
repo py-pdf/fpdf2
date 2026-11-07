@@ -56,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L310-L328" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L310-L328" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def color_as_decimal(
     color: Optional[str] = &#34;#000000&#34;,
@@ -88,7 +88,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1681-L1694" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1677-L1690" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ol_prefix(ol_type: str, index: int) -&gt; int | str:
     if ol_type == &#34;1&#34;:
@@ -114,7 +114,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L355-L365" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L355-L365" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_css_style(style_attr: str) -&gt; dict[str, str]:
     &#34;&#34;&#34;Parse `style=&#34;...&#34;` HTML attributes, and return a dict of key-value&#34;&#34;&#34;
@@ -137,7 +137,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1663-L1678" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1659-L1674" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ul_prefix(ul_type: str, is_ttf_font: bool) -&gt; str:
     # Like browsers, the keywords are case-insensitive: type=&#34;DISC&#34; is a disc
@@ -171,7 +171,7 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L423-L1639" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L434-L1635" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTML2FPDF(HTMLParser):
     &#34;Render basic HTML to FPDF&#34;
@@ -705,13 +705,8 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             # &#34;line-height&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            line_height: Optional[float] = None
-            if line_height_str:
-                try:
-                    # YYY parse and convert non-float line_height values
-                    line_height = float(line_height_str)
-                except ValueError:
-                    line_height = None
+            # YYY parse and convert non-float line_height values
+            line_height = _parse_line_height(line_height_str)
             tag_style = self.tag_styles[tag]
             if tag_style.color is not None and tag_style.color != self.font_color:
                 self.font_color = tag_style.color
@@ -856,14 +851,9 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             # &#34;line-height&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            line_height = None
-            if line_height_str:
-                try:
-                    # YYY parse and convert non-float line_height values
-                    line_height = float(line_height_str)
-                except ValueError:
-                    # Invalid line-height: ignored, the default value is used
-                    pass
+            # YYY parse and convert non-float line_height values
+            # Invalid line-height: ignored, the default value is used
+            line_height = _parse_line_height(line_height_str)
             self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
@@ -903,14 +893,9 @@ cf. <a href="https://en.wikipedia.org/wiki/Web_colors#HTML_color_names">https://
             # &#34;line-height&#34; attributes are not valid in HTML,
             # but we support it for backward compatibility,
             # because fpdf2 honors it since 2.6.1 and PR #629
-            line_height = None
-            if line_height_str:
-                try:
-                    # YYY parse and convert non-float line_height values
-                    line_height = float(line_height_str)
-                except ValueError:
-                    # Invalid line-height: ignored, the default value is used
-                    pass
+            # YYY parse and convert non-float line_height values
+            # Invalid line-height: ignored, the default value is used
+            line_height = _parse_line_height(line_height_str)
             self.line_height_stack.append(line_height)
             if self.indent == 1:
                 tag_style = self.tag_styles[tag]
@@ -1457,7 +1442,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1638-L1639" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1634-L1635" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def error(self, message: str) -&gt; None:
     raise RuntimeError(message)</code></pre>
@@ -1471,7 +1456,7 @@ mapping of HTML tag names to numeric values representing their horizontal left i
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1590-L1596" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1586-L1592" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def feed(self, data: str) -&gt; None:
     super().feed(data)
@@ -1492,7 +1477,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L780-L876" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L791-L887" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_data(self, data: str) -&gt; None:
     if self._in_style_or_script:
@@ -1601,7 +1586,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1454-L1588" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1450-L1584" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_endtag(self, tag: str) -&gt; None:
     while (
@@ -1748,7 +1733,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L891-L1452" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L902-L1448" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
     self._pre_started = False
@@ -1814,13 +1799,8 @@ as you want (may include '\n').</p></div>
         # &#34;line-height&#34; attributes are not valid in HTML,
         # but we support it for backward compatibility,
         # because fpdf2 honors it since 2.6.1 and PR #629
-        line_height: Optional[float] = None
-        if line_height_str:
-            try:
-                # YYY parse and convert non-float line_height values
-                line_height = float(line_height_str)
-            except ValueError:
-                line_height = None
+        # YYY parse and convert non-float line_height values
+        line_height = _parse_line_height(line_height_str)
         tag_style = self.tag_styles[tag]
         if tag_style.color is not None and tag_style.color != self.font_color:
             self.font_color = tag_style.color
@@ -1965,14 +1945,9 @@ as you want (may include '\n').</p></div>
         # &#34;line-height&#34; attributes are not valid in HTML,
         # but we support it for backward compatibility,
         # because fpdf2 honors it since 2.6.1 and PR #629
-        line_height = None
-        if line_height_str:
-            try:
-                # YYY parse and convert non-float line_height values
-                line_height = float(line_height_str)
-            except ValueError:
-                # Invalid line-height: ignored, the default value is used
-                pass
+        # YYY parse and convert non-float line_height values
+        # Invalid line-height: ignored, the default value is used
+        line_height = _parse_line_height(line_height_str)
         self.line_height_stack.append(line_height)
         if self.indent == 1:
             tag_style = self.tag_styles[tag]
@@ -2012,14 +1987,9 @@ as you want (may include '\n').</p></div>
         # &#34;line-height&#34; attributes are not valid in HTML,
         # but we support it for backward compatibility,
         # because fpdf2 honors it since 2.6.1 and PR #629
-        line_height = None
-        if line_height_str:
-            try:
-                # YYY parse and convert non-float line_height values
-                line_height = float(line_height_str)
-            except ValueError:
-                # Invalid line-height: ignored, the default value is used
-                pass
+        # YYY parse and convert non-float line_height values
+        # Invalid line-height: ignored, the default value is used
+        line_height = _parse_line_height(line_height_str)
         self.line_height_stack.append(line_height)
         if self.indent == 1:
             tag_style = self.tag_styles[tag]
@@ -2322,7 +2292,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1598-L1618" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1594-L1614" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def put_link(self, text: str) -&gt; None:
     &#34;Insert a hyperlink&#34;
@@ -2355,7 +2325,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1621-L1635" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1617-L1631" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_toc(self, pdf: &#34;FPDF&#34;, outline: list[OutlineSection]) -&gt; None:
     &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
@@ -2385,7 +2355,7 @@ as you want (may include '\n').</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/78261b1af64b1b986c6fd52ed47faeaec17160d0/fpdf/html.py#L1697-L1712" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4f6d7a38ed36e4b391a0654fe0e0e19b0e6cca36/fpdf/html.py#L1693-L1708" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class HTMLMixin:
     &#34;&#34;&#34;
