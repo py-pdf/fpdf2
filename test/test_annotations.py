@@ -205,6 +205,18 @@ def test_ink_annotation_empty_coords():
         pdf.ink_annotation([])
 
 
+@pytest.mark.parametrize(
+    "coords",
+    [[(10, 10), (float("nan"), 20)], [(float("inf"), 10)], [(10, float("-inf"))]],
+    ids=["nan", "inf", "-inf"],
+)
+def test_ink_annotation_non_finite_coords(coords):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="coords must contain finite numbers"):
+        pdf.ink_annotation(coords, title="Ink")
+
+
 def test_ink_annotation_rect_encloses_the_path():
     pdf = FPDF(unit="pt")
     pdf.add_page()
