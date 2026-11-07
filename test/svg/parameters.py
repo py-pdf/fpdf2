@@ -1283,6 +1283,27 @@ svg_shape_info_tests = (
         pytest.raises(ValueError),
         id="invalid viewbox",
     ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 nan 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="NaN viewbox width",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 90 inf", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="infinite viewbox height",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="-inf 0 90 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="infinite viewbox origin",
+    ),
 )
 
 svg_current_color = (

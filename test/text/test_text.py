@@ -65,6 +65,16 @@ def test_text_stretching_not_positive(stretching):
         doc.set_stretching(stretching)
 
 
+@pytest.mark.parametrize("spacing", [float("nan"), float("inf"), float("-inf")])
+def test_text_char_spacing_not_finite(spacing):
+    doc = FPDF()
+    doc.add_page()
+
+    with pytest.raises(ValueError, match="Character spacing must be a finite number"):
+        doc.set_char_spacing(spacing)
+    assert doc.char_spacing == 0
+
+
 def test_text_text_mode(tmp_path):
     doc = FPDF()
     doc.add_page()
