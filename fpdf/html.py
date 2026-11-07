@@ -381,9 +381,10 @@ def _parse_html_dimension(val: str | None, default_unit: str = "pt") -> float:
 def _parse_html_percentage(val: str) -> float:
     """Parse an HTML percentage such as "50%"; an invalid one is 0, like an invalid length."""
     try:
-        return float(val[:-1])
+        percentage = float(val[:-1])
     except ValueError:
         return 0.0
+    return percentage if math.isfinite(percentage) else 0.0
 
 
 def _parse_html_span(val: str | None) -> int:
