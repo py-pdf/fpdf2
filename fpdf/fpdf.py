@@ -2445,6 +2445,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if b is None:
             b = a
+        if a == 0 or b == 0 or not (math.isfinite(a) and math.isfinite(b)):
+            raise ValueError(f"Arc axes must be non-zero finite numbers: a={a}, b={b}")
+        if not all(math.isfinite(v) for v in (start_angle, end_angle, inclination)):
+            raise ValueError(
+                "Arc angles must be finite numbers: start_angle="
+                f"{start_angle}, end_angle={end_angle}, inclination={inclination}"
+            )
 
         a /= 2
         b /= 2
