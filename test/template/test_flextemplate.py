@@ -500,7 +500,7 @@ def test_flextemplate_elements(tmp_path):
 def test_flextempalte_floating(tmp_path):
     a = "2026-10-10"
     b = "S0000"
-    c = "test " * 50
+    c = ("test " * 50).strip()
 
     pdf_mc = FPDF()
     pdf_mc.add_page()
@@ -614,7 +614,7 @@ def test_flextempalte_floating(tmp_path):
             "italic": 0,
             "underline": 0,
             "align": "L",
-            "text": "LMARING",
+            "text": "LMARGIN",
             "priority": 2,
             "multiline": False,
             "new_x": "CENTER",
@@ -733,7 +733,7 @@ def test_flextempalte_floating(tmp_path):
             "italic": 0,
             "underline": 0,
             "align": "L",
-            "text": "LMARING",
+            "text": "LMARGIN",
             "priority": 2,
             "multiline": True,
             "new_x": "END",
@@ -789,6 +789,15 @@ def test_flextempalte_floating(tmp_path):
     # equal. In the template case, the output is wrapped by "q" ... "Q"
     # used to store the and restore the graphics state.
     # assert_pdf_equal(pdf_temp, pdf_mc, tmp_path)
+
+    pdf_csv = FPDF()
+    pdf_csv.add_page()
+    pdf_csv.set_font("helvetica", size=12)
+    pdf_csv.set_left_margin(20)
+    t = FlexTemplate(pdf_csv)
+    t.parse_csv(HERE / "template_floating.csv", delimiter=";")
+    t.render()
+    assert_pdf_equal(pdf_csv, HERE / "flextemplate_floating_template.pdf", tmp_path)
 
 
 def test_flextemplate_elements_scale(tmp_path):

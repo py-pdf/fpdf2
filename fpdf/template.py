@@ -257,10 +257,10 @@ class FlexTemplate:
             # key, converter, mandatory
             ("name", str, True),
             ("type", str, True),
-            ("x1", _varsep_float, True),
-            ("y1", _varsep_float, True),
-            ("x2", _varsep_float, True),
-            ("y2", _varsep_float, True),
+            ("x1", _varsep_float, False),
+            ("y1", _varsep_float, False),
+            ("x2", _varsep_float, False),
+            ("y2", _varsep_float, False),
             ("font", str, False),
             ("size", _varsep_float, False),
             ("bold", int, False),
@@ -275,8 +275,13 @@ class FlexTemplate:
             ("rotate", _varsep_float, False),
             ("wrapmode", str, False),
             ("keep_aspect_ratio", int, False),
+            ("w", _varsep_float, False),
+            ("h", _varsep_float, False),
+            ("new_x", str, False),
+            ("new_y", str, False),
         )
-        self.elements = []
+
+        elements = []
         if encoding is None:
             encoding = locale.getpreferredencoding()
         with open(infile, encoding=encoding) as f:
@@ -301,8 +306,8 @@ class FlexTemplate:
                         # otherwise, let the type handlers use their own defaults
                     else:
                         kargs[cfg[0]] = cfg[1](vs)  # type: ignore[operator]
-                self.elements.append(kargs)
-        self.keys = [val["name"].lower() for val in self.elements]
+                elements.append(kargs)
+        self.load_elements(elements)
 
     def __setitem__(self, name: str, value: Any) -> None:
         assert isinstance(
