@@ -13,7 +13,7 @@ import json
 import locale
 import os
 import warnings
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, List
 
 from .deprecation import get_stack_level
 from .enums import WrapMode, XPos, YPos
@@ -281,7 +281,7 @@ class FlexTemplate:
             ("new_y", str, False),
         )
 
-        elements = []
+        elements: List[dict[str, Any]] = []
         if encoding is None:
             encoding = locale.getpreferredencoding()
         with open(infile, encoding=encoding) as f:
