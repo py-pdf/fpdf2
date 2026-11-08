@@ -118,7 +118,12 @@ class FlexTemplate:
             # Text elements may use cursor-relative positioning and cell dimensions
             # (w/h) instead of the legacy bounding box (x1/y1/x2/y2).
             cursor_text = e["type"].upper() == "T" and (
-                "new_x" in e or "new_y" in e or "x1" not in e or "y1" not in e
+                "new_x" in e
+                or "new_y" in e
+                or "x1" not in e
+                or "y1" not in e
+                or "w" in e
+                or "h" in e
             )
             # Text elements may specify dimensions using w/h instead of x2/y2.
             if e["type"].upper() == "T":
@@ -759,56 +764,71 @@ class FlexTemplate:
 
         # make sure scaling is considered if the first element in the template
         # has no x1 and/or y1 coordinate
-        if scale != 1.0:
-            self.pdf.set_xy(self.pdf.get_x() * scale, self.pdf.get_y() * scale)
+
+        start_x, start_y = self.pdf.get_x(), self.pdf.get_y()
+        scaled_cursor_x = start_x * scale
+        scaled_cursor_y = start_y * scale
+        if offsetx:
+            scaled_cursor_x += offsetx
+        if offsety:
+            scaled_cursor_y += offsety
+        self.pdf.set_xy(scaled_cursor_x, scaled_cursor_y)
         with self.pdf.local_context():
             for element in sorted_elements:
                 ele = element.copy()  # don't want to modify the callers original
                 ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
-                cursor_text = ele["type"].upper() == "T" and (
-                    "new_x" in ele
-                    or "new_y" in ele
-                    or "x1" not in ele
-                    or "y1" not in ele
-                )
-                if cursor_text:
-                    # Keep omitted x1/y1 omitted so _text() preserves the cursor.
-                    if scale != 1.0:
-                        if "w" in ele:
-                            ele["w"] *= scale
-                        if "h" in ele:
-                            ele["h"] *= scale
-                    if offsetx and "x1" in ele:
-                        ele["x1"] += offsetx
-                    if offsety and "y1" in ele:
-                        ele["y1"] += offsety
-                elif scale != 1.0:
-                    ele["x1"] = ele["x1"] * scale
-                    ele["y1"] = ele["y1"] * scale
-                    ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
-                    ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
-                if offsetx and not cursor_text:
-                    ele["x1"] = ele["x1"] + offsetx
-                    ele["x2"] = ele["x2"] + offsetx
-                if offsety and not cursor_text:
-                    ele["y1"] = ele["y1"] + offsety
-                    ele["y2"] = ele["y2"] + offsety
+                if scale != 1.0:
+                    if "w" in ele:
+                        ele["w"] *= scale
+                    if "h" in ele:
+                        ele["h"] *= scale
+                    if "x1" in ele:
+                        ele["x1"] *= scale
+                    if "y1" in ele:
+                        ele["y1"] *= scale
+                    if "x2" in ele:
+                        ele["x2"] *= scale
+                    if "y2" in ele:
+                        ele["y2"] *= scale
+                if offsetx and "x1" in ele:
+                    ele["x1"] += offsetx
+                if offsetx and "x2" in ele:
+                    ele["x2"] += offsetx
+                if offsety and "y1" in ele:
+                    ele["y1"] += offsety
+                if offsety and "y2" in ele:
+                    ele["y2"] += offsety
                 ele["scale"] = scale
                 handler_name = ele["type"].upper()
                 if rotate:  # don't rotate by 0.0 degrees
                     with self.pdf.rotation(rotate, offsetx, offsety):
+                        rot_pos_x = ele["x1"] if "x1" in ele else self.pdf.get_x()
+                        rot_pos_y = ele["y1"] if "y1" in ele else self.pdf.get_y()
                         if "rotate" in ele and ele["rotate"]:
-                            with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                            with self.pdf.rotation(ele["rotate"], rot_pos_x, rot_pos_y):
                                 self.handlers[handler_name](**ele)
                         else:
                             self.handlers[handler_name](**ele)
                 else:
                     if "rotate" in ele and ele["rotate"]:
-                        with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                        rot_pos_x = ele["x1"] if "x1" in ele else self.pdf.get_x()
+                        rot_pos_y = ele["y1"] if "y1" in ele else self.pdf.get_y()
+                        with self.pdf.rotation(ele["rotate"], rot_pos_x, rot_pos_y):
                             self.handlers[handler_name](**ele)
                     else:
                         self.handlers[handler_name](**ele)
+                # need to move cursor if absolute new positions are requested
+                # and offsets are applied
+                if "new_x" in ele and ele["new_x"] in ["LMARGIN", "RMARGIN"]:
+                    self.pdf.set_x(self.pdf.get_x() + offsetx)
+
+                if "new_y" in ele and ele["new_y"] in ["TMARGIN", "BMARGIN"]:
+                    self.pdf.set_y(self.pdf.get_y() + offsety)
+
         self.texts = {}  # reset modified entries for the next page
+        # go back to start, because this is the legacy behavior: the
+        # cursor is not moved around if using absolute positioning
+        self.pdf.set_xy(start_x, start_y)
 
 
 class Template(FlexTemplate):

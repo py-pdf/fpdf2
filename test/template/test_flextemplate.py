@@ -791,6 +791,284 @@ def test_flextempalte_floating(tmp_path):
     # assert_pdf_equal(pdf_temp, pdf_mc, tmp_path)
 
 
+def test_flextemplate_elements_scale(tmp_path):
+    grid_elements = (
+        dict(name="v02", type="L", x1=20, y1=20, x2=20, y2=280),
+        dict(name="v04", type="L", x1=40, y1=20, x2=40, y2=280),
+        dict(name="v06", type="L", x1=60, y1=20, x2=60, y2=280),
+        dict(name="v08", type="L", x1=80, y1=20, x2=80, y2=280),
+        dict(name="v10", type="L", x1=100, y1=20, x2=100, y2=280),
+        dict(name="v12", type="L", x1=120, y1=20, x2=120, y2=280),
+        dict(name="v14", type="L", x1=140, y1=20, x2=140, y2=280),
+        dict(name="v15", type="L", x1=160, y1=20, x2=160, y2=280),
+        dict(name="v18", type="L", x1=180, y1=20, x2=180, y2=280),
+        dict(name="h02", type="L", x1=20, y1=20, x2=180, y2=20),
+        dict(name="h04", type="L", x1=20, y1=40, x2=180, y2=40),
+        dict(name="h06", type="L", x1=20, y1=60, x2=180, y2=60),
+        dict(name="h08", type="L", x1=20, y1=80, x2=180, y2=80),
+        dict(name="h10", type="L", x1=20, y1=100, x2=180, y2=100),
+        dict(name="h12", type="L", x1=20, y1=120, x2=180, y2=120),
+        dict(name="h14", type="L", x1=20, y1=140, x2=180, y2=140),
+        dict(name="h16", type="L", x1=20, y1=160, x2=180, y2=160),
+        dict(name="h18", type="L", x1=20, y1=180, x2=180, y2=180),
+        dict(name="h20", type="L", x1=20, y1=200, x2=180, y2=200),
+        dict(name="h22", type="L", x1=20, y1=220, x2=180, y2=220),
+        dict(name="h24", type="L", x1=20, y1=240, x2=180, y2=240),
+        dict(name="h26", type="L", x1=20, y1=260, x2=180, y2=260),
+        dict(name="h28", type="L", x1=20, y1=280, x2=180, y2=280),
+    )
+
+    text_elements_abs = (
+        dict(
+            name="t",
+            type="T",
+            x1=0,
+            y1=0,
+            x2=10,
+            y2=4,
+            text="text0",
+            background=0xFFFF00,
+        ),
+        dict(
+            name="t2",
+            type="T",
+            x1=20,
+            y1=0,
+            x2=30,
+            y2=4,
+            text="text2",
+            background=0xFFBB00,
+        ),
+        dict(
+            name="t3",
+            type="T",
+            x1=00,
+            y1=30,
+            x2=10,
+            y2=34,
+            text="text3",
+            background=0xBBBF00,
+            rotate=10,
+        ),
+    )
+    ml_elements_abs = (
+        dict(
+            name="ml",
+            type="T",
+            x1=0,
+            y1=0,
+            x2=15,
+            y2=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+        ),
+        dict(
+            name="ml2",
+            type="T",
+            x1=20,
+            y1=0,
+            x2=35,
+            y2=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+        ),
+        dict(
+            name="ml3",
+            type="T",
+            x1=00,
+            y1=30,
+            x2=15,
+            y2=34,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            rotate=10,
+        ),
+    )
+
+    text_elements = (
+        dict(
+            name="t",
+            type="T",
+            w=10,
+            h=4,
+            text="text0",
+            background=0xFFFF00,
+            new_y="TOP",
+        ),
+        dict(
+            name="t2",
+            type="T",
+            x1=20,
+            w=10,
+            h=4,
+            text="text2",
+            background=0xFFBB00,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        ),
+        dict(
+            name="t3",
+            type="T",
+            y1=30,
+            w=10,
+            h=4,
+            text="text3",
+            background=0xBBBF00,
+            rotate=10,
+            new_x="LMARGIN",
+            new_y="TMARGIN",
+        ),
+    )
+    ml_elements = (
+        dict(
+            name="ml",
+            type="T",
+            w=15,
+            h=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            new_y="TOP",
+        ),
+        dict(
+            name="ml2",
+            type="T",
+            x1=20,
+            w=15,
+            h=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            new_x="LMARGIN",
+        ),
+        dict(
+            name="ml3",
+            type="T",
+            y1=30,
+            w=15,
+            h=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            rotate=10,
+            new_x="END",
+            new_y="TOP",
+        ),
+    )
+
+    pdf_abs = FPDF()
+    grid_t = FlexTemplate(pdf_abs, grid_elements)
+    pdf_abs.add_page()
+    grid_t.render()
+    text_t = FlexTemplate(pdf_abs, text_elements)
+    text_t.render(offsetx=40, offsety=40)
+    text_t.render(offsetx=40, offsety=100, rotate=30)
+    text_t.render(offsetx=80, offsety=200, rotate=45)
+    pdf_abs.add_page()
+    grid_t.render()
+    ml_t = FlexTemplate(pdf_abs, ml_elements)
+    ml_t.render(offsetx=40, offsety=40)
+    ml_t.render(offsetx=40, offsety=100, rotate=30)
+    ml_t.render(offsetx=80, offsety=200, rotate=45)
+
+    assert_pdf_equal(pdf_abs, HERE / "flextemplate_float_scaled_abs.pdf", tmp_path)
+
+    pdf_rel = FPDF()
+    grid_t = FlexTemplate(pdf_rel, grid_elements)
+    pdf_rel.add_page()
+    grid_t.render()
+    text_t = FlexTemplate(pdf_rel, text_elements)
+    text_t.render(offsetx=40, offsety=40)
+    text_t.render(offsetx=40, offsety=100, rotate=30)
+    text_t.render(offsetx=80, offsety=200, rotate=45)
+    pdf_rel.add_page()
+    grid_t.render()
+    ml_t = FlexTemplate(pdf_rel, ml_elements)
+    ml_t.render(offsetx=40, offsety=40)
+    ml_t.render(offsetx=40, offsety=100, rotate=30)
+    ml_t.render(offsetx=80, offsety=200, rotate=45)
+
+    assert_pdf_equal(pdf_rel, HERE / "flextemplate_float_scaled_rel.pdf", tmp_path)
+
+    assert_pdf_equal(pdf_abs, pdf_rel, tmp_path)
+
+
+def test_flextemplate_floating_rotation(tmp_path):
+    elements_abs = [
+        {
+            "name": "text!",
+            "type": "T",
+            "x1": 40,
+            "y1": 10,
+            "x2": 60,
+            "y2": 15,
+            "text": "rotatapalooza!",
+            "rotate": -15.0,
+        },
+        {
+            "name": "multi",
+            "type": "T",
+            "x1": 80,
+            "y1": 10,
+            "x2": 100,
+            "y2": 15,
+            "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+            "rotate": 90.0,
+            "background": 0xEEFFFF,
+            "multiline": True,
+        },
+    ]
+    elements_rel = [
+        {
+            "name": "text!",
+            "type": "T",
+            "x1": 40,
+            "y1": 10,
+            "w": 40,
+            "h": 5,
+            "text": "rotatapalooza!",
+            "rotate": -15.0,
+            "new_x": "RIGHT",
+            "new_y": "TOP",
+        },
+        {
+            "name": "multi",
+            "type": "T",
+            # "x1": 80,
+            # "y1": 10,
+            "w": 20,
+            "h": 5,
+            "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+            "rotate": 90.0,
+            "background": 0xEEFFFF,
+            "multiline": True,
+        },
+    ]
+
+    pdf_abs = FPDF()
+    pdf_abs.add_page()
+    pdf_abs.set_font("courier", size=10)
+    templ = FlexTemplate(pdf_abs, elements_abs)
+    templ.render(offsetx=100, offsety=100, rotate=5)
+    pdf_abs.add_page()
+    scale = 1.2
+    for i in range(0, 360, 6):
+        templ.render(offsetx=100, offsety=130, rotate=i, scale=scale)
+        scale -= 0.01
+    assert_pdf_equal(pdf_abs, HERE / "flextemplate_rotation_abs.pdf", tmp_path)
+
+    pdf_rel = FPDF()
+    pdf_rel.add_page()
+    pdf_rel.set_font("courier", size=10)
+    templ = FlexTemplate(pdf_rel, elements_rel)
+    templ.render(offsetx=100, offsety=100, rotate=5)
+    pdf_rel.add_page()
+    scale = 1.2
+    for i in range(0, 360, 6):
+        templ.render(offsetx=100, offsety=130, rotate=i, scale=scale)
+        scale -= 0.01
+    assert_pdf_equal(pdf_rel, HERE / "flextemplate_rotation_rel.pdf", tmp_path)
+
+    assert_pdf_equal(pdf_abs, pdf_rel, tmp_path)
+
+
 def test_flextempalte_floating_scaled(tmp_path):
     elements = [
         {
