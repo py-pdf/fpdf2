@@ -286,6 +286,16 @@ def get_page_format(
     return width, height
 
 
+def _check_margin(name: str, margin: float) -> None:
+    if not math.isfinite(margin) or margin < 0:
+        raise ValueError(f"{name} margin must be zero or a positive number: {margin}")
+
+
+def _check_coordinate(name: str, value: float) -> None:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be a finite number: {value}")
+
+
 def check_page(fn: Callable[P, R]) -> Callable[P, R]:
     """Decorator to protect drawing methods"""
 
@@ -722,6 +732,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             top (float): top margin in the unit specified to FPDF constructor
             right (float): optional right margin in the unit specified to FPDF constructor
         """
+        # Check every margin first, so that an invalid one does not leave the others changed
+        _check_margin("Left", left)
+        _check_margin("Top", top)
+        if right != -1:
+            _check_margin("Right", right)
         self.set_left_margin(left)
         if self.y < top or self.y == self.t_margin:
             self.y = top
@@ -738,6 +753,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
+        _check_margin("Left", margin)
         if self.x < margin or self.x == self.l_margin:
             self.x = margin
         self.l_margin = margin
@@ -749,6 +765,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
+        _check_margin("Top", margin)
         self.t_margin = margin
 
     def set_right_margin(self, margin: float) -> None:
@@ -758,6 +775,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             margin (float): margin in the unit specified to FPDF constructor
         """
+        _check_margin("Right", margin)
         self.r_margin = margin
 
     def set_auto_page_break(self, auto: bool, margin: float = 0) -> None:
@@ -772,7 +790,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             margin (float): optional bottom margin (distance from the bottom of the page)
                 in the unit specified to FPDF constructor. Must be zero or a positive number.
         """
-        if margin < 0:
+        if not math.isfinite(margin) or margin < 0:
             raise ValueError(
                 f"Bottom margin must be zero or a positive number: {margin}"
             )
@@ -1137,7 +1155,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Enable `fpdf.output.PDFPageLabel` to be inserted on every page.
         This will be displayed by some PDF readers to identify pages.
         """
-        if label_start is not None and label_start < 1:
+        if label_start is not None and (
+            not math.isfinite(label_start) or label_start < 1
+        ):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
@@ -1209,11 +1229,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             label_start (int): Starting number for the first page of a page label range.
                 Must be equal or greater than 1.
         """
-        if label_start is not None and label_start < 1:
+        if label_start is not None and (
+            not math.isfinite(label_start) or label_start < 1
+        ):
             raise ValueError(
                 f"'label_start' parameter must be equal or greater than 1: {label_start}"
             )
-        if duration < 0:
+        if not math.isfinite(duration) or duration < 0:
             raise ValueError(
                 f"'duration' parameter must be equal or greater than 0: {duration}"
             )
@@ -1533,7 +1555,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             width (float): the width in user unit. Must be zero or a positive number.
         """
-        if width < 0:
+        if not math.isfinite(width) or width < 0:
             raise ValueError(f"Line width must be zero or a positive number: {width}")
         if width != self.line_width:
             self.line_width = width
@@ -1559,6 +1581,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if isinstance(background, DeviceRGB):
                 self.page_background = background.colors255
             else:
+                if isinstance(background, tuple):
+                    # Checked now, so that an invalid color does not only fail on the next add_page()
+                    if len(background) not in (1, 3):
+                        raise ValueError(
+                            f"background color must be a grey level or 3 RGB components: {background}"
+                        )
+                    convert_to_device_color(*background)
                 self.page_background = background
         else:
             raise TypeError(
@@ -1781,11 +1810,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Omitting 'dash' (= 0) resets the pattern to a solid line.
         """
-        if not (isinstance(dash, (int, float)) and dash >= 0):
+        if not (isinstance(dash, (int, float)) and math.isfinite(dash) and dash >= 0):
             raise ValueError("Dash length must be zero or a positive number.")
-        if not (isinstance(gap, (int, float)) and gap >= 0):
+        if not (isinstance(gap, (int, float)) and math.isfinite(gap) and gap >= 0):
             raise ValueError("gap length must be zero or a positive number.")
-        if not (isinstance(phase, (int, float)) and phase >= 0):
+        if not (
+            isinstance(phase, (int, float)) and math.isfinite(phase) and phase >= 0
+        ):
             raise ValueError("Phase must be zero or a positive number.")
 
         pattern: dict[str, float] = dict(
@@ -2023,6 +2054,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
         if round_corners is not False:
+            if not math.isfinite(corner_radius):
+                raise ValueError(
+                    f"corner_radius must be a finite number: {corner_radius}"
+                )
             self._draw_rounded_rect(x, y, w, h, style, round_corners, corner_radius)
         else:
             self._out(
@@ -2069,19 +2104,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
         # Update points based on which corners are rounded
-        if Corner.TOP_RIGHT in round_corners_list:
+        if Corner.TOP_LEFT in round_corners_list:
             point_1 = (x + r, y)
             point_8 = (x, y + r)
 
-        if Corner.TOP_LEFT in round_corners_list:
+        if Corner.TOP_RIGHT in round_corners_list:
             point_2 = (x + w - r, y)
             _point_3 = (x + w, y + r)
 
-        if Corner.BOTTOM_LEFT in round_corners_list:
+        if Corner.BOTTOM_RIGHT in round_corners_list:
             point_4 = (x + w, y + h - r)
             _point_5 = (x + w - r, y + h)
 
-        if Corner.BOTTOM_RIGHT in round_corners_list:
+        if Corner.BOTTOM_LEFT in round_corners_list:
             point_6 = (x + r, y + h)
             _point_7 = (x, y + h - r)
 
@@ -2092,29 +2127,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Top edge: point_1 to point_2
         self._out(f"{point_2[0] * self.k:.2f} {(self.h - point_2[1]) * self.k:.2f} l")
 
-        # Top-left corner arc
-        if Corner.TOP_LEFT in round_corners_list:
+        # Top-right corner arc
+        if Corner.TOP_RIGHT in round_corners_list:
             self._draw_arc_segment(x + w - 2 * r, y, 2 * r, 270, 0)
 
         # Right edge: point_3 to point_4
         self._out(f"{point_4[0] * self.k:.2f} {(self.h - point_4[1]) * self.k:.2f} l")
 
-        # Bottom-left corner arc
-        if Corner.BOTTOM_LEFT in round_corners_list:
+        # Bottom-right corner arc
+        if Corner.BOTTOM_RIGHT in round_corners_list:
             self._draw_arc_segment(x + w - 2 * r, y + h - 2 * r, 2 * r, 0, 90)
 
         # Bottom edge: point_5 to point_6
         self._out(f"{point_6[0] * self.k:.2f} {(self.h - point_6[1]) * self.k:.2f} l")
 
-        # Bottom-right corner arc
-        if Corner.BOTTOM_RIGHT in round_corners_list:
+        # Bottom-left corner arc
+        if Corner.BOTTOM_LEFT in round_corners_list:
             self._draw_arc_segment(x, y + h - 2 * r, 2 * r, 90, 180)
 
         # Left edge: point_7 to point_8
         self._out(f"{point_8[0] * self.k:.2f} {(self.h - point_8[1]) * self.k:.2f} l")
 
-        # Top-right corner arc
-        if Corner.TOP_RIGHT in round_corners_list:
+        # Top-left corner arc
+        if Corner.TOP_LEFT in round_corners_list:
             self._draw_arc_segment(x, y, 2 * r, 180, 270)
 
         # Close path and apply style
@@ -2423,6 +2458,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if b is None:
             b = a
+        if a == 0 or b == 0 or not (math.isfinite(a) and math.isfinite(b)):
+            raise ValueError(f"Arc axes must be non-zero finite numbers: a={a}, b={b}")
+        if not all(math.isfinite(v) for v in (start_angle, end_angle, inclination)):
+            raise ValueError(
+                "Arc angles must be finite numbers: start_angle="
+                f"{start_angle}, end_angle={end_angle}, inclination={inclination}"
+            )
 
         a /= 2
         b /= 2
@@ -2793,7 +2835,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             size (float): in points. The default value is the current size.
                 Must be zero or a positive number.
         """
-        if size < 0:
+        if not math.isfinite(size) or size < 0:
             raise ValueError(f"Font size must be zero or a positive number: {size}")
         if not family:
             family = self.font_family
@@ -2876,7 +2918,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             size (float): font size in points. Must be zero or a positive number.
         """
-        if size < 0:
+        if not math.isfinite(size) or size < 0:
             raise ValueError(f"Font size must be zero or a positive number: {size}")
         if FloatTolerance.equal(self.font_size_pt, size):
             return
@@ -2908,8 +2950,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         By default, no spacing is set (which is equivalent to a value of 0).
 
         Args:
-            spacing (float): horizontal spacing in document units
+            spacing (float): horizontal spacing in document units. Must be a finite number.
         """
+        if not math.isfinite(spacing):
+            raise ValueError(f"Character spacing must be a finite number: {spacing}")
         if self.char_spacing == spacing:
             return
         self.char_spacing = spacing
@@ -2924,7 +2968,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             stretching (float): horizontal stretching (scaling) in percents. Must be a positive number.
         """
-        if stretching <= 0:
+        if not math.isfinite(stretching) or stretching <= 0:
             raise ValueError(f"Stretching must be a positive number: {stretching}")
         if self.font_stretching == stretching:
             return
@@ -2963,6 +3007,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._fallback_font_ids = fallback_font_ids
         self._fallback_font_exact_match = exact_match
 
+    def _link_page(self, page: int) -> int:
+        """Page number of a link destination: -1 means the current page"""
+        if page == -1:
+            return self.page
+        if page < 0:
+            # A negative index would silently point to a page counted from the end of the document
+            raise ValueError(
+                f"Invalid page number for a link: {page} - use -1 for the current page"
+            )
+        return page
+
     def add_link(
         self,
         y: float = 0,
@@ -2996,7 +3051,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         # Create destination
         link = DestinationXYZ(
-            self.page if page == -1 else page,
+            self._link_page(page),
             top=self.h_pt - y * self.k,
             left=x * self.k,
             zoom=zoom,
@@ -3066,7 +3121,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if name and link is None:
             # Create the destination
             dest = DestinationXYZ(
-                self.page if page == -1 else page,
+                self._link_page(page),
                 top=self.h_pt - y * self.k,
                 left=x * self.k,
                 zoom=zoom,
@@ -3082,7 +3137,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # as a reference to self.links[link] is kept in self.pages[].annots:
         assert link is not None
         destination = self.links[link]
-        destination.page_number = self.page if page == -1 else page
+        destination.page_number = self._link_page(page)
         destination.top = self.h_pt - y * self.k
         destination.left = x * self.k
         destination.zoom = zoom
@@ -6249,6 +6304,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             x (float): the new current abscissa
         """
+        _check_coordinate("x", x)
         self.x = x if x >= 0 else self.w + x
 
     def get_y(self) -> float:
@@ -6267,6 +6323,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             y (float): the new current ordinate
         """
+        _check_coordinate("y", y)
         self.x = self.l_margin
         self.y = y if y >= 0 else self.h + y
 
@@ -6279,6 +6336,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x (float): the new current abscissa
             y (float): the new current ordinate
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
         self.set_y(y)
         self.set_x(x)
 
@@ -6714,6 +6773,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): width of the clipping region
             h (float): height of the clipping region
         """
+        prev_font_set = self.current_font_is_set_on_page
         self._out(
             (
                 f"q {x * self.k:.2f} {(self.h - y - h) * self.k:.2f} {w * self.k:.2f} "
@@ -6722,6 +6782,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         yield
         self._out("Q")
+        self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
@@ -6738,10 +6799,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): ellipse width
             h (float): ellipse height
         """
+        prev_font_set = self.current_font_is_set_on_page
         self._out("q")
         self._draw_ellipse(x, y, w, h, "W n")
         yield
         self._out("Q")
+        self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager

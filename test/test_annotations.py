@@ -281,3 +281,25 @@ def test_annotation_small_numbers_are_valid_pdf_numbers(color, border_width):
     annotation = reader.get_page(0)["/Annots"][0].get_object()
     assert list(annotation["/C"]) == pytest.approx(color)
     assert list(annotation["/Border"]) == pytest.approx([0, 0, border_width])
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize(
+    "add_annotation",
+    [
+        lambda pdf, value: pdf.link(
+            x=value, y=10, w=20, h=5, link="https://py-pdf.github.io"
+        ),
+        lambda pdf, value: pdf.link(
+            x=10, y=10, w=value, h=5, link="https://py-pdf.github.io"
+        ),
+        lambda pdf, value: pdf.text_annotation(x=10, y=value, text="Note"),
+        lambda pdf, value: pdf.free_text_annotation("Note", x=10, y=10, w=value, h=5),
+    ],
+)
+def test_annotation_non_finite_position_or_size(add_annotation, value):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica")
+    with pytest.raises(ValueError, match="must be finite numbers"):
+        add_annotation(pdf, value)

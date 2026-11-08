@@ -3,6 +3,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Annotations.html>
 """
 
 import hashlib
+import math
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional, Sequence
 
@@ -60,6 +61,11 @@ class AnnotationMixin:
         default_appearance: Optional[str] = None,  # for free text annotations
         appearance_stream: Optional[bytes] = None,
     ) -> None:
+        if not all(math.isfinite(value) for value in (x, y, width, height)):
+            raise ValueError(
+                "Annotation position and size must be finite numbers:"
+                f" x={x}, y={y}, width={width}, height={height}"
+            )
         self.type = Name("Annot")
         self.subtype = Name(subtype)
         self.rect = pdf_list(

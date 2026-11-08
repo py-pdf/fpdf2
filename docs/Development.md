@@ -339,6 +339,9 @@ It may be intimidating at first, but while technical, it is usually quite clear 
 It is also a great place to look for new features for `fpdf2`:
 there are still many PDF features that this library does not support.
 
+### PDF format 101
+A really nice single-image PDF format walkthrough, by Ange Albertini:
+[![](pdf101.png)](https://github.com/corkami/pics/blob/master/binary/pdf101/pdf101.pdf)
 
 ## Useful tools to manipulate PDFs
 

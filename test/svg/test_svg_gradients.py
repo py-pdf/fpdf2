@@ -9,6 +9,8 @@ from fpdf.drawing import GradientPaint
 from fpdf.enums import GradientUnits
 from fpdf.svg import SVGObject
 
+from ..conftest import assert_pdf_equal
+
 
 def test_linear_gradient_parsing():
     svg = """
@@ -387,6 +389,40 @@ def test_gradient_percentage_coordinates():
     svg_obj = SVGObject(svg)
 
     assert "#grad" in svg_obj.gradient_definitions
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf%", "bad"])
+@pytest.mark.parametrize(
+    "gradient",
+    [
+        '<linearGradient id="grad" x1="{value}">',
+        '<radialGradient id="grad" r="{value}">',
+    ],
+)
+def test_gradient_not_finite_coordinate_is_read_as_0(tmp_path, caplog, gradient, value):
+    "A NaN or infinite coordinate is handled like any other invalid one: as 0."
+
+    def render(coordinate):
+        svg = f"""
+        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            {gradient.format(value=coordinate)}
+              <stop offset="0%" stop-color="red" />
+              <stop offset="100%" stop-color="blue" />
+            </{gradient[1:15]}>
+          </defs>
+          <rect width="200" height="200" fill="url(#grad)" />
+        </svg>
+        """
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.image(BytesIO(svg.encode()))
+        return pdf
+
+    with caplog.at_level("WARNING"):
+        pdf = render(value)
+    assert f"Could not parse gradient coordinate '{value}', using 0" in caplog.text
+    assert_pdf_equal(pdf, render("0"), tmp_path)
 
 
 def test_gradient_absolute_coordinates():
