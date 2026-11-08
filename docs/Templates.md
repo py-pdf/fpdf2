@@ -228,6 +228,90 @@ or a [`FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) inst
     * default: `false` (in dicts/JSON) or `0` (in CSV)
 
 
+### Relative positioning of text elements
+
+Text elements (`type="T"`) can be positioned relative to the current PDF
+cursor instead of using fixed coordinates. This is particularly useful
+when working with dynamic or multi-line text, where the position of
+subsequent elements depends on the amount of text rendered.
+
+For text elements, `x1` and `y1` can be omitted to use the current cursor
+position. The `w` and `h` properties define the dimensions of the text
+cell. The `new_x` and `new_y` properties control the cursor position
+after rendering the text.
+
+The following values are supported:
+
+* **`new_x`**: Horizontal cursor position:
+    * `LEFT`: Left edge of the cell.
+    * `RIGHT`: Right edge of the cell (default).
+    * `START`: Beginning of the actual text.
+    * `END`: End of the actual text.
+    * `WCONT`: Position where subsequent `write()` text continues.
+    * `CENTER`: Center of the actual text.
+    * `LMARGIN`: Left page margin.
+    * `RMARGIN`: Right page margin.
+* **`new_y`**: Vertical cursor position:
+    * `TOP`: Top of the first line (default).
+    * `LAST`: Top of the last line.
+    * `NEXT`: Beginning of the next line after the rendered text.
+    * `TMARGIN`: Top page margin.
+    * `BMARGIN`: Bottom page margin.
+
+Both properties accept the same values as the corresponding parameters
+of [`FPDF.cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell).
+
+#### Example - Positioning text elements relative to each other
+
+```python
+from fpdf import FPDF
+from fpdf.template import FlexTemplate
+
+pdf = FPDF()
+pdf.add_page()
+
+elements = [
+    {
+        "name": "description",
+        "type": "T",
+        "w": 100,
+        "h": 5,
+        "text": "This is a longer description that can span "
+                "multiple lines. The height of the text "
+                "depends on its content.",
+        "multiline": True,
+        "new_x": "LMARGIN",
+        "new_y": "NEXT",
+    },
+    {
+        "name": "additional_info",
+        "type": "T",
+        "w": 100,
+        "h": 5,
+        "text": "This text starts immediately below "
+                "the description.",
+        "new_x": "LMARGIN",
+        "new_y": "NEXT",
+    },
+]
+
+template = FlexTemplate(pdf, elements=elements)
+template.render()
+
+pdf.output("floating_template.pdf")
+```
+
+In this example, the first text element starts at the current cursor
+position. `new_y="NEXT"` moves the cursor below the rendered text,
+taking the actual number of lines into account. `new_x="LMARGIN"`
+returns the cursor to the left page margin.
+
+The subsequent text element therefore follows the previous one without
+requiring manually calculated coordinates.
+
+This approach is especially useful for dynamically generated content,
+such as descriptions, addresses, and invoice items.
+
 Fields that are not relevant to a specific element type will be ignored there,
 but if not left empty, they must still adhere to the specified data type (in dicts, string fields may be None).
 
