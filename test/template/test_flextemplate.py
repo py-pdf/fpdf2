@@ -924,8 +924,8 @@ def test_flextemplate_elements_scale(tmp_path):
             text="text3",
             background=0xBBBF00,
             rotate=10,
-            new_x="LMARGIN",
-            new_y="TMARGIN",
+            new_x="END",
+            new_y="TOP",
         ),
     )
     ml_elements = (
@@ -966,13 +966,13 @@ def test_flextemplate_elements_scale(tmp_path):
     grid_t = FlexTemplate(pdf_abs, grid_elements)
     pdf_abs.add_page()
     grid_t.render()
-    text_t = FlexTemplate(pdf_abs, text_elements)
+    text_t = FlexTemplate(pdf_abs, text_elements_abs)
     text_t.render(offsetx=40, offsety=40)
     text_t.render(offsetx=40, offsety=100, rotate=30)
     text_t.render(offsetx=80, offsety=200, rotate=45)
     pdf_abs.add_page()
     grid_t.render()
-    ml_t = FlexTemplate(pdf_abs, ml_elements)
+    ml_t = FlexTemplate(pdf_abs, ml_elements_abs)
     ml_t.render(offsetx=40, offsety=40)
     ml_t.render(offsetx=40, offsety=100, rotate=30)
     ml_t.render(offsetx=80, offsety=200, rotate=45)
@@ -980,6 +980,8 @@ def test_flextemplate_elements_scale(tmp_path):
     assert_pdf_equal(pdf_abs, HERE / "flextemplate_float_scaled_abs.pdf", tmp_path)
 
     pdf_rel = FPDF()
+    pdf_rel.set_left_margin(0)
+    pdf_rel.set_top_margin(0)
     grid_t = FlexTemplate(pdf_rel, grid_elements)
     pdf_rel.add_page()
     grid_t.render()
