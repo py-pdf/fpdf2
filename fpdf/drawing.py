@@ -2045,6 +2045,10 @@ class Arc(NamedTuple):
         Returns:
             a list of `BezierCurve`.
         """
+        # Like SVG, an arc whose end point is its start point is omitted
+        if last_item.end_point == self.end:
+            return []
+
         radii = self.radii
 
         reverse = Transform.rotation(-self.rotation)
