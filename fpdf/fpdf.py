@@ -2647,6 +2647,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "point_list should contain 3 tuples for a quadratic curve"
                 " or 4 tuples for a cubic curve."
             )
+        for index, point in enumerate(point_list):
+            _check_coordinate(f"x[{index}]", point[0])
+            _check_coordinate(f"y[{index}]", point[1])
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
 
         # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
