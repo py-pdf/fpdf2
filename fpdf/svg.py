@@ -2018,7 +2018,9 @@ class SVGObject:
     def handle_defs(self, defs: "Element") -> None:
         """Produce lookups for groups and paths inside the <defs> tag"""
         for child in defs:
-            if child.tag in xmlns_lookup("svg", "g"):
+            if child.tag in xmlns_lookup("svg", "defs"):
+                self.handle_defs(child)
+            elif child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "switch"):
                 self.build_switch(child)

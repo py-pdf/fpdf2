@@ -316,6 +316,20 @@ class TestSVGObject:
         with pytest.raises(ValueError, match="must start with a moveto"):
             fpdf.svg.SVGObject(svg_data)
 
+    def test_nested_defs(self, caplog):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><defs>'
+            '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+            '<rect id="square" width="5" height="5"/></defs></defs>'
+            '<rect width="10" height="10" clip-path="url(#clip)"/></svg>'
+        )
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring" not in caplog.text
+        assert "#square" in svg.cross_references
+        clipping_path = svg.base_group.path_items[0].clipping_path
+        assert clipping_path is svg.cross_references["#clip"]
+
     def test_bad_xref(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
