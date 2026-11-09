@@ -1077,6 +1077,16 @@ svg_path_render_tests = (
         "q 0 1 m 0 1 2 3.3333 6 8 c h B Q",
         id="relative smooth quadratic bezier unchained",
     ),
+    pytest.param(
+        "M 0 1 L 4 5 A 2 2 0 0 1 4 5 L 6 1",
+        "q 0 1 m 4 5 l 6 1 l h B Q",
+        id="arc ending at its start point is omitted",
+    ),
+    pytest.param(
+        "M 4 5 a 2 2 0 1 1 0 0 L 6 1",
+        "q 4 5 m 6 1 l h B Q",
+        id="relative arc ending at its start point is omitted",
+    ),
 )
 
 svg_path_implicit_directives = (
