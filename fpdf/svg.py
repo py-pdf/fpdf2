@@ -1097,7 +1097,8 @@ def convert_transforms(tfstr: str) -> Transform:
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
     pen = PathPen(pdf_path)
     parse_path(svg_path, pen)
-    if not pen.first_is_move:
+    # Empty path data is valid and draws nothing
+    if pen.first_is_move is False:
         raise ValueError("Path does not start with move item")
 
 
