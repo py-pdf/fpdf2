@@ -3633,8 +3633,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
             border_width (float): thickness of the path stroke.
         """
+        coords = list(coords)  # any iterable, and it is read twice below
         if not coords:
             raise ValueError("coords must contain at least one point")
+        if not all(math.isfinite(c) for point in coords for c in point):
+            raise ValueError(f"coords must contain finite numbers: {coords}")
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])
         y_min = min(ink_list[1::2])
