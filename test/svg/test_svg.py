@@ -389,6 +389,96 @@ class TestSVGObject:
         clipping_path = svg.base_group.path_items[0].clipping_path
         assert clipping_path is svg.cross_references["#" + clip_id]
 
+    @pytest.mark.parametrize(
+        "svg_body",
+        [
+            # as written by Adobe Illustrator
+            '<g><clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+            '<rect width="10" height="10" clip-path="url(#clip)"/></g>',
+            '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+            '<rect width="10" height="10" clip-path="url(#clip)"/>',
+        ],
+    )
+    def test_svg_clip_path_outside_defs(self, svg_body, caplog):
+        svg_data = f'<svg xmlns="http://www.w3.org/2000/svg">{svg_body}</svg>'
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring" not in caplog.text
+        shape = svg.base_group.path_items[-1]
+        while isinstance(shape, fpdf.drawing.GraphicsContext):
+            shape = shape.path_items[-1]
+        assert shape.clipping_path is svg.cross_references["#clip"]
+
+    def test_svg_clip_path_with_use(self):
+        # as written by Adobe Illustrator
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" '
+            'xmlns:xlink="http://www.w3.org/1999/xlink"><g>'
+            '<defs><rect id="SVGID_1_" width="50" height="50"/></defs>'
+            '<clipPath id="SVGID_2_"><use xlink:href="#SVGID_1_" overflow="visible"/>'
+            "</clipPath>"
+            '<path clip-path="url(#SVGID_2_)" d="M 0 0 L 60 60 L 0 60 Z"/></g></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        clipping_path = svg.cross_references["#SVGID_2_"]
+        assert isinstance(clipping_path, fpdf.drawing.ClippingPath)
+        assert clipping_path.transform is None
+        path = svg.base_group.path_items[0].path_items[0]
+        assert path.clipping_path is clipping_path
+
+    @pytest.mark.parametrize(
+        "rect_transform, use_attributes, expected",
+        [
+            # translate(x, y) applies before the transform of the <use>
+            (
+                "",
+                'x="2" y="3" transform="scale(2)"',
+                fpdf.drawing.Transform.translation(2, 3)
+                @ fpdf.drawing.Transform.scaling(2),
+            ),
+            ("", 'y="3"', fpdf.drawing.Transform.translation(0, 3)),
+            (
+                'transform="rotate(90)"',
+                'x="2"',
+                fpdf.drawing.Transform.rotation_d(90)
+                @ fpdf.drawing.Transform.translation(2, 0),
+            ),
+        ],
+    )
+    def test_svg_clip_path_with_use_placement(
+        self, rect_transform, use_attributes, expected
+    ):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<defs><rect id="r" width="5" height="5" {rect_transform}/>'
+            f'<clipPath id="clip"><use href="#r" {use_attributes}/>'
+            "</clipPath></defs></svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg.cross_references["#clip"].transform == expected
+
+    @pytest.mark.parametrize(
+        "clip_path_child, warning",
+        [
+            ('<use href="#missing"/>', "Ignoring <use> without a valid reference"),
+            ("<use/>", "Ignoring <use> without a valid reference"),
+            ('<use href="#g"/>', "Ignoring unsupported <clipPath> child tag: <g>"),
+            ('<use href="#u"/>', "Ignoring unsupported <clipPath> child tag: <use>"),
+            ("<text>A</text>", "Ignoring unsupported <clipPath> child tag: <text>"),
+        ],
+    )
+    def test_svg_clip_path_unsupported_child(self, clip_path_child, warning, caplog):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<defs><g id="g"><rect width="5" height="5"/></g>'
+            '<rect id="r" width="5" height="5"/><use id="u" href="#r"/>'
+            f'<clipPath id="clip">{clip_path_child}</clipPath></defs></svg>'
+        )
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert warning in caplog.text
+        assert "#clip" not in svg.cross_references
+
     def test_svg_conversion_no_transparency(self, tmp_path):
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))
 
