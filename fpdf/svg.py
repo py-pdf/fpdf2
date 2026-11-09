@@ -2367,10 +2367,10 @@ class SVGObject:
             clip_value = style_map["clip-path"]
         if clip_value is None:
             clip_value = svg_element.attrib.get("clip-path")
-        if clip_value:
-            clipping_path_id = re.search(r"url\((\#\w+)\)", clip_value)
-            assert clipping_path_id is not None
-            stylable.clipping_path = self.cross_references[clipping_path_id[1]]
+        # "none" (or any value that is not a url(#id) reference) clips nothing
+        clipping_path_id = self._extract_gradient_id(clip_value)
+        if clipping_path_id:
+            stylable.clipping_path = self.cross_references[clipping_path_id]
 
     @force_nodocument
     def build_image(self, image: "Element") -> "SVGImage | GraphicsContext":
