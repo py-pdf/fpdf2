@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 * Chinese translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-zh.html#-pdfa) tutorial section - _cf._ [issue #267](https://github.com/py-pdf/fpdf2/issues/267) - _cf._ [PR #2138](https://github.com/py-pdf/fpdf2/pull/2138) - thanks to @zheng-guannan577*
 ### Fixed
+* SVG: a gradient `<stop>` without an `offset`, as in the Hugging Face logo and pipeline diagram on spaCy's website, is now read with offset 0, the initial value in the SVG specification, instead of being skipped with a warning, which left the gradient with a stop missing - thanks to @RavSinghChandan
 * SVG: `currentColor` and `inherit` are now read regardless of case, like the color keywords, so `fill="currentcolor"`, as in the Font Awesome icons of many web pages, no longer fails with `ValueError: unsupported color specification currentcolor` - thanks to @RavSinghChandan
 * SVG: black or gray text no longer fails with an `AssertionError` when it is in a `<tspan>` that has its own style, as in every text written by Inkscape: the check on the text color left out `DeviceGray`, the color fpdf2 uses for black and gray - thanks to @RavSinghChandan
 * SVG: an image without an `xmlns` declaration no longer fails with `ValueError: substring not found` when it contains a tag that is not supported, such as `<title>` or `<script>`; the tag is skipped with a warning, as in an image that declares the namespace - thanks to @RavSinghChandan
