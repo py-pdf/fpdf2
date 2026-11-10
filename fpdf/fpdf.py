@@ -5921,12 +5921,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
+        x_is_aligned = False
         if not isinstance(x, NumberClass):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
+            x_is_aligned = True
         if TYPE_CHECKING:
             x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
+            box_x, y, w, h = info.scale_inside_box(x, y, w, h)
+            if not x_is_aligned:  # x_by_align() already used the scaled width
+                x = box_x
         if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(
                 name,
@@ -6037,11 +6041,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
+        x_is_aligned = False
         if not isinstance(x, NumberClass):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
+            x_is_aligned = True
         x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
+            box_x, y, w, h = info.scale_inside_box(x, y, w, h)
+            if not x_is_aligned:  # x_by_align() already used the scaled width
+                x = box_x
 
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
@@ -6795,9 +6803,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{h * self.k:.2f} re W n"
             )
         )
-        yield
-        self._out("Q")
-        self.current_font_is_set_on_page = prev_font_set
+        try:
+            yield
+        finally:
+            self._out("Q")
+            self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
@@ -6817,9 +6827,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font_set = self.current_font_is_set_on_page
         self._out("q")
         self._draw_ellipse(x, y, w, h, "W n")
-        yield
-        self._out("Q")
-        self.current_font_is_set_on_page = prev_font_set
+        try:
+            yield
+        finally:
+            self._out("Q")
+            self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
