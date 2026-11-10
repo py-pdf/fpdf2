@@ -241,7 +241,7 @@ def xmlns_lookup(space: str, *names: str) -> dict[str, str]:
 @force_nodocument
 def without_ns(qualified_tag: str) -> str:
     """Remove the xmlns namespace from a qualified XML tag name"""
-    i = qualified_tag.index("}")
+    i = qualified_tag.find("}")
     if i >= 0:
         return qualified_tag[i + 1 :]
     return qualified_tag

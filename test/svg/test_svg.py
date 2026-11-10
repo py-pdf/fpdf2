@@ -317,6 +317,17 @@ class TestSVGObject:
         with pytest.raises(ValueError):
             fpdf.svg.SVGObject(svg_data)
 
+    def test_svg_without_xmlns_with_unsupported_tag(self, caplog):
+        # Older and hand-written SVG files often omit the xmlns declaration
+        svg_data = (
+            '<svg width="10" height="10"><title>A square</title>'
+            '<rect width="10" height="10"/></svg>'
+        )
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring unsupported SVG tag: <title>" in caplog.text
+        assert len(svg.base_group.path_items) == 1
+
     def test_svg_conversion_no_transparency(self, tmp_path):
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))
 
