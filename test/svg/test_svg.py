@@ -2,6 +2,7 @@
 from io import BytesIO
 from pathlib import Path
 import re
+import zlib
 
 import fpdf
 from ..conftest import assert_pdf_equal
@@ -595,6 +596,31 @@ class TestSVGObject:
         fpdf.svg.SVGObject(svg_body).draw_to_page(pdf)
         output = bytes(pdf.output()).decode("latin-1")
         assert re.findall(r"/F\d+ ([\d.]+) Tf", output) == font_sizes
+
+    @pytest.mark.parametrize(
+        "pattern_content, font_sizes",
+        [
+            ('<rect width="5" height="5"/>', []),
+            ('<text y="5" font-size="0.5em">a</text>', [b"6"]),
+        ],
+    )
+    def test_svg_relative_font_size_in_pattern(self, pattern_content, font_sizes):
+        # the ancestors of a <pattern> give its contents their font size too
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+            'font-size="2em"><defs><g font-size="50%"><pattern id="p" width="10" '
+            f'height="10" patternUnits="userSpaceOnUse">{pattern_content}</pattern>'
+            '</g></defs><rect width="100" height="100" fill="url(#p)"/></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output())
+        streams = re.findall(
+            rb"/FlateDecode.*?stream\r?\n(.*?)\r?\nendstream", output, re.S
+        )
+        contents = b"".join(zlib.decompress(stream) for stream in streams)
+        assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == font_sizes
 
     def test_svg_symbol(self):
         svg_data = (

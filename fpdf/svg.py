@@ -1727,10 +1727,12 @@ class SVGObject:
             )
             for ancestor in reversed(ancestors):
                 styles = self._style_map_for(ancestor)
+                parent_style = dict(inherited)
                 for attr in (*svg_attr_map, *font_keys):
                     value = _get_attr_or_style(ancestor, attr, styles)
                     if value is not None:
                         inherited[attr] = value
+                _resolve_relative_font_size(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
             apply_styles(group, empty, inherited)
