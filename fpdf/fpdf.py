@@ -6791,9 +6791,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{h * self.k:.2f} re W n"
             )
         )
-        yield
-        self._out("Q")
-        self.current_font_is_set_on_page = prev_font_set
+        try:
+            yield
+        finally:
+            self._out("Q")
+            self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
@@ -6813,9 +6815,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font_set = self.current_font_is_set_on_page
         self._out("q")
         self._draw_ellipse(x, y, w, h, "W n")
-        yield
-        self._out("Q")
-        self.current_font_is_set_on_page = prev_font_set
+        try:
+            yield
+        finally:
+            self._out("Q")
+            self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
