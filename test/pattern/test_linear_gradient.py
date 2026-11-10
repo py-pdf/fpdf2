@@ -1,4 +1,7 @@
 from pathlib import Path
+
+import pytest
+
 from fpdf import FPDF
 from fpdf.pattern import LinearGradient
 from test.conftest import assert_pdf_equal
@@ -214,3 +217,13 @@ def test_linear_gradient_diagonal(tmp_path):
         HERE / "linear_gradient_diagonal.pdf",
         tmp_path,
     )
+
+
+@pytest.mark.parametrize(
+    "bounds",
+    [[1.5, 0.8], [-0.2, 0.5], [0.7, 0.3], [float("nan"), 0.5]],
+    ids=["above-one", "below-zero", "decreasing", "nan"],
+)
+def test_linear_gradient_invalid_bounds(bounds):
+    with pytest.raises(ValueError, match="Bounds must be increasing numbers"):
+        LinearGradient(0, 0, 100, 0, ["#f00", "#0f0", "#00f", "#000"], bounds=bounds)
