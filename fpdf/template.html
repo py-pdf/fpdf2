@@ -56,7 +56,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L35-L734" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L35-L736" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -359,7 +359,9 @@ el.replaceWith(d);
             if element[&#34;name&#34;].lower() == element_name.lower()
         )
         if not self.splitting_pdf:
-            self.splitting_pdf = FPDF()
+            # Use the same unit as the target document,
+            # so that the element width is measured like when rendering it:
+            self.splitting_pdf = FPDF(unit=self.pdf.k)
             self.splitting_pdf.add_page()
         assert self.splitting_pdf is not None
         style = &#34;&#34;
@@ -786,7 +788,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L73-L157" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L73-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_elements(self, elements: Sequence[dict[str, Any]]) -&gt; None:
     &#34;&#34;&#34;
@@ -889,7 +891,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L208-L282" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L208-L282" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_csv(
     self,
@@ -991,7 +993,7 @@ Default is the system default encoding.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L177-L206" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L177-L206" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_json(self, infile: os.PathLike[str], encoding: str = &#34;utf-8&#34;) -&gt; None:
     &#34;&#34;&#34;
@@ -1043,7 +1045,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L688-L734" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L690-L736" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(
     self,
@@ -1111,7 +1113,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L284-L291" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L284-L291" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def __setitem__(self, name: str, value: Any) -&gt; None:
     assert isinstance(
@@ -1131,7 +1133,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L317-L355" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L317-L357" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def split_multicell(self, text: str, element_name: str) -&gt; list[str]:
     &#34;&#34;&#34;
@@ -1152,7 +1154,9 @@ equivalent to what would get supplied to load_elements(),</p>
         if element[&#34;name&#34;].lower() == element_name.lower()
     )
     if not self.splitting_pdf:
-        self.splitting_pdf = FPDF()
+        # Use the same unit as the target document,
+        # so that the element width is measured like when rendering it:
+        self.splitting_pdf = FPDF(unit=self.pdf.k)
         self.splitting_pdf.add_page()
     assert self.splitting_pdf is not None
     style = &#34;&#34;
@@ -1198,7 +1202,7 @@ when rendered in the element font style and size.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L737-L830" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L739-L832" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
@@ -1337,7 +1341,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L804-L808" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L806-L810" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_page(self) -&gt; None:
     &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
@@ -1386,7 +1390,7 @@ equivalent to what …</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/52dd1e2d036dee6cf58e4b8e402f524978e97447/fpdf/template.py#L811-L830" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/32939f59dbbf41515d53b4e2d1d7b7db59c5cf6e/fpdf/template.py#L813-L832" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, outfile: Optional[str] = None, dest: Optional[str] = None) -&gt; None:  # type: ignore[override]
     &#34;&#34;&#34;
