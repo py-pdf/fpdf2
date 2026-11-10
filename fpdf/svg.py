@@ -709,6 +709,24 @@ def _get_attr_or_style(
     return _normalize_css_value(tag.attrib.get(name))
 
 
+def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
+    """
+    Resolve the width or height of the root <svg>. As in browsers, a length in em
+    or ex, such as the width="1em" of icon sets, is relative to its font size,
+    16px if it sets none.
+    """
+    match = unit_splitter.fullmatch(length_str)
+    unit = match.group("unit") if match else None
+    if match is None or unit not in ("em", "ex"):
+        return resolve_length(length_str)
+    font_size = _get_attr_or_style(root_tag, "font-size")
+    try:
+        font_size_pt = resolve_length(font_size or "16px")
+    except ValueError:
+        font_size_pt = resolve_length("16px")
+    return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
+
+
 def _parse_font_attrs(
     tag: "Element", style_map: Optional[dict[str, Any]] = None
 ) -> tuple[Optional[str], str, Optional[float], str]:
@@ -1809,7 +1827,7 @@ class SVGObject:
             if width_str.endswith("%"):
                 self.width = Percent(width_str[:-1])
             else:
-                self.width = resolve_length(width_str)
+                self.width = _resolve_root_length(width_str, root_tag)
 
         self.height = None
         if height_str is not None:
@@ -1817,7 +1835,7 @@ class SVGObject:
             if height_str.endswith("%"):
                 self.height = Percent(height_str[:-1])
             else:
-                self.height = resolve_length(height_str)
+                self.height = _resolve_root_length(height_str, root_tag)
 
         if viewbox is None:
             self.viewbox = None

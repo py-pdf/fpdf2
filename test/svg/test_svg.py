@@ -251,6 +251,15 @@ class TestSVGObject:
             assert (width, height) == pytest.approx(expected_dim)
             assert base_group.transform == pytest.approx(expected_tf)
 
+    @pytest.mark.parametrize(
+        "font_size, expected", [('font-size="20px"', 15), ('style="font-size:9pt"', 9)]
+    )
+    def test_document_size_em_root_font_size(self, font_size, expected):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="2em" {font_size}/>'
+        )
+        assert (svg.width, svg.height) == (expected, 2 * expected)
+
     @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
     def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
         svg_data = (
