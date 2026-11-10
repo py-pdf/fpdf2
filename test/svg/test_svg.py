@@ -728,6 +728,23 @@ def test_svg_image_preserve_aspect_ratio(
     assert expected_chunk in content
 
 
+@pytest.mark.parametrize(
+    "unit, scale",
+    [("", 1.0), ("px", 0.75), ("pt", 1.0), ("mm", 72 / 25.4)],
+)
+def test_svg_image_length_units(unit, scale):
+    # as in the logo of narwhals, which gives every length of its <image> in px
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10{unit}" y="20{unit}" '
+        f'width="40{unit}" height="30{unit}"/></svg>'
+    )
+    image = svg.base_group.path_items[0]
+    assert (image.x, image.y, image.width, image.height) == pytest.approx(
+        (10 * scale, 20 * scale, 40 * scale, 30 * scale)
+    )
+
+
 def test_svg_image_transform(caplog):
     pdf = fpdf.FPDF()
     pdf.add_page()

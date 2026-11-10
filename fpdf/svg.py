@@ -2386,8 +2386,8 @@ class SVGObject:
                 break
         if not href:
             raise ValueError("<image> is missing a href attribute")
-        width = float(image.attrib.get("width", 0))
-        height = float(image.attrib.get("height", 0))
+        width = resolve_length(image.attrib.get("width", "0"))
+        height = resolve_length(image.attrib.get("height", "0"))
 
         keep_aspect_ratio = True
         preserve_aspect_ratio = image.attrib.get("preserveAspectRatio")
@@ -2418,8 +2418,8 @@ class SVGObject:
         # Note: at this moment, self.image_cache is not set yet:
         svg_image = SVGImage(
             href=href,
-            x=float(image.attrib.get("x", "0")),
-            y=float(image.attrib.get("y", "0")),
+            x=resolve_length(image.attrib.get("x", "0")),
+            y=resolve_length(image.attrib.get("y", "0")),
             width=width,
             height=height,
             svg_obj=self,
