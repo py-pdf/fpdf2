@@ -299,6 +299,23 @@ class TestSVGObject:
         )
         fpdf.svg.SVGObject(svg_data)
 
+    @pytest.mark.parametrize("path_data", ["", "  "])
+    def test_path_empty_data(self, path_data):
+        # Empty path data disables rendering of the path, like a missing "d"
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<path d="{path_data}"/><path/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        empty, missing = svg.base_group.path_items
+        assert not empty._root_graphics_context.path_items
+        assert not missing._root_graphics_context.path_items
+
+    def test_path_not_starting_with_move(self):
+        svg_data = '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 1 2"/></svg>'
+        with pytest.raises(ValueError, match="must start with a moveto"):
+            fpdf.svg.SVGObject(svg_data)
+
     def test_bad_xref(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
