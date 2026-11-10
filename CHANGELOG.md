@@ -53,6 +53,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * SVG paths and `PaintedPath.arc_to()` omit an elliptical arc whose end point is its start point, as the SVG specification requires, instead of raising `ZeroDivisionError` - thanks to @RavSinghChandan
 * `FPDF.ink_annotation()` raises a clear `ValueError` for a NaN or infinite point in `coords`, instead of writing it into `/InkList`, which is not a valid PDF number - thanks to @RavSinghChandan
 * `RadialGradient` raises a clear `ValueError` for a negative, NaN or infinite circle radius, instead of writing it into the shading `/Coords`, where the PDF specification requires radii of zero or more - thanks to @RavSinghChandan
+* `LinearGradient` and `RadialGradient` raise a clear `ValueError` for `bounds` outside [0, 1], decreasing or NaN, instead of writing them into the shading function, where the PDF specification requires increasing values within its domain - thanks to @RavSinghChandan
+* `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added
