@@ -1113,7 +1113,7 @@ class SVGObject:
         cls,
         filename: str | PathLike[str],
         *args: Any,
-        encoding: str = "utf-8",
+        encoding: Optional[str] = None,
         **kwargs: Any,
     ) -> "SVGObject":
         """
@@ -1123,11 +1123,17 @@ class SVGObject:
             filename (path-like): the path to a file containing SVG data.
             *args: forwarded directly to the SVGObject initializer. For subclass use.
             encoding (str): optional charset encoding to use when reading the file.
+                By default, the encoding declared by the file is used, as in
+                `FPDF.image()`, and UTF-8 if it declares none.
             **kwargs: forwarded directly to the SVGObject initializer. For subclass use.
 
         Returns:
             A converted `SVGObject`.
         """
+        if encoding is None:
+            # The XML parser reads the encoding declaration of the file
+            with open(filename, "rb") as svgfile:
+                return cls(svgfile.read(), *args, **kwargs)
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 

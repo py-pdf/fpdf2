@@ -546,6 +546,32 @@ class TestSVGObject:
         svg.draw_to_page(pdf)
         assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
 
+    @pytest.mark.parametrize(
+        "declaration, file_encoding, from_file_kwargs",
+        [
+            ('<?xml version="1.0" encoding="iso-8859-1"?>', "latin-1", {}),
+            ("", "utf-8", {}),
+            ("", "latin-1", {"encoding": "latin-1"}),
+        ],
+    )
+    def test_svg_from_file_encoding(
+        self, tmp_path, declaration, file_encoding, from_file_kwargs
+    ):
+        svg_path = tmp_path / "text.svg"
+        svg_path.write_bytes(
+            (
+                f'{declaration}<svg xmlns="http://www.w3.org/2000/svg" width="50" '
+                'height="20"><text x="1" y="10" font-family="helvetica">Z\u00fcrich'
+                "</text></svg>"
+            ).encode(file_encoding)
+        )
+        svg = fpdf.svg.SVGObject.from_file(svg_path, **from_file_kwargs)
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert "(Z\u00fcrich) Tj" in bytes(pdf.output()).decode("latin-1")
+
     def test_svg_symbol(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
