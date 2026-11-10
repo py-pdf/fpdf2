@@ -2,7 +2,8 @@
 from io import BytesIO
 from pathlib import Path
 
-import fpdf
+import fpdf.drawing
+import fpdf.svg
 from ..conftest import assert_pdf_equal
 
 from xml.etree.ElementTree import fromstring as parse_xml_str
