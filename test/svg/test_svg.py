@@ -299,6 +299,23 @@ class TestSVGObject:
         )
         fpdf.svg.SVGObject(svg_data)
 
+    @pytest.mark.parametrize("path_data", ["", "  "])
+    def test_path_empty_data(self, path_data):
+        # Empty path data disables rendering of the path, like a missing "d"
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<path d="{path_data}"/><path/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        empty, missing = svg.base_group.path_items
+        assert not empty._root_graphics_context.path_items
+        assert not missing._root_graphics_context.path_items
+
+    def test_path_not_starting_with_move(self):
+        svg_data = '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 1 2"/></svg>'
+        with pytest.raises(ValueError, match="must start with a moveto"):
+            fpdf.svg.SVGObject(svg_data)
+
     def test_bad_xref(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
@@ -327,6 +344,36 @@ class TestSVGObject:
             svg = fpdf.svg.SVGObject(svg_data)
         assert "Ignoring unsupported SVG tag: <title>" in caplog.text
         assert len(svg.base_group.path_items) == 1
+
+    @pytest.mark.parametrize(
+        "clip_path", ['clip-path="none"', 'style="clip-path: none"']
+    )
+    def test_svg_clip_path_none(self, clip_path):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<rect width="10" height="10" {clip_path}/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg.base_group.path_items[0].clipping_path is None
+
+    @pytest.mark.parametrize(
+        "clip_id, reference",
+        [
+            ("clip-1", "url(#clip-1)"),
+            ("clip.a", "url(#clip.a)"),
+            ("clip1", 'url("#clip1")'),
+        ],
+    )
+    def test_svg_clip_path_reference(self, clip_id, reference):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<defs><clipPath id="clip"><rect width="1" height="1"/></clipPath>'
+            f'<clipPath id="{clip_id}"><rect width="5" height="5"/></clipPath></defs>'
+            f'<rect width="10" height="10" clip-path=\'{reference}\'/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        clipping_path = svg.base_group.path_items[0].clipping_path
+        assert clipping_path is svg.cross_references["#" + clip_id]
 
     def test_svg_conversion_no_transparency(self, tmp_path):
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))
@@ -461,6 +508,29 @@ class TestSVGObject:
             GENERATED_PDF_DIR / "ocanada.pdf",
             tmp_path,
         )
+
+    @pytest.mark.parametrize(
+        "text_attributes, color_operators",
+        [
+            ('fill="black"', "0 g"),
+            ('fill="#808080" stroke="black"', "0.502 g 0 G"),
+            ('style="fill:#000000;stroke:none"', "0 g"),
+        ],
+    )
+    def test_svg_text_gray_color_in_styled_tspan(
+        self, text_attributes, color_operators
+    ):
+        # Inkscape writes every text like this: a <tspan> with its own style
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" {text_attributes}>'
+            '<tspan style="stroke-width:0.26">Hi</tspan></text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
 
     def test_svg_symbol(self):
         svg_data = (

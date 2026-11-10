@@ -1098,7 +1098,8 @@ def convert_transforms(tfstr: str) -> Transform:
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
     pen = PathPen(pdf_path)
     parse_path(svg_path, pen)
-    if not pen.first_is_move:
+    # Empty path data is valid and draws nothing
+    if pen.first_is_move is False:
         raise ValueError("Path does not start with move item")
 
 
@@ -2368,10 +2369,10 @@ class SVGObject:
             clip_value = style_map["clip-path"]
         if clip_value is None:
             clip_value = svg_element.attrib.get("clip-path")
-        if clip_value:
-            clipping_path_id = re.search(r"url\((\#\w+)\)", clip_value)
-            assert clipping_path_id is not None
-            stylable.clipping_path = self.cross_references[clipping_path_id[1]]
+        # "none" (or any value that is not a url(#id) reference) clips nothing
+        clipping_path_id = self._extract_gradient_id(clip_value)
+        if clipping_path_id:
+            stylable.clipping_path = self.cross_references[clipping_path_id]
 
     @force_nodocument
     def build_image(self, image: "Element") -> "SVGImage | GraphicsContext":
