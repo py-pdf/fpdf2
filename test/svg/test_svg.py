@@ -532,6 +532,22 @@ class TestSVGObject:
         svg.draw_to_page(pdf)
         assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
 
+    @pytest.mark.parametrize("text", ["a \u2013 b", "price: \u20ac5", "\u2192 next"])
+    def test_svg_text_core_font_unsupported_character(self, text):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" font-family="helvetica">{text}</text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica")
+        # The same error as for text written with cell()
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as cell_error:
+            pdf.cell(text=text)
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as svg_error:
+            svg.draw_to_page(pdf)
+        assert str(svg_error.value) == str(cell_error.value)
+
     def test_svg_symbol(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
