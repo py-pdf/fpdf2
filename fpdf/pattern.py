@@ -778,6 +778,11 @@ class RadialGradient(Gradient):
                 less than the number of colors (for multi-color gradients). Defaults to None,
                 which evenly distributes color stops.
         """
+        for radius in (start_circle_radius, end_circle_radius):
+            if not math.isfinite(radius) or radius < 0:
+                raise ValueError(
+                    f"Gradient circle radius must be zero or a positive number: {radius}"
+                )
         super().__init__(colors, background, extend_before, extend_after, bounds)
         self.coords: tuple[  # pyright: ignore[reportIncompatibleVariableOverride]
             float, float, float, float, float, float
