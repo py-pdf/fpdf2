@@ -263,7 +263,29 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     if colorstr.lower().startswith("rgb"):
         return color_from_rgb_string(colorstr.lower())
 
+    if colorstr.lower().startswith("light-dark(") and colorstr.endswith(")"):
+        # CSS Color 5: without a color-scheme, which SVG documents rarely set,
+        # light-dark() is its first, light color.
+        light_color = _split_top_level_commas(colorstr[len("light-dark(") : -1])[0]
+        return svgcolor(light_color)
+
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _split_top_level_commas(value: str) -> list[str]:
+    """Split on the commas that are not inside parentheses, as in "rgb(1, 2, 3), red"."""
+    parts: list[str] = []
+    depth, start = 0, 0
+    for index, character in enumerate(value):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        elif character == "," and depth == 0:
+            parts.append(value[start:index])
+            start = index + 1
+    parts.append(value[start:])
+    return parts
 
 
 @force_nodocument
