@@ -2362,7 +2362,7 @@ class SVGObject:
         elif shape.tag in xmlns_lookup("svg", "path"):
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
-            clipping_path_shape = PaintedPath()
+            clipping_path_shape = ClippingPath()
             apply_styles(clipping_path_shape, shape, style_map)
             clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")

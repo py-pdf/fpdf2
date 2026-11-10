@@ -413,12 +413,28 @@ class TestSVGObject:
             shape = shape.path_items[-1]
         assert shape.clipping_path is svg.cross_references["#clip"]
 
-    def test_svg_clip_path_with_use(self):
+    def test_svg_clip_path_with_path(self):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<defs><clipPath id="clip"><path d="M 0 0 H 5 V 5 H 0 Z"/></clipPath></defs>'
+            '<rect width="10" height="10" clip-path="url(#clip)"/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert isinstance(svg.cross_references["#clip"], fpdf.drawing.ClippingPath)
+
+    @pytest.mark.parametrize(
+        "referenced",
+        [
+            '<rect id="SVGID_1_" width="50" height="50"/>',
+            '<path id="SVGID_1_" d="M 0 0 H 50 V 50 H 0 Z"/>',
+        ],
+    )
+    def test_svg_clip_path_with_use(self, referenced):
         # as written by Adobe Illustrator
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
             'xmlns:xlink="http://www.w3.org/1999/xlink"><g>'
-            '<defs><rect id="SVGID_1_" width="50" height="50"/></defs>'
+            f"<defs>{referenced}</defs>"
             '<clipPath id="SVGID_2_"><use xlink:href="#SVGID_1_" overflow="visible"/>'
             "</clipPath>"
             '<path clip-path="url(#SVGID_2_)" d="M 0 0 L 60 60 L 0 60 Z"/></g></svg>'
