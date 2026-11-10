@@ -396,6 +396,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zheng-guannan577"><img src="https://avatars.githubusercontent.com/u/349123998?v=4&size=100" width="100px" height="100px" alt="zheng-guannan577"/><br /><sub><b>zheng-guannan577</b></sub></a><br /><a href="#translation-zheng-guannan577" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Enesuygurs"><img src="https://avatars.githubusercontent.com/u/54417817?v=4&size=100" width="100px" height="100px" alt="Enes Uygur"/><br /><sub><b>Enes Uygur</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Enesuygurs" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
