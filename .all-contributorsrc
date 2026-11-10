@@ -1982,6 +1982,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "vladosskins178",
+      "name": "Vladislav Y",
+      "avatar_url": "https://avatars.githubusercontent.com/u/277630788?v=4",
+      "profile": "https://vlstudio.app",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
