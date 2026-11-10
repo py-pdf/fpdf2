@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: results.sarif
           category: zizmor
@@ -88,7 +88,7 @@ jobs:
           time guarddog pypi verify fpdf2-full-requirements.txt
           time guarddog pypi verify contributors/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@7f9d0819ca1c008ade73f4b41fa9d258d48f605b # v1.51.1
+        uses: crate-ci/typos@2611abd15acb0c2e317fb9e45855aabb8b35a414 # v1.52.1
   test:
     strategy:
       matrix:
@@ -133,14 +133,15 @@ jobs:
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
-          # Executing all tests:
-          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
-          echo "Running with --trace-memory-usage (Ubuntu)"
-            pytest -vv --trace-memory-usage
-          else
-            echo "Running without trace-memory-usage (${{ matrix.platform }})"
-            pytest -vv
+          # Keep performance checks serial to avoid competition between workers.
+          pytest_args=(-vv)
+          if [[ -z "$CHECK_EXEC_TIME" && -z "$CHECK_RSS_MEMORY" ]]; then
+            pytest_args+=(-n auto --dist=worksteal)
           fi
+          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
+            pytest_args+=(--trace-memory-usage)
+          fi
+          pytest "${pytest_args[@]}"
       - name: Upload coverage report to codecov.io ☑
         # We only upload coverage ONCE, for a single parallel execution / Python version:
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
@@ -167,7 +168,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: block
           allowed-endpoints:
@@ -241,7 +242,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: block
           allowed-endpoints:

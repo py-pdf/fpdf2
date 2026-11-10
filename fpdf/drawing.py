@@ -1098,6 +1098,10 @@ class GraphicsStyle:
                     f"stroke_dash_pattern {value!r} must be a number or sequence of numbers"
                 ) from None
             result = (*accum,)
+        if isinstance(result, tuple) and not all(math.isfinite(v) for v in result):
+            raise ValueError(
+                f"stroke_dash_pattern {value!r} must only contain finite numbers"
+            )
         super().__setattr__("_stroke_dash_pattern", result)
 
     @property
@@ -1111,6 +1115,8 @@ class GraphicsStyle:
 
     @stroke_dash_phase.setter
     def stroke_dash_phase(self, value: InheritType | Number) -> None:
+        if isinstance(value, NumberClass) and not math.isfinite(value):
+            raise ValueError(f"stroke_dash_phase {value!r} must be a finite number")
         if value is self.INHERIT or isinstance(value, NumberClass):
             return super().__setattr__("_stroke_dash_phase", value)
 
@@ -2039,6 +2045,10 @@ class Arc(NamedTuple):
         Returns:
             a list of `BezierCurve`.
         """
+        # Like SVG, an arc whose end point is its start point is omitted
+        if last_item.end_point == self.end:
+            return []
+
         radii = self.radii
 
         reverse = Transform.rotation(-self.rotation)
@@ -2714,7 +2724,7 @@ class Text(NamedTuple):
                         )
                     else:
                         assert isinstance(
-                            fill_color, (DeviceCMYK, DeviceRGB, DeviceRGB)
+                            fill_color, (DeviceCMYK, DeviceRGB, DeviceGray)
                         )
                         run_ops.append(fill_color.serialize().lower())
                 if (
@@ -2727,7 +2737,7 @@ class Text(NamedTuple):
                         )
                     else:
                         assert isinstance(
-                            stroke_color, (DeviceCMYK, DeviceRGB, DeviceRGB)
+                            stroke_color, (DeviceCMYK, DeviceRGB, DeviceGray)
                         )
                         run_ops.append(stroke_color.serialize().upper())
 

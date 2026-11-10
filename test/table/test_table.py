@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 
 import pytest
@@ -158,6 +159,32 @@ def test_table_with_invalid_col_widths():
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
         with pdf.table(TABLE_DATA, col_widths=(20, 30, 50)):
+            pass
+
+
+@pytest.mark.parametrize(
+    "kwargs, error",
+    [
+        ({"width": -50}, "width=-50: it must be a positive number"),
+        ({"width": 0}, "width=0: it must be a positive number"),
+        ({"col_widths": -30}, "col_widths=-30: it must be a positive number"),
+        ({"col_widths": (-10, 30, 40, 40)}, "column widths can not be negative"),
+        ({"width": float("nan")}, "width=nan: it must be a positive number"),
+        ({"width": float("inf")}, "width=inf: it must be a positive number"),
+        ({"col_widths": float("nan")}, "col_widths=nan: it must be a positive number"),
+        (
+            {"col_widths": (float("nan"), 30, 40, 40)},
+            "column widths can not be negative",
+        ),
+    ],
+)
+def test_table_with_negative_widths(kwargs, error):
+    """A negative table or column width raises a ValueError naming it."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError, match=re.escape(error)):
+        with pdf.table(TABLE_DATA, **kwargs):
             pass
 
 
@@ -466,6 +493,18 @@ def test_table_with_invalid_borders_layout(borders_layout):
         with pdf.table(TABLE_DATA, borders_layout=borders_layout):
             pass
     assert str(error.value) == f"{borders_layout} is not a valid TableBordersLayout"
+
+
+@pytest.mark.parametrize("gutter", ["gutter_height", "gutter_width"])
+@pytest.mark.parametrize("value", [float("nan"), float("inf")])
+def test_table_with_not_finite_gutter(gutter, value):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError) as error:
+        with pdf.table(TABLE_DATA, **{gutter: value}):
+            pass
+    assert str(error.value) == f"{gutter} must be zero or a positive number: {value}"
 
 
 @pytest.mark.parametrize("gutter", ["gutter_height", "gutter_width"])

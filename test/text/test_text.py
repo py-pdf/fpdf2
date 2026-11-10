@@ -56,13 +56,23 @@ def test_text_stretch_spacing(tmp_path):
     assert_pdf_equal(doc, HERE / "text_stretch_spacing.pdf", tmp_path)
 
 
-@pytest.mark.parametrize("stretching", [0, -50])
+@pytest.mark.parametrize("stretching", [0, -50, float("nan"), float("inf")])
 def test_text_stretching_not_positive(stretching):
     doc = FPDF()
     doc.add_page()
 
     with pytest.raises(ValueError, match="Stretching must be a positive number"):
         doc.set_stretching(stretching)
+
+
+@pytest.mark.parametrize("spacing", [float("nan"), float("inf"), float("-inf")])
+def test_text_char_spacing_not_finite(spacing):
+    doc = FPDF()
+    doc.add_page()
+
+    with pytest.raises(ValueError, match="Character spacing must be a finite number"):
+        doc.set_char_spacing(spacing)
+    assert doc.char_spacing == 0
 
 
 def test_text_text_mode(tmp_path):
@@ -153,3 +163,15 @@ def test_text_deprecated_txt_arg():
     ):
         # pylint: disable=unexpected-keyword-arg
         pdf.text(20, 20, txt="Lorem ipsum Ut nostrud irure")
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("axis", ["x", "y"])
+def test_text_not_finite_position(axis, value):
+    """A NaN or infinite position raises, like set_xy(), instead of writing it into the page."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    position = {"x": 10, "y": 20, axis: value}
+    with pytest.raises(ValueError, match=f"{axis} must be a finite number"):
+        pdf.text(position["x"], position["y"], "Hello")

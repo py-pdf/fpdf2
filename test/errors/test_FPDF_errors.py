@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import fpdf
@@ -73,6 +74,15 @@ def test_units():
     assert fpdf.FPDF(unit="mm").k == pytest.approx(2.83464566929)
     assert fpdf.FPDF(unit="cm").k == pytest.approx(28.3464566929)
     assert fpdf.FPDF(unit="in").k == pytest.approx(72)
+    assert fpdf.FPDF(unit=2).k == pytest.approx(2)
+
+
+@pytest.mark.parametrize("unit", [0, -1, -72.0, float("nan"), float("inf")])
+def test_unit_not_a_positive_number(unit):
+    with pytest.raises(ValueError) as e:
+        fpdf.FPDF(unit=unit)
+
+    assert str(e.value) == f"Unit must be a positive number: {unit}"
 
 
 def test_doc_option_only_core_fonts_encoding():
@@ -139,6 +149,26 @@ def test_invalid_page_background():
     msg = f"""background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB, tuple or None
         got: {type(i)}"""
     assert str(error.value) == msg
+
+
+@pytest.mark.parametrize(
+    "background, message",
+    [
+        ((300, 0, 0), "color component 300 not in range [0, 255]"),
+        ((0, -5, 0), "color component -5 not in range [0, 255]"),
+        ((256,), "color component 256 not in range [0, 255]"),
+        ((10, 20), "background color must be a grey level or 3 RGB components"),
+        ((10, 20, 30, 40), "background color must be a grey level or 3 RGB components"),
+    ],
+)
+def test_invalid_page_background_color(background, message):
+    """An invalid background color raises when it is set, not on the next add_page(), and the previous one is kept."""
+    pdf = fpdf.FPDF()
+    pdf.set_page_background((10, 20, 30))
+    with pytest.raises(ValueError, match=re.escape(message)):
+        pdf.set_page_background(background)
+    assert pdf.page_background == (10, 20, 30)
+    pdf.add_page()
 
 
 def test_instantiating_fpdf_module():  # issue 683

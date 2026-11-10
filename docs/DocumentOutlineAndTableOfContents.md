@@ -92,7 +92,7 @@ pdf.write_html("""<toc></toc>
     <h4>Level 4</h4>
     <h5>Level 5</h5>
     <h6>Level 6</h6>
-    <p>paragraph<p>""")
+    <p>paragraph</p>""")
 pdf.output("html_toc.pdf")
 ```
 

@@ -189,6 +189,8 @@ def parse_viewbox(viewbox: str) -> tuple[float, float, float, float]:
     parts = [float(num) for num in NUMBER_SPLIT.split(viewbox.strip()) if num]
     if len(parts) != 4:
         raise ValueError(f"invalid viewBox {viewbox}")
+    if not all(math.isfinite(part) for part in parts):
+        raise ValueError(f"invalid viewBox {viewbox}")
     vx, vy, vw, vh = parts
     if (vw < 0) or (vh < 0):
         raise ValueError(f"invalid negative width/height in viewBox {viewbox}")
@@ -239,7 +241,7 @@ def xmlns_lookup(space: str, *names: str) -> dict[str, str]:
 @force_nodocument
 def without_ns(qualified_tag: str) -> str:
     """Remove the xmlns namespace from a qualified XML tag name"""
-    i = qualified_tag.index("}")
+    i = qualified_tag.find("}")
     if i >= 0:
         return qualified_tag[i + 1 :]
     return qualified_tag
@@ -277,6 +279,8 @@ def convert_stroke_width(incoming: str) -> Optional[float]:
 @force_nodocument
 def convert_miterlimit(incoming: str) -> float:
     val = float(incoming)
+    if not math.isfinite(val):
+        raise ValueError(f"miter limit {incoming} must be a finite number")
     if val < 1.0:
         raise ValueError(f"miter limit {incoming} cannot be less than 1")
     return val
@@ -301,7 +305,8 @@ def clamp_float(min_val: float, max_val: float) -> Callable[[str], float]:
 def inheritable(
     value: str, converter: Callable[[str], Any] = lambda value: value
 ) -> Any:
-    if value in ("inherit", "currentColor"):
+    # keywords are ASCII case-insensitive in SVG/CSS: "currentcolor" is "currentColor"
+    if isinstance(value, str) and value.strip().lower() in ("inherit", "currentcolor"):
         return GraphicsStyle.INHERIT
     return converter(value)
 
@@ -1093,7 +1098,8 @@ def convert_transforms(tfstr: str) -> Transform:
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
     pen = PathPen(pdf_path)
     parse_path(svg_path, pen)
-    if not pen.first_is_move:
+    # Empty path data is valid and draws nothing
+    if pen.first_is_move is False:
         raise ValueError("Path does not start with move item")
 
 
@@ -1382,18 +1388,20 @@ class SVGObject:
         value = value.strip()
 
         if value.endswith("%"):
-            return float(value[:-1]) / 100.0
-
-        try:
-            return float(value)
-        except ValueError:
+            coordinate = float(value[:-1]) / 100.0
+        else:
             try:
-                return resolve_length(value)
+                coordinate = float(value)
             except ValueError:
-                LOGGER.warning(
-                    "Could not parse gradient coordinate '%s', using 0", value
-                )
-                return 0.0
+                try:
+                    coordinate = resolve_length(value)
+                except ValueError:
+                    coordinate = math.nan
+
+        if not math.isfinite(coordinate):
+            LOGGER.warning("Could not parse gradient coordinate '%s', using 0", value)
+            return 0.0
+        return coordinate
 
     @force_nodocument
     @staticmethod
@@ -1821,11 +1829,7 @@ class SVGObject:
         if viewbox is None:
             self.viewbox = None
         else:
-            viewbox = viewbox.strip()
-            vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
-            if (vw < 0) or (vh < 0):
-                raise ValueError(f"invalid negative width/height in viewbox {viewbox}")
-
+            vx, vy, vw, vh = parse_viewbox(viewbox)
             self.viewbox = [vx, vy, vw, vh]
 
     @force_nodocument
@@ -2022,7 +2026,9 @@ class SVGObject:
     def handle_defs(self, defs: "Element") -> None:
         """Produce lookups for groups and paths inside the <defs> tag"""
         for child in defs:
-            if child.tag in xmlns_lookup("svg", "g"):
+            if child.tag in xmlns_lookup("svg", "defs"):
+                self.handle_defs(child)
+            elif child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "switch"):
                 self.build_switch(child)
@@ -2438,10 +2444,10 @@ class SVGObject:
             clip_value = style_map["clip-path"]
         if clip_value is None:
             clip_value = svg_element.attrib.get("clip-path")
-        if clip_value:
-            clipping_path_id = re.search(r"url\((\#\w+)\)", clip_value)
-            assert clipping_path_id is not None
-            stylable.clipping_path = self.cross_references[clipping_path_id[1]]
+        # "none" (or any value that is not a url(#id) reference) clips nothing
+        clipping_path_id = self._extract_gradient_id(clip_value)
+        if clipping_path_id:
+            stylable.clipping_path = self.cross_references[clipping_path_id]
 
     @force_nodocument
     def build_image(self, image: "Element") -> "SVGImage | GraphicsContext":

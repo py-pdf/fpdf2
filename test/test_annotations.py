@@ -205,6 +205,35 @@ def test_ink_annotation_empty_coords():
         pdf.ink_annotation([])
 
 
+@pytest.mark.parametrize(
+    "coords",
+    [[(10, 10), (float("nan"), 20)], [(float("inf"), 10)], [(10, float("-inf"))]],
+    ids=["nan", "inf", "-inf"],
+)
+def test_ink_annotation_non_finite_coords(coords):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="coords must contain finite numbers"):
+        pdf.ink_annotation(coords, title="Ink")
+
+
+@pytest.mark.parametrize("make", [iter, tuple, list], ids=["iterator", "tuple", "list"])
+def test_ink_annotation_accepts_any_iterable_of_coords(make):
+    pdf = FPDF(unit="pt")
+    pdf.add_page()
+    annotation = pdf.ink_annotation(make([(10, 10), (20, 30)]), title="Ink")
+    # page height is 841.89pt: y=10 and y=30 become 831.89 and 811.89
+    assert annotation.ink_list == "[[10 831.89 20 811.89]]"
+    assert annotation.rect == "[10 811.89 20 831.89]"
+
+
+def test_ink_annotation_empty_iterator():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="coords must contain at least one point"):
+        pdf.ink_annotation(iter([]))
+
+
 def test_ink_annotation_rect_encloses_the_path():
     pdf = FPDF(unit="pt")
     pdf.add_page()
@@ -281,3 +310,45 @@ def test_annotation_small_numbers_are_valid_pdf_numbers(color, border_width):
     annotation = reader.get_page(0)["/Annots"][0].get_object()
     assert list(annotation["/C"]) == pytest.approx(color)
     assert list(annotation["/Border"]) == pytest.approx([0, 0, border_width])
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize(
+    "add_annotation",
+    [
+        lambda pdf, value: pdf.link(
+            x=value, y=10, w=20, h=5, link="https://py-pdf.github.io"
+        ),
+        lambda pdf, value: pdf.link(
+            x=10, y=10, w=value, h=5, link="https://py-pdf.github.io"
+        ),
+        lambda pdf, value: pdf.text_annotation(x=10, y=value, text="Note"),
+        lambda pdf, value: pdf.free_text_annotation("Note", x=10, y=10, w=value, h=5),
+    ],
+)
+def test_annotation_non_finite_position_or_size(add_annotation, value):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica")
+    with pytest.raises(ValueError, match="must be finite numbers"):
+        add_annotation(pdf, value)
+
+
+@pytest.mark.parametrize("border_width", [-1, float("nan"), float("inf")])
+@pytest.mark.parametrize(
+    "add_annotation",
+    [
+        lambda pdf, border_width: pdf.link(
+            10, 10, 20, 5, "https://py-pdf.github.io", border_width=border_width
+        ),
+        lambda pdf, border_width: pdf.ink_annotation(
+            [(10, 10), (20, 20)], border_width=border_width
+        ),
+    ],
+    ids=["link", "ink_annotation"],
+)
+def test_annotation_invalid_border_width(add_annotation, border_width):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="border width must be zero or a positive"):
+        add_annotation(pdf, border_width)

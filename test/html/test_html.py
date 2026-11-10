@@ -646,6 +646,24 @@ text-text-text-text-text-text-text-text-text-text-</p>
     assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("line_height", ["nan", "inf", "-inf"])
+@pytest.mark.parametrize(
+    "html",
+    [
+        '<p line-height="{line_height}">a</p><p>b</p>',
+        '<ul line-height="{line_height}"><li>a</li><li>b</li></ul>',
+        '<ol line-height="{line_height}"><li>a</li><li>b</li></ol>',
+    ],
+)
+def test_html_non_finite_line_height(tmp_path, html, line_height):
+    "A NaN or infinite line-height is ignored, like an invalid one."
+    assert_pdf_equal(
+        render_html(html.format(line_height=line_height)),
+        render_html(html.format(line_height="x")),
+        tmp_path,
+    )
+
+
 def test_html_img_not_overlapping(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -795,10 +813,11 @@ def test_html_font_css_font_size(tmp_path, html, equivalent):
     [
         '<font size="-3">text</font>',
         '<font style="font-size: -5px">text</font>',
+        '<font size="inf">text</font>',
     ],
 )
 def test_html_font_negative_size_is_ignored(tmp_path, html):
-    "Like browsers, a negative font size is ignored: the current size is kept."
+    "Like browsers, a negative or infinite font size is ignored: the current size is kept."
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(html)
@@ -1864,6 +1883,23 @@ def test_html_img_and_hr_dimension_units(html_snippet):
     pdf.add_page()
     pdf.write_html(html_snippet)
     assert len(pdf.pages) == 1
+
+
+def render_html(html):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(html)
+    return pdf
+
+
+@pytest.mark.parametrize("width", ["x%", "%", "nan%", "inf%", "-inf%"])
+def test_html_hr_invalid_percentage_width(tmp_path, width):
+    "An invalid percentage width is handled like any other invalid width."
+    assert_pdf_equal(
+        render_html(f'<hr width="{width}">'),
+        render_html('<hr width="invalid">'),
+        tmp_path,
+    )
 
 
 @pytest.mark.parametrize("unit", ["mm", "pt", "in"])

@@ -524,6 +524,19 @@ test_svg_attribute_conversion = (
         no_error(),
         id="fill color inherit",
     ),
+    # as in the Font Awesome icons of web pages
+    pytest.param(
+        '<path fill="currentcolor"/>',
+        Gs(fill_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="fill color currentcolor lowercase",
+    ),
+    pytest.param(
+        '<path stroke="CurrentColor"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color CurrentColor",
+    ),
     pytest.param(
         '<path fill="black"/>',
         Gs(fill_color="#000"),
@@ -717,6 +730,18 @@ test_svg_attribute_conversion = (
         id="stroke-dasharray invalid",
     ),
     pytest.param(
+        '<path stroke-dasharray="nan 2"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must only contain finite numbers"),
+        id="stroke-dasharray NaN",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1" stroke-dashoffset="inf"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-dashoffset infinite",
+    ),
+    pytest.param(
         '<path stroke-dasharray="1" stroke-dashoffset="1"/>',
         Gs(stroke_dash_pattern=[1], stroke_dash_phase=1),
         no_error(),
@@ -799,6 +824,18 @@ test_svg_attribute_conversion = (
         Gs(),
         pytest.raises(ValueError),
         id="stroke-miterlimit too small",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="nan"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-miterlimit NaN",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="inf"/>',
+        Gs(),
+        pytest.raises(ValueError, match="must be a finite number"),
+        id="stroke-miterlimit infinite",
     ),
     pytest.param(
         '<path stroke-miterlimit="bad"/>',
@@ -1053,6 +1090,16 @@ svg_path_render_tests = (
         "q 0 1 m 0 1 2 3.3333 6 8 c h B Q",
         id="relative smooth quadratic bezier unchained",
     ),
+    pytest.param(
+        "M 0 1 L 4 5 A 2 2 0 0 1 4 5 L 6 1",
+        "q 0 1 m 4 5 l 6 1 l h B Q",
+        id="arc ending at its start point is omitted",
+    ),
+    pytest.param(
+        "M 4 5 a 2 2 0 1 1 0 0 L 6 1",
+        "q 4 5 m 6 1 l h B Q",
+        id="relative arc ending at its start point is omitted",
+    ),
 )
 
 svg_path_implicit_directives = (
@@ -1270,6 +1317,27 @@ svg_shape_info_tests = (
         None,
         pytest.raises(ValueError),
         id="invalid viewbox",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 nan 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="NaN viewbox width",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 90 inf", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="infinite viewbox height",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="-inf 0 90 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError, match="invalid viewBox"),
+        id="infinite viewbox origin",
     ),
 )
 

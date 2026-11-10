@@ -2,6 +2,7 @@
 Usage documentation at: <https://py-pdf.github.io/fpdf2/Tables.html>
 """
 
+import math
 from dataclasses import dataclass, replace
 from typing import (
     TYPE_CHECKING,
@@ -129,11 +130,11 @@ class Table:
         self._initial_style: Optional[FontFace] = None
         self.rows: list[Row] = []
 
-        if gutter_height < 0:
+        if not math.isfinite(gutter_height) or gutter_height < 0:
             raise ValueError(
                 f"gutter_height must be zero or a positive number: {gutter_height}"
             )
-        if gutter_width < 0:
+        if not math.isfinite(gutter_width) or gutter_width < 0:
             raise ValueError(
                 f"gutter_width must be zero or a positive number: {gutter_width}"
             )
@@ -204,6 +205,23 @@ class Table:
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
         # Starting with some sanity checks:
         self._cols_count = max(row.cols_count for row in self.rows) if self.rows else 0
+        if self._width is not None and (
+            not math.isfinite(self._width) or self._width <= 0
+        ):
+            raise ValueError(
+                f"Invalid value provided width={self._width}: it must be a positive number"
+            )
+        if isinstance(self._col_widths, NumberClass):
+            if not math.isfinite(self._col_widths) or self._col_widths <= 0:
+                raise ValueError(
+                    f"Invalid value provided col_widths={self._col_widths}: it must be a positive number"
+                )
+        elif self._col_widths and any(
+            not math.isfinite(width) or width < 0 for width in self._col_widths
+        ):
+            raise ValueError(
+                f"Invalid value provided col_widths={self._col_widths}: column widths can not be negative"
+            )
         if (
             self._col_widths
             and not isinstance(self._col_widths, NumberClass)

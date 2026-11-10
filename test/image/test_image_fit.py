@@ -63,3 +63,30 @@ def test_image_fit_in_rect_with_c_align_center_with_downscale(tmp_path):
     assert_pdf_equal(pdf, reference_pdf_path, tmp_path)
     pdf_with_full_img_path = HERE / "image_fit_in_rect_with_c_align_center.pdf"
     assert reference_pdf_path.stat().st_size < pdf_with_full_img_path.stat().st_size
+
+
+def test_image_fit_in_rect_with_x_align(tmp_path):
+    "The scaled image itself is aligned, not the bounding box - cf. issue #2131"
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.line(pdf.l_margin, 0, pdf.l_margin, pdf.h)
+    pdf.line(pdf.w / 2, 0, pdf.w / 2, pdf.h)
+    pdf.line(pdf.w - pdf.r_margin, 0, pdf.w - pdf.r_margin, pdf.h)
+    for i, x in enumerate(("L", "C", "R")):
+        pdf.image(
+            HERE / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png",
+            x=x,
+            y=20 + i * 45,
+            w=100,
+            h=40,
+            keep_aspect_ratio=True,
+        )
+        pdf.image(
+            HERE / "../svg/svg_sources/SVG_logo_fixed_dimensions.svg",
+            x=x,
+            y=155 + i * 45,
+            w=100,
+            h=40,
+            keep_aspect_ratio=True,
+        )
+    assert_pdf_equal(pdf, HERE / "image_fit_in_rect_with_x_align.pdf", tmp_path)

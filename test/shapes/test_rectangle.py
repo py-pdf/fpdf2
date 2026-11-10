@@ -89,6 +89,32 @@ def test_rect_fill_color(tmp_path):
     assert_pdf_equal(pdf, HERE / "class_rect_fill_color.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "corner, left, top",
+    [
+        ("TOP_LEFT", True, True),
+        ("TOP_RIGHT", False, True),
+        ("BOTTOM_LEFT", True, False),
+        ("BOTTOM_RIGHT", False, False),
+    ],
+)
+def test_round_corners_rect_corner_position(corner, left, top):
+    pdf = fpdf.FPDF(unit="pt", format=(200, 200))
+    pdf.add_page()
+    pdf.rect(50, 50, 100, 100, round_corners=(corner,), corner_radius=20)
+    curves = [
+        line.split()
+        for line in bytes(pdf.pages[1].contents).decode().splitlines()
+        if line.endswith(" c")
+    ]
+    xs = [float(value) for curve in curves for value in curve[0:6:2]]
+    ys = [float(value) for curve in curves for value in curve[1:6:2]]
+    # The arc of the rounded corner stays in its quarter of the rectangle
+    # (PDF ordinates grow upwards, the rectangle spans 50 to 150 on both axes)
+    assert (max(xs) <= 100) == left
+    assert (min(ys) >= 100) == top
+
+
 def test_round_corners_rect(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
