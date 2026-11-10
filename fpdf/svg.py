@@ -2232,6 +2232,11 @@ class SVGObject:
         inherited_style: dict[str, Any],
     ) -> None:
         """Convert one graphics child while preserving its parent's style."""
+        display = _get_attr_or_style(child, "display", self._style_map_for(child))
+        if display is not None and display.strip().lower() == "none":
+            # The element and its children are not drawn, as for a hidden Inkscape
+            # layer. It is still built, so that ids inside it can be referenced.
+            pdf_group = GraphicsContext()
         if child.tag in xmlns_lookup("svg", "defs"):
             self.handle_defs(child)
         elif child.tag in xmlns_lookup(

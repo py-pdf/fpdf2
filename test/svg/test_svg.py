@@ -546,6 +546,45 @@ class TestSVGObject:
         svg.draw_to_page(pdf)
         assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
 
+    @pytest.mark.parametrize(
+        "hidden_rect",
+        [
+            '<rect width="10" height="10" display="none"/>',
+            # a hidden Inkscape layer
+            '<g style="display:none"><rect width="10" height="10"/></g>',
+            (
+                "<style>.hidden { display: none }</style>"
+                '<rect class="hidden" width="10" height="10"/>'
+            ),
+        ],
+    )
+    def test_svg_display_none(self, hidden_rect):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f'{hidden_rect}<circle cx="25" cy="25" r="3"/></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert " re " not in output  # the rectangle
+        assert " c " in output  # the circle
+
+    def test_svg_display_none_referenced(self):
+        """An element in a hidden group can still be drawn by a <use>."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            '<g display="none"><rect id="square" width="10" height="10"/></g>'
+            '<use href="#square" x="20"/></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert output.count(" re ") == 1
+
     def test_svg_symbol(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
