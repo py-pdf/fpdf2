@@ -345,6 +345,36 @@ class TestSVGObject:
         assert "Ignoring unsupported SVG tag: <title>" in caplog.text
         assert len(svg.base_group.path_items) == 1
 
+    @pytest.mark.parametrize(
+        "clip_path", ['clip-path="none"', 'style="clip-path: none"']
+    )
+    def test_svg_clip_path_none(self, clip_path):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<rect width="10" height="10" {clip_path}/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg.base_group.path_items[0].clipping_path is None
+
+    @pytest.mark.parametrize(
+        "clip_id, reference",
+        [
+            ("clip-1", "url(#clip-1)"),
+            ("clip.a", "url(#clip.a)"),
+            ("clip1", 'url("#clip1")'),
+        ],
+    )
+    def test_svg_clip_path_reference(self, clip_id, reference):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<defs><clipPath id="clip"><rect width="1" height="1"/></clipPath>'
+            f'<clipPath id="{clip_id}"><rect width="5" height="5"/></clipPath></defs>'
+            f'<rect width="10" height="10" clip-path=\'{reference}\'/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        clipping_path = svg.base_group.path_items[0].clipping_path
+        assert clipping_path is svg.cross_references["#" + clip_id]
+
     def test_svg_conversion_no_transparency(self, tmp_path):
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))
 
