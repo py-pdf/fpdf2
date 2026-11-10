@@ -1901,6 +1901,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x2 (float): Abscissa of second point
             y2 (float): Ordinate of second point
         """
+        _check_coordinate("x1", x1)
+        _check_coordinate("y1", y1)
+        _check_coordinate("x2", x2)
+        _check_coordinate("y2", y2)
         self._out(
             f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
             f"{(self.h - y2) * self.k:.2f} l S"
@@ -1945,6 +1949,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(
                     f"Conflicting values provided: fill={fill} & style={style}"
                 )
+        for index, point in enumerate(point_list):
+            _check_coordinate(f"x[{index}]", point[0])
+            _check_coordinate(f"y[{index}]", point[1])
         operator = "m"
         for point in point_list:
             self._out(
@@ -2256,6 +2263,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
+        if not (math.isfinite(w) and math.isfinite(h)):
+            raise ValueError(f"Ellipse dimensions must be finite numbers: w={w}, h={h}")
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
         self._draw_ellipse(x, y, w, h, style.operator)
 
@@ -2324,6 +2335,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        _check_coordinate("radius", radius)
         self.ellipse(x - radius, y - radius, 2 * radius, 2 * radius, style)
 
     @check_page
