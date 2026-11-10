@@ -393,10 +393,14 @@ class TestSVGObject:
         "svg_body",
         [
             # as written by Adobe Illustrator
-            '<g><clipPath id="clip"><rect width="5" height="5"/></clipPath>'
-            '<rect width="10" height="10" clip-path="url(#clip)"/></g>',
-            '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
-            '<rect width="10" height="10" clip-path="url(#clip)"/>',
+            (
+                '<g><clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+                '<rect width="10" height="10" clip-path="url(#clip)"/></g>'
+            ),
+            (
+                '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+                '<rect width="10" height="10" clip-path="url(#clip)"/>'
+            ),
         ],
     )
     def test_svg_clip_path_outside_defs(self, svg_body, caplog):
