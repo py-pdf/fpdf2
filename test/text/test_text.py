@@ -163,3 +163,15 @@ def test_text_deprecated_txt_arg():
     ):
         # pylint: disable=unexpected-keyword-arg
         pdf.text(20, 20, txt="Lorem ipsum Ut nostrud irure")
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("axis", ["x", "y"])
+def test_text_not_finite_position(axis, value):
+    """A NaN or infinite position raises, like set_xy(), instead of writing it into the page."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    position = {"x": 10, "y": 20, axis: value}
+    with pytest.raises(ValueError, match=f"{axis} must be a finite number"):
+        pdf.text(position["x"], position["y"], "Hello")

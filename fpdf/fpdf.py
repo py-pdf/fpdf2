@@ -3692,6 +3692,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
         text = self.normalize_text(text)
         assert self.current_font is not None
         if not self.current_font_is_set_on_page:
