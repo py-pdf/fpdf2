@@ -2724,7 +2724,7 @@ class Text(NamedTuple):
                         )
                     else:
                         assert isinstance(
-                            fill_color, (DeviceCMYK, DeviceRGB, DeviceRGB)
+                            fill_color, (DeviceCMYK, DeviceRGB, DeviceGray)
                         )
                         run_ops.append(fill_color.serialize().lower())
                 if (
@@ -2737,7 +2737,7 @@ class Text(NamedTuple):
                         )
                     else:
                         assert isinstance(
-                            stroke_color, (DeviceCMYK, DeviceRGB, DeviceRGB)
+                            stroke_color, (DeviceCMYK, DeviceRGB, DeviceGray)
                         )
                         run_ops.append(stroke_color.serialize().upper())
 

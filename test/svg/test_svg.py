@@ -462,6 +462,29 @@ class TestSVGObject:
             tmp_path,
         )
 
+    @pytest.mark.parametrize(
+        "text_attributes, color_operators",
+        [
+            ('fill="black"', "0 g"),
+            ('fill="#808080" stroke="black"', "0.502 g 0 G"),
+            ('style="fill:#000000;stroke:none"', "0 g"),
+        ],
+    )
+    def test_svg_text_gray_color_in_styled_tspan(
+        self, text_attributes, color_operators
+    ):
+        # Inkscape writes every text like this: a <tspan> with its own style
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" {text_attributes}>'
+            '<tspan style="stroke-width:0.26">Hi</tspan></text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
+
     def test_svg_symbol(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
