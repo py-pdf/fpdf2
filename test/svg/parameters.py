@@ -592,6 +592,18 @@ test_svg_attribute_conversion = (
         id="fill color light-dark() invalid",
     ),
     pytest.param(
+        '<path fill="light-dark(transparent, red)"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color light-dark() transparent",
+    ),
+    pytest.param(
+        '<path stroke="light-dark(currentColor, white)"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color light-dark() currentColor",
+    ),
+    pytest.param(
         '<path fill-rule="inherit"/>',
         Gs(intersection_rule=GraphicsStyle.INHERIT),
         no_error(),

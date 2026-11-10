@@ -263,13 +263,20 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     if colorstr.lower().startswith("rgb"):
         return color_from_rgb_string(colorstr.lower())
 
-    if colorstr.lower().startswith("light-dark(") and colorstr.endswith(")"):
-        # CSS Color 5: without a color-scheme, which SVG documents rarely set,
-        # light-dark() is its first, light color.
-        light_color = _split_top_level_commas(colorstr[len("light-dark(") : -1])[0]
-        return svgcolor(light_color)
-
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _light_color(colorstr: str) -> str:
+    """
+    CSS Color 5: without a color-scheme, which SVG documents rarely set,
+    light-dark() is its first, light color. Any other value is returned as is.
+    """
+    stripped = colorstr.strip()
+    if stripped.lower().startswith("light-dark(") and stripped.endswith(")"):
+        return _light_color(
+            _split_top_level_commas(stripped[len("light-dark(") : -1])[0].strip()
+        )
+    return colorstr
 
 
 def _split_top_level_commas(value: str) -> list[str]:
@@ -350,6 +357,8 @@ def optional(
 @force_nodocument
 def svg_paint(colorstr: Optional[str]) -> Any:
     """A fill or stroke paint: "transparent" paints nothing, like "none"."""
+    if colorstr:
+        colorstr = _light_color(colorstr)
     if colorstr and colorstr.startswith("url("):
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
@@ -1473,7 +1482,7 @@ class SVGObject:
                 stop_color = stop_element.attrib.get("stop-color", "black")
 
             try:
-                color_obj = svgcolor(stop_color)
+                color_obj = svgcolor(_light_color(stop_color))
 
                 color_alpha = color_obj.a if color_obj.a is not None else 1.0
                 effective_opacity = color_alpha * stop_opacity
