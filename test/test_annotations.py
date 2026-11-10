@@ -332,3 +332,23 @@ def test_annotation_non_finite_position_or_size(add_annotation, value):
     pdf.set_font("helvetica")
     with pytest.raises(ValueError, match="must be finite numbers"):
         add_annotation(pdf, value)
+
+
+@pytest.mark.parametrize("border_width", [-1, float("nan"), float("inf")])
+@pytest.mark.parametrize(
+    "add_annotation",
+    [
+        lambda pdf, border_width: pdf.link(
+            10, 10, 20, 5, "https://py-pdf.github.io", border_width=border_width
+        ),
+        lambda pdf, border_width: pdf.ink_annotation(
+            [(10, 10), (20, 20)], border_width=border_width
+        ),
+    ],
+    ids=["link", "ink_annotation"],
+)
+def test_annotation_invalid_border_width(add_annotation, border_width):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError, match="border width must be zero or a positive"):
+        add_annotation(pdf, border_width)
