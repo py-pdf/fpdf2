@@ -524,6 +524,19 @@ test_svg_attribute_conversion = (
         no_error(),
         id="fill color inherit",
     ),
+    # as in the Font Awesome icons of web pages
+    pytest.param(
+        '<path fill="currentcolor"/>',
+        Gs(fill_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="fill color currentcolor lowercase",
+    ),
+    pytest.param(
+        '<path stroke="CurrentColor"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color CurrentColor",
+    ),
     pytest.param(
         '<path fill="black"/>',
         Gs(fill_color="#000"),
