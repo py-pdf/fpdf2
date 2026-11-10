@@ -1,6 +1,7 @@
 # pylint: disable=no-self-use, protected-access
 from io import BytesIO
 from pathlib import Path
+import re
 
 import fpdf
 from ..conftest import assert_pdf_equal
@@ -545,6 +546,55 @@ class TestSVGObject:
         pdf.add_page()
         svg.draw_to_page(pdf)
         assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
+
+    @pytest.mark.parametrize(
+        "svg_body, font_sizes",
+        [
+            # as written by spaCy's displaCy
+            (
+                (
+                    '<svg xmlns="http://www.w3.org/2000/svg" style="font-size:20px">'
+                    '<text y="10" style="font-size:0.8em">a</text></svg>'
+                ),
+                ["12"],
+            ),
+            (
+                (
+                    '<svg xmlns="http://www.w3.org/2000/svg">'
+                    '<text y="10" font-size="150%">a</text></svg>'
+                ),
+                ["18"],
+            ),
+            (
+                (
+                    '<svg xmlns="http://www.w3.org/2000/svg" font-size="10px">'
+                    '<g font-size="2em"><text y="10" font-size="0.5em">a</text></g></svg>'
+                ),
+                ["7.5"],
+            ),
+            (
+                (
+                    '<svg xmlns="http://www.w3.org/2000/svg"><text y="10" font-size="20px">'
+                    'a<tspan font-size="2ex">b</tspan></text></svg>'
+                ),
+                ["15", "15"],
+            ),
+            (
+                (
+                    '<svg xmlns="http://www.w3.org/2000/svg">'
+                    '<g style="font-size:2em"><text y="10">a</text></g></svg>'
+                ),
+                ["24"],
+            ),
+        ],
+    )
+    def test_svg_relative_font_size(self, svg_body, font_sizes):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(svg_body).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert re.findall(r"/F\d+ ([\d.]+) Tf", output) == font_sizes
 
     def test_svg_symbol(self):
         svg_data = (
