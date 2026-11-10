@@ -1,4 +1,7 @@
 from pathlib import Path
+
+import pytest
+
 from fpdf import FPDF
 from fpdf.pattern import RadialGradient
 from test.conftest import assert_pdf_equal
@@ -103,3 +106,11 @@ def test_custom_bounds(tmp_path):
         pdf.rect(x=0, y=0, w=pdf.w, h=pdf.h / 2, style="FD")
 
     assert_pdf_equal(pdf, HERE / "radial_custom_bounds.pdf", tmp_path)
+
+
+@pytest.mark.parametrize("radius", [-5, float("nan"), float("inf")])
+@pytest.mark.parametrize("circle", ["start", "end"])
+def test_radial_gradient_invalid_radius(circle, radius):
+    start_radius, end_radius = (radius, 25) if circle == "start" else (0, radius)
+    with pytest.raises(ValueError, match="radius must be zero or a positive number"):
+        RadialGradient(30, 30, start_radius, 50, 50, end_radius, ["#ff0", "#f00"])

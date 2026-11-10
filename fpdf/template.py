@@ -333,7 +333,9 @@ class FlexTemplate:
             if element["name"].lower() == element_name.lower()
         )
         if not self.splitting_pdf:
-            self.splitting_pdf = FPDF()
+            # Use the same unit as the target document,
+            # so that the element width is measured like when rendering it:
+            self.splitting_pdf = FPDF(unit=self.pdf.k)
             self.splitting_pdf.add_page()
         assert self.splitting_pdf is not None
         style = ""

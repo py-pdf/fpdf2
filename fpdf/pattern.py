@@ -507,6 +507,12 @@ class Gradient(ABC):
             raise ValueError(
                 "Bounds array length must be two less than the number of colors"
             )
+        if any(not 0 <= bound <= 1 for bound in self.bounds) or any(
+            b2 < b1 for b1, b2 in zip(self.bounds, self.bounds[1:])
+        ):
+            raise ValueError(
+                f"Bounds must be increasing numbers between 0 and 1: {self.bounds}"
+            )
         self.functions = self._generate_functions()
         self.pattern = Pattern(self)
         self._shading_object: Optional[Shading] = None
@@ -772,6 +778,11 @@ class RadialGradient(Gradient):
                 less than the number of colors (for multi-color gradients). Defaults to None,
                 which evenly distributes color stops.
         """
+        for radius in (start_circle_radius, end_circle_radius):
+            if not math.isfinite(radius) or radius < 0:
+                raise ValueError(
+                    f"Gradient circle radius must be zero or a positive number: {radius}"
+                )
         super().__init__(colors, background, extend_before, extend_after, bounds)
         self.coords: tuple[  # pyright: ignore[reportIncompatibleVariableOverride]
             float, float, float, float, float, float

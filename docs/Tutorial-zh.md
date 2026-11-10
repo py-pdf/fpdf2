@@ -224,3 +224,36 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 使用 `write_html()` 方法。这是一个 html 解析器，
 允许添加文本，更改字体样式并添加链接。
 
+## 教程七 - 创建 PDF/A 文档 ##
+
+_新增于 [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+### PDF/A 标准 ###
+
+<b>PDF/A-1</b> 使用 PDF 1.4 版本。所有资源（图片、图形、字体）都必须嵌入文档中。色彩管理必须精确，并通过 ICC 配置文件以独立于平台的方式指定，文档元数据则必须以 XMP 元数据的形式给出。
+
+<b>PDF/A-2</b> 使用 PDF 1.7 版本。它支持 JPEG2000 压缩、透明元素、OpenType 字体和数字签名。
+
+<b>PDF/A-3</b> 唯一的扩展是可以嵌入任意文件。
+
+### 一致性等级 ###
+
+A 级（无障碍级）涵盖该标准的全部要求，包括内容结构的映射和文档内容的正确阅读顺序。文本内容必须可以提取，结构必须反映自然的阅读顺序。
+
+B 级（基础级）保证内容在视觉上可以清晰地再现。B 级通常比 A 级更容易生成，但它不能保证 100% 的文本提取或可搜索性，也不能保证内容可以毫无障碍地复用。
+
+为实现这一目标，下面是一个小示例：
+
+```python
+{% include "../tutorial/tuto7.py" %}
+```
+
+[生成的 PDF：tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
+
+像 [VeraPDF](https://verapdf.org/) 这样的工具可以检查所生成的 PDF 文档的一致性：
+
+    verapdf --format text -v tutorial/tuto7.pdf
+
+输出：
+
+    PASS fpdf2/tutorial/tuto7.pdf 3b

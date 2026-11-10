@@ -17,8 +17,12 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.9.1] - Not yet released
+### Added
+
+* Chinese translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-zh.html#-pdfa) tutorial section - _cf._ [issue #267](https://github.com/py-pdf/fpdf2/issues/267) - _cf._ [PR #2138](https://github.com/py-pdf/fpdf2/pull/2138) - thanks to @zheng-guannan577*
 ### Fixed
 * SVG: an image without an `xmlns` declaration no longer fails with `ValueError: substring not found` when it contains a tag that is not supported, such as `<title>` or `<script>`; the tag is skipped with a warning, as in an image that declares the namespace - thanks to @RavSinghChandan
+* `FPDF.text()` raises a clear `ValueError` for a NaN or infinite `x` or `y`, like `FPDF.set_xy()`, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @RavSinghChandan
 * documentation: ten code examples that failed when run as written now work with fpdf2 2.9.0: `fpdf.drawing.gray8` (moved to `fpdf.drawing_primitives`), `PDFICCProfileObject` (now `PDFICCProfile`) and an undefined `icc_file`, `TableBorderStyle`/`TableCellStyle` imported from `fpdf.table` and a custom `TableBordersLayout` built with a lambda instead of a subclass, `LinearGradient`/`RadialGradient` given a `pdf` argument they no longer take, `ink_annotation(contents=...)` instead of `text=...`, two examples without `add_page()` and an unclosed `<p>` in the ToC example; the `FlexTemplate` example also lost a stray `:` that made it invalid Python
 * `FPDF()` and `convert_unit()` raise `ValueError: Unit must be a positive number` for a numeric `unit` of zero or below, NaN or infinity, instead of a `ZeroDivisionError` or an unrelated error about the bottom margin - thanks to @RavSinghChandan
 * Make SVG unit test collection deterministic, enabling parallel test runs with `pytest-xdist` - _cf._ [PR #2097](https://github.com/py-pdf/fpdf2/pull/2097) - thanks to @gringus
@@ -51,8 +55,15 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` ignores a NaN or infinite `line-height` on `<p>`, `<ul>` and `<ol>`, like an invalid one, instead of hanging forever for `inf` or dropping the list items for `nan` - thanks to @RavSinghChandan
 * `FPDF.set_x()`, `FPDF.set_y()` and `FPDF.set_xy()` raise a clear `ValueError` for a NaN or infinite coordinate, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
 * `FPDF.rect_clip()` and `FPDF.elliptic_clip()` restore the font state when the context exits, so text rendered after the clip is no longer dropped - _cf._ [issue #2123](https://github.com/py-pdf/fpdf2/issues/2123) - thanks to @agustin18
+* `Template.split_multicell()` and `FlexTemplate.split_multicell()` measure the element width in the unit of the template document, instead of always in millimeters: with `unit="pt"` the returned lines were almost three times wider than the element, and with `unit="in"` it failed with "Not enough horizontal space to render a single character"
+* [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): with `keep_aspect_ratio=True` and `x` set to `"C"`, `"R"` or `"L"`, an image narrower than the given box is now aligned on the page like any other image, instead of being shifted right by half of the unused width (it could even go past the right page edge) - _cf._ [issue #2131](https://github.com/py-pdf/fpdf2/issues/2131)
 * SVG paths and `PaintedPath.arc_to()` omit an elliptical arc whose end point is its start point, as the SVG specification requires, instead of raising `ZeroDivisionError` - thanks to @RavSinghChandan
 * `FPDF.ink_annotation()` raises a clear `ValueError` for a NaN or infinite point in `coords`, instead of writing it into `/InkList`, which is not a valid PDF number - thanks to @RavSinghChandan
+* `FPDF.line()`, `FPDF.polyline()`, `FPDF.polygon()`, `FPDF.ellipse()` and `FPDF.circle()` raise a clear `ValueError` for NaN or infinite coordinates or sizes, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
+* `FPDF.rect_clip()` and `FPDF.elliptic_clip()` also close the graphics state and restore the font state when the context block raises an exception - thanks to @agustin18
+* `RadialGradient` raises a clear `ValueError` for a negative, NaN or infinite circle radius, instead of writing it into the shading `/Coords`, where the PDF specification requires radii of zero or more - thanks to @RavSinghChandan
+* `LinearGradient` and `RadialGradient` raise a clear `ValueError` for `bounds` outside [0, 1], decreasing or NaN, instead of writing them into the shading function, where the PDF specification requires increasing values within its domain - thanks to @RavSinghChandan
+* `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
 ### Added

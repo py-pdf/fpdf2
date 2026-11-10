@@ -1982,6 +1982,33 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "vladosskins178",
+      "name": "Vladislav Y",
+      "avatar_url": "https://avatars.githubusercontent.com/u/277630788?v=4",
+      "profile": "https://vlstudio.app",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "zheng-guannan577",
+      "name": "zheng-guannan577",
+      "avatar_url": "https://avatars.githubusercontent.com/u/349123998?v=4",
+      "profile": "https://github.com/zheng-guannan577",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "Enesuygurs",
+      "name": "Enes Uygur",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54417817?v=4",
+      "profile": "https://github.com/Enesuygurs",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

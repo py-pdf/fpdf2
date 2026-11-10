@@ -1,3 +1,5 @@
+import pytest
+
 from fpdf import FPDF
 
 
@@ -27,4 +29,29 @@ def test_rect_clip_restores_font_state():
 
 def test_elliptic_clip_restores_font_state():
     content = _render_with_clip(lambda pdf: pdf.elliptic_clip(10, 10, 40, 40))
+    _assert_font_set_after_clip(content)
+
+
+def _render_with_clip_exception(clip):
+    pdf = FPDF()
+    pdf.set_compression(False)
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    with pytest.raises(RuntimeError, match="clip failure"):
+        with clip(pdf):
+            pdf.text(20, 20, "clipped")
+            raise RuntimeError("clip failure")
+    pdf.text(20, 40, "unclipped")
+    return bytes(pdf.output())
+
+
+@pytest.mark.parametrize(
+    "clip",
+    (
+        lambda pdf: pdf.rect_clip(10, 10, 40, 40),
+        lambda pdf: pdf.elliptic_clip(10, 10, 40, 40),
+    ),
+)
+def test_clip_restores_font_state_after_exception(clip):
+    content = _render_with_clip_exception(clip)
     _assert_font_set_after_clip(content)
