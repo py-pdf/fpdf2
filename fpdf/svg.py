@@ -305,7 +305,8 @@ def clamp_float(min_val: float, max_val: float) -> Callable[[str], float]:
 def inheritable(
     value: str, converter: Callable[[str], Any] = lambda value: value
 ) -> Any:
-    if value in ("inherit", "currentColor"):
+    # keywords are ASCII case-insensitive in SVG/CSS: "currentcolor" is "currentColor"
+    if isinstance(value, str) and value.strip().lower() in ("inherit", "currentcolor"):
         return GraphicsStyle.INHERIT
     return converter(value)
 
