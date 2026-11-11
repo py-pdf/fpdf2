@@ -1,5 +1,5 @@
 from pathlib import Path
-from pytest import raises, warns
+from pytest import mark, raises, warns
 import qrcode
 from fpdf.template import Template, FPDFException
 from ..conftest import assert_pdf_equal
@@ -576,15 +576,20 @@ def test_template_justify(tmp_path):  # issue-207
     assert_pdf_equal(tmpl, HERE / "template_justify.pdf", tmp_path)
 
 
-def test_template_split_multicell():
+@mark.parametrize(
+    "unit, mm_to_unit",
+    [("mm", 1), ("cm", 1 / 10), ("in", 1 / 25.4), ("pt", 72 / 25.4)],
+)
+def test_template_split_multicell(unit, mm_to_unit):
+    # The element is 40 mm wide, whatever the unit used to define it:
     elements = [
         {
             "name": "multiline_text",
             "type": "T",
-            "x1": 20,
-            "y1": 100,
-            "x2": 60,
-            "y2": 105,
+            "x1": 20 * mm_to_unit,
+            "y1": 100 * mm_to_unit,
+            "x2": 60 * mm_to_unit,
+            "y2": 105 * mm_to_unit,
             "font": "helvetica",
             "size": 12,
             "text": "Lorem ipsum",
@@ -606,7 +611,7 @@ def test_template_split_multicell():
         "aliquyam erat, sed",
         "diam voluptua.",
     ]
-    tmpl = Template(format="A4", unit="pt", elements=elements)
+    tmpl = Template(format="A4", unit=unit, elements=elements)
     res = tmpl.split_multicell(text, "multiline_text")
     assert res == expected
 

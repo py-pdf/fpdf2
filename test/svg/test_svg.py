@@ -251,6 +251,15 @@ class TestSVGObject:
             assert (width, height) == pytest.approx(expected_dim)
             assert base_group.transform == pytest.approx(expected_tf)
 
+    @pytest.mark.parametrize(
+        "font_size, expected", [('font-size="20px"', 15), ('style="font-size:9pt"', 9)]
+    )
+    def test_document_size_em_root_font_size(self, font_size, expected):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="2em" {font_size}/>'
+        )
+        assert (svg.width, svg.height) == (expected, 2 * expected)
+
     @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
     def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
         svg_data = (
@@ -299,6 +308,37 @@ class TestSVGObject:
         )
         fpdf.svg.SVGObject(svg_data)
 
+    @pytest.mark.parametrize("path_data", ["", "  "])
+    def test_path_empty_data(self, path_data):
+        # Empty path data disables rendering of the path, like a missing "d"
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<path d="{path_data}"/><path/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        empty, missing = svg.base_group.path_items
+        assert not empty._root_graphics_context.path_items
+        assert not missing._root_graphics_context.path_items
+
+    def test_path_not_starting_with_move(self):
+        svg_data = '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 1 2"/></svg>'
+        with pytest.raises(ValueError, match="must start with a moveto"):
+            fpdf.svg.SVGObject(svg_data)
+
+    def test_nested_defs(self, caplog):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><defs>'
+            '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+            '<rect id="square" width="5" height="5"/></defs></defs>'
+            '<rect width="10" height="10" clip-path="url(#clip)"/></svg>'
+        )
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring" not in caplog.text
+        assert "#square" in svg.cross_references
+        clipping_path = svg.base_group.path_items[0].clipping_path
+        assert clipping_path is svg.cross_references["#clip"]
+
     def test_bad_xref(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
@@ -316,6 +356,47 @@ class TestSVGObject:
         )
         with pytest.raises(ValueError):
             fpdf.svg.SVGObject(svg_data)
+
+    def test_svg_without_xmlns_with_unsupported_tag(self, caplog):
+        # Older and hand-written SVG files often omit the xmlns declaration
+        svg_data = (
+            '<svg width="10" height="10"><title>A square</title>'
+            '<rect width="10" height="10"/></svg>'
+        )
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring unsupported SVG tag: <title>" in caplog.text
+        assert len(svg.base_group.path_items) == 1
+
+    @pytest.mark.parametrize(
+        "clip_path", ['clip-path="none"', 'style="clip-path: none"']
+    )
+    def test_svg_clip_path_none(self, clip_path):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<rect width="10" height="10" {clip_path}/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg.base_group.path_items[0].clipping_path is None
+
+    @pytest.mark.parametrize(
+        "clip_id, reference",
+        [
+            ("clip-1", "url(#clip-1)"),
+            ("clip.a", "url(#clip.a)"),
+            ("clip1", 'url("#clip1")'),
+        ],
+    )
+    def test_svg_clip_path_reference(self, clip_id, reference):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<defs><clipPath id="clip"><rect width="1" height="1"/></clipPath>'
+            f'<clipPath id="{clip_id}"><rect width="5" height="5"/></clipPath></defs>'
+            f'<rect width="10" height="10" clip-path=\'{reference}\'/></svg>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        clipping_path = svg.base_group.path_items[0].clipping_path
+        assert clipping_path is svg.cross_references["#" + clip_id]
 
     def test_svg_conversion_no_transparency(self, tmp_path):
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))
@@ -450,6 +531,71 @@ class TestSVGObject:
             GENERATED_PDF_DIR / "ocanada.pdf",
             tmp_path,
         )
+
+    @pytest.mark.parametrize(
+        "text_attributes, color_operators",
+        [
+            ('fill="black"', "0 g"),
+            ('fill="#808080" stroke="black"', "0.502 g 0 G"),
+            ('style="fill:#000000;stroke:none"', "0 g"),
+        ],
+    )
+    def test_svg_text_gray_color_in_styled_tspan(
+        self, text_attributes, color_operators
+    ):
+        # Inkscape writes every text like this: a <tspan> with its own style
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" {text_attributes}>'
+            '<tspan style="stroke-width:0.26">Hi</tspan></text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
+
+    @pytest.mark.parametrize(
+        "declaration, file_encoding, from_file_kwargs",
+        [
+            ('<?xml version="1.0" encoding="iso-8859-1"?>', "latin-1", {}),
+            ("", "utf-8", {}),
+            ("", "latin-1", {"encoding": "latin-1"}),
+        ],
+    )
+    def test_svg_from_file_encoding(
+        self, tmp_path, declaration, file_encoding, from_file_kwargs
+    ):
+        svg_path = tmp_path / "text.svg"
+        svg_path.write_bytes(
+            (
+                f'{declaration}<svg xmlns="http://www.w3.org/2000/svg" width="50" '
+                'height="20"><text x="1" y="10" font-family="helvetica">Z\u00fcrich'
+                "</text></svg>"
+            ).encode(file_encoding)
+        )
+        svg = fpdf.svg.SVGObject.from_file(svg_path, **from_file_kwargs)
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert "(Z\u00fcrich) Tj" in bytes(pdf.output()).decode("latin-1")
+
+    @pytest.mark.parametrize("text", ["a \u2013 b", "price: \u20ac5", "\u2192 next"])
+    def test_svg_text_core_font_unsupported_character(self, text):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" font-family="helvetica">{text}</text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica")
+        # The same error as for text written with cell()
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as cell_error:
+            pdf.cell(text=text)
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as svg_error:
+            svg.draw_to_page(pdf)
+        assert str(svg_error.value) == str(cell_error.value)
 
     def test_svg_symbol(self):
         svg_data = (

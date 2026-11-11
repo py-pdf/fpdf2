@@ -241,7 +241,7 @@ def xmlns_lookup(space: str, *names: str) -> dict[str, str]:
 @force_nodocument
 def without_ns(qualified_tag: str) -> str:
     """Remove the xmlns namespace from a qualified XML tag name"""
-    i = qualified_tag.index("}")
+    i = qualified_tag.find("}")
     if i >= 0:
         return qualified_tag[i + 1 :]
     return qualified_tag
@@ -264,6 +264,35 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
         return color_from_rgb_string(colorstr.lower())
 
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _light_color(colorstr: str) -> str:
+    """
+    CSS Color 5: without a color-scheme, which SVG documents rarely set,
+    light-dark() is its first, light color. Any other value is returned as is.
+    """
+    stripped = colorstr.strip()
+    if stripped.lower().startswith("light-dark(") and stripped.endswith(")"):
+        return _light_color(
+            _split_top_level_commas(stripped[len("light-dark(") : -1])[0].strip()
+        )
+    return colorstr
+
+
+def _split_top_level_commas(value: str) -> list[str]:
+    """Split on the commas that are not inside parentheses, as in "rgb(1, 2, 3), red"."""
+    parts: list[str] = []
+    depth, start = 0, 0
+    for index, character in enumerate(value):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        elif character == "," and depth == 0:
+            parts.append(value[start:index])
+            start = index + 1
+    parts.append(value[start:])
+    return parts
 
 
 @force_nodocument
@@ -305,7 +334,8 @@ def clamp_float(min_val: float, max_val: float) -> Callable[[str], float]:
 def inheritable(
     value: str, converter: Callable[[str], Any] = lambda value: value
 ) -> Any:
-    if value in ("inherit", "currentColor"):
+    # keywords are ASCII case-insensitive in SVG/CSS: "currentcolor" is "currentColor"
+    if isinstance(value, str) and value.strip().lower() in ("inherit", "currentcolor"):
         return GraphicsStyle.INHERIT
     return converter(value)
 
@@ -327,6 +357,8 @@ def optional(
 @force_nodocument
 def svg_paint(colorstr: Optional[str]) -> Any:
     """A fill or stroke paint: "transparent" paints nothing, like "none"."""
+    if colorstr:
+        colorstr = _light_color(colorstr)
     if colorstr and colorstr.startswith("url("):
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
@@ -706,6 +738,24 @@ def _get_attr_or_style(
         if value is not None:
             return value
     return _normalize_css_value(tag.attrib.get(name))
+
+
+def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
+    """
+    Resolve the width or height of the root <svg>. As in browsers, a length in em
+    or ex, such as the width="1em" of icon sets, is relative to its font size,
+    16px if it sets none.
+    """
+    match = unit_splitter.fullmatch(length_str)
+    unit = match.group("unit") if match else None
+    if match is None or unit not in ("em", "ex"):
+        return resolve_length(length_str)
+    font_size = _get_attr_or_style(root_tag, "font-size")
+    try:
+        font_size_pt = resolve_length(font_size or "16px")
+    except ValueError:
+        font_size_pt = resolve_length("16px")
+    return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
 
 
 def _parse_font_attrs(
@@ -1097,7 +1147,8 @@ def convert_transforms(tfstr: str) -> Transform:
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
     pen = PathPen(pdf_path)
     parse_path(svg_path, pen)
-    if not pen.first_is_move:
+    # Empty path data is valid and draws nothing
+    if pen.first_is_move is False:
         raise ValueError("Path does not start with move item")
 
 
@@ -1111,7 +1162,7 @@ class SVGObject:
         cls,
         filename: str | PathLike[str],
         *args: Any,
-        encoding: str = "utf-8",
+        encoding: Optional[str] = None,
         **kwargs: Any,
     ) -> "SVGObject":
         """
@@ -1121,11 +1172,17 @@ class SVGObject:
             filename (path-like): the path to a file containing SVG data.
             *args: forwarded directly to the SVGObject initializer. For subclass use.
             encoding (str): optional charset encoding to use when reading the file.
+                By default, the encoding declared by the file is used, as in
+                `FPDF.image()`, and UTF-8 if it declares none.
             **kwargs: forwarded directly to the SVGObject initializer. For subclass use.
 
         Returns:
             A converted `SVGObject`.
         """
+        if encoding is None:
+            # The XML parser reads the encoding declaration of the file
+            with open(filename, "rb") as svgfile:
+                return cls(svgfile.read(), *args, **kwargs)
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
@@ -1408,12 +1465,8 @@ class SVGObject:
             if tag_name != "stop":
                 continue
 
-            offset_str = stop_element.attrib.get("offset")
-            if offset_str is None:
-                LOGGER.warning("Found <stop> without offset, skipping")
-                continue
-
-            offset_str = offset_str.strip()
+            # The initial value of offset is 0
+            offset_str = stop_element.attrib.get("offset", "0").strip()
             if offset_str.endswith("%"):
                 offset = float(offset_str[:-1]) / 100.0
             else:
@@ -1449,7 +1502,7 @@ class SVGObject:
                 stop_color = stop_element.attrib.get("stop-color", "black")
 
             try:
-                color_obj = svgcolor(stop_color)
+                color_obj = svgcolor(_light_color(stop_color))
 
                 color_alpha = color_obj.a if color_obj.a is not None else 1.0
                 effective_opacity = color_alpha * stop_opacity
@@ -1807,7 +1860,7 @@ class SVGObject:
             if width_str.endswith("%"):
                 self.width = Percent(width_str[:-1])
             else:
-                self.width = resolve_length(width_str)
+                self.width = _resolve_root_length(width_str, root_tag)
 
         self.height = None
         if height_str is not None:
@@ -1815,7 +1868,7 @@ class SVGObject:
             if height_str.endswith("%"):
                 self.height = Percent(height_str[:-1])
             else:
-                self.height = resolve_length(height_str)
+                self.height = _resolve_root_length(height_str, root_tag)
 
         if viewbox is None:
             self.viewbox = None
@@ -2017,7 +2070,9 @@ class SVGObject:
     def handle_defs(self, defs: "Element") -> None:
         """Produce lookups for groups and paths inside the <defs> tag"""
         for child in defs:
-            if child.tag in xmlns_lookup("svg", "g"):
+            if child.tag in xmlns_lookup("svg", "defs"):
+                self.handle_defs(child)
+            elif child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "switch"):
                 self.build_switch(child)
@@ -2367,10 +2422,10 @@ class SVGObject:
             clip_value = style_map["clip-path"]
         if clip_value is None:
             clip_value = svg_element.attrib.get("clip-path")
-        if clip_value:
-            clipping_path_id = re.search(r"url\((\#\w+)\)", clip_value)
-            assert clipping_path_id is not None
-            stylable.clipping_path = self.cross_references[clipping_path_id[1]]
+        # "none" (or any value that is not a url(#id) reference) clips nothing
+        clipping_path_id = self._extract_gradient_id(clip_value)
+        if clipping_path_id:
+            stylable.clipping_path = self.cross_references[clipping_path_id]
 
     @force_nodocument
     def build_image(self, image: "Element") -> "SVGImage | GraphicsContext":

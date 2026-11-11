@@ -66,6 +66,10 @@ class AnnotationMixin:
                 "Annotation position and size must be finite numbers:"
                 f" x={x}, y={y}, width={width}, height={height}"
             )
+        if not math.isfinite(border_width) or border_width < 0:
+            raise ValueError(
+                f"Annotation border width must be zero or a positive number: {border_width}"
+            )
         self.type = Name("Annot")
         self.subtype = Name(subtype)
         self.rect = pdf_list(

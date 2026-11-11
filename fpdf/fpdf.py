@@ -1901,6 +1901,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x2 (float): Abscissa of second point
             y2 (float): Ordinate of second point
         """
+        _check_coordinate("x1", x1)
+        _check_coordinate("y1", y1)
+        _check_coordinate("x2", x2)
+        _check_coordinate("y2", y2)
         self._out(
             f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
             f"{(self.h - y2) * self.k:.2f} l S"
@@ -1945,6 +1949,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(
                     f"Conflicting values provided: fill={fill} & style={style}"
                 )
+        for index, point in enumerate(point_list):
+            _check_coordinate(f"x[{index}]", point[0])
+            _check_coordinate(f"y[{index}]", point[1])
         operator = "m"
         for point in point_list:
             self._out(
@@ -2256,6 +2263,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
+        if not (math.isfinite(w) and math.isfinite(h)):
+            raise ValueError(f"Ellipse dimensions must be finite numbers: w={w}, h={h}")
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
         self._draw_ellipse(x, y, w, h, style.operator)
 
@@ -2324,6 +2335,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
+        _check_coordinate("radius", radius)
         self.ellipse(x - radius, y - radius, 2 * radius, 2 * radius, style)
 
     @check_page
@@ -2647,6 +2659,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "point_list should contain 3 tuples for a quadratic curve"
                 " or 4 tuples for a cubic curve."
             )
+        for index, point in enumerate(point_list):
+            _check_coordinate(f"x[{index}]", point[0])
+            _check_coordinate(f"y[{index}]", point[1])
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
 
         # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
@@ -3633,8 +3648,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
             border_width (float): thickness of the path stroke.
         """
+        coords = list(coords)  # any iterable, and it is read twice below
         if not coords:
             raise ValueError("coords must contain at least one point")
+        if not all(math.isfinite(c) for point in coords for c in point):
+            raise ValueError(f"coords must contain finite numbers: {coords}")
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])
         y_min = min(ink_list[1::2])
@@ -3677,6 +3695,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
         text = self.normalize_text(text)
         assert self.current_font is not None
         if not self.current_font_is_set_on_page:
@@ -5906,12 +5926,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
+        x_is_aligned = False
         if not isinstance(x, NumberClass):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
+            x_is_aligned = True
         if TYPE_CHECKING:
             x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
+            box_x, y, w, h = info.scale_inside_box(x, y, w, h)
+            if not x_is_aligned:  # x_by_align() already used the scaled width
+                x = box_x
         if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(
                 name,
@@ -6022,11 +6046,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
+        x_is_aligned = False
         if not isinstance(x, NumberClass):
             x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
+            x_is_aligned = True
         x = float(x)
         if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
+            box_x, y, w, h = info.scale_inside_box(x, y, w, h)
+            if not x_is_aligned:  # x_by_align() already used the scaled width
+                x = box_x
 
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
@@ -6780,9 +6808,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{h * self.k:.2f} re W n"
             )
         )
-        yield
-        self._out("Q")
-        self.current_font_is_set_on_page = prev_font_set
+        try:
+            yield
+        finally:
+            self._out("Q")
+            self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager
@@ -6802,9 +6832,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font_set = self.current_font_is_set_on_page
         self._out("q")
         self._draw_ellipse(x, y, w, h, "W n")
-        yield
-        self._out("Q")
-        self.current_font_is_set_on_page = prev_font_set
+        try:
+            yield
+        finally:
+            self._out("Q")
+            self.current_font_is_set_on_page = prev_font_set
 
     @check_page
     @contextmanager

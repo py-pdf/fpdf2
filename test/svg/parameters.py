@@ -524,6 +524,19 @@ test_svg_attribute_conversion = (
         no_error(),
         id="fill color inherit",
     ),
+    # as in the Font Awesome icons of web pages
+    pytest.param(
+        '<path fill="currentcolor"/>',
+        Gs(fill_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="fill color currentcolor lowercase",
+    ),
+    pytest.param(
+        '<path stroke="CurrentColor"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color CurrentColor",
+    ),
     pytest.param(
         '<path fill="black"/>',
         Gs(fill_color="#000"),
@@ -559,6 +572,36 @@ test_svg_attribute_conversion = (
         Gs(),
         pytest.raises(ValueError),
         id="fill color invalid",
+    ),
+    pytest.param(
+        '<path fill="light-dark(rgb(255, 0, 0), rgba(226, 228, 233, 0.82))"/>',
+        Gs(fill_color="#f00"),
+        no_error(),
+        id="fill color light-dark()",
+    ),
+    pytest.param(
+        '<path stroke="Light-Dark(#00f, white)"/>',
+        Gs(stroke_color="#00f"),
+        no_error(),
+        id="stroke color light-dark() uppercase",
+    ),
+    pytest.param(
+        '<path fill="light-dark(1, red)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill color light-dark() invalid",
+    ),
+    pytest.param(
+        '<path fill="light-dark(transparent, red)"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color light-dark() transparent",
+    ),
+    pytest.param(
+        '<path stroke="light-dark(currentColor, white)"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color light-dark() currentColor",
     ),
     pytest.param(
         '<path fill-rule="inherit"/>',
@@ -1077,6 +1120,16 @@ svg_path_render_tests = (
         "q 0 1 m 0 1 2 3.3333 6 8 c h B Q",
         id="relative smooth quadratic bezier unchained",
     ),
+    pytest.param(
+        "M 0 1 L 4 5 A 2 2 0 0 1 4 5 L 6 1",
+        "q 0 1 m 4 5 l 6 1 l h B Q",
+        id="arc ending at its start point is omitted",
+    ),
+    pytest.param(
+        "M 4 5 a 2 2 0 1 1 0 0 L 6 1",
+        "q 4 5 m 6 1 l h B Q",
+        id="relative arc ending at its start point is omitted",
+    ),
 )
 
 svg_path_implicit_directives = (
@@ -1222,6 +1275,21 @@ svg_shape_info_tests = (
         Transform.identity(),
         no_error(),
         id="different shape",
+    ),
+    # as written by icon sets, relative to the default font size of 16px
+    pytest.param(
+        svg_snippet(width="1em", height="1em"),
+        (resolve_length("16px"),) * 2,
+        Transform.identity(),
+        no_error(),
+        id="em",
+    ),
+    pytest.param(
+        svg_snippet(width="2em", height="1ex"),
+        (resolve_length("32px"), resolve_length("8px")),
+        Transform.identity(),
+        no_error(),
+        id="em and ex",
     ),
     pytest.param(
         svg_snippet(width="110%", height="90%"),
