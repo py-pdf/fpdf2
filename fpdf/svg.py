@@ -266,6 +266,35 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     raise ValueError(f"unsupported color specification {colorstr}")
 
 
+def _light_color(colorstr: str) -> str:
+    """
+    CSS Color 5: without a color-scheme, which SVG documents rarely set,
+    light-dark() is its first, light color. Any other value is returned as is.
+    """
+    stripped = colorstr.strip()
+    if stripped.lower().startswith("light-dark(") and stripped.endswith(")"):
+        return _light_color(
+            _split_top_level_commas(stripped[len("light-dark(") : -1])[0].strip()
+        )
+    return colorstr
+
+
+def _split_top_level_commas(value: str) -> list[str]:
+    """Split on the commas that are not inside parentheses, as in "rgb(1, 2, 3), red"."""
+    parts: list[str] = []
+    depth, start = 0, 0
+    for index, character in enumerate(value):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        elif character == "," and depth == 0:
+            parts.append(value[start:index])
+            start = index + 1
+    parts.append(value[start:])
+    return parts
+
+
 @force_nodocument
 def convert_stroke_width(incoming: str) -> Optional[float]:
     val = resolve_length(incoming)
@@ -328,6 +357,8 @@ def optional(
 @force_nodocument
 def svg_paint(colorstr: Optional[str]) -> Any:
     """A fill or stroke paint: "transparent" paints nothing, like "none"."""
+    if colorstr:
+        colorstr = _light_color(colorstr)
     if colorstr and colorstr.startswith("url("):
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
@@ -707,6 +738,24 @@ def _get_attr_or_style(
         if value is not None:
             return value
     return _normalize_css_value(tag.attrib.get(name))
+
+
+def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
+    """
+    Resolve the width or height of the root <svg>. As in browsers, a length in em
+    or ex, such as the width="1em" of icon sets, is relative to its font size,
+    16px if it sets none.
+    """
+    match = unit_splitter.fullmatch(length_str)
+    unit = match.group("unit") if match else None
+    if match is None or unit not in ("em", "ex"):
+        return resolve_length(length_str)
+    font_size = _get_attr_or_style(root_tag, "font-size")
+    try:
+        font_size_pt = resolve_length(font_size or "16px")
+    except ValueError:
+        font_size_pt = resolve_length("16px")
+    return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
 
 
 def _parse_font_attrs(
@@ -1416,12 +1465,8 @@ class SVGObject:
             if tag_name != "stop":
                 continue
 
-            offset_str = stop_element.attrib.get("offset")
-            if offset_str is None:
-                LOGGER.warning("Found <stop> without offset, skipping")
-                continue
-
-            offset_str = offset_str.strip()
+            # The initial value of offset is 0
+            offset_str = stop_element.attrib.get("offset", "0").strip()
             if offset_str.endswith("%"):
                 offset = float(offset_str[:-1]) / 100.0
             else:
@@ -1457,7 +1502,7 @@ class SVGObject:
                 stop_color = stop_element.attrib.get("stop-color", "black")
 
             try:
-                color_obj = svgcolor(stop_color)
+                color_obj = svgcolor(_light_color(stop_color))
 
                 color_alpha = color_obj.a if color_obj.a is not None else 1.0
                 effective_opacity = color_alpha * stop_opacity
@@ -1815,7 +1860,7 @@ class SVGObject:
             if width_str.endswith("%"):
                 self.width = Percent(width_str[:-1])
             else:
-                self.width = resolve_length(width_str)
+                self.width = _resolve_root_length(width_str, root_tag)
 
         self.height = None
         if height_str is not None:
@@ -1823,7 +1868,7 @@ class SVGObject:
             if height_str.endswith("%"):
                 self.height = Percent(height_str[:-1])
             else:
-                self.height = resolve_length(height_str)
+                self.height = _resolve_root_length(height_str, root_tag)
 
         if viewbox is None:
             self.viewbox = None

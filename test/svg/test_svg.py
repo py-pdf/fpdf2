@@ -251,6 +251,15 @@ class TestSVGObject:
             assert (width, height) == pytest.approx(expected_dim)
             assert base_group.transform == pytest.approx(expected_tf)
 
+    @pytest.mark.parametrize(
+        "font_size, expected", [('font-size="20px"', 15), ('style="font-size:9pt"', 9)]
+    )
+    def test_document_size_em_root_font_size(self, font_size, expected):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="2em" {font_size}/>'
+        )
+        assert (svg.width, svg.height) == (expected, 2 * expected)
+
     @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
     def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
         svg_data = (
@@ -571,6 +580,22 @@ class TestSVGObject:
         pdf.add_page()
         svg.draw_to_page(pdf)
         assert "(Z\u00fcrich) Tj" in bytes(pdf.output()).decode("latin-1")
+
+    @pytest.mark.parametrize("text", ["a \u2013 b", "price: \u20ac5", "\u2192 next"])
+    def test_svg_text_core_font_unsupported_character(self, text):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" font-family="helvetica">{text}</text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica")
+        # The same error as for text written with cell()
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as cell_error:
+            pdf.cell(text=text)
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as svg_error:
+            svg.draw_to_page(pdf)
+        assert str(svg_error.value) == str(cell_error.value)
 
     def test_svg_symbol(self):
         svg_data = (
