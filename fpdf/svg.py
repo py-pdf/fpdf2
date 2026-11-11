@@ -1459,12 +1459,8 @@ class SVGObject:
             if tag_name != "stop":
                 continue
 
-            offset_str = stop_element.attrib.get("offset")
-            if offset_str is None:
-                LOGGER.warning("Found <stop> without offset, skipping")
-                continue
-
-            offset_str = offset_str.strip()
+            # The initial value of offset is 0
+            offset_str = stop_element.attrib.get("offset", "0").strip()
             if offset_str.endswith("%"):
                 offset = float(offset_str[:-1]) / 100.0
             else:
