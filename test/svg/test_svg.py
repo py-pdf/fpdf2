@@ -2,7 +2,8 @@
 from io import BytesIO
 from pathlib import Path
 
-import fpdf
+import fpdf.drawing
+import fpdf.svg
 from ..conftest import assert_pdf_equal
 
 from xml.etree.ElementTree import fromstring as parse_xml_str
@@ -559,6 +560,58 @@ class TestSVGObject:
         svg = fpdf.svg.SVGObject(svg_data)
         assert svg is not None
         assert "#rond" in svg.cross_references
+
+    @pytest.mark.parametrize(
+        "line_attrs, expected_transform",
+        [
+            ('x1="10" y1="10" x2="50" y2="10"', (1, 0, 0, 1, 41, 5)),
+            ('x1="10" y1="0" x2="10" y2="40"', (0, 1, -1, 0, 15, 31)),
+            (
+                'x1="10" y1="10" x2="50" y2="10" transform="translate(5, 0)"',
+                (1, 0, 0, 1, 46, 5),
+            ),
+        ],
+    )
+    def test_svg_line_marker_end(self, line_attrs, expected_transform):
+        svg_data = f"""
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 20">
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10"
+                            refX="9" refY="5" orient="auto"
+                            markerUnits="userSpaceOnUse">
+                        <path d="M 0 0 L 10 5 L 0 10 Z" />
+                    </marker>
+                </defs>
+                <line {line_attrs} stroke="black" marker-end="url(#arrow)" />
+            </svg>
+        """
+        svg = fpdf.svg.SVGObject(svg_data)
+
+        assert len(svg.base_group.path_items) == 2
+        assert tuple(svg.base_group.path_items[1].transform) == pytest.approx(
+            expected_transform
+        )
+        pdf = fpdf.FPDF(unit="pt", format=(60, 20))
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        pdf.output()
+
+    def test_svg_marker_reference_cycle(self):
+        svg_data = """
+            <svg xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="arrow" markerUnits="userSpaceOnUse" orient="auto">
+                        <line x1="0" y1="0" x2="10" y2="0"
+                              marker-end="url(#arrow)" />
+                    </marker>
+                </defs>
+                <line x1="0" y1="0" x2="20" y2="0"
+                      marker-end="url(#arrow)" />
+            </svg>
+        """
+
+        with pytest.raises(ValueError, match="Cyclic SVG marker reference"):
+            fpdf.svg.SVGObject(svg_data)
 
     def test_svg_symbol_uses_symbol_dimensions(self):
         svg_data = (
