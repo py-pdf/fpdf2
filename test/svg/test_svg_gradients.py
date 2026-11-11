@@ -129,6 +129,21 @@ def test_gradient_stop_opacity_multiplies_color_alpha(opacity):
     assert stops[0][1].a == pytest.approx((128 / 255) * 0.5)
 
 
+def test_gradient_stop_without_offset():
+    # as in the Hugging Face logo on spaCy's website: a missing offset is 0
+    gradient = fromstring(
+        '<linearGradient xmlns="http://www.w3.org/2000/svg">'
+        '<stop stop-color="#fff" stop-opacity="0.65"/>'
+        '<stop offset="1" stop-color="#fff" stop-opacity="0"/>'
+        "</linearGradient>"
+    )
+    # pylint: disable=protected-access
+    stops = SVGObject._parse_gradient_stops(gradient)
+    # pylint: enable=protected-access
+    assert [offset for offset, _ in stops] == [0, 1]
+    assert stops[0][1].a == pytest.approx(0.65)
+
+
 @pytest.mark.parametrize("gradient_type", ["linearGradient", "radialGradient"])
 def test_gradient_percentage_opacity_preserves_transparent_color(gradient_type):
     svg = f"""

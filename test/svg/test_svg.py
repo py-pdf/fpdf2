@@ -251,6 +251,15 @@ class TestSVGObject:
             assert (width, height) == pytest.approx(expected_dim)
             assert base_group.transform == pytest.approx(expected_tf)
 
+    @pytest.mark.parametrize(
+        "font_size, expected", [('font-size="20px"', 15), ('style="font-size:9pt"', 9)]
+    )
+    def test_document_size_em_root_font_size(self, font_size, expected):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="2em" {font_size}/>'
+        )
+        assert (svg.width, svg.height) == (expected, 2 * expected)
+
     @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
     def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
         svg_data = (
@@ -546,6 +555,48 @@ class TestSVGObject:
         svg.draw_to_page(pdf)
         assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
 
+    @pytest.mark.parametrize(
+        "declaration, file_encoding, from_file_kwargs",
+        [
+            ('<?xml version="1.0" encoding="iso-8859-1"?>', "latin-1", {}),
+            ("", "utf-8", {}),
+            ("", "latin-1", {"encoding": "latin-1"}),
+        ],
+    )
+    def test_svg_from_file_encoding(
+        self, tmp_path, declaration, file_encoding, from_file_kwargs
+    ):
+        svg_path = tmp_path / "text.svg"
+        svg_path.write_bytes(
+            (
+                f'{declaration}<svg xmlns="http://www.w3.org/2000/svg" width="50" '
+                'height="20"><text x="1" y="10" font-family="helvetica">Z\u00fcrich'
+                "</text></svg>"
+            ).encode(file_encoding)
+        )
+        svg = fpdf.svg.SVGObject.from_file(svg_path, **from_file_kwargs)
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert "(Z\u00fcrich) Tj" in bytes(pdf.output()).decode("latin-1")
+
+    @pytest.mark.parametrize("text", ["a \u2013 b", "price: \u20ac5", "\u2192 next"])
+    def test_svg_text_core_font_unsupported_character(self, text):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">'
+            f'<text x="1" y="10" font-family="helvetica">{text}</text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica")
+        # The same error as for text written with cell()
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as cell_error:
+            pdf.cell(text=text)
+        with pytest.raises(fpdf.errors.FPDFUnicodeEncodingException) as svg_error:
+            svg.draw_to_page(pdf)
+        assert str(svg_error.value) == str(cell_error.value)
+
     def test_svg_symbol(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
@@ -726,6 +777,23 @@ def test_svg_image_preserve_aspect_ratio(
     content = pdf.pages[1].contents.decode("latin1")
     expected_chunk = f"{expected_w:.2f} 0 0 -{expected_h:.2f}"
     assert expected_chunk in content
+
+
+@pytest.mark.parametrize(
+    "unit, scale",
+    [("", 1.0), ("px", 0.75), ("pt", 1.0), ("mm", 72 / 25.4)],
+)
+def test_svg_image_length_units(unit, scale):
+    # as in the logo of narwhals, which gives every length of its <image> in px
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" x="10{unit}" y="20{unit}" '
+        f'width="40{unit}" height="30{unit}"/></svg>'
+    )
+    image = svg.base_group.path_items[0]
+    assert (image.x, image.y, image.width, image.height) == pytest.approx(
+        (10 * scale, 20 * scale, 40 * scale, 30 * scale)
+    )
 
 
 def test_svg_image_transform(caplog):

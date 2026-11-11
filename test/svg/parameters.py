@@ -574,6 +574,36 @@ test_svg_attribute_conversion = (
         id="fill color invalid",
     ),
     pytest.param(
+        '<path fill="light-dark(rgb(255, 0, 0), rgba(226, 228, 233, 0.82))"/>',
+        Gs(fill_color="#f00"),
+        no_error(),
+        id="fill color light-dark()",
+    ),
+    pytest.param(
+        '<path stroke="Light-Dark(#00f, white)"/>',
+        Gs(stroke_color="#00f"),
+        no_error(),
+        id="stroke color light-dark() uppercase",
+    ),
+    pytest.param(
+        '<path fill="light-dark(1, red)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill color light-dark() invalid",
+    ),
+    pytest.param(
+        '<path fill="light-dark(transparent, red)"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color light-dark() transparent",
+    ),
+    pytest.param(
+        '<path stroke="light-dark(currentColor, white)"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color light-dark() currentColor",
+    ),
+    pytest.param(
         '<path fill-rule="inherit"/>',
         Gs(intersection_rule=GraphicsStyle.INHERIT),
         no_error(),
@@ -1264,6 +1294,21 @@ svg_shape_info_tests = (
         Transform.identity(),
         no_error(),
         id="different shape",
+    ),
+    # as written by icon sets, relative to the default font size of 16px
+    pytest.param(
+        svg_snippet(width="1em", height="1em"),
+        (resolve_length("16px"),) * 2,
+        Transform.identity(),
+        no_error(),
+        id="em",
+    ),
+    pytest.param(
+        svg_snippet(width="2em", height="1ex"),
+        (resolve_length("32px"), resolve_length("8px")),
+        Transform.identity(),
+        no_error(),
+        id="em and ex",
     ),
     pytest.param(
         svg_snippet(width="110%", height="90%"),
