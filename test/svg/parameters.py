@@ -1276,6 +1276,21 @@ svg_shape_info_tests = (
         no_error(),
         id="different shape",
     ),
+    # as written by icon sets, relative to the default font size of 16px
+    pytest.param(
+        svg_snippet(width="1em", height="1em"),
+        (resolve_length("16px"),) * 2,
+        Transform.identity(),
+        no_error(),
+        id="em",
+    ),
+    pytest.param(
+        svg_snippet(width="2em", height="1ex"),
+        (resolve_length("32px"), resolve_length("8px")),
+        Transform.identity(),
+        no_error(),
+        id="em and ex",
+    ),
     pytest.param(
         svg_snippet(width="110%", height="90%"),
         (11, 9),
