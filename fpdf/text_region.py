@@ -148,6 +148,10 @@ class Paragraph:
         else:
             self.bullet = None
         self.first_line_indent = first_line_indent
+        # named destinations for the next text written, set where it is rendered:
+        self.anchors: list[str] = []
+        # those already written but not rendered yet
+        self.unrendered_anchors: list[str] = []
 
     def __str__(self) -> str:
         return (
@@ -180,6 +184,10 @@ class Paragraph:
         if link:
             for frag in fragments:
                 frag.link = link
+        if self.anchors and fragments:
+            fragments[0].anchors = tuple(self.anchors)
+            self.unrendered_anchors.extend(self.anchors)
+            self.anchors = []
         self._text_fragments.extend(fragments)
 
     def generate_bullet_frags_and_tl(
@@ -655,6 +663,11 @@ class TextRegion(ParagraphCollectorMixin):
                     break
                 prev_line_height = last_line_height or 0
                 last_line_height = text_line.height
+                for anchor in text_line.anchors:
+                    # after any page break: on the page where the line really is
+                    self.pdf.set_link(name=anchor, y=self.pdf.y)
+                    if anchor in cur_paragraph.unrendered_anchors:
+                        cur_paragraph.unrendered_anchors.remove(anchor)
                 col_left, col_right = self.current_x_extents(self.pdf.y, 0)
                 if self.pdf.x < col_left or self.pdf.x >= col_right:
                     self.pdf.x = col_left
