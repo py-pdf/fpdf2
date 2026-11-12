@@ -480,9 +480,11 @@ def test_gradient_long_href_chain():
     # each gradient is resolved once, so a long chain neither recurses nor slows down
     count = 2000
     defs = [
-        '<linearGradient id="g0" x2="0.5">'
-        '<stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/>'
-        "</linearGradient>"
+        (
+            '<linearGradient id="g0" x2="0.5">'
+            '<stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/>'
+            "</linearGradient>"
+        )
     ] + [f'<linearGradient id="g{i}" href="#g{i - 1}"/>' for i in range(1, count)]
     svg = (
         '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">'
