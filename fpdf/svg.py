@@ -128,11 +128,31 @@ def _split_important(value: str) -> tuple[str, bool]:
     return value, False
 
 
+def _overrides(earlier: str, later: str) -> bool:
+    """Whether a later declaration of a property replaces an earlier one: not when only
+    the earlier one is !important."""
+    return not (_split_important(earlier)[1] and not _split_important(later)[1])
+
+
+def _parse_css_declarations(style: str) -> dict[str, str]:
+    """
+    The declarations of a style attribute or CSS rule, with their "!important" flags.
+    A property declared twice is resolved while the flags are known, so that
+    "fill: red !important; fill: blue" keeps red.
+    """
+    declarations: dict[str, str] = {}
+    for declaration in style.split(";"):
+        for key, value in html.parse_css_style(declaration).items():
+            if key not in declarations or _overrides(declarations[key], value):
+                declarations[key] = value
+    return declarations
+
+
 def _parse_style_attribute(style: str) -> dict[str, str]:
     """The declarations of a style attribute, without their "!important" flags."""
     return {
         key: _split_important(value)[0]
-        for key, value in html.parse_css_style(style).items()
+        for key, value in _parse_css_declarations(style).items()
     }
 
 
@@ -889,7 +909,7 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
 
     cleaned = CSS_COMMENT_RE.sub("", css_text)
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
-        declarations = html.parse_css_style(body)
+        declarations = _parse_css_declarations(body)
         if not declarations:
             continue
         normalized = {}
@@ -1419,12 +1439,8 @@ class SVGObject:
                     existing = self.css_class_styles.setdefault(class_name, {})
                     for key, value in declarations.items():
                         # a later rule does not override an !important declaration
-                        if key in existing and (
-                            _split_important(existing[key])[1]
-                            and not _split_important(value)[1]
-                        ):
-                            continue
-                        existing[key] = value
+                        if key not in existing or _overrides(existing[key], value):
+                            existing[key] = value
 
     def _style_map_for(self, tag: "Element") -> dict[str, Any]:
         style_map: dict[str, Any] = {}
@@ -1443,7 +1459,7 @@ class SVGObject:
                             style_map[key] = value
                             if is_important:
                                 important.add(key)
-        inline = html.parse_css_style(tag.attrib.get("style", ""))
+        inline = _parse_css_declarations(tag.attrib.get("style", ""))
         for key, declared in inline.items():
             value, is_important = _split_important(declared)
             if key in important and not is_important:

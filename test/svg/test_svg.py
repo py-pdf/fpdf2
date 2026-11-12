@@ -389,6 +389,10 @@ class TestSVGObject:
             (".a { fill: red !important }", "fill: blue !important", "#00f"),
             (".a { fill: red !important } .a { fill: blue }", "", "#f00"),
             (".a { fill: red }", "fill: blue", "#00f"),
+            # a property declared twice in one rule or style attribute
+            ("", "fill: red !important; fill: blue", "#f00"),
+            (".a { fill: red !important; fill: blue }", "", "#f00"),
+            ("", "fill: red !important; fill: blue !important", "#00f"),
         ],
     )
     def test_svg_css_important(self, css, style, fill):
