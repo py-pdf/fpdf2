@@ -401,6 +401,28 @@ class TestSVGObject:
         assert len(svg.base_group.path_items) == 1
 
     @pytest.mark.parametrize(
+        "css, style, fill",
+        [
+            (".a { fill: red !important }", "fill: blue", "#f00"),
+            (".a { fill: red !important }", "fill: blue !important", "#00f"),
+            (".a { fill: red !important } .a { fill: blue }", "", "#f00"),
+            (".a { fill: red }", "fill: blue", "#00f"),
+            # a property declared twice in one rule or style attribute
+            ("", "fill: red !important; fill: blue", "#f00"),
+            (".a { fill: red !important; fill: blue }", "", "#f00"),
+            ("", "fill: red !important; fill: blue !important", "#00f"),
+        ],
+    )
+    def test_svg_css_important(self, css, style, fill):
+        # an !important declaration of a stylesheet wins over a normal inline one
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            f'<rect class="a" style="{style}" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
+
+    @pytest.mark.parametrize(
         "clip_path", ['clip-path="none"', 'style="clip-path: none"']
     )
     def test_svg_clip_path_none(self, clip_path):
