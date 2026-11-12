@@ -6,6 +6,7 @@ from pathlib import Path
 
 # import fpdf
 from fpdf.drawing import (
+    DeviceRGB,
     Point,
     Transform,
     IntersectionRule,
@@ -567,6 +568,30 @@ test_svg_attribute_conversion = (
         Gs(fill_color=None),
         no_error(),
         id="fill color transparent",
+    ),
+    pytest.param(
+        '<path fill="hsl(120, 100%, 25%)"/>',
+        Gs(fill_color="#008000"),
+        no_error(),
+        id="fill color hsl()",
+    ),
+    pytest.param(
+        '<path fill="hsl(0.5turn 100% 50% / 25%)"/>',
+        Gs(fill_color=DeviceRGB(0, 1, 1, 0.25), fill_opacity=0.25),
+        no_error(),
+        id="fill color hsl() space-separated with alpha",
+    ),
+    pytest.param(
+        '<path stroke="HSLA(240deg, 100%, 50%, 0.5)"/>',
+        Gs(stroke_color=DeviceRGB(0, 0, 1, 0.5), stroke_opacity=0.5),
+        no_error(),
+        id="stroke color hsla()",
+    ),
+    pytest.param(
+        '<path fill="hsl(120, 100%)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid hsl() color",
     ),
     pytest.param(
         '<path fill="#0007"/>',

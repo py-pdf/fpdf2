@@ -83,6 +83,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
+* SVG: `hsl()` and `hsla()` colors are now read, with commas or space-separated, with a hue that may have an angle unit (`deg`, `grad`, `rad`, `turn`) and an alpha, as Mermaid diagrams and many stylesheets write them, instead of failing with `ValueError: unsupported color specification` - thanks to @RavSinghChandan
 ### Added
 * support for `transform`, `style`, `opacity`, and `preserveAspectRatio="none"` on SVG `<image>` tags - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537) - thanks to @agustin18
 * support for colored and uncolored tiling patterns with `FPDF.create_pattern()` and `FPDF.use_pattern()`, including SVG `<pattern>` elements and pattern fills and strokes on referenced `<use>` shapes - _cf._ [issue #790](https://github.com/py-pdf/fpdf2/issues/790) - thanks to @andersonhc
