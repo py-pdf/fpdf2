@@ -1255,6 +1255,12 @@ class SVGObject:
             else (float(self.width or 300), float(self.height or 150))
         )
         self._check_svg_limits(svg_tree)
+        # A <use> of an element that is itself hidden draws nothing.
+        self._hidden_references = {
+            "#" + element.attrib["id"]
+            for element in svg_tree.iter()
+            if element.attrib.get("id") and self._is_display_none(element)
+        }
         self.convert_graphics(svg_tree)
 
     @force_nodocument
@@ -1418,6 +1424,10 @@ class SVGObject:
                 for class_name, declarations in _extract_css_class_styles(css_text):
                     existing = self.css_class_styles.setdefault(class_name, {})
                     existing.update(declarations)
+
+    def _is_display_none(self, tag: "Element") -> bool:
+        display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
+        return display is not None and display.strip().lower() == "none"
 
     def _style_map_for(self, tag: "Element") -> dict[str, Any]:
         style_map: dict[str, Any] = {}
@@ -1916,7 +1926,11 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "clipPath"):
                 self.build_clip_path_tag(element)
 
-        self.build_group(root_tag, base_group)
+        if self._is_display_none(root_tag):
+            # Nothing is drawn, but the ids are built as for a hidden group.
+            self.build_group(root_tag, GraphicsContext())
+        else:
+            self.build_group(root_tag, base_group)
 
         self.base_group = base_group
 
@@ -2194,6 +2208,8 @@ class SVGObject:
             raise ValueError(
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
+        if ref in self._hidden_references:
+            return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         referenced = deepcopy(referenced)
         pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
@@ -2312,6 +2328,10 @@ class SVGObject:
         inherited_style: dict[str, Any],
     ) -> None:
         """Convert one graphics child while preserving its parent's style."""
+        if self._is_display_none(child):
+            # The element and its children are not drawn, as for a hidden Inkscape
+            # layer. It is still built, so that ids inside it can be referenced.
+            pdf_group = GraphicsContext()
         if child.tag in xmlns_lookup("svg", "defs"):
             self.handle_defs(child)
         elif child.tag in xmlns_lookup(
@@ -2741,19 +2761,20 @@ class SVGObject:
                 ):
                     abs_y = y
 
-                _add_run(
-                    run_text,
-                    fam,
-                    emph,
-                    size,
-                    preserve=child_preserve,
-                    dx_extra=dx,
-                    dy_extra=dy,
-                    abs_x=abs_x,
-                    abs_y=abs_y,
-                    style_tag=child,
-                    style_map_for_tag=child_local_style,
-                )
+                if not self._is_display_none(child):
+                    _add_run(
+                        run_text,
+                        fam,
+                        emph,
+                        size,
+                        preserve=child_preserve,
+                        dx_extra=dx,
+                        dy_extra=dy,
+                        abs_x=abs_x,
+                        abs_y=abs_y,
+                        style_tag=child,
+                        style_map_for_tag=child_local_style,
+                    )
 
                 # Text between tspans inherits parent style
                 _add_run(
