@@ -585,6 +585,48 @@ class TestSVGObject:
         output = bytes(pdf.output()).decode("latin-1")
         assert output.count(" re ") == 1
 
+    @pytest.mark.parametrize(
+        "svg_data",
+        [
+            (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" '
+                'display="none"><rect width="10" height="10"/></svg>'
+            ),
+            (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+                '<rect id="square" width="10" height="10" display="none"/>'
+                '<use href="#square" x="20"/></svg>'
+            ),
+            (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+                '<defs><rect id="square" width="10" height="10" display="none"/>'
+                '</defs><use href="#square" x="20"/></svg>'
+            ),
+        ],
+    )
+    def test_svg_display_none_nothing_drawn(self, svg_data):
+        """A hidden <svg>, or a <use> of an element that is itself hidden."""
+        svg = fpdf.svg.SVGObject(svg_data)
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert " re " not in bytes(pdf.output()).decode("latin-1")
+
+    def test_svg_display_none_tspan(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            '<text x="1" y="10">ab<tspan display="none">cd</tspan>ef</text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "(ab) Tj" in output
+        assert "(ef) Tj" in output
+        assert "cd" not in output
+
     def test_svg_symbol(self):
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
