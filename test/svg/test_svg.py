@@ -151,7 +151,21 @@ class TestSVGPathParsing:
 
         result = pdf_path.render(resource_catalog, style, start, first_point)[0]
 
-        assert result == expected
+        # The operators must match exactly, the numbers up to their last rounded
+        # digit, which can differ between environments.
+        def split(rendered):
+            numbers, operators = [], []
+            for token in rendered.split():
+                try:
+                    numbers.append(float(token))
+                except ValueError:
+                    operators.append(token)
+            return numbers, operators
+
+        actual_numbers, actual_operators = split(result)
+        expected_numbers, expected_operators = split(expected)
+        assert actual_operators == expected_operators
+        assert actual_numbers == pytest.approx(expected_numbers, abs=1.1e-4, rel=0)
 
 
 @pytest.mark.parametrize("shape, output, guard", parameters.test_svg_shape_tags)

@@ -1130,6 +1130,25 @@ svg_path_render_tests = (
         "q 4 5 m 6 1 l h B Q",
         id="relative arc ending at its start point is omitted",
     ),
+    pytest.param(
+        # the rings of Font Awesome's instagram.svg: rounding made the radii of the
+        # second ring look a bit too small for the arc, which made sqrt() fail
+        (
+            "M224.3 141a115 115 0 1 0 -.6 230 115 115 0 1 0 .6-230z"
+            "m-.6 40.4a74.6 74.6 0 1 1 .6 149.2 74.6 74.6 0 1 1 -.6-149.2z"
+        ),
+        (
+            "q 224.3 141 m 160.7873 140.8343 109.1657 192.1873 109 255.7 c "
+            "108.8343 319.2127 160.1873 370.8343 223.7 371 c "
+            "287.2127 371.1657 338.8343 319.8127 339 256.3 c "
+            "339.1657 192.7873 287.8127 141.1657 224.3 141 c h "
+            "223.7 181.4 m 264.9004 181.2343 298.4343 214.4996 298.6 255.7 c "
+            "298.7657 296.9004 265.5004 330.4343 224.3 330.6 c "
+            "183.0996 330.7657 149.5657 297.5004 149.4 256.3 c "
+            "149.2343 215.0996 182.4996 181.5657 223.7 181.4 c h B Q"
+        ),
+        id="arc whose radii are scaled up to fit, with rounding errors",
+    ),
 )
 
 svg_path_implicit_directives = (

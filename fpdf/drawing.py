@@ -2068,9 +2068,10 @@ class Arc(NamedTuple):
         rxpy2 = (radii.x * prime.y) ** 2
         rypx2 = (radii.y * prime.x) ** 2
 
+        # 0 when the radii were scaled up, but rounding can make it slightly negative
         centerprime = (
             sign
-            * math.sqrt(round(rxry2 - rxpy2 - rypx2, 8) / (rxpy2 + rypx2))
+            * math.sqrt(max(0.0, round(rxry2 - rxpy2 - rypx2, 8)) / (rxpy2 + rypx2))
             * Point(
                 x=radii.x * prime.y / radii.y,
                 y=-radii.y * prime.x / radii.x,
