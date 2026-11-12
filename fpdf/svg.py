@@ -1838,6 +1838,12 @@ class SVGObject:
         base_group.style.auto_close = False
         base_group.style.stroke_cap_style = StrokeCapStyle.BUTT
 
+        # A clip-path may reference a <clipPath> that comes after it, in or
+        # outside <defs>, so they are all built first.
+        for element in root_tag.iter():
+            if element.tag in xmlns_lookup("svg", "clipPath"):
+                self.build_clip_path_tag(element)
+
         self.build_group(root_tag, base_group)
 
         self.base_group = base_group
@@ -2053,7 +2059,8 @@ class SVGObject:
                 # Definitions are resolved lazily, including forward references.
                 continue
             elif child.tag in xmlns_lookup("svg", "clipPath"):
-                self.build_clip_path_tag(child)
+                # Already built in convert_graphics()
+                continue
             elif child.tag in xmlns_lookup("svg", "style"):
                 # Styles handled globally during parsing
                 continue
@@ -2244,8 +2251,9 @@ class SVGObject:
         elif child.tag in xmlns_lookup("svg", "symbol"):
             self.build_symbol(child)
         elif child.tag in xmlns_lookup("svg", "clipPath"):
-            # A <clipPath> is never rendered directly, wherever it is placed
-            self.build_clip_path_tag(child)
+            # Never rendered directly, wherever it is placed; already built in
+            # convert_graphics()
+            return
         elif child.tag in xmlns_lookup("svg", "g"):
             pdf_group.add_item(self.build_group(child, None, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "switch"):

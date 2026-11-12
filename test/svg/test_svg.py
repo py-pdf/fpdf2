@@ -401,6 +401,16 @@ class TestSVGObject:
                 '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
                 '<rect width="10" height="10" clip-path="url(#clip)"/>'
             ),
+            # after the element it clips
+            (
+                '<rect width="10" height="10" clip-path="url(#clip)"/>'
+                '<clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+            ),
+            (
+                '<rect width="10" height="10" clip-path="url(#clip)"/>'
+                '<defs><clipPath id="clip"><rect width="5" height="5"/></clipPath>'
+                "</defs>"
+            ),
         ],
     )
     def test_svg_clip_path_outside_defs(self, svg_body, caplog):
