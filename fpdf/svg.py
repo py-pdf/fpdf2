@@ -345,6 +345,15 @@ def convert_stroke_width(incoming: str) -> Optional[float]:
 
 
 @force_nodocument
+def convert_dash_length(incoming: str) -> float:
+    # a plain number stays a float, so that "nan" and "inf" get their own error later
+    try:
+        return float(incoming)
+    except ValueError:
+        return resolve_length(incoming)
+
+
+@force_nodocument
 def convert_miterlimit(incoming: str) -> float:
     val = float(incoming)
     if not math.isfinite(val):
@@ -429,14 +438,16 @@ svg_attr_map: dict[str, Any] = {
         "stroke_dash_pattern",
         optional(
             dasharray,
-            lambda da: [float(item) for item in NUMBER_SPLIT.split(da) if item],
+            lambda da: [
+                convert_dash_length(item) for item in NUMBER_SPLIT.split(da) if item
+            ],
         ),
     ),
     # stroke-dashoffset may be a percentage, which we don't support currently
     # https://www.w3.org/TR/SVG11/painting.html#StrokeDashoffsetProperty
     "stroke-dashoffset": lambda dashoff: (
         "stroke_dash_phase",
-        inheritable(dashoff, float),
+        inheritable(dashoff, convert_dash_length),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeLinecapProperty
     "stroke-linecap": lambda capstr: ("stroke_cap_style", inheritable(capstr)),

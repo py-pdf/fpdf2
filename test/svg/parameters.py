@@ -791,6 +791,18 @@ test_svg_attribute_conversion = (
         id="stroke-dashoffset",
     ),
     pytest.param(
+        '<path stroke-dasharray="4px, 2px" stroke-dashoffset="2px"/>',
+        Gs(stroke_dash_pattern=[4 * 0.75, 2 * 0.75], stroke_dash_phase=2 * 0.75),
+        no_error(),
+        id="stroke-dasharray and stroke-dashoffset with units",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1mm 2"/>',
+        Gs(stroke_dash_pattern=[72 / 25.4, 2]),
+        no_error(),
+        id="stroke-dasharray mixed units",
+    ),
+    pytest.param(
         '<path stroke-linecap="butt"/>',
         Gs(stroke_cap_style="butt"),
         no_error(),
