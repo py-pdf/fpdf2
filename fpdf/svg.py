@@ -98,6 +98,11 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+# An at-rule without a block, such as @import url("...;..."); or @charset "utf-8";
+# a ";" in a string or a url() does not end it
+CSS_AT_STATEMENT_RE = re.compile(
+    r"""@[\w-]+(?:[^;{}'"(]|\([^)]*\)|"[^"]*"|'[^']*')*;"""
+)
 
 SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
     "requiredFeatures",
@@ -887,7 +892,7 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
     if not css_text:
         return styles
 
-    cleaned = CSS_COMMENT_RE.sub("", css_text)
+    cleaned = CSS_AT_STATEMENT_RE.sub("", CSS_COMMENT_RE.sub("", css_text))
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
         declarations = html.parse_css_style(body)
         if not declarations:
