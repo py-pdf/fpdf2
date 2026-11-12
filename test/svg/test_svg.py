@@ -290,6 +290,35 @@ class TestSVGObject:
         assert svg.width == pytest.approx(100)
         assert svg.height == pytest.approx(100)
 
+    @pytest.mark.parametrize(
+        "rect_attributes, expected",
+        [
+            # as in the logo of APIAuto
+            (
+                'style="transform: matrix(4,0,0,4,93,749)"',
+                fpdf.drawing.Transform(4, 0, 0, 4, 93, 749),
+            ),
+            ('class="a"', fpdf.drawing.Transform.translation(3, 6)),
+            # the CSS property wins over the attribute
+            (
+                'transform="scale(3)" style="transform: scale(2)"',
+                fpdf.drawing.Transform.scaling(2),
+            ),
+            (
+                'transform="scale(3)" style="transform: none"',
+                fpdf.drawing.Transform.identity(),
+            ),
+        ],
+    )
+    def test_svg_transform_css_property(self, rect_attributes, expected):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            "<style>.a { transform: translate(4px, 8px) }</style>"
+            f'<rect {rect_attributes} width="5" height="5"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.transform == pytest.approx(expected)
+
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):
         svg = fpdf.svg.SVGObject.from_file(svg_file)

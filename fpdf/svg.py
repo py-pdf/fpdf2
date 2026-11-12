@@ -90,8 +90,9 @@ _HANDY_NAMESPACES = {
 }
 
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
+# the arguments may have a unit, as CSS writes them: rotate(45deg), translate(5px, 5px)
 TRANSFORM_GETTER = re.compile(
-    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+eE-]+)\)"
+    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([^()]*)\)"
 )
 
 # One coordinate of a points attribute, with the whitespace and comma that may follow it
@@ -454,7 +455,10 @@ def apply_styles(
         stylable.style.fill_opacity = opacity
         stylable.style.stroke_opacity = opacity
 
-    tfstr = svg_element.attrib.get("transform")
+    # in SVG 2 transform is also a CSS property, which wins over the attribute
+    tfstr = _normalize_css_value(style.get("transform"))
+    if tfstr is None:
+        tfstr = svg_element.attrib.get("transform")
     if tfstr:
         stylable.transform = convert_transforms(tfstr)
 
@@ -1065,6 +1069,12 @@ class ShapeBuilder:
         return path
 
 
+def _scale_factor(value: str) -> float:
+    """A scale factor, which CSS also allows as a percentage: scale(50%) is scale(0.5)."""
+    value = value.strip()
+    return float(value[:-1]) / 100 if value.endswith("%") else float(value)
+
+
 @force_nodocument
 def convert_transforms(tfstr: str) -> Transform:
     """Convert SVG/CSS transform functions into PDF transforms."""
@@ -1103,20 +1113,20 @@ def convert_transforms(tfstr: str) -> Transform:
             # if sy is not provided, it takes a value equal to sx
             args = NUMBER_SPLIT.split(args)
             if len(args) == 2:
-                sx = float(args[0])
-                sy = float(args[1])
+                sx = _scale_factor(args[0])
+                sy = _scale_factor(args[1])
             elif len(args) == 1:
-                sx = sy = float(args[0])
+                sx = sy = _scale_factor(args[0])
             else:
                 raise ValueError(f"bad scale transform {tfstr}")
 
             transform = Transform.scaling(x=sx, y=sy) @ transform
 
         elif tf_type == "scaleX":  # SVG 2
-            transform = Transform.scaling(x=float(args), y=1) @ transform
+            transform = Transform.scaling(x=_scale_factor(args), y=1) @ transform
 
         elif tf_type == "scaleY":  # SVG 2
-            transform = Transform.scaling(x=1, y=float(args)) @ transform
+            transform = Transform.scaling(x=1, y=_scale_factor(args)) @ transform
 
         elif tf_type == "skew":  # SVG 2, not the same as skewX@skewY
             # if sy is not provided, it takes a value equal to 0

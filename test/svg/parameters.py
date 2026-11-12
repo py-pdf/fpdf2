@@ -506,6 +506,17 @@ test_svg_transforms = (
         no_error(),
         id="multiple",
     ),
+    # CSS writes the arguments with units, which were ignored
+    pytest.param(
+        "rotate(90deg) translate(4px, 1in)",
+        Transform.translation(3, 72).rotate_d(90),
+        no_error(),
+        id="units",
+    ),
+    pytest.param("rotate(0.25turn)", Transform.rotation_d(90), no_error(), id="turn"),
+    pytest.param(
+        "scale(50%, 200%)", Transform.scaling(0.5, 2), no_error(), id="scale percent"
+    ),
 )
 
 test_svg_transform_documents = (
