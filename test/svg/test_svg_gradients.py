@@ -389,6 +389,71 @@ def test_gradient_without_stops_is_skipped():
     assert "#empty" not in svg_obj.gradient_definitions
 
 
+def test_gradient_inherits_stops_with_href():
+    # as Inkscape writes gradients: the stops are in a gradient of their own
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"
+         xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <linearGradient id="linearGradient1">
+          <stop offset="0" stop-color="red" />
+          <stop offset="1" stop-color="blue" />
+        </linearGradient>
+        <linearGradient xlink:href="#linearGradient1" id="linearGradient2"
+                        x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse" />
+      </defs>
+      <rect width="200" height="200" fill="url(#linearGradient2)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    paint = svg_obj.gradient_definitions["#linearGradient2"]
+    assert paint.units == GradientUnits.USER_SPACE_ON_USE
+    assert paint.gradient.coords == (0, 0, 200, 0)
+    assert (
+        paint.gradient.colors
+        == svg_obj.gradient_definitions["#linearGradient1"].gradient.colors
+    )
+
+
+def test_gradient_inherits_attributes_with_href():
+    # through a chain of references, also to a gradient defined later
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="a" href="#b" r="0.25" />
+        <radialGradient id="b" href="#c" cx="0.25" />
+        <radialGradient id="c" cx="0.75" cy="0.75" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="white" />
+          <stop offset="1" stop-color="black" />
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="80" fill="url(#a)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    paint = svg_obj.gradient_definitions["#a"]
+    assert paint.units == GradientUnits.USER_SPACE_ON_USE
+    # x0, y0, r0 (the focal point, fx and fy default to cx and cy), x1, y1, r1
+    assert paint.gradient.coords == pytest.approx((0.25, 0.75, 0, 0.25, 0.75, 0.25))
+
+
+def test_gradient_href_cycle_without_stops_is_skipped():
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="a" href="#b" />
+        <linearGradient id="b" href="#a" />
+      </defs>
+      <rect width="200" height="200" fill="url(#a)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    assert not svg_obj.gradient_definitions
+
+
 def test_gradient_percentage_coordinates():
     svg = """
     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">

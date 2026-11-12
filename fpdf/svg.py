@@ -1220,6 +1220,12 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "pattern")
             and element.attrib.get("id")
         }
+        self._gradient_elements = {
+            "#" + element.attrib["id"]: element
+            for element in svg_tree.iter()
+            if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
+            and element.attrib.get("id")
+        }
         self._pattern_parents = {
             child: parent for parent in svg_tree.iter() for child in parent
         }
@@ -1533,6 +1539,41 @@ class SVGObject:
         return None
 
     @force_nodocument
+    def _gradient_templates(self, grad_element: "Element") -> list["Element"]:
+        """The gradient, then the gradients it references with href, in order.
+
+        A gradient inherits the attributes it does not set and, if it has no
+        stops, the stops of the gradient it references, as Inkscape writes them.
+        """
+        chain = [grad_element]
+        while True:
+            href = chain[-1].attrib.get(
+                "href", chain[-1].attrib.get("{http://www.w3.org/1999/xlink}href")
+            )
+            template = self._gradient_elements.get(href) if href else None
+            if template is None or template in chain:
+                return chain
+            chain.append(template)
+
+    @force_nodocument
+    @staticmethod
+    def _gradient_attr(chain: list["Element"], name: str, default: str) -> str:
+        for element in chain:
+            if name in element.attrib:
+                return element.attrib[name]
+        return default
+
+    @force_nodocument
+    def _gradient_stops(
+        self, chain: list["Element"]
+    ) -> list[tuple[float, DeviceRGB | DeviceGray]]:
+        for element in chain:
+            stops = self._parse_gradient_stops(element)
+            if stops:
+                return stops
+        return []
+
+    @force_nodocument
     def _parse_linear_gradient(self, grad_element: "Element") -> None:
         """Parse a <linearGradient> element and store it in gradient_definitions."""
         grad_id: Optional[str] = grad_element.attrib.get("id")
@@ -1543,23 +1584,24 @@ class SVGObject:
         if not grad_id.startswith("#"):
             grad_id = "#" + grad_id
 
-        x1 = grad_element.attrib.get("x1", "0%")
-        y1 = grad_element.attrib.get("y1", "0%")
-        x2 = grad_element.attrib.get("x2", "100%")
-        y2 = grad_element.attrib.get("y2", "0%")
+        chain = self._gradient_templates(grad_element)
+        x1 = self._gradient_attr(chain, "x1", "0%")
+        y1 = self._gradient_attr(chain, "y1", "0%")
+        x2 = self._gradient_attr(chain, "x2", "100%")
+        y2 = self._gradient_attr(chain, "y2", "0%")
 
         x1_val = self._convert_gradient_coordinate(x1, "0")
         y1_val = self._convert_gradient_coordinate(y1, "0")
         x2_val = self._convert_gradient_coordinate(x2, "1")
         y2_val = self._convert_gradient_coordinate(y2, "0")
 
-        units_str = grad_element.attrib.get("gradientUnits", "objectBoundingBox")
+        units_str = self._gradient_attr(chain, "gradientUnits", "objectBoundingBox")
         if units_str == "userSpaceOnUse":
             units = GradientUnits.USER_SPACE_ON_USE
         else:
             units = GradientUnits.OBJECT_BOUNDING_BOX
 
-        spread_str = grad_element.attrib.get("spreadMethod", "pad")
+        spread_str = self._gradient_attr(chain, "spreadMethod", "pad")
         try:
             spread_method = GradientSpreadMethod.coerce(spread_str)
         except (ValueError, AttributeError):
@@ -1567,14 +1609,14 @@ class SVGObject:
             LOGGER.warning("Invalid spreadMethod '%s', using PAD", spread_str)
 
         transform = None
-        transform_str = grad_element.attrib.get("gradientTransform")
+        transform_str = self._gradient_attr(chain, "gradientTransform", "")
         if transform_str:
             try:
                 transform = convert_transforms(transform_str)
             except (ValueError, AttributeError, TypeError) as e:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
-        stops = self._parse_gradient_stops(grad_element)
+        stops = self._gradient_stops(chain)
 
         if not stops:
             LOGGER.warning("Linear gradient '%s' has no valid stops, skipping", grad_id)
@@ -1611,12 +1653,13 @@ class SVGObject:
         if not grad_id.startswith("#"):
             grad_id = "#" + grad_id
 
-        cx = grad_element.attrib.get("cx", "50%")
-        cy = grad_element.attrib.get("cy", "50%")
-        r = grad_element.attrib.get("r", "50%")
-        fx = grad_element.attrib.get("fx", cx)
-        fy = grad_element.attrib.get("fy", cy)
-        fr = grad_element.attrib.get("fr", "0%")
+        chain = self._gradient_templates(grad_element)
+        cx = self._gradient_attr(chain, "cx", "50%")
+        cy = self._gradient_attr(chain, "cy", "50%")
+        r = self._gradient_attr(chain, "r", "50%")
+        fx = self._gradient_attr(chain, "fx", cx)
+        fy = self._gradient_attr(chain, "fy", cy)
+        fr = self._gradient_attr(chain, "fr", "0%")
 
         cx_val = self._convert_gradient_coordinate(cx, "0.5")
         cy_val = self._convert_gradient_coordinate(cy, "0.5")
@@ -1631,28 +1674,28 @@ class SVGObject:
             )
             return
 
-        units_str = grad_element.attrib.get("gradientUnits", "objectBoundingBox")
+        units_str = self._gradient_attr(chain, "gradientUnits", "objectBoundingBox")
         units = (
             GradientUnits.USER_SPACE_ON_USE
             if units_str == "userSpaceOnUse"
             else GradientUnits.OBJECT_BOUNDING_BOX
         )
 
-        spread_str = grad_element.attrib.get("spreadMethod", "pad")
+        spread_str = self._gradient_attr(chain, "spreadMethod", "pad")
         try:
             spread_method = GradientSpreadMethod.coerce(spread_str)
         except (ValueError, AttributeError):
             spread_method = GradientSpreadMethod.PAD
 
         transform = None
-        transform_str = grad_element.attrib.get("gradientTransform")
+        transform_str = self._gradient_attr(chain, "gradientTransform", "")
         if transform_str:
             try:
                 transform = convert_transforms(transform_str)
             except (ValueError, AttributeError, TypeError) as e:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
-        stops = self._parse_gradient_stops(grad_element)
+        stops = self._gradient_stops(chain)
         if not stops:
             LOGGER.warning("Radial gradient '%s' has no valid stops, skipping", grad_id)
             return
