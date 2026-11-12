@@ -1017,9 +1017,12 @@ class ShapeBuilder:
         """Convert an SVG <circle> into a PDF path."""
         cx = resolve_length(tag.attrib.get("cx", "0"))
         cy = resolve_length(tag.attrib.get("cy", "0"))
-        r = resolve_length(tag.attrib["r"])
+        r = resolve_length(tag.attrib.get("r", "0"))
 
         path = cls.new_path(tag, clipping_path)
+        if r == 0:
+            # 0, the initial value, disables rendering, as for an <ellipse>
+            return path
         path.circle(cx, cy, r)
         return path
 
@@ -1084,7 +1087,7 @@ class ShapeBuilder:
     def polyline(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <polyline> into a PDF path."""
         path = cls.new_path(tag)
-        points = cls._complete_points(tag.attrib["points"])
+        points = cls._complete_points(tag.attrib.get("points", ""))
         if points:
             svg_path_converter(path, "M" + points)
         return path
@@ -1093,7 +1096,7 @@ class ShapeBuilder:
     def polygon(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <polygon> into a PDF path."""
         path = cls.new_path(tag, clipping_path)
-        points = cls._complete_points(tag.attrib["points"])
+        points = cls._complete_points(tag.attrib.get("points", ""))
         if points:
             svg_path_converter(path, "M" + points + "Z")
         return path

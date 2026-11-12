@@ -191,9 +191,8 @@ test_svg_shape_tags = (
         no_error(),
         id="circle negative r",
     ),
-    pytest.param(
-        '<circle cx="10" cy="10"/>', [], pytest.raises(KeyError), id="circle no r"
-    ),
+    pytest.param('<circle cx="10" cy="10"/>', [], no_error(), id="circle no r"),
+    pytest.param('<circle cx="10" cy="10" r="0"/>', [], no_error(), id="circle r 0"),
     pytest.param(
         '<ellipse rx="10"/>',
         [M(0, 0), El(10, 10, 0, 0)],
@@ -282,7 +281,7 @@ test_svg_shape_tags = (
     pytest.param(
         "<polyline/>",
         [],
-        pytest.raises(KeyError),
+        no_error(),
         id="polyline no points",
     ),
     pytest.param(
@@ -318,7 +317,7 @@ test_svg_shape_tags = (
     pytest.param(
         "<polygon/>",
         [],
-        pytest.raises(KeyError),
+        no_error(),
         id="polygon no points",
     ),
     pytest.param(
