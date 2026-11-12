@@ -2231,7 +2231,8 @@ class SVGObject:
         if "x" in xref.attrib or "y" in xref.attrib:
             # Quoting the SVG spec - 5.6.2. Layout of re-used graphics:
             # > The x and y properties define an additional transformation translate(x,y)
-            x, y = float(xref.attrib.get("x", 0)), float(xref.attrib.get("y", 0))
+            x = resolve_length(xref.attrib.get("x", "0"))
+            y = resolve_length(xref.attrib.get("y", "0"))
             placement_transform = Transform.translation(x=x, y=y)
         # Note that we currently do not support "width" & "height" with % in <use>
         symbol_info = self.symbol_info.get(ref)
@@ -2493,8 +2494,8 @@ class SVGObject:
             clipping_path_shape = referenced_shape
             if {"x", "y", "transform"} & shape.attrib.keys():
                 # > The x and y properties define an additional transformation translate(x,y)
-                x = float(shape.attrib.get("x", 0))
-                y = float(shape.attrib.get("y", 0))
+                x = resolve_length(shape.attrib.get("x", "0"))
+                y = resolve_length(shape.attrib.get("y", "0"))
                 placement = Transform.translation(x=x, y=y)
                 if "transform" in shape.attrib:
                     placement = placement @ convert_transforms(
