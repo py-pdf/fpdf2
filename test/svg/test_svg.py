@@ -694,7 +694,6 @@ class TestSVGObject:
     @pytest.mark.parametrize(
         "svg_body, font_sizes",
         [
-            # as written by spaCy's displaCy
             (
                 (
                     '<svg xmlns="http://www.w3.org/2000/svg" style="font-size:20px">'
