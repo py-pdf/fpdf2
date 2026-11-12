@@ -260,9 +260,16 @@ test_svg_shape_tags = (
     ),
     pytest.param(
         '<line y1="0" x2="10" y2="10"/>',
-        [],
-        pytest.raises(KeyError),
+        [M(0, 0), L(10, 10)],
+        no_error(),
         id="line no x1",
+    ),
+    pytest.param(
+        # a tick of a D3 axis
+        '<line stroke="currentColor" y2="6"/>',
+        [M(0, 0), L(0, 6)],
+        no_error(),
+        id="line only y2",
     ),
     pytest.param(
         '<polyline points="1, 0 10, 10, -20, -50"/>',
