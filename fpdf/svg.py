@@ -740,6 +740,25 @@ def _get_attr_or_style(
     return _normalize_css_value(tag.attrib.get(name))
 
 
+def _resolve_relative_font_size(
+    style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """
+    Make a relative font-size (em, ex or %) absolute, against the inherited one, so
+    that descendants inherit the computed size, as in CSS.
+    """
+    value = style_map.get("font-size")
+    match = unit_splitter.fullmatch(value.strip()) if isinstance(value, str) else None
+    if match is None:
+        return
+    factor = {"em": 1.0, "ex": 0.5, "%": 0.01}.get(match.group("unit") or "")
+    if factor is None:
+        return
+    inherited = (inherited_style or {}).get("font-size")
+    parent_size = resolve_length(inherited) if inherited else resolve_length("16px")
+    style_map["font-size"] = f"{float(match.group('value')) * factor * parent_size}pt"
+
+
 def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
     """
     Resolve the width or height of the root <svg>. As in browsers, a length in em
@@ -995,10 +1014,10 @@ class ShapeBuilder:
     @classmethod
     def line(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <line> into a PDF path."""
-        x1 = resolve_length(tag.attrib["x1"])
-        y1 = resolve_length(tag.attrib["y1"])
-        x2 = resolve_length(tag.attrib["x2"])
-        y2 = resolve_length(tag.attrib["y2"])
+        x1 = resolve_length(tag.attrib.get("x1", "0"))
+        y1 = resolve_length(tag.attrib.get("y1", "0"))
+        x2 = resolve_length(tag.attrib.get("x2", "0"))
+        y2 = resolve_length(tag.attrib.get("y2", "0"))
 
         path = cls.new_path(tag)
         path.move_to(x1, y1)
@@ -1774,10 +1793,12 @@ class SVGObject:
             )
             for ancestor in reversed(ancestors):
                 styles = self._style_map_for(ancestor)
+                parent_style = dict(inherited)
                 for attr in (*svg_attr_map, *font_keys):
                     value = _get_attr_or_style(ancestor, attr, styles)
                     if value is not None:
                         inherited[attr] = value
+                _resolve_relative_font_size(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
             apply_styles(group, empty, inherited)
@@ -2271,6 +2292,7 @@ class SVGObject:
         local_style = self._style_map_for(group)
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
+        _resolve_relative_font_size(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
@@ -2376,6 +2398,7 @@ class SVGObject:
         local_style = self._style_map_for(switch)
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
+        _resolve_relative_font_size(merged_style, inherited_style)
         pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
         apply_styles(pdf_group, switch, merged_style)
@@ -2588,6 +2611,7 @@ class SVGObject:
         local_style = self._style_map_for(text_tag)
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
+        _resolve_relative_font_size(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
             inherited_value = (inherited_style or {}).get(attr)
@@ -2715,6 +2739,7 @@ class SVGObject:
                 child_local_style = self._style_map_for(child)
                 child_effective_style = dict(effective_style)
                 child_effective_style.update(child_local_style)
+                _resolve_relative_font_size(child_effective_style, effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )

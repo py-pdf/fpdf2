@@ -18,16 +18,17 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.9.1] - Not yet released
 ### Added
-
 * Chinese translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-zh.html#-pdfa) tutorial section - _cf._ [issue #267](https://github.com/py-pdf/fpdf2/issues/267) - _cf._ [PR #2138](https://github.com/py-pdf/fpdf2/pull/2138) - thanks to @zheng-guannan577*
 * `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
 * SVG: a root `<svg>` with `width="auto"` or `height="auto"`, as Figma writes it, for instance in the country flags of the ProtonVPN apps, is now sized as if it had no `width` or `height`, from its `viewBox`, instead of failing with `ValueError: Unable to parse 'auto' as a length` - thanks to @RavSinghChandan
+* SVG: a `<line>` without `x1`, `y1`, `x2` or `y2` no longer fails with a `KeyError`; a missing coordinate is 0, as in the SVG specification, so the ticks of D3 axes, written as `<line y2="6">`, are drawn - thanks to @RavSinghChandan
 * SVG paths and `PaintedPath.arc_to()` no longer fail with `ValueError: math domain error` for an arc whose radii are just too small to reach its end point - thanks to @RavSinghChandan
 * SVG: a gradient `<stop>` without an `offset`, as in the Hugging Face logo and pipeline diagram on spaCy's website, is now read with offset 0, the initial value in the SVG specification, instead of being skipped with a warning, which left the gradient with a stop missing - thanks to @RavSinghChandan
 * SVG: `currentColor` and `inherit` are now read regardless of case, like the color keywords, so `fill="currentcolor"`, as in the Font Awesome icons of many web pages, no longer fails with `ValueError: unsupported color specification currentcolor` - thanks to @RavSinghChandan
 * SVG: an `<image>` whose `x`, `y`, `width` or `height` has a unit no longer fails - thanks to @RavSinghChandan
 * SVG: black or gray text no longer fails with an `AssertionError` when it is in a `<tspan>` that has its own style, as in every text written by Inkscape: the check on the text color left out `DeviceGray`, the color fpdf2 uses for black and gray - thanks to @RavSinghChandan
+* SVG: a relative `font-size` in `em`, `ex` or `%` is now resolved against the inherited font size - thanks to @RavSinghChandan
 * SVG: an element or group with `display="none"`, set as an attribute, in its `style` or by a CSS class, such as a hidden Inkscape layer, is no longer drawn, and neither is a hidden root `<svg>`, `<tspan>` or element referenced by a `<use>`; an element inside a hidden group can still be drawn by a `<use>` - thanks to @RavSinghChandan
 * `SVGObject.from_file()` reads a file in the encoding it declares, such as `<?xml version="1.0" encoding="iso-8859-1"?>`, like `FPDF.image()` does, instead of always decoding it as UTF-8, which failed with a `UnicodeDecodeError`; an `encoding` given explicitly is still used - thanks to @RavSinghChandan
 * SVG: a `width` or `height` in `em` or `ex` on the root `<svg>`, such as the `width="1em" height="1em"` of icon sets, is now relative to its font size, 16px by default as in browsers, instead of failing with `ValueError: 1em uses unsupported relative length em` - thanks to @RavSinghChandan
