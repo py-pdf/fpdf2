@@ -1014,10 +1014,10 @@ class ShapeBuilder:
     @classmethod
     def line(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <line> into a PDF path."""
-        x1 = resolve_length(tag.attrib["x1"])
-        y1 = resolve_length(tag.attrib["y1"])
-        x2 = resolve_length(tag.attrib["x2"])
-        y2 = resolve_length(tag.attrib["y2"])
+        x1 = resolve_length(tag.attrib.get("x1", "0"))
+        y1 = resolve_length(tag.attrib.get("y1", "0"))
+        x2 = resolve_length(tag.attrib.get("x2", "0"))
+        y2 = resolve_length(tag.attrib.get("y2", "0"))
 
         path = cls.new_path(tag)
         path.move_to(x1, y1)
