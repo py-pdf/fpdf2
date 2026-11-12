@@ -614,6 +614,13 @@ test_svg_attribute_conversion = (
         id="fill color light-dark()",
     ),
     pytest.param(
+        # as Mermaid writes the style of a node
+        '<path style="fill:#f9f !important;stroke:none!IMPORTANT"/>',
+        Gs(fill_color="#f9f", stroke_color=None),
+        no_error(),
+        id="style with !important",
+    ),
+    pytest.param(
         '<path stroke="Light-Dark(#00f, white)"/>',
         Gs(stroke_color="#00f"),
         no_error(),
@@ -810,6 +817,18 @@ test_svg_attribute_conversion = (
         Gs(stroke_dash_pattern=[1], stroke_dash_phase=1),
         no_error(),
         id="stroke-dashoffset",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="4px, 2px" stroke-dashoffset="2px"/>',
+        Gs(stroke_dash_pattern=[4 * 0.75, 2 * 0.75], stroke_dash_phase=2 * 0.75),
+        no_error(),
+        id="stroke-dasharray and stroke-dashoffset with units",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1mm 2"/>',
+        Gs(stroke_dash_pattern=[72 / 25.4, 2]),
+        no_error(),
+        id="stroke-dasharray mixed units",
     ),
     pytest.param(
         '<path stroke-linecap="butt"/>',
