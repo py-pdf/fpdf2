@@ -260,10 +260,47 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     if colorstr.startswith("#"):
         return color_from_hex_string(colorstr)
 
-    if colorstr.lower().startswith("rgb"):
-        return color_from_rgb_string(colorstr.lower())
+    lowered = colorstr.lower()
+    if lowered.startswith("rgba(") or (
+        lowered.startswith("rgb(") and ("," not in lowered or "/" in lowered)
+    ):
+        return _css_rgb_color(lowered)
+
+    if lowered.startswith("rgb"):
+        return color_from_rgb_string(lowered)
 
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _css_rgb_color(colorstr: str) -> DeviceRGB:
+    """
+    Parse rgba(R, G, B, A), or rgb() and rgba() in the space-separated syntax of
+    CSS Color 4: rgb(R G B) and rgb(R G B / A). A is a number from 0 to 1 or a
+    percentage, unlike the 0-255 alpha of fpdf2's own rgb(R, G, B, A).
+    """
+    body = colorstr[colorstr.index("(") + 1 : -1] if colorstr.endswith(")") else ""
+    alpha: Optional[str] = None
+    if "/" in body:
+        body, alpha = body.split("/", 1)
+        channels = body.split()
+    elif "," in body:
+        channels = [part.strip() for part in body.split(",")]
+        if len(channels) == 4:
+            alpha = channels.pop()
+    else:
+        channels = body.split()
+    if len(channels) != 3:
+        raise ValueError(f"{colorstr} could not be interpreted as a rgb() color")
+
+    def fraction(value: str, scale: float) -> float:
+        value = value.strip()
+        number = (
+            float(value[:-1]) / 100 if value.endswith("%") else float(value) / scale
+        )
+        return min(max(number, 0.0), 1.0)
+
+    r, g, b = (fraction(channel, 255) for channel in channels)
+    return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
 
 
 def _light_color(colorstr: str) -> str:
