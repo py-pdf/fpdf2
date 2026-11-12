@@ -274,6 +274,22 @@ class TestSVGObject:
         )
         assert (svg.width, svg.height) == (expected, 2 * expected)
 
+    @pytest.mark.parametrize(
+        "size", ['width="auto" height="auto"', 'width="AUTO"', 'height=" auto "']
+    )
+    def test_document_size_auto(self, size):
+        # as Figma writes it: sized like an <svg> without width and height
+        svg_data = (
+            f'<svg xmlns="http://www.w3.org/2000/svg" {size} viewBox="0 0 24 16"/>'
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert (svg.width, svg.height) == (None, None)
+
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        info = pdf.image(BytesIO(svg_data.encode()), w=48)
+        assert (info.rendered_width, info.rendered_height) == pytest.approx((48, 32))
+
     @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
     def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
         svg_data = (
