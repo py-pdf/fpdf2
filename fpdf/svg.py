@@ -1652,8 +1652,19 @@ class SVGObject:
         the gradient it references, as Inkscape writes them.
 
         Each gradient is resolved once and cached, so long reference chains stay
-        linear; a reference cycle ends the chain.
+        linear. In a reference cycle, each gradient follows the cycle from itself,
+        so that the result does not depend on the order of the definitions.
         """
+
+        def inherit(
+            element: "Element", inherited: tuple[dict[str, str], Optional["Element"]]
+        ) -> tuple[dict[str, str], Optional["Element"]]:
+            has_stops = any(without_ns(child.tag) == "stop" for child in element)
+            return (
+                {**inherited[0], **element.attrib},
+                element if has_stops else inherited[1],
+            )
+
         path: list["Element"] = []
         seen: set["Element"] = set()
         element: Optional["Element"] = grad_element
@@ -1668,17 +1679,24 @@ class SVGObject:
                 "href", element.attrib.get("{http://www.w3.org/1999/xlink}href")
             )
             element = self._gradient_elements.get(href) if href else None
-        inherited: tuple[dict[str, str], Optional["Element"]] = (
-            self._gradient_cache[element]
-            if element is not None and element in self._gradient_cache
-            else ({}, None)
-        )
-        for element in reversed(path):
-            has_stops = any(without_ns(child.tag) == "stop" for child in element)
+        if element is not None and element in seen:
+            # the walk came back to a gradient of the path: path[start:] is a cycle.
+            # Going round it backwards twice, each member gets the nearest attribute
+            # and <stop> elements that follow it, all the way round.
+            start = path.index(element)
+            cycle, path = path[start:], path[:start]
+            inherited: tuple[dict[str, str], Optional["Element"]] = ({}, None)
+            for member in reversed(cycle * 2):
+                inherited = inherit(member, inherited)
+                self._gradient_cache[member] = inherited
+        else:
             inherited = (
-                {**inherited[0], **element.attrib},
-                element if has_stops else inherited[1],
+                self._gradient_cache[element]
+                if element is not None and element in self._gradient_cache
+                else ({}, None)
             )
+        for element in reversed(path):
+            inherited = inherit(element, inherited)
             self._gradient_cache[element] = inherited
         return self._gradient_cache[grad_element]
 

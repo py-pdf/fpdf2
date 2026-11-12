@@ -454,6 +454,26 @@ def test_gradient_href_cycle_without_stops_is_skipped():
     assert not svg_obj.gradient_definitions
 
 
+@pytest.mark.parametrize("a_first", [True, False])
+def test_gradient_href_cycle_does_not_depend_on_order(a_first):
+    # a -> b -> a, where only a has stops: both resolve, whichever comes first
+    a = (
+        '<linearGradient id="a" href="#b">'
+        '<stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/>'
+        "</linearGradient>"
+    )
+    b = '<linearGradient id="b" href="#a"/>'
+    svg = f"""
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>{a + b if a_first else b + a}</defs>
+      <rect width="200" height="200" fill="url(#b)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    assert {"#a", "#b"} <= svg_obj.gradient_definitions.keys()
+
+
 def test_gradient_with_invalid_stops_does_not_inherit_stops():
     # its own <stop> elements are used, even when none of them can be read
     svg = """
