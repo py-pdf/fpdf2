@@ -882,10 +882,11 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
-def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]:
-    styles: list[tuple[str, dict[str, Any]]] = []
+def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
+    """The (selector, declarations) of each rule of a stylesheet, one per selector."""
+    rules: list[tuple[str, dict[str, Any]]] = []
     if not css_text:
-        return styles
+        return rules
 
     cleaned = CSS_COMMENT_RE.sub("", css_text)
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
@@ -899,15 +900,25 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
                 normalized[key] = norm_value
         if not normalized:
             continue
-        selectors = [selector.strip() for selector in selector_block.split(",")]
-        for selector in selectors:
-            if not selector.startswith("."):
-                continue
-            class_name = selector[1:].split(":", 1)[0].strip()
-            if not class_name:
-                continue
-            styles.append((class_name, dict(normalized)))
+        for selector in selector_block.split(","):
+            rules.append((selector.strip(), dict(normalized)))
+    return rules
+
+
+def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]:
+    styles: list[tuple[str, dict[str, Any]]] = []
+    for selector, declarations in _extract_css_rules(css_text):
+        if not selector.startswith("."):
+            continue
+        class_name = selector[1:].split(":", 1)[0].strip()
+        if not class_name:
+            continue
+        styles.append((class_name, declarations))
     return styles
+
+
+# A universal selector or an element name, such as "*" or "rect"
+CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
 
 
 @force_nodocument
@@ -1223,6 +1234,8 @@ class SVGObject:
         self._cross_reference_costs: dict[str, int] = {}
         self.symbol_info: dict[str, SymbolInfo] = {}
         self.css_class_styles: dict[str, dict[str, Any]] = {}
+        # rules of "*" and element names, such as matplotlib's * { stroke-linejoin: round }
+        self.css_type_styles: dict[str, dict[str, Any]] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
             {}
         )  # Store parsed gradients by ID
@@ -1427,6 +1440,11 @@ class SVGObject:
                 for class_name, declarations in _extract_css_class_styles(css_text):
                     existing = self.css_class_styles.setdefault(class_name, {})
                     existing.update(declarations)
+                for selector, declarations in _extract_css_rules(css_text):
+                    if CSS_TYPE_SELECTOR_RE.fullmatch(selector):
+                        self.css_type_styles.setdefault(selector, {}).update(
+                            declarations
+                        )
 
     def _is_display_none(self, tag: "Element") -> bool:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
@@ -1434,6 +1452,11 @@ class SVGObject:
 
     def _style_map_for(self, tag: "Element") -> dict[str, Any]:
         style_map: dict[str, Any] = {}
+        # as in CSS, a class rule wins over an element rule, which wins over "*"
+        for selector in ("*", without_ns(tag.tag)):
+            type_styles = self.css_type_styles.get(selector)
+            if type_styles:
+                style_map.update(type_styles)
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
             if class_attr:
