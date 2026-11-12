@@ -76,6 +76,23 @@ def test_name_keyed_cff_font_embeds_cff_font_program():
     font_file = descriptor["/FontFile3"].get_object()
     assert font_file["/Subtype"] == "/CIDFontType0C"
 
+    # Other than the ToUnicode CMap (type 2), the encoding CMap maps
+    # codes to CIDs, so it has type 1 (Adobe Technical Note #5099)
+    encoding = font["/Encoding"].get_object()
+    assert b"/CMapType 1 def" in encoding.get_data()
+
+    # The CIDFont and its embedded encoding CMap must declare the same
+    # character collection (ISO 19005-1, 6.3.3.1); CIDs of a name-keyed
+    # CFF program are glyph indices, specific to the font
+    keys = ("/Registry", "/Ordering", "/Supplement")
+    cid_system_info = {key: cid_font["/CIDSystemInfo"][key] for key in keys}
+    assert cid_system_info == {
+        "/Registry": "Adobe",
+        "/Ordering": "Identity",
+        "/Supplement": 0,
+    }
+    assert {key: encoding["/CIDSystemInfo"][key] for key in keys} == cid_system_info
+
     # A CIDFontType0 with a name-keyed CFF program uses CIDs as glyph
     # indices into its CharStrings (ISO 32000-1, 9.7.4.2): follow each
     # character through the ToUnicode CMap (code), the encoding CMap

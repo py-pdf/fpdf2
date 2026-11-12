@@ -1535,12 +1535,22 @@ class OutputProducer:
                 self._add_pdf_obj(to_unicode_obj, "fonts")
                 composite_font_obj.to_unicode = to_unicode_obj
 
+                # Character collection of CFF fonts, to be declared alike by the
+                # CIDFont and its encoding CMap; CIDs of name-keyed fonts are specific
+                # to the font
+                identity_ros = ("Adobe", "Identity", 0)
+                registry, ordering, supplement = font.cff_ros or identity_ros
+                cid_system_info_obj = CIDSystemInfo()
+                if is_cff_font:
+                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
+                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
+                    cid_system_info_obj.supplement = supplement
+                self._add_pdf_obj(cid_system_info_obj, "fonts")
+                cid_font_obj.c_i_d_system_info = cid_system_info_obj
+
                 if is_cff_font and code_to_cid:
-                    registry = "Adobe"
-                    ordering = "Identity"
-                    supplement = 0
-                    if font.cff_ros:
-                        registry, ordering, supplement = font.cff_ros
+                    # Encoding CMap (type 1), unlike the ToUnicode CMap (type 2)
+                    cmap_name = f"{registry}-{ordering}-H"
                     cid_mapping = [
                         f"<{code:04X}> {cid}\n"
                         for code, cid in sorted(code_to_cid.items())
@@ -1555,8 +1565,8 @@ class OutputProducer:
                             f"/Ordering ({ordering})\n"
                             f"/Supplement {supplement}\n"
                             ">> def\n"
-                            f"/CMapName /{registry}-{ordering}-UCS def\n"
-                            "/CMapType 2 def\n"
+                            f"/CMapName /{cmap_name} def\n"
+                            "/CMapType 1 def\n"
                             "1 begincodespacerange\n"
                             "<0000> <FFFF>\n"
                             "endcodespacerange\n"
@@ -1569,22 +1579,11 @@ class OutputProducer:
                     )
                     encoding_cmap_obj.type = Name("CMap")  # type: ignore[attr-defined]
                     encoding_cmap_obj.c_map_name = Name(  # type: ignore[attr-defined]
-                        f"{registry}-{ordering}-UCS"
+                        cmap_name
                     )
-                    encoding_cmap_obj.c_i_d_system_info = Raw(  # type: ignore[attr-defined]
-                        f"<< /Registry ({registry}) /Ordering ({ordering}) /Supplement {supplement} >>"
-                    )
+                    encoding_cmap_obj.c_i_d_system_info = cid_system_info_obj  # type: ignore[attr-defined]
                     self._add_pdf_obj(encoding_cmap_obj, "fonts")
                     composite_font_obj.encoding = encoding_cmap_obj  # type: ignore[assignment]
-
-                cid_system_info_obj = CIDSystemInfo()
-                if is_cff_font and font.cff_ros:
-                    registry, ordering, supplement = font.cff_ros
-                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
-                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
-                    cid_system_info_obj.supplement = supplement
-                self._add_pdf_obj(cid_system_info_obj, "fonts")
-                cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
                 font_descriptor_obj = font.desc
                 font_descriptor_obj.font_name = Name(fontname)
