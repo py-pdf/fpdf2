@@ -690,6 +690,87 @@ class TestSVGObject:
         assert f"{color_operators} [] 0 d BT" in bytes(pdf.output()).decode("latin-1")
 
     @pytest.mark.parametrize(
+        "hidden_rect",
+        [
+            '<rect width="10" height="10" display="none"/>',
+            # a hidden Inkscape layer
+            '<g style="display:none"><rect width="10" height="10"/></g>',
+            (
+                "<style>.hidden { display: none }</style>"
+                '<rect class="hidden" width="10" height="10"/>'
+            ),
+        ],
+    )
+    def test_svg_display_none(self, hidden_rect):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f'{hidden_rect}<circle cx="25" cy="25" r="3"/></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert " re " not in output  # the rectangle
+        assert " c " in output  # the circle
+
+    def test_svg_display_none_referenced(self):
+        """An element in a hidden group can still be drawn by a <use>."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            '<g display="none"><rect id="square" width="10" height="10"/></g>'
+            '<use href="#square" x="20"/></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert output.count(" re ") == 1
+
+    @pytest.mark.parametrize(
+        "svg_data",
+        [
+            (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" '
+                'display="none"><rect width="10" height="10"/></svg>'
+            ),
+            (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+                '<rect id="square" width="10" height="10" display="none"/>'
+                '<use href="#square" x="20"/></svg>'
+            ),
+            (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+                '<defs><rect id="square" width="10" height="10" display="none"/>'
+                '</defs><use href="#square" x="20"/></svg>'
+            ),
+        ],
+    )
+    def test_svg_display_none_nothing_drawn(self, svg_data):
+        """A hidden <svg>, or a <use> of an element that is itself hidden."""
+        svg = fpdf.svg.SVGObject(svg_data)
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        assert " re " not in bytes(pdf.output()).decode("latin-1")
+
+    def test_svg_display_none_tspan(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            '<text x="1" y="10">ab<tspan display="none">cd</tspan>ef</text></svg>'
+        )
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "(ab) Tj" in output
+        assert "(ef) Tj" in output
+        assert "cd" not in output
+
+    @pytest.mark.parametrize(
         "declaration, file_encoding, from_file_kwargs",
         [
             ('<?xml version="1.0" encoding="iso-8859-1"?>', "latin-1", {}),
