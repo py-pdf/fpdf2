@@ -580,6 +580,13 @@ test_svg_attribute_conversion = (
         id="fill color light-dark()",
     ),
     pytest.param(
+        # as Mermaid writes the style of a node
+        '<path style="fill:#f9f !important;stroke:none!IMPORTANT"/>',
+        Gs(fill_color="#f9f", stroke_color=None),
+        no_error(),
+        id="style with !important",
+    ),
+    pytest.param(
         '<path stroke="Light-Dark(#00f, white)"/>',
         Gs(stroke_color="#00f"),
         no_error(),

@@ -117,6 +117,25 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     return value
 
 
+_IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
+
+
+def _split_important(value: str) -> tuple[str, bool]:
+    """Separate a CSS value from its "!important" flag, as in "fill: none !important"."""
+    match = _IMPORTANT_RE.search(value)
+    if match:
+        return value[: match.start()], True
+    return value, False
+
+
+def _parse_style_attribute(style: str) -> dict[str, str]:
+    """The declarations of a style attribute, without their "!important" flags."""
+    return {
+        key: _split_important(value)[0]
+        for key, value in html.parse_css_style(style).items()
+    }
+
+
 def _has_switch_conditional_attrs(tag: "Element") -> bool:
     return any(
         attribute in tag.attrib for attribute in SVG_SWITCH_CONDITIONAL_ATTRIBUTES
@@ -428,7 +447,7 @@ def apply_styles(
         style = computed_style
     else:
         style = {}
-        for key, value in html.parse_css_style(
+        for key, value in _parse_style_attribute(
             svg_element.attrib.get("style", "")
         ).items():
             norm_value = _normalize_css_value(value)
@@ -733,7 +752,7 @@ def _get_attr_or_style(
         if value is not None:
             return value
     if style_map is None:
-        inline = html.parse_css_style(tag.attrib.get("style", ""))
+        inline = _parse_style_attribute(tag.attrib.get("style", ""))
         value = _normalize_css_value(inline.get(name))
         if value is not None:
             return value
@@ -1398,19 +1417,37 @@ class SVGObject:
                 css_text = "".join(node.itertext() or [])
                 for class_name, declarations in _extract_css_class_styles(css_text):
                     existing = self.css_class_styles.setdefault(class_name, {})
-                    existing.update(declarations)
+                    for key, value in declarations.items():
+                        # a later rule does not override an !important declaration
+                        if key in existing and (
+                            _split_important(existing[key])[1]
+                            and not _split_important(value)[1]
+                        ):
+                            continue
+                        existing[key] = value
 
     def _style_map_for(self, tag: "Element") -> dict[str, Any]:
         style_map: dict[str, Any] = {}
+        # an !important declaration of a stylesheet wins over a normal inline one
+        important: set[str] = set()
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
             if class_attr:
                 for class_name in class_attr.split():
                     class_styles = self.css_class_styles.get(class_name)
                     if class_styles:
-                        style_map.update(class_styles)
+                        for key, declared in class_styles.items():
+                            value, is_important = _split_important(declared)
+                            if key in important and not is_important:
+                                continue
+                            style_map[key] = value
+                            if is_important:
+                                important.add(key)
         inline = html.parse_css_style(tag.attrib.get("style", ""))
-        for key, value in inline.items():
+        for key, declared in inline.items():
+            value, is_important = _split_important(declared)
+            if key in important and not is_important:
+                continue
             norm_value = _normalize_css_value(value)
             if norm_value is not None:
                 style_map[key] = norm_value
@@ -1492,7 +1529,7 @@ class SVGObject:
 
             style = stop_element.attrib.get("style", "")
             if style:
-                style_dict = html.parse_css_style(style)
+                style_dict = _parse_style_attribute(style)
                 stop_color = style_dict.get("stop-color")
                 stop_opacity_str = style_dict.get("stop-opacity")
                 if stop_opacity_str:

@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
 * SVG paths and `PaintedPath.arc_to()` no longer fail with `ValueError: math domain error` for an arc whose radii are just too small to reach its end point - thanks to @RavSinghChandan
+* SVG: a style declaration with `!important`, as Mermaid writes the `style` of each node, is now read instead of failing with `ValueError: unsupported color specification`, and an `!important` declaration of a `<style>` rule wins over a normal `style` attribute, as in CSS - thanks to @RavSinghChandan
 * SVG: a gradient `<stop>` without an `offset`, as in the Hugging Face logo and pipeline diagram on spaCy's website, is now read with offset 0, the initial value in the SVG specification, instead of being skipped with a warning, which left the gradient with a stop missing - thanks to @RavSinghChandan
 * SVG: `currentColor` and `inherit` are now read regardless of case, like the color keywords, so `fill="currentcolor"`, as in the Font Awesome icons of many web pages, no longer fails with `ValueError: unsupported color specification currentcolor` - thanks to @RavSinghChandan
 * SVG: an `<image>` whose `x`, `y`, `width` or `height` has a unit no longer fails - thanks to @RavSinghChandan
