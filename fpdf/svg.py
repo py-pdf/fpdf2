@@ -322,11 +322,8 @@ def _hsl_color(colorstr: str) -> DeviceRGB:
 
     # a saturation or lightness without % is a percentage too
     saturation, lightness = (fraction(part, 100) for part in parts[1:])
-    # rounded to 8 bits per channel, as browsers do: hsl(120, 100%, 25%) is #008000
-    r, g, b = (
-        round(channel * 255) / 255
-        for channel in colorsys.hls_to_rgb((degrees % 360) / 360, lightness, saturation)
-    )
+    # DeviceRGB takes fractions, so the color is kept exactly, not rounded to 8 bits
+    r, g, b = colorsys.hls_to_rgb((degrees % 360) / 360, lightness, saturation)
     return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
 
 

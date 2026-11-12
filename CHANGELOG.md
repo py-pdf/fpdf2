@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Chinese translation of the [Tuto 7 - Creating PDF/A Documents](https://py-pdf.github.io/fpdf2/Tutorial-zh.html#-pdfa) tutorial section - _cf._ [issue #267](https://github.com/py-pdf/fpdf2/issues/267) - _cf._ [PR #2138](https://github.com/py-pdf/fpdf2/pull/2138) - thanks to @zheng-guannan577*
 * `FPDF.write_html()` makes the `id` of an element, and the `name` of an `<a>`, a named destination, so that `<a href="#...">` links within the document work, like in browsers, instead of raising `FPDFException: Named destination ... was referenced but never set` - thanks to @RavSinghChandan
 ### Fixed
+* SVG: `hsl()` and `hsla()` colors are now read, with commas or space-separated, with a hue that may have an angle unit (`deg`, `grad`, `rad`, `turn`) and an alpha, as Mermaid diagrams and many stylesheets write them, instead of failing with `ValueError: unsupported color specification` - thanks to @RavSinghChandan
 * SVG: a `<line>` without `x1`, `y1`, `x2` or `y2` no longer fails with a `KeyError`; a missing coordinate is 0, as in the SVG specification, so the ticks of D3 axes, written as `<line y2="6">`, are drawn - thanks to @RavSinghChandan
 * SVG paths and `PaintedPath.arc_to()` no longer fail with `ValueError: math domain error` for an arc whose radii are just too small to reach its end point - thanks to @RavSinghChandan
 * SVG: a gradient `<stop>` without an `offset`, as in the Hugging Face logo and pipeline diagram on spaCy's website, is now read with offset 0, the initial value in the SVG specification, instead of being skipped with a warning, which left the gradient with a stop missing - thanks to @RavSinghChandan
@@ -83,7 +84,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
 
 ## [2.9.0] - 2026-10-29
-* SVG: `hsl()` and `hsla()` colors are now read, with commas or space-separated, with a hue that may have an angle unit (`deg`, `grad`, `rad`, `turn`) and an alpha, as Mermaid diagrams and many stylesheets write them, instead of failing with `ValueError: unsupported color specification` - thanks to @RavSinghChandan
 ### Added
 * support for `transform`, `style`, `opacity`, and `preserveAspectRatio="none"` on SVG `<image>` tags - _cf._ [issue #537](https://github.com/py-pdf/fpdf2/issues/537) - thanks to @agustin18
 * support for colored and uncolored tiling patterns with `FPDF.create_pattern()` and `FPDF.use_pattern()`, including SVG `<pattern>` elements and pattern fills and strokes on referenced `<use>` shapes - _cf._ [issue #790](https://github.com/py-pdf/fpdf2/issues/790) - thanks to @andersonhc
