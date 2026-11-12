@@ -1226,6 +1226,11 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
+        self._elements_by_id = {
+            "#" + element.attrib["id"]: element
+            for element in svg_tree.iter()
+            if element.attrib.get("id")
+        }
         self._pattern_parents = {
             child: parent for parent in svg_tree.iter() for child in parent
         }
@@ -1927,6 +1932,12 @@ class SVGObject:
         base_group.style.auto_close = False
         base_group.style.stroke_cap_style = StrokeCapStyle.BUTT
 
+        # A clip-path may reference a <clipPath> that comes after it, in or
+        # outside <defs>, so they are all built first.
+        for element in root_tag.iter():
+            if element.tag in xmlns_lookup("svg", "clipPath"):
+                self.build_clip_path_tag(element)
+
         self.build_group(root_tag, base_group)
 
         self.base_group = base_group
@@ -2142,12 +2153,8 @@ class SVGObject:
                 # Definitions are resolved lazily, including forward references.
                 continue
             elif child.tag in xmlns_lookup("svg", "clipPath"):
-                try:
-                    clip_id = child.attrib["id"]
-                except KeyError:
-                    clip_id = None
-                for child_ in child:
-                    self.build_clipping_path(child_, clip_id)
+                # Already built in convert_graphics()
+                continue
             elif child.tag in xmlns_lookup("svg", "style"):
                 # Styles handled globally during parsing
                 continue
@@ -2337,6 +2344,10 @@ class SVGObject:
             return
         elif child.tag in xmlns_lookup("svg", "symbol"):
             self.build_symbol(child)
+        elif child.tag in xmlns_lookup("svg", "clipPath"):
+            # Never rendered directly, wherever it is placed; already built in
+            # convert_graphics()
+            return
         elif child.tag in xmlns_lookup("svg", "g"):
             pdf_group.add_item(self.build_group(child, None, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "switch"):
@@ -2429,29 +2440,73 @@ class SVGObject:
         return shape_path
 
     @force_nodocument
+    def build_clip_path_tag(self, clip_path: "Element") -> None:
+        """Produce the lookup for a <clipPath> tag, whose children make the clipping path."""
+        clip_id = clip_path.attrib.get("id")
+        for child in clip_path:
+            self.build_clipping_path(child, clip_id)
+
+    @force_nodocument
     def build_clipping_path(self, shape: "Element", clip_id: Optional[str]) -> None:
+        clipping_path_shape = self._clipping_path_shape(shape)
+        if clipping_path_shape is not None:
+            self.update_xref(clip_id, clipping_path_shape)
+
+    def _clipping_path_shape(
+        self, shape: "Element", allow_use: bool = True
+    ) -> Optional[PaintedPath]:
         if shape.tag in shape_tags:
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
-            clipping_path_shape = shape_builder(shape, True)
+            clipping_path_shape: PaintedPath = shape_builder(shape, True)
             apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
-            clipping_path_shape = PaintedPath()
+            clipping_path_shape = ClippingPath()
             apply_styles(clipping_path_shape, shape, style_map)
             clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")
             if svg_path is not None:
                 svg_path_converter(clipping_path_shape, svg_path)
+        elif allow_use and shape.tag in xmlns_lookup("svg", "use"):
+            # A <use> in a <clipPath> must reference a shape or a path directly
+            ref = next(
+                (
+                    shape.attrib[key]
+                    for key in xmlns_lookup("xlink", "href")
+                    if key in shape.attrib
+                ),
+                None,
+            )
+            referenced = self._elements_by_id.get(ref) if ref else None
+            if referenced is None:
+                LOGGER.warning("Ignoring <use> without a valid reference in <clipPath>")
+                return None
+            referenced_shape = self._clipping_path_shape(referenced, allow_use=False)
+            if referenced_shape is None:
+                return None
+            clipping_path_shape = referenced_shape
+            if {"x", "y", "transform"} & shape.attrib.keys():
+                # > The x and y properties define an additional transformation translate(x,y)
+                x = float(shape.attrib.get("x", 0))
+                y = float(shape.attrib.get("y", 0))
+                placement = Transform.translation(x=x, y=y)
+                if "transform" in shape.attrib:
+                    placement = placement @ convert_transforms(
+                        shape.attrib["transform"]
+                    )
+                if clipping_path_shape.transform:
+                    placement = clipping_path_shape.transform @ placement
+                clipping_path_shape.transform = placement
         else:
             LOGGER.warning(
                 "Ignoring unsupported <clipPath> child tag: <%s> (contributions are welcome to add support for it)",
                 without_ns(shape.tag),
             )
-            return
-        self.update_xref(clip_id, clipping_path_shape)
+            return None
+        return clipping_path_shape
 
     @force_nodocument
     def apply_clipping_path(
