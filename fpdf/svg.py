@@ -765,16 +765,32 @@ def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
     or ex, such as the width="1em" of icon sets, is relative to its font size,
     16px if it sets none.
     """
-    match = unit_splitter.fullmatch(length_str)
-    unit = match.group("unit") if match else None
-    if match is None or unit not in ("em", "ex"):
-        return resolve_length(length_str)
-    font_size = _get_attr_or_style(root_tag, "font-size")
+    return _em_length(_font_size_pt(_get_attr_or_style(root_tag, "font-size")))(
+        length_str
+    )
+
+
+def _font_size_pt(font_size: Optional[str]) -> float:
+    """A font size in pt, 16px if it is not set or cannot be read."""
     try:
-        font_size_pt = resolve_length(font_size or "16px")
+        return resolve_length(font_size or "16px")
     except ValueError:
-        font_size_pt = resolve_length("16px")
-    return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
+        return resolve_length("16px")
+
+
+def _em_length(font_size_pt: Optional[float] = None) -> Callable[[str], float]:
+    """resolve_length(), with em and ex relative to a font size in pt (16px if None), as in CSS."""
+    if font_size_pt is None:
+        font_size_pt = _font_size_pt(None)
+
+    def resolve(length_str: str) -> float:
+        match = unit_splitter.fullmatch(length_str)
+        unit = match.group("unit") if match else None
+        if match is None or unit not in ("em", "ex"):
+            return resolve_length(length_str)
+        return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
+
+    return resolve
 
 
 def _parse_font_attrs(
@@ -924,21 +940,27 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def rect(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
-        """Convert an SVG <rect> into a PDF path."""
+    def rect(
+        cls,
+        tag: "Element",
+        clipping_path: bool = False,
+        font_size: Optional[float] = None,
+    ) -> PaintedPath:
+        """Convert an SVG <rect> into a PDF path; em and ex are relative to font_size."""
+        length = _em_length(font_size)
         # svg rect is wound clockwise
-        x = resolve_length(tag.attrib.get("x", "0"))
-        y = resolve_length(tag.attrib.get("y", "0"))
+        x = length(tag.attrib.get("x", "0"))
+        y = length(tag.attrib.get("y", "0"))
         width_str = tag.attrib.get("width") or "0"
         if width_str.endswith("%"):
             width: Percent | float = Percent(width_str[:-1])
         else:
-            width = resolve_length(width_str)
+            width = length(width_str)
         height_str = tag.attrib.get("height") or "0"
         if height_str.endswith("%"):
             height: Percent | float = Percent(height_str[:-1])
         else:
-            height = resolve_length(height_str)
+            height = length(height_str)
         rx_str = tag.attrib.get("rx") or "auto"
         ry_str = tag.attrib.get("ry") or "auto"
 
@@ -953,12 +975,12 @@ class ShapeBuilder:
         if rx_str == ry_str == "auto":
             rx = ry = 0
         elif rx_str == "auto":
-            rx = ry = resolve_length(ry_str)
+            rx = ry = length(ry_str)
         elif ry_str == "auto":
-            ry = rx = resolve_length(rx_str)
+            ry = rx = length(rx_str)
         else:
-            rx = resolve_length(rx_str)
-            ry = resolve_length(ry_str)
+            rx = length(rx_str)
+            ry = length(ry_str)
 
         if (width < 0) or (height < 0) or (rx < 0) or (ry < 0):
             raise ValueError(f"bad rect {tag}")
@@ -976,11 +998,17 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def circle(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
-        """Convert an SVG <circle> into a PDF path."""
-        cx = resolve_length(tag.attrib.get("cx", "0"))
-        cy = resolve_length(tag.attrib.get("cy", "0"))
-        r = resolve_length(tag.attrib.get("r", "0"))
+    def circle(
+        cls,
+        tag: "Element",
+        clipping_path: bool = False,
+        font_size: Optional[float] = None,
+    ) -> PaintedPath:
+        """Convert an SVG <circle> into a PDF path; em and ex are relative to font_size."""
+        length = _em_length(font_size)
+        cx = length(tag.attrib.get("cx", "0"))
+        cy = length(tag.attrib.get("cy", "0"))
+        r = length(tag.attrib.get("r", "0"))
 
         path = cls.new_path(tag, clipping_path)
         if r == 0:
@@ -990,10 +1018,16 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def ellipse(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
-        """Convert an SVG <ellipse> into a PDF path."""
-        cx = resolve_length(tag.attrib.get("cx", "0"))
-        cy = resolve_length(tag.attrib.get("cy", "0"))
+    def ellipse(
+        cls,
+        tag: "Element",
+        clipping_path: bool = False,
+        font_size: Optional[float] = None,
+    ) -> PaintedPath:
+        """Convert an SVG <ellipse> into a PDF path; em and ex are relative to font_size."""
+        length = _em_length(font_size)
+        cx = length(tag.attrib.get("cx", "0"))
+        cy = length(tag.attrib.get("cy", "0"))
 
         rx_str = tag.attrib.get("rx") or "auto"
         ry_str = tag.attrib.get("ry") or "auto"
@@ -1004,23 +1038,24 @@ class ShapeBuilder:
             return path
 
         if rx_str == "auto":
-            rx = ry = resolve_length(ry_str)
+            rx = ry = length(ry_str)
         elif ry_str == "auto":
-            rx = ry = resolve_length(rx_str)
+            rx = ry = length(rx_str)
         else:
-            rx = resolve_length(rx_str)
-            ry = resolve_length(ry_str)
+            rx = length(rx_str)
+            ry = length(ry_str)
 
         path.ellipse(cx, cy, rx, ry)
         return path
 
     @classmethod
-    def line(cls, tag: "Element") -> PaintedPath:
-        """Convert an SVG <line> into a PDF path."""
-        x1 = resolve_length(tag.attrib.get("x1", "0"))
-        y1 = resolve_length(tag.attrib.get("y1", "0"))
-        x2 = resolve_length(tag.attrib.get("x2", "0"))
-        y2 = resolve_length(tag.attrib.get("y2", "0"))
+    def line(cls, tag: "Element", font_size: Optional[float] = None) -> PaintedPath:
+        """Convert an SVG <line> into a PDF path; em and ex are relative to font_size."""
+        length = _em_length(font_size)
+        x1 = length(tag.attrib.get("x1", "0"))
+        y1 = length(tag.attrib.get("y1", "0"))
+        x2 = length(tag.attrib.get("x2", "0"))
+        y2 = length(tag.attrib.get("y2", "0"))
 
         path = cls.new_path(tag)
         path.move_to(x1, y1)
@@ -2366,7 +2401,7 @@ class SVGObject:
             self._apply_inherited_pattern(path, child, inherited_style)
             pdf_group.add_item(path, False)
         elif child.tag in shape_tags:
-            path = self.build_shape(child)
+            path = self.build_shape(child, inherited_style)
             self._apply_inherited_pattern(path, child, inherited_style)
             pdf_group.add_item(path, False)
         elif child.tag in xmlns_lookup("svg", "use"):
@@ -2429,12 +2464,21 @@ class SVGObject:
         return pdf_path
 
     @force_nodocument
-    def build_shape(self, shape: "Element") -> PaintedPath:
+    def build_shape(
+        self, shape: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> PaintedPath:
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
         self._record_resolved_elements(1)
         style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
-        shape_path = shape_builder(shape)
+        if shape_tags[shape.tag] in ("polyline", "polygon"):
+            shape_path = shape_builder(shape)
+        else:
+            # em and ex in its lengths are relative to its font size, as in CSS
+            font_style = {**(inherited_style or {}), **style_map}
+            _resolve_relative_font_size(font_style, inherited_style)
+            font_size = _font_size_pt(font_style.get("font-size"))
+            shape_path = shape_builder(shape, font_size=font_size)
         assert isinstance(shape_path, PaintedPath)
         apply_styles(shape_path, shape, style_map)
         self._apply_gradient_paint(shape_path, shape, style_map)

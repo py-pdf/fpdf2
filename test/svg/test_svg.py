@@ -276,6 +276,39 @@ class TestSVGObject:
         )
         assert (svg.width, svg.height) == (expected, 2 * expected)
 
+    @pytest.mark.parametrize(
+        "shape, expected",
+        [
+            ('<g font-size="10"><rect width="2em" height="1ex"/></g>', (0, 0, 20, 5)),
+            ('<rect width="2em" height="1em" style="font-size:9pt"/>', (0, 0, 18, 9)),
+            (
+                '<g font-size="10"><g font-size="2em"><rect x="1em" width="1em" height="1em"/></g></g>',
+                (20, 0, 20, 20),
+            ),
+            ('<rect width="1em" height="1ex"/>', (0, 0, 12, 6)),  # 16px
+        ],
+    )
+    def test_shape_em_lengths_use_font_size(self, shape, expected):
+        # as in CSS, em and ex in the lengths of a shape are relative to its font size
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg">{shape}</svg>'
+        )
+        group = svg.base_group
+        while not isinstance(group.path_items[0], fpdf.drawing.PaintedPath):
+            group = group.path_items[0]
+        rect = group.path_items[0]._root_graphics_context.path_items[1]
+        assert (rect.org.x, rect.org.y, rect.size.x, rect.size.y) == pytest.approx(
+            expected
+        )
+
+    def test_line_em_lengths_use_font_size(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<line x2="1ex" y2="1em" font-size="20" stroke="red"/></svg>'
+        )
+        line = svg.base_group.path_items[0]._root_graphics_context.path_items
+        assert (line[1].pt.x, line[1].pt.y) == pytest.approx((10, 20))
+
     @pytest.mark.parametrize("whitespace", ["100% ", " 100%", " 100% ", "100%\n"])
     def test_document_shape_info_percent_surrounded_by_whitespace(self, whitespace):
         svg_data = (
