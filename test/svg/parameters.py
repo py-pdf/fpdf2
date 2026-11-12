@@ -1083,6 +1083,11 @@ svg_path_directives = (
         [M(0, 1), A(P(5.168, 5.168), 0.0, False, True, P(3.06, -0.837))],
         id="arc with joined arguments",  # cf. issue #450
     ),
+    # an error is rendered up to the last correct command, as in browsers
+    pytest.param(
+        "M 0 1 L 2 3 Z 4 5", [M(0, 1), L(2, 3), Z()], id="numbers after closepath"
+    ),
+    pytest.param("M 0 1 L 2 3 L", [M(0, 1), L(2, 3)], id="command without numbers"),
 )
 
 svg_path_render_tests = (

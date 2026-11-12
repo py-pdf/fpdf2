@@ -1168,7 +1168,15 @@ def convert_transforms(tfstr: str) -> Transform:
 @force_nodocument
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
     pen = PathPen(pdf_path)
-    parse_path(svg_path, pen)
+    try:
+        parse_path(svg_path, pen)
+    except (ValueError, IndexError):  # IndexError: a command without its numbers
+        # An error after a correct start, such as numbers after a closepath, is
+        # rendered up to the last correct command, as browsers do and as for the
+        # points of a <polyline>; a path that does not start with a moveto still fails.
+        # https://www.w3.org/TR/SVG11/implnote.html#PathElementImplementationNotes
+        if not pen.first_is_move:
+            raise
     # Empty path data is valid and draws nothing
     if pen.first_is_move is False:
         raise ValueError("Path does not start with move item")
