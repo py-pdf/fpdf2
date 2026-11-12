@@ -1240,6 +1240,29 @@ def test_html_anchor_on_a_table_moved_to_the_next_page():
     assert destination.top == pytest.approx((pdf.h - pdf.t_margin) * pdf.k)
 
 
+def test_html_anchor_on_a_row_or_cell_of_a_multi_page_table():
+    """A row or cell target points to its own row, also on a later page."""
+    rows = "".join(f"<tr><td>row {i}</td></tr>" for i in range(80))
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="#row70">row 70</a> <a href="#cell75">cell 75</a>'
+        f'<table id="table"><tr id="row0"><td>row</td></tr>{rows}'
+        '<tr id="row70"><td>row 70</td></tr>'
+        '<tr><td id="cell75">cell 75</td></tr></table>'
+    )
+    pdf.output()
+
+    assert pdf.pages_count == 2
+    destinations = pdf.named_destinations
+    assert destinations["table"].page_number == 1
+    assert destinations["row0"].top == destinations["table"].top
+    for anchor in ("row70", "cell75"):
+        assert destinations[anchor].page_number == 2
+    # one row lower on the same page
+    assert destinations["cell75"].top < destinations["row70"].top
+
+
 def test_html_anchor_without_href(tmp_path):
     "An <a> without href, such as a named anchor, renders as plain text and is a link target."
     pdf = FPDF()

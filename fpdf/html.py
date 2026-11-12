@@ -553,7 +553,7 @@ class HTML2FPDF(HTMLParser):
         # id / <a name> targets waiting for the next text to be rendered:
         self._pending_anchors: list[str] = []
         # those of a <table> or its cells, set once the table is rendered:
-        self._table_anchors: list[str] = []
+        self._table_anchors: list[tuple[str, int]] = []
         self._in_style_or_script = False
         # <table>-related properties:
         self.table_line_separators = table_line_separators
@@ -764,6 +764,16 @@ class HTML2FPDF(HTMLParser):
             # pylint: disable=protected-access
             self.pdf._perform_page_break()  # pyright: ignore[reportPrivateUsage]
             self._page_break_after_paragraph = False
+
+    def _take_table_anchors(self) -> None:
+        "Keep the pending anchors of a table with the index of the row they are in."
+        assert self.table is not None
+        # the <table> itself, or a target between rows, belongs to the next row
+        row_index = len(self.table.rows) - (self.table_row is not None)
+        self._table_anchors.extend(
+            (anchor, row_index) for anchor in self._pending_anchors
+        )
+        self._pending_anchors.clear()
 
     def _set_anchors(self, anchors: list[str]) -> None:
         "Set the anchors that no rendered line has taken at the current position."
@@ -1438,8 +1448,7 @@ class HTML2FPDF(HTMLParser):
                 self.table_row.cell(img=attrs_dict["src"], img_fill_width=True)
                 assert self.td_th is not None
                 self.td_th["inserted"] = True
-                self._table_anchors.extend(self._pending_anchors)
-                self._pending_anchors.clear()
+                self._take_table_anchors()
                 return
             x: float | Align = self.pdf.get_x()
             if self.align:
@@ -1468,9 +1477,8 @@ class HTML2FPDF(HTMLParser):
                 self.render_toc, pages=int(attrs_dict.get("pages") or "1")
             )
         if tag == "table" or self.table is not None:
-            # table cells are not rendered as paragraphs: the table position is used
-            self._table_anchors.extend(self._pending_anchors)
-            self._pending_anchors.clear()
+            # table cells are not rendered as paragraphs: the row position is used
+            self._take_table_anchors()
         if tag == "sup":
             self.pdf.char_vpos = CharVPos.SUP
         if tag == "sub":
@@ -1583,9 +1591,10 @@ class HTML2FPDF(HTMLParser):
                     usable_width * self.pdf.k,
                 )
             self.table.render()
-            # table targets: where its first row was rendered, after any page break
-            page, y = self.table.first_row_position or (self.pdf.page, self.pdf.y)
-            for anchor in self._table_anchors:
+            # table targets: where their row was rendered, after any page break
+            positions = self.table.row_positions or [(self.pdf.page, self.pdf.y)]
+            for anchor, row_index in self._table_anchors:
+                page, y = positions[min(row_index, len(positions) - 1)]
                 self.pdf.set_link(name=anchor, y=y, page=page)
             self._table_anchors.clear()
             self.table = None

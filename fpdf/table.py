@@ -129,8 +129,8 @@ class Table:
         self._min_row_height = min_row_height
         self._initial_style: Optional[FontFace] = None
         self.rows: list[Row] = []
-        # (page, y) where the first row was rendered, set by render()
-        self.first_row_position: Optional[tuple[int, float]] = None
+        # (page, y) where each row was rendered, set by render()
+        self.row_positions: list[tuple[int, float]] = []
 
         if not math.isfinite(gutter_height) or gutter_height < 0:
             raise ValueError(
@@ -332,8 +332,7 @@ class Table:
                     )
             if i > 0:
                 self._fpdf.y += self._gutter_height
-            else:
-                self.first_row_position = (self._fpdf.page, self._fpdf.y)
+            self.row_positions.append((self._fpdf.page, self._fpdf.y))
             self._render_table_row(i, rows_info[i], cell_x_positions)
 
         # Restoring altered FPDF settings:
