@@ -407,6 +407,40 @@ class TestSVGObject:
         assert rect.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
 
     @pytest.mark.parametrize(
+        "body",
+        [
+            '<rect width="5" height="5" color="red" fill="currentColor"/>',
+            '<g color="red"><rect width="5" height="5" fill="currentColor"/></g>',
+            '<g color="red" fill="currentColor"><rect width="5" height="5"/></g>',
+            '<g style="color: red"><path d="M0 0h5v5z" fill="currentColor"/></g>',
+            '<text y="9" color="red" fill="currentColor">a</text>',
+            '<text y="9" color="red">a<tspan fill="currentColor">b</tspan></text>',
+        ],
+    )
+    def test_svg_current_color_uses_color_property(self, body):
+        # as icon sets write them: fill="currentColor" takes the color property
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">{body}</svg>'
+        ).draw_to_page(pdf)
+        assert "1 0 0 rg" in bytes(pdf.output()).decode("latin-1")
+
+    def test_svg_current_color_without_color_property(self):
+        # with no color property in the SVG, currentColor keeps the color of the FPDF
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        pdf.set_fill_color(0, 0, 255)
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            '<rect width="5" height="5" fill="currentColor"/></svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "0 0 1 rg" in output and "1 0 0 rg" not in output
+
+    @pytest.mark.parametrize(
         "clip_path", ['clip-path="none"', 'style="clip-path: none"']
     )
     def test_svg_clip_path_none(self, clip_path):
