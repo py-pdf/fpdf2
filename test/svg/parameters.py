@@ -566,6 +566,19 @@ test_svg_attribute_conversion = (
         id="fill color rgba()",
     ),
     pytest.param(
+        # around the rect blocks of Mermaid sequence diagrams
+        '<path stroke="rgb(0,0,0, 0.5)"/>',
+        Gs(stroke_color=DeviceRGB(0, 0, 0, 0.5), stroke_opacity=0.5),
+        no_error(),
+        id="stroke color rgb() with a fractional alpha",
+    ),
+    pytest.param(
+        '<path fill="rgb(255, 0, 0, 25%)"/>',
+        Gs(fill_color=DeviceRGB(1, 0, 0, 0.25), fill_opacity=0.25),
+        no_error(),
+        id="fill color rgb() with a percentage alpha",
+    ),
+    pytest.param(
         '<path fill="rgb(255 0 0)"/>',
         Gs(fill_color="#f00"),
         no_error(),
