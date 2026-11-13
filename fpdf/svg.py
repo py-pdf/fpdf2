@@ -1336,27 +1336,65 @@ def _reads_as_path(svg_path: str) -> bool:
     return bool(pen.first_is_move)
 
 
+# The numbers and arc flags of path data, read as fontTools reads them
+_PATH_NUMBER_RE = re.compile(
+    r"[-+]?(?:(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?|\.[0-9]+(?:[eE][-+]?[0-9]+)?)"
+)
+_PATH_ARC_FLAG_RE = re.compile("[01]")
+_PATH_ARGUMENT_COUNTS = {"M": 2, "L": 2, "T": 2, "H": 1, "V": 1, "C": 6, "S": 4, "Q": 4}
+
+
+def _path_argument_groups(
+    svg_path: str, start: int, end: int
+) -> tuple[list[int], bool]:
+    """Where each complete set of numbers of the command at svg_path[start] ends,
+    and whether its numbers are all valid and in complete sets.
+
+    A command can repeat its numbers, such as the 2 of a lineto or the 7 of an arc.
+    """
+    command = svg_path[start].upper()
+    if command == "Z":
+        return [start + 1], _PATH_NUMBER_RE.search(svg_path, start + 1, end) is None
+    if command != "A":
+        count = _PATH_ARGUMENT_COUNTS[command]
+        number_ends = [
+            number.end()
+            for number in _PATH_NUMBER_RE.finditer(svg_path, start + 1, end)
+        ]
+        complete = bool(number_ends) and len(number_ends) % count == 0
+        return number_ends[count - 1 :: count], complete
+    # The flags of an arc are single digits that need no separator, as in "a5 5 0 1010 0"
+    group_ends: list[int] = []
+    argument = 0
+    for raw in re.finditer(r"[^, \t]+", svg_path[start + 1 : end]):
+        position, raw_end = raw.span()
+        while position < raw_end:
+            if argument in (3, 4):
+                match = _PATH_ARC_FLAG_RE.match(svg_path, start + 1 + position)
+            else:
+                match = _PATH_NUMBER_RE.search(
+                    svg_path, start + 1 + position, start + 1 + raw_end
+                )
+            if match is None:
+                return group_ends, False
+            position = match.end() - start - 1
+            argument = (argument + 1) % 7
+            if argument == 0:
+                group_ends.append(match.end())
+    return group_ends, bool(group_ends) and argument == 0
+
+
 def _longest_readable_path_prefix(svg_path: str) -> Optional[str]:
-    "The longest start of the path data that can be read, up to a complete set of numbers."
+    """The start of the path data up to the last complete set of numbers before
+    the first error, if it can be read; it is found in a single forward pass."""
     starts = [m.start() for m in re.finditer("[MmZzLlHhVvCcSsQqTtAa]", svg_path)]
     starts.append(len(svg_path))
-    # A run of whole commands that can be read only starts with runs that can be read:
-    # bisect to find the last whole command that can be read
-    low, high = 0, len(starts) - 1
-    while low < high:
-        middle = (low + high + 1) // 2
-        if _reads_as_path(svg_path[: starts[middle]]):
-            low = middle
-        else:
-            high = middle - 1
-    # The next command may repeat its numbers: keep its complete sets of them
-    if low + 1 < len(starts):
-        for number in reversed(
-            list(COORDINATE_RE.finditer(svg_path, starts[low] + 1, starts[low + 1]))
-        ):
-            if _reads_as_path(svg_path[: number.end()]):
-                return svg_path[: number.end()]
-    return svg_path[: starts[low]] if low else None
+    for start, end in zip(starts, starts[1:]):
+        group_ends, complete = _path_argument_groups(svg_path, start, end)
+        if not complete:
+            prefix = svg_path[: group_ends[-1] if group_ends else start]
+            return prefix if _reads_as_path(prefix) else None
+    return None
 
 
 @force_nodocument
@@ -1375,8 +1413,6 @@ def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
             if prefix is None:
                 raise
             parse_path(prefix, pen)
-        elif not pen.first_is_move:
-            raise
     # Empty path data is valid and draws nothing
     if pen.first_is_move is False:
         raise ValueError("Path does not start with move item")

@@ -1179,6 +1179,11 @@ svg_path_directives = (
         [M(0, 1), L(2, 3)],
         id="repeated line without all its numbers",
     ),
+    pytest.param(
+        "M 0 1 L 2 3 Z 4 A 5",
+        [M(0, 1), L(2, 3), Z()],
+        id="numbers after closepath, then an arc without its numbers",
+    ),
 )
 
 svg_path_render_tests = (
