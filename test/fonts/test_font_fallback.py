@@ -256,3 +256,22 @@ def test_fallback_font_first_text_on_page(tmp_path):
         HERE / "fallback_font_first_text_on_page.pdf",
         tmp_path,
     )
+
+
+def test_fallback_font_restores_font_state_after_colored_line():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="NotoSans", fname=HERE / "NotoSans-Regular.ttf")
+    pdf.add_font(family="NotoSans", style="B", fname=HERE / "DejaVuSans-Bold.ttf")
+    pdf.add_font(family="Fallback", fname=HERE / "DroidSansFallback.ttf")
+    pdf.set_fallback_fonts(["Fallback"], exact_match=False)
+    pdf.set_font("NotoSans", "B", 14)
+    pdf.cell(0, 8, "Heading", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("NotoSans", "", 10)
+    pdf.set_text_color(55, 58, 60)
+    pdf.multi_cell(50, 5, "温度超过设定值持续两 Temperature 25 C exceeded")
+
+    content = pdf.pages[1].contents.decode("latin1")
+    first_line_end = content.find("Q")
+    second_line_start = content.rfind("BT")
+    assert "/F1 10.00 Tf" in content[first_line_end:second_line_start]

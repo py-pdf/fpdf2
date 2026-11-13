@@ -879,23 +879,49 @@ def _get_attr_or_style(
     return _normalize_css_value(tag.attrib.get(name))
 
 
+# The absolute font-size keywords of CSS Fonts, as factors of medium (16px)
+_FONT_SIZE_KEYWORDS = {
+    "xx-small": 3 / 5,
+    "x-small": 3 / 4,
+    "small": 8 / 9,
+    "medium": 1.0,
+    "large": 6 / 5,
+    "x-large": 3 / 2,
+    "xx-large": 2.0,
+    "xxx-large": 3.0,
+}
+# larger and smaller scale the inherited size, by the same factor as browsers
+_RELATIVE_FONT_SIZE_KEYWORDS = {"larger": 1.2, "smaller": 1 / 1.2}
+
+
 def _resolve_relative_font_size(
     style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
     """
-    Make a relative font-size (em, ex or %) absolute, against the inherited one, so
-    that descendants inherit the computed size, as in CSS.
+    Make a relative font-size (em, ex, % or larger and smaller) or a font-size keyword
+    absolute, against the inherited one, so that descendants inherit the computed
+    size, as in CSS.
     """
     value = style_map.get("font-size")
-    match = unit_splitter.fullmatch(value.strip()) if isinstance(value, str) else None
-    if match is None:
+    if not isinstance(value, str):
         return
-    factor = {"em": 1.0, "ex": 0.5, "%": 0.01}.get(match.group("unit") or "")
-    if factor is None:
+    keyword = value.strip().lower()
+    if keyword in _FONT_SIZE_KEYWORDS:
+        style_map["font-size"] = (
+            f"{_FONT_SIZE_KEYWORDS[keyword] * resolve_length('16px')}pt"
+        )
+        return
+    match = unit_splitter.fullmatch(value.strip())
+    if keyword in _RELATIVE_FONT_SIZE_KEYWORDS:
+        factor, number = _RELATIVE_FONT_SIZE_KEYWORDS[keyword], 1.0
+    elif match is not None and match.group("unit") in ("em", "ex", "%"):
+        factor = {"em": 1.0, "ex": 0.5, "%": 0.01}[match.group("unit")]
+        number = float(match.group("value"))
+    else:
         return
     inherited = (inherited_style or {}).get("font-size")
     parent_size = resolve_length(inherited) if inherited else resolve_length("16px")
-    style_map["font-size"] = f"{float(match.group('value')) * factor * parent_size}pt"
+    style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
 def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
