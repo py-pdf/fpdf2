@@ -328,6 +328,27 @@ class TestSVGObject:
         assert (used.size.x, used.size.y) == pytest.approx((40, 20))
         assert (sibling.size.x, sibling.size.y) == pytest.approx((40, 20))
 
+    @pytest.mark.parametrize(
+        "content",
+        [
+            '<defs><g id="r"><rect width="1em" height="1ex"/></g></defs>',
+            '<defs><symbol id="r"><rect width="1em" height="1ex"/></symbol></defs>',
+            '<defs><switch id="r"><rect width="1em" height="1ex"/></switch></defs>',
+            '<defs><a id="r"><rect width="1em" height="1ex"/></a></defs>',
+            '<symbol id="r"><rect width="1em" height="1ex"/></symbol>',
+        ],
+    )
+    def test_grouped_defs_em_lengths_use_font_size(self, content):
+        # a shape in a group or a symbol that is only drawn by a <use> also
+        # inherits the font size of the root
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" font-size="40">'
+            f'{content}<use href="#r"/></svg>'
+        )
+        group = svg.cross_references["#r"]
+        rect = group.path_items[0]._root_graphics_context.path_items[1]
+        assert (rect.size.x, rect.size.y) == pytest.approx((40, 20))
+
     def test_line_em_lengths_use_font_size(self):
         svg = fpdf.svg.SVGObject(
             '<svg xmlns="http://www.w3.org/2000/svg">'

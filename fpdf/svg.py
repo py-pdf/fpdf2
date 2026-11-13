@@ -2442,18 +2442,18 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
             elif child.tag in xmlns_lookup("svg", "g"):
-                self.build_group(child)
+                self.build_group(child, None, self._ancestors_font_style(child))
             elif child.tag in xmlns_lookup("svg", "switch"):
-                self.build_switch(child)
+                self.build_switch(child, self._ancestors_font_style(child))
             elif child.tag in xmlns_lookup("svg", "symbol"):
-                self.build_symbol(child)
+                self.build_symbol(child, self._ancestors_font_style(child))
             elif child.tag in xmlns_lookup("svg", "a"):
                 # <a> tags aren't supported but we need to recurse into them to
                 # render nested elements.
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
                 )
-                self.build_group(child)
+                self.build_group(child, None, self._ancestors_font_style(child))
             elif child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
             elif child.tag in xmlns_lookup("svg", "image"):
@@ -2480,9 +2480,11 @@ class SVGObject:
                 )
 
     @force_nodocument
-    def build_symbol(self, symbol: "Element") -> GraphicsContext:
+    def build_symbol(
+        self, symbol: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> GraphicsContext:
         """Parse <symbol> as reusable content, not rendered directly."""
-        group = self.build_group(symbol)
+        group = self.build_group(symbol, None, inherited_style)
         viewbox = symbol.attrib.get("viewBox")
         if viewbox:
             vx, vy, vw, vh = parse_viewbox(viewbox)
@@ -2666,7 +2668,7 @@ class SVGObject:
             # Stylesheets already parsed globally.
             return
         elif child.tag in xmlns_lookup("svg", "symbol"):
-            self.build_symbol(child)
+            self.build_symbol(child, inherited_style)
         elif child.tag in xmlns_lookup("svg", "clipPath"):
             # Never rendered directly, wherever it is placed; already built in
             # convert_graphics()
