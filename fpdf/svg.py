@@ -1215,6 +1215,30 @@ def convert_transforms(tfstr: str) -> Transform:
     return transform
 
 
+def _reads_as_path(svg_path: str) -> bool:
+    "Whether fontTools reads this path data without an error, starting with a moveto."
+    pen = PathPen(PaintedPath())
+    try:
+        parse_path(svg_path, pen)
+    except (ValueError, IndexError):
+        return False
+    return bool(pen.first_is_move)
+
+
+def _longest_readable_path_prefix(svg_path: str) -> Optional[str]:
+    "The longest run of whole commands at the start of the path data that can be read."
+    starts = [m.start() for m in re.finditer("[MmZzLlHhVvCcSsQqTtAa]", svg_path)][1:]
+    # A prefix that can be read only has prefixes that can be read: bisect
+    low, high = 0, len(starts)
+    while low < high:
+        middle = (low + high + 1) // 2
+        if _reads_as_path(svg_path[: starts[middle - 1]]):
+            low = middle
+        else:
+            high = middle - 1
+    return svg_path[: starts[low - 1]] if low else None
+
+
 @force_nodocument
 def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
     pen = PathPen(pdf_path)
@@ -1225,7 +1249,13 @@ def svg_path_converter(pdf_path: PaintedPath, svg_path: str) -> None:
         # rendered up to the last correct command, as browsers do and as for the
         # points of a <polyline>; a path that does not start with a moveto still fails.
         # https://www.w3.org/TR/SVG11/implnote.html#PathElementImplementationNotes
-        if not pen.first_is_move:
+        if pen.first_is_move is None:
+            # fontTools reads all the numbers of an arc before drawing anything
+            prefix = _longest_readable_path_prefix(svg_path)
+            if prefix is None:
+                raise
+            parse_path(prefix, pen)
+        elif not pen.first_is_move:
             raise
     # Empty path data is valid and draws nothing
     if pen.first_is_move is False:
