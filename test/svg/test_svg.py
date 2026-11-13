@@ -914,15 +914,24 @@ class TestSVGObject:
                 '<use id="clone" href="#square" x="10"/></defs>'
                 '<use href="#clone" y="20"/>'
             ),
+            # references to elements defined later, as in browsers
+            (
+                '<use href="#clone" y="20"/><use id="clone" href="#square" x="10"/>'
+                '<rect id="square" width="10" height="10"/>'
+            ),
         ],
     )
     def test_svg_use_of_use(self, content):
-        """A <use> can reference another <use>."""
+        """A <use> can reference another <use>, defined before or after it."""
         svg = fpdf.svg.SVGObject(
             '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
             f"{content}</svg>"
         )
-        outer = svg.base_group.path_items[-1]
+        outer = next(
+            item
+            for item in svg.base_group.path_items
+            if item.transform == fpdf.drawing.Transform.translation(0, 20)
+        )
         assert outer.transform == fpdf.drawing.Transform.translation(0, 20)
         inner = outer.path_items[0]
         assert inner.transform == fpdf.drawing.Transform.translation(10, 0)

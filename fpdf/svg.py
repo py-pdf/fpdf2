@@ -2471,8 +2471,6 @@ class SVGObject:
                 )
         return group
 
-    # this assumes xrefs only reference already-defined ids.
-    # I don't know if this is required by the SVG spec.
     @force_nodocument
     def build_xref(
         self, xref: "Element", inherited_style: Optional[dict[str, Any]] = None
@@ -2491,6 +2489,10 @@ class SVGObject:
         else:
             raise ValueError(f"use {xref} doesn't contain known xref attribute")
 
+        if ref not in self.cross_references and ref in self._elements_by_id:
+            # A <use> can reference an element defined after it, as in browsers:
+            # build that element now, apart from its ancestors, as for <defs>
+            self._build_group_child(GraphicsContext(), self._elements_by_id[ref], {})
         try:
             referenced = self.cross_references[ref]
             referenced_cost = self._cross_reference_costs[ref]
