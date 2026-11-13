@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
-from fontTools.ttLib import TTCollection, woff2
+from fontTools.ttLib import TTCollection, TTFont, woff2
+from fontTools.ttLib.tables.DefaultTable import DefaultTable
 from test.conftest import LOREM_IPSUM, assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
@@ -164,6 +165,22 @@ def test_add_font_missing_notdef_glyph(caplog):
         "TrueType Font 'roboto' is missing the '.notdef' glyph. "
         "Fallback glyph will be provided."
     ) in caplog.text
+
+
+def test_add_font_with_apple_bitmap_tables(tmp_path):
+    # Like the Geneva.ttf of macOS, whose 'bloc' table fontTools cannot read:
+    # bitmap glyphs are not used in a PDF, so they are dropped like EBLC and EBDT
+    font = TTFont(HERE / "DejaVuSans.ttf")
+    for tag in ("bloc", "bdat"):
+        font[tag] = DefaultTable(tag)
+        font[tag].data = b"\x00\x02\x00\x00\x00\x00\x00\x01" + b"\xff" * 8
+    font.save(tmp_path / "DejaVuSans-bitmaps.ttf")
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="DejaVu", fname=tmp_path / "DejaVuSans-bitmaps.ttf")
+    pdf.set_font("DejaVu", size=12)
+    pdf.cell(text="Hello world")
+    pdf.output()
 
 
 def test_font_missing_glyphs(caplog):

@@ -1395,6 +1395,8 @@ class OutputProducer:
                     "EBDT",  # Embedded Bitmap Data Table
                     "EBLC",  # Embedded Bitmap Location Table
                     "EBSC",  # Embedded Bitmap Scaling Table
+                    "bdat",  # Apple's Bitmap Data table, the EBDT of Apple fonts
+                    "bloc",  # Apple's Bitmap Location table, the EBLC of Apple fonts
                     "SVG ",  # SVG table
                     "CPAL",  # Color Palette table
                     "COLR",  # Color table
