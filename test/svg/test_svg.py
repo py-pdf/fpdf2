@@ -840,6 +840,32 @@ class TestSVGObject:
         assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == font_sizes
 
     @pytest.mark.parametrize(
+        "text, font_sizes",
+        [
+            # the CSS Fonts scale around medium, 16px (12pt)
+            ('<text y="10" font-size="large">a</text>', ["14.4"]),
+            ('<text y="10" style="font-size: X-Small">a</text>', ["9"]),
+            ('<text y="10" font-size="medium">a</text>', ["12"]),
+            # larger and smaller scale the inherited size by 1.2
+            ('<g font-size="20"><text y="10" font-size="larger">a</text></g>', ["24"]),
+            ('<g font-size="24"><text y="10" font-size="smaller">a</text></g>', ["20"]),
+            (
+                '<g font-size="large"><text y="10" font-size="2em">a</text></g>',
+                ["28.8"],
+            ),
+        ],
+    )
+    def test_svg_font_size_keywords(self, text, font_sizes):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg">{text}</svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert re.findall(r"/F\d+ ([\d.]+) Tf", output) == font_sizes
+
+    @pytest.mark.parametrize(
         "hidden_rect",
         [
             '<rect width="10" height="10" display="none"/>',

@@ -4344,6 +4344,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_spacing = self.char_spacing
         fill_color_changed = False
         last_used_color = self.fill_color
+        prev_font_set = self.current_font_is_set_on_page
+        fallback_font_set = False
         if fragments:
             if text_line.align == Align.R:
                 dx = w - l_c_margin - styled_txt_width
@@ -4377,6 +4379,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         wrap_in_text_object=False,
                     )
                 )
+                fallback_font_set = True
             underlines: list[
                 tuple[
                     float,
@@ -4579,10 +4582,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 or current_char_spacing != self.char_spacing
             ):
                 s = f"q {' '.join(sl)} Q"
+                wrap_in_local_context = True
             else:
                 s = " ".join(sl)
+                wrap_in_local_context = False
             # pylint: enable=too-many-boolean-expressions
             self._out(s)
+            if wrap_in_local_context and fallback_font_set:
+                self.current_font_is_set_on_page = prev_font_set
         # If the text is empty, h = max_font_size ends up as 0.
         # We still need a valid default height for self.ln() (issue #601).
         self._lasth = h or self.font_size
