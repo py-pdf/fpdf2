@@ -1431,19 +1431,32 @@ class OutputProducer:
                 self._add_pdf_obj(composite_font_obj, "fonts")
                 font_objs_per_index[font.i] = composite_font_obj
 
-                # A CIDFont whose glyph descriptions are based on TrueType or CFF technology
+                # CFF fonts are OpenType fonts with glyph outlines in Compact Font
+                # Format; embed them as CIDFontType0 with the bare CFF program
+                # (ISO 32000-1, 9.9)
+                # - CID-keyed: the charset of the CFF program maps CIDs to glyphs
                 is_cff_cid = font.is_cff and font.is_cid_keyed
-                if is_cff_cid and "CFF " in font.ttfont:
+                # - name-keyed: CIDs are glyph indices (ISO 32000-1, 9.7.4.2)
+                is_cff_name_keyed = (
+                    font.is_cff
+                    and not font.is_cid_keyed
+                    # A CFF2 table cannot be embedded as CIDFontType0C
+                    and "CFF " in font.ttfont
+                )
+                is_cff_font = is_cff_cid or is_cff_name_keyed
+                if is_cff_font and "CFF " in font.ttfont:
                     ttfontstream = font.ttfont["CFF "].compile(font.ttfont)
                 code_to_cid: Optional[dict[int, int]] = None
                 cid_widths: Optional[dict[int, int]] = None
-                if is_cff_cid:
+                if is_cff_font:
                     code_to_cid = {}
                     cid_widths = {}
                     for glyph, code_mapped in font.subset.items():
                         if glyph is None:
                             continue
-                        if (
+                        if is_cff_name_keyed:
+                            cid = code_to_glyph[code_mapped]
+                        elif (
                             glyph.glyph_name.startswith("cid")
                             and glyph.glyph_name[3:].isdigit()
                         ):
@@ -1460,12 +1473,12 @@ class OutputProducer:
                         code_to_cid[code_mapped] = cid
                         cid_widths[cid] = glyph.glyph_width
                 cid_font_obj = PDFFont(
-                    subtype="CIDFontType0" if is_cff_cid else "CIDFontType2",
+                    subtype="CIDFontType0" if is_cff_font else "CIDFontType2",
                     base_font=fontname,
                     d_w=font.desc.missing_width,
                     w=(
                         _cid_font_widths(cid_widths)
-                        if is_cff_cid and cid_widths
+                        if is_cff_font and cid_widths
                         else _tt_font_widths(font)
                     ),
                 )
@@ -1522,12 +1535,22 @@ class OutputProducer:
                 self._add_pdf_obj(to_unicode_obj, "fonts")
                 composite_font_obj.to_unicode = to_unicode_obj
 
-                if is_cff_cid and code_to_cid:
-                    registry = "Adobe"
-                    ordering = "Identity"
-                    supplement = 0
-                    if font.cff_ros:
-                        registry, ordering, supplement = font.cff_ros
+                # Character collection of CFF fonts, to be declared alike by the
+                # CIDFont and its encoding CMap; CIDs of name-keyed fonts are specific
+                # to the font
+                identity_ros = ("Adobe", "Identity", 0)
+                registry, ordering, supplement = font.cff_ros or identity_ros
+                cid_system_info_obj = CIDSystemInfo()
+                if is_cff_font:
+                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
+                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
+                    cid_system_info_obj.supplement = supplement
+                self._add_pdf_obj(cid_system_info_obj, "fonts")
+                cid_font_obj.c_i_d_system_info = cid_system_info_obj
+
+                if is_cff_font and code_to_cid:
+                    # Encoding CMap (type 1), unlike the ToUnicode CMap (type 2)
+                    cmap_name = f"{registry}-{ordering}-H"
                     cid_mapping = [
                         f"<{code:04X}> {cid}\n"
                         for code, cid in sorted(code_to_cid.items())
@@ -1542,8 +1565,8 @@ class OutputProducer:
                             f"/Ordering ({ordering})\n"
                             f"/Supplement {supplement}\n"
                             ">> def\n"
-                            f"/CMapName /{registry}-{ordering}-UCS def\n"
-                            "/CMapType 2 def\n"
+                            f"/CMapName /{cmap_name} def\n"
+                            "/CMapType 1 def\n"
                             "1 begincodespacerange\n"
                             "<0000> <FFFF>\n"
                             "endcodespacerange\n"
@@ -1556,29 +1579,18 @@ class OutputProducer:
                     )
                     encoding_cmap_obj.type = Name("CMap")  # type: ignore[attr-defined]
                     encoding_cmap_obj.c_map_name = Name(  # type: ignore[attr-defined]
-                        f"{registry}-{ordering}-UCS"
+                        cmap_name
                     )
-                    encoding_cmap_obj.c_i_d_system_info = Raw(  # type: ignore[attr-defined]
-                        f"<< /Registry ({registry}) /Ordering ({ordering}) /Supplement {supplement} >>"
-                    )
+                    encoding_cmap_obj.c_i_d_system_info = cid_system_info_obj  # type: ignore[attr-defined]
                     self._add_pdf_obj(encoding_cmap_obj, "fonts")
                     composite_font_obj.encoding = encoding_cmap_obj  # type: ignore[assignment]
-
-                cid_system_info_obj = CIDSystemInfo()
-                if is_cff_cid and font.cff_ros:
-                    registry, ordering, supplement = font.cff_ros
-                    cid_system_info_obj.registry = PDFString(registry, encrypt=True)
-                    cid_system_info_obj.ordering = PDFString(ordering, encrypt=True)
-                    cid_system_info_obj.supplement = supplement
-                self._add_pdf_obj(cid_system_info_obj, "fonts")
-                cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
                 font_descriptor_obj = font.desc
                 font_descriptor_obj.font_name = Name(fontname)
                 self._add_pdf_obj(font_descriptor_obj, "fonts")
                 cid_font_obj.font_descriptor = font_descriptor_obj
 
-                if not is_cff_cid:
+                if not is_cff_font:
                     # Embed CIDToGIDMap
                     # A specification of the mapping from CIDs to glyph indices
                     cid_to_gid_list = ["\x00"] * 256 * 256 * 2
@@ -1600,7 +1612,7 @@ class OutputProducer:
                     # the embedded font subset (veraPDF rule 6.3.5-3). It is
                     # optional in later parts and deprecated since PDF 2.0.
                     cids_present = {0}
-                    if is_cff_cid and code_to_cid:
+                    if is_cff_font and code_to_cid:
                         cids_present.update(code_to_cid.values())
                     else:
                         cids_present.update(code_to_glyph)
@@ -1614,10 +1626,10 @@ class OutputProducer:
                     font_descriptor_obj.c_i_d_set = cid_set_obj  # type: ignore[attr-defined]
 
                 font_file_cs_obj = PDFFontStream(contents=ttfontstream)
-                if is_cff_cid:
+                if is_cff_font:
                     font_file_cs_obj.subtype = Name("CIDFontType0C")  # type: ignore[attr-defined]
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
-                if is_cff_cid:
+                if is_cff_font:
                     font_descriptor_obj.font_file3 = font_file_cs_obj  # type: ignore[attr-defined]
                 else:
                     font_descriptor_obj.font_file2 = font_file_cs_obj  # type: ignore[attr-defined]
