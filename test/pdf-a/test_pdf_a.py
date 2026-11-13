@@ -113,3 +113,25 @@ def test_pdfa_1b_cidset(tmp_path):
     pdf.set_font("SourceHanSansCN-Normal", size=16)
     pdf.cell(text="CFF CIDFont: 中文字体测试", new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "pdfa_1b_cidset.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "dc, filename",
+    [
+        (DocumentCompliance.PDFA_1B, "pdfa_1b_cff_fonts.pdf"),
+        (DocumentCompliance.PDFA_2B, "pdfa_2b_cff_fonts.pdf"),
+    ],
+)
+def test_pdfa_cff_fonts(tmp_path, dc, filename):
+    # The encoding CMap of a CFF font must declare the character collection
+    # of its CIDFont - issue #2147
+    pdf = FPDF(enforce_compliance=dc)
+    pdf.set_lang("en-US")
+    pdf.add_font(fname=FONT_DIR / "Quicksand-Regular.otf")
+    pdf.add_font(fname=FONT_DIR / "SourceHanSansCN-Normal.otf")
+    pdf.add_page()
+    pdf.set_font("Quicksand-Regular", size=16)
+    pdf.cell(text="Name-keyed CFF: Søren, Zoë", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("SourceHanSansCN-Normal", size=16)
+    pdf.cell(text="CID-keyed CFF: 中文字体测试", new_x="LMARGIN", new_y="NEXT")
+    assert_pdf_equal(pdf, HERE / filename, tmp_path)
