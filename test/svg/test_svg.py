@@ -817,6 +817,8 @@ class TestSVGObject:
             # a ")" or ";" in a quoted URL, and escaped quotes and parentheses
             '@import url("theme(x);dark.css"); .a { fill: red }',
             r'@import "x\";y.css"; @import url(a\);b.css); .a { fill: red }',
+            # an at-rule left unterminated at the end
+            ".a { fill: red } @import url(theme.css)",
         ],
     )
     def test_svg_css_rules_after_at_statements(self, css):
@@ -827,6 +829,20 @@ class TestSVGObject:
         )
         rect = svg.base_group.path_items[0]
         assert rect.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "start, repeated, end",
+        [
+            ("@", "a", " {}"),
+            ("", "@a ", "{}"),
+            ("", '@x "', "\n"),
+        ],
+    )
+    def test_svg_css_at_statements_linear_time(self, start, repeated, end):
+        # at-rules without a ";" are scanned once, not again from every "@"
+        css = start + repeated * 50_000 + end + " .a { fill: red }"
+        stripped = fpdf.svg._strip_css_at_statements(css)
+        assert stripped.endswith(".a { fill: red }")
 
     @pytest.mark.parametrize(
         "text, font_sizes",

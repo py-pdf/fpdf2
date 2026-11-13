@@ -99,13 +99,7 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
-# An at-rule without a block, such as @import url("...;..."); or @charset "utf-8";
-# a ";" or ")" in a string, an escape or a url() does not end it
-_CSS_STRING = r""""(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'"""
-CSS_AT_STATEMENT_RE = re.compile(
-    rf"""@[\w-]+(?:[^;{{}}'"(\\]|\\.|\((?:[^)'"\\]|\\.|{_CSS_STRING})*\)|{_CSS_STRING})*;""",
-    re.DOTALL,
-)
+CSS_AT_KEYWORD_RE = re.compile(r"@[\w-]+")
 
 SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
     "requiredFeatures",
@@ -1050,12 +1044,53 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
+def _strip_css_at_statements(css_text: str) -> str:
+    """Remove the at-rules without a block, such as @import url("...;..."); or @charset "utf-8";
+
+    A ";" in a string, after an escape or between parentheses, as in a url(), does
+    not end the statement. The text is scanned once, so it takes linear time.
+    """
+    kept = []
+    end = len(css_text)
+    pos = 0
+    while match := CSS_AT_KEYWORD_RE.search(css_text, pos):
+        start = match.start()
+        kept.append(css_text[pos:start])
+        i = match.end()
+        quote = ""
+        depth = 0
+        while i < end:
+            char = css_text[i]
+            if char == "\\":
+                i += 1
+            elif quote:
+                if char == quote:
+                    quote = ""
+            elif char in "\"'":
+                quote = char
+            elif char == "(":
+                depth += 1
+            elif char == ")" and depth:
+                depth -= 1
+            elif not depth and char in ";{}":
+                break
+            i += 1
+        if i < end and css_text[i] == ";":
+            pos = i + 1  # drop the statement
+        else:
+            # an at-rule with a block, such as @media, or an unterminated one
+            kept.append(css_text[start:i])
+            pos = i
+    kept.append(css_text[pos:])
+    return "".join(kept)
+
+
 def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]:
     styles: list[tuple[str, dict[str, Any]]] = []
     if not css_text:
         return styles
 
-    cleaned = CSS_AT_STATEMENT_RE.sub("", CSS_COMMENT_RE.sub("", css_text))
+    cleaned = _strip_css_at_statements(CSS_COMMENT_RE.sub("", css_text))
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
         declarations = _parse_css_declarations(body)
         if not declarations:
