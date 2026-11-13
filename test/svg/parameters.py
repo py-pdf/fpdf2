@@ -1169,6 +1169,16 @@ svg_path_directives = (
     pytest.param(
         "M 0 1 L 2 3 A 5 5 0 0", [M(0, 1), L(2, 3)], id="arc without all its numbers"
     ),
+    pytest.param(
+        "M 0 1 L 2 3 A 5 5 0 0 0 20 0 5",
+        [M(0, 1), L(2, 3), A(P(5, 5), 0, False, False, P(20, 0))],
+        id="repeated arc without all its numbers",
+    ),
+    pytest.param(
+        "M 0 1 L 2 3 4 A",
+        [M(0, 1), L(2, 3)],
+        id="repeated line without all its numbers",
+    ),
 )
 
 svg_path_render_tests = (

@@ -1311,17 +1311,26 @@ def _reads_as_path(svg_path: str) -> bool:
 
 
 def _longest_readable_path_prefix(svg_path: str) -> Optional[str]:
-    "The longest run of whole commands at the start of the path data that can be read."
-    starts = [m.start() for m in re.finditer("[MmZzLlHhVvCcSsQqTtAa]", svg_path)][1:]
-    # A prefix that can be read only has prefixes that can be read: bisect
-    low, high = 0, len(starts)
+    "The longest start of the path data that can be read, up to a complete set of numbers."
+    starts = [m.start() for m in re.finditer("[MmZzLlHhVvCcSsQqTtAa]", svg_path)]
+    starts.append(len(svg_path))
+    # A run of whole commands that can be read only starts with runs that can be read:
+    # bisect to find the last whole command that can be read
+    low, high = 0, len(starts) - 1
     while low < high:
         middle = (low + high + 1) // 2
-        if _reads_as_path(svg_path[: starts[middle - 1]]):
+        if _reads_as_path(svg_path[: starts[middle]]):
             low = middle
         else:
             high = middle - 1
-    return svg_path[: starts[low - 1]] if low else None
+    # The next command may repeat its numbers: keep its complete sets of them
+    if low + 1 < len(starts):
+        for number in reversed(
+            list(COORDINATE_RE.finditer(svg_path, starts[low] + 1, starts[low + 1]))
+        ):
+            if _reads_as_path(svg_path[: number.end()]):
+                return svg_path[: number.end()]
+    return svg_path[: starts[low]] if low else None
 
 
 @force_nodocument
