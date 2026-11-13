@@ -596,6 +596,36 @@ test_svg_attribute_conversion = (
         id="fill color transparent",
     ),
     pytest.param(
+        '<path fill="hsl(120, 100%, 25%)"/>',
+        Gs(fill_color=DeviceRGB(0, 0.5, 0)),
+        no_error(),
+        id="fill color hsl()",
+    ),
+    pytest.param(
+        '<path fill="hsl(0 0% 30%)"/>',
+        Gs(fill_color=DeviceRGB(0.3, 0.3, 0.3)),
+        no_error(),
+        id="fill color hsl() not rounded to 8 bits",
+    ),
+    pytest.param(
+        '<path fill="hsl(1turn 100% 50% / 25%)"/>',
+        Gs(fill_color=DeviceRGB(1, 0, 0, 0.25), fill_opacity=0.25),
+        no_error(),
+        id="fill color hsl() space-separated with alpha",
+    ),
+    pytest.param(
+        '<path stroke="HSLA(240deg, 100%, 50%, 0.5)"/>',
+        Gs(stroke_color=DeviceRGB(0, 0, 1, 0.5), stroke_opacity=0.5),
+        no_error(),
+        id="stroke color hsla()",
+    ),
+    pytest.param(
+        '<path fill="hsl(120, 100%)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid hsl() color",
+    ),
+    pytest.param(
         '<path fill="#0007"/>',
         Gs(fill_color="#0007", fill_opacity=0x77 / 0xFF),
         no_error(),

@@ -10,6 +10,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/SVG.html>
 
 # pyright: reportUnknownLambdaType=false, reportUnknownArgumentType=false, reportUnknownMemberType=false
 
+import colorsys
 import logging
 import math
 import re
@@ -295,6 +296,8 @@ shape_tags = xmlns_lookup(
 def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     # color keywords are ASCII case-insensitive in SVG/CSS: "Red" is "red"
     colorstr = html.COLOR_DICT.get(colorstr.strip().lower(), colorstr.strip())
+    if colorstr.lower().startswith("hsl"):
+        return _hsl_color(colorstr.lower())
 
     if colorstr.startswith("#"):
         return color_from_hex_string(colorstr)
@@ -353,6 +356,51 @@ def _light_color(colorstr: str) -> str:
             _split_top_level_commas(stripped[len("light-dark(") : -1])[0].strip()
         )
     return colorstr
+
+
+_DEGREES_PER_ANGLE_UNIT = {"deg": 1.0, "grad": 0.9, "rad": 180 / math.pi, "turn": 360.0}
+
+
+def _hsl_color(colorstr: str) -> DeviceRGB:
+    """
+    Parse hsl() and hsla(), with commas or with the space-separated syntax of CSS
+    Color 4: hsl(H, S%, L%), hsla(H, S%, L%, A), hsl(H S% L%) and hsl(H S% L% / A).
+    The hue may have an angle unit, and A is a number from 0 to 1 or a percentage.
+    """
+    match = re.fullmatch(r"hsla?\((.*)\)", colorstr.strip(), re.DOTALL)
+    body = match.group(1) if match else ""
+    alpha: Optional[str] = None
+    if "/" in body:
+        body, alpha = body.split("/", 1)
+        parts = body.split()
+    else:
+        parts = (
+            [part.strip() for part in body.split(",")] if "," in body else body.split()
+        )
+        if len(parts) == 4:
+            alpha = parts.pop()
+    if len(parts) != 3:
+        raise ValueError(f"{colorstr} could not be interpreted as a hsl() color")
+
+    hue = parts[0]
+    # "grad" is tried before "rad", which it ends with
+    unit = next((u for u in _DEGREES_PER_ANGLE_UNIT if hue.endswith(u)), None)
+    degrees = (
+        float(hue[: -len(unit)]) * _DEGREES_PER_ANGLE_UNIT[unit] if unit else float(hue)
+    )
+
+    def fraction(value: str, scale: float) -> float:
+        value = value.strip()
+        number = (
+            float(value[:-1]) / 100 if value.endswith("%") else float(value) / scale
+        )
+        return min(max(number, 0.0), 1.0)
+
+    # a saturation or lightness without % is a percentage too
+    saturation, lightness = (fraction(part, 100) for part in parts[1:])
+    # DeviceRGB takes fractions, so the color is kept exactly, not rounded to 8 bits
+    r, g, b = colorsys.hls_to_rgb((degrees % 360) / 360, lightness, saturation)
+    return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
 
 
 def _split_top_level_commas(value: str) -> list[str]:
