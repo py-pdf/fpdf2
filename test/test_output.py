@@ -44,6 +44,22 @@ def test_resolve_font_family_does_not_add_fonts():
         catalog.resolve_font_family("no_such_font")
 
 
+@pytest.mark.parametrize(
+    "family, core_font",
+    [
+        ("system-ui", "helvetica"),
+        ("ui-sans-serif", "helvetica"),
+        ("ui-rounded", "helvetica"),
+        ("ui-serif", "times"),
+        ("UI-Monospace", "courier"),
+    ],
+)
+def test_resolve_font_family_css_generic_families(family, core_font):
+    # the generic families of CSS Fonts 4, as in font-family="system-ui"
+    catalog = fpdf.output.ResourceCatalog()
+    assert catalog.resolve_font_family(family, "B") == core_font
+
+
 def test_get_font_from_family_symbol_ignores_style():
     catalog = fpdf.output.ResourceCatalog()
     symbol = catalog.get_font_from_family("Symbol", "B")
