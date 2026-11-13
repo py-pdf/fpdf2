@@ -2708,7 +2708,7 @@ class SVGObject:
         The font size that the ancestors of an element give it, for an element that is
         not built while its ancestors are, such as in <defs> or a <clipPath>.
         """
-        ancestors = []
+        ancestors: list["Element"] = []
         parent = self._pattern_parents.get(element)
         while parent is not None:
             ancestors.append(parent)
