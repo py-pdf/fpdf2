@@ -530,6 +530,8 @@ class TestSVGObject:
                 @ fpdf.drawing.Transform.scaling(2),
             ),
             ("", 'y="3"', fpdf.drawing.Transform.translation(0, 3)),
+            # x and y are lengths, so they may have a unit
+            ("", 'x="4px" y="1in"', fpdf.drawing.Transform.translation(3, 72)),
             (
                 'transform="rotate(90)"',
                 'x="2"',
@@ -850,6 +852,16 @@ class TestSVGObject:
         output = bytes(pdf.output()).decode("latin-1")
         assert " re " not in output  # the rectangle
         assert " c " in output  # the circle
+
+    def test_svg_use_position_with_units(self):
+        """The x and y of a <use> are lengths, so they may have a unit."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            '<defs><rect id="square" width="10" height="10"/></defs>'
+            '<use href="#square" x="20px" y="1in"/></svg>'
+        )
+        use = svg.base_group.path_items[0]
+        assert use.transform == fpdf.drawing.Transform.translation(15, 72)
 
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
