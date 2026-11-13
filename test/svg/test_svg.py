@@ -625,6 +625,32 @@ class TestSVGObject:
             pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
         )
 
+    def test_svg_context_fill_is_the_color_of_the_fpdf(self):
+        # as in the icons of Firefox: the document that draws the SVG is its context
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        pdf.set_fill_color(0, 0, 255)
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" '
+            'fill="context-fill" fill-opacity="context-fill-opacity">'
+            '<path d="M0 0h5v5z"/></svg>'
+        ).draw_to_page(pdf)
+        assert "0 0 1 rg" in bytes(pdf.output()).decode("latin-1")
+
+    def test_svg_context_fill_is_the_paint_of_the_use(self):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            '<defs><path id="p" d="M0 0h5v5z" fill="context-fill" '
+            'stroke="context-stroke" stroke-opacity="context-stroke-opacity"/></defs>'
+            '<use href="#p" fill="red" stroke="lime"/></svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "1 0 0 rg" in output and "0 1 0 RG" in output
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 

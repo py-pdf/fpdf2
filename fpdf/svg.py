@@ -496,7 +496,20 @@ def svg_paint(colorstr: Optional[str]) -> Any:
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
         return None
+    if colorstr and colorstr.strip().lower() in ("context-fill", "context-stroke"):
+        # The paint of the context element, as in the icons of Firefox: that is the
+        # <use> drawing the element, or else the document drawing the SVG, so it is
+        # inherited, as from the color set on the FPDF
+        return GraphicsStyle.INHERIT
     return optional(colorstr, svgcolor)
+
+
+@force_nodocument
+def svg_opacity(opacitystr: str) -> Any:
+    """A fill-opacity or stroke-opacity, which can be that of the context element."""
+    if opacitystr.strip().lower() in ("context-fill-opacity", "context-stroke-opacity"):
+        return GraphicsStyle.INHERIT
+    return clamp_float(0.0, 1.0)(opacitystr)
 
 
 # this is mostly SVG 1.1 stuff. SVG 2 changed some of this and the documentation is much
@@ -509,7 +522,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#FillOpacityProperty
     "fill-opacity": lambda filopstr: (
         "fill_opacity",
-        inheritable(filopstr, clamp_float(0.0, 1.0)),
+        inheritable(filopstr, svg_opacity),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeProperty
     "stroke": lambda colorstr: ("stroke_color", svg_paint(colorstr)),
@@ -546,7 +559,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#StrokeOpacityProperty
     "stroke-opacity": lambda stropstr: (
         "stroke_opacity",
-        inheritable(stropstr, clamp_float(0.0, 1.0)),
+        inheritable(stropstr, svg_opacity),
     ),
 }
 
