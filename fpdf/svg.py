@@ -2425,6 +2425,8 @@ class SVGObject:
                 self.build_image(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
+            elif child.tag in xmlns_lookup("svg", "use"):
+                self.build_xref(child)
             elif child.tag in xmlns_lookup("svg", "linearGradient"):
                 self._parse_linear_gradient(child)
             elif child.tag in xmlns_lookup("svg", "radialGradient"):
@@ -2544,6 +2546,8 @@ class SVGObject:
             else:
                 pdf_group.transform = placement_transform
 
+        # a <use> can itself be referenced, as Inkscape does for a clone of a clone
+        self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
 
     def _bind_reference_patterns(

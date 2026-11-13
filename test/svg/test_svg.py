@@ -900,6 +900,34 @@ class TestSVGObject:
         use = svg.base_group.path_items[0]
         assert use.transform == fpdf.drawing.Transform.translation(15, 72)
 
+    @pytest.mark.parametrize(
+        "content",
+        [
+            # a clone of a clone, as Inkscape writes them
+            (
+                '<rect id="square" width="10" height="10"/>'
+                '<use id="clone" href="#square" x="10"/>'
+                '<use href="#clone" y="20"/>'
+            ),
+            (
+                '<defs><rect id="square" width="10" height="10"/>'
+                '<use id="clone" href="#square" x="10"/></defs>'
+                '<use href="#clone" y="20"/>'
+            ),
+        ],
+    )
+    def test_svg_use_of_use(self, content):
+        """A <use> can reference another <use>."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f"{content}</svg>"
+        )
+        outer = svg.base_group.path_items[-1]
+        assert outer.transform == fpdf.drawing.Transform.translation(0, 20)
+        inner = outer.path_items[0]
+        assert inner.transform == fpdf.drawing.Transform.translation(10, 0)
+        assert isinstance(inner.path_items[0], fpdf.drawing.PaintedPath)
+
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
         svg = fpdf.svg.SVGObject(
