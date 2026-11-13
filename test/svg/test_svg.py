@@ -698,6 +698,41 @@ class TestSVGObject:
 
         assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
 
+    @pytest.mark.parametrize(
+        "css, rect_attributes, fill",
+        [
+            ("rect { fill: red }", "", "#f00"),
+            ("* { fill: red }", "", "#f00"),
+            ("circle { fill: blue }", 'fill="red"', "#f00"),
+            # a stylesheet wins over a presentation attribute
+            ("rect { fill: red }", 'fill="blue"', "#f00"),
+            # specificity: inline style, then class, then element, then *
+            ("rect { fill: blue }", 'style="fill: red"', "#f00"),
+            (".a { fill: red } rect { fill: blue }", 'class="a"', "#f00"),
+            ("rect { fill: red } * { fill: blue }", "", "#f00"),
+            # unless the less specific rule is !important
+            (".a { fill: blue } rect { fill: red !important }", 'class="a"', "#f00"),
+        ],
+    )
+    def test_svg_css_type_and_universal_selectors(self, css, rect_attributes, fill):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            f'<rect {rect_attributes} width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
+
+    def test_svg_css_universal_selector_of_matplotlib(self):
+        # every SVG that matplotlib writes starts with this rule
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/css">'
+            "*{stroke-linejoin: round; stroke-linecap: butt}</style>"
+            '<path d="M0 0L10 10L0 20" style="fill: none; stroke: #1f77b4"/></svg>'
+        )
+        path = svg.base_group.path_items[0]
+        assert path.style.stroke_join_style == fpdf.enums.StrokeJoinStyle.ROUND
+        assert path.style.stroke_cap_style == fpdf.enums.StrokeCapStyle.BUTT
+
     def test_svg_switch_uses_the_first_unconditional_child(self):
         svg_data = """
             <svg xmlns="http://www.w3.org/2000/svg">
