@@ -1256,6 +1256,28 @@ def test_svg_image_length_units(unit, scale):
     )
 
 
+@pytest.mark.parametrize(
+    "size, expected",
+    [
+        ('width="auto" height="30"', (0, 30)),
+        ('width="AUTO" height="auto"', (0, 0)),
+        ('width="40" height=" auto "', (40, 0)),
+    ],
+)
+def test_svg_image_size_auto(size, expected):
+    # as in SVG 2, auto is the size of the image itself: 0, as when it is missing,
+    # which size_in_document_units() reads as the image size or ratio
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" {size}/></svg>'
+    )
+    image = svg.base_group.path_items[0]
+    assert (image.width, image.height) == expected
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg.draw_to_page(pdf)
+
+
 def test_svg_image_transform(caplog):
     pdf = fpdf.FPDF()
     pdf.add_page()

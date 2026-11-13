@@ -2844,8 +2844,15 @@ class SVGObject:
                 break
         if not href:
             raise ValueError("<image> is missing a href attribute")
-        width = resolve_length(image.attrib.get("width", "0"))
-        height = resolve_length(image.attrib.get("height", "0"))
+        # "auto", the initial value in SVG 2, is like a missing size, here 0: the
+        # size of the image itself, or the one keeping its ratio with the other side
+        width, height = (
+            resolve_length("0" if value.strip().lower() == "auto" else value)
+            for value in (
+                image.attrib.get("width", "0"),
+                image.attrib.get("height", "0"),
+            )
+        )
 
         keep_aspect_ratio = True
         preserve_aspect_ratio = image.attrib.get("preserveAspectRatio")
