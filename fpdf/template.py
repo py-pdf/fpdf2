@@ -771,10 +771,8 @@ class FlexTemplate:
 
         # make sure scaling is considered if the first element in the template
         # has no x1 and/or y1 coordinate
-
-        start_x, start_y = self.pdf.get_x(), self.pdf.get_y()
-        scaled_cursor_x = start_x * scale
-        scaled_cursor_y = start_y * scale
+        scaled_cursor_x = self.pdf.get_x() * scale
+        scaled_cursor_y = self.pdf.get_y() * scale
         if offsetx:
             scaled_cursor_x += offsetx
         if offsety:
@@ -830,12 +828,11 @@ class FlexTemplate:
                     self.pdf.set_x(self.pdf.get_x() + offsetx)
 
                 if "new_y" in ele and ele["new_y"] in ["TMARGIN", "BMARGIN"]:
+                    current_x = self.pdf.get_x()
                     self.pdf.set_y(self.pdf.get_y() + offsety)
+                    self.pdf.set_x(current_x)  # set_y is overwriting x!
 
         self.texts = {}  # reset modified entries for the next page
-        # go back to start, because this is the legacy behavior: the
-        # cursor is not moved around if using absolute positioning
-        self.pdf.set_xy(start_x, start_y)
 
 
 class Template(FlexTemplate):

@@ -898,6 +898,8 @@ def test_flextemplate_elements_scale(tmp_path):
         dict(
             name="t",
             type="T",
+            x1=0,
+            y1=0,
             w=10,
             h=4,
             text="text0",
@@ -932,6 +934,8 @@ def test_flextemplate_elements_scale(tmp_path):
         dict(
             name="ml",
             type="T",
+            x1=0,
+            y1=0,
             w=15,
             h=4,
             text="Lorem ipsum dolor sit amet",
