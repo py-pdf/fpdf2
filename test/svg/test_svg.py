@@ -625,6 +625,46 @@ class TestSVGObject:
             pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
         )
 
+    @pytest.mark.parametrize(
+        "css",
+        [
+            # the colors for a light color scheme, as in browsers by default
+            "rect { fill: red } @media (prefers-color-scheme: dark) { rect { fill: blue } }",
+            "rect { fill: blue } @media (prefers-color-scheme: light) { rect { fill: red } }",
+            "rect { fill: blue } @media not (prefers-color-scheme: dark) { rect { fill: red } }",
+            (
+                "rect { fill: red } @media screen and (prefers-color-scheme: dark), "
+                "print and (Prefers-Color-Scheme: Dark) { rect { fill: blue } }"
+            ),
+            (
+                "rect { fill: red } @media (prefers-color-scheme: dark) "
+                "{ @media screen { rect { fill: blue } } }"
+            ),
+            # other media queries are not evaluated, so their rules apply
+            "rect { fill: blue } @media screen { rect { fill: red } }",
+            "rect { fill: blue } @media not print { rect { fill: red } }",
+            # an unterminated block
+            "rect { fill: red } @media (prefers-color-scheme: dark) { rect { fill: blue }",
+        ],
+    )
+    def test_svg_css_media_color_scheme(self, css):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "repeated, rule_kept",
+        [("@media screen {", True), ("@media (prefers-color-scheme: dark) {", False)],
+    )
+    def test_svg_css_media_rules_linear_time(self, repeated, rule_kept):
+        # nested @media blocks are read in a single pass
+        css = repeated * 50_000 + " .a { fill: red }"
+        rules = fpdf.svg._extract_css_rules(css)
+        assert rules == ([(".a", {"fill": "red"})] if rule_kept else [])
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 

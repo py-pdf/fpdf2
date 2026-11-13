@@ -99,6 +99,11 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+# The start of an @media block, or a brace; a media query has no "@" in it
+CSS_MEDIA_TOKEN_RE = re.compile(r"@media\b[^{};@]*\{|[{}]", re.IGNORECASE)
+CSS_COLOR_SCHEME_RE = re.compile(
+    r"\(\s*prefers-color-scheme\s*:\s*(\w+)\s*\)", re.IGNORECASE
+)
 
 SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
     "requiredFeatures",
@@ -1043,13 +1048,60 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
+def _media_query_matches(query_list: str) -> bool:
+    """
+    Whether one of the queries of an @media rule matches. Only prefers-color-scheme
+    is evaluated, as light, the default of browsers and the colors of a white page;
+    a query without it matches.
+    """
+    for query in query_list.split(","):
+        scheme = CSS_COLOR_SCHEME_RE.search(query)
+        if scheme is None:
+            return True
+        is_light = scheme.group(1).lower() == "light"
+        if is_light != query.strip().lower().startswith("not "):
+            return True
+    return False
+
+
+def _resolve_css_media_rules(css_text: str) -> str:
+    """
+    The stylesheet with the rules of the @media blocks that match, and without the
+    others, read in a single pass.
+    """
+    kept = []
+    # for each open block: whether its content is kept, and whether it is an @media
+    blocks = [(True, False)]
+    pos = 0
+    for token in CSS_MEDIA_TOKEN_RE.finditer(css_text):
+        keep = blocks[-1][0]
+        if keep:
+            kept.append(css_text[pos : token.start()])
+        pos = token.end()
+        text = token.group()
+        if text == "{":
+            blocks.append((keep, False))
+            if keep:
+                kept.append(text)
+        elif text == "}":
+            is_media = blocks.pop()[1] if len(blocks) > 1 else False
+            if keep and not is_media:
+                kept.append(text)
+        else:
+            query_list = text[len("@media") : -1]
+            blocks.append((keep and _media_query_matches(query_list), True))
+    if blocks[-1][0]:
+        kept.append(css_text[pos:])
+    return "".join(kept)
+
+
 def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
     """The (selector, declarations) of each rule of a stylesheet, one per selector."""
     rules: list[tuple[str, dict[str, Any]]] = []
     if not css_text:
         return rules
 
-    cleaned = CSS_COMMENT_RE.sub("", css_text)
+    cleaned = _resolve_css_media_rules(CSS_COMMENT_RE.sub("", css_text))
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
         declarations = _parse_css_declarations(body)
         if not declarations:
