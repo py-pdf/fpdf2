@@ -1,3 +1,4 @@
+import base64
 import binascii
 import socket
 import ssl
@@ -6,6 +7,7 @@ from glob import glob
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
+from urllib.parse import quote_from_bytes
 from urllib.request import HTTPRedirectHandler, Request
 
 import pytest
@@ -89,6 +91,38 @@ def test_load_base64_data(tmp_path):
         "GqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg=="
     )
     assert_pdf_equal(pdf, HERE / "load_base64_data.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "data_uri",
+    [
+        # the placeholder that WordPress puts in the src of lazy-loaded images
+        "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'"
+        "%20viewBox='0%200%20640%20480'%3E%3C/svg%3E",
+        "data:image/svg+xml;base64,"
+        "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDgwIi8+",
+        "data:image/svg+xml;charset=utf-8,"
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 480'/>",
+    ],
+)
+def test_load_svg_data_uri(data_uri):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    info = pdf.image(data_uri, w=64)
+    assert (info.rendered_width, info.rendered_height) == pytest.approx((64, 48))
+
+
+def test_load_percent_encoded_data():
+    # a data: URI without ;base64 is percent-encoded (RFC 2397)
+    png = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUPFEBIuO0L+AAC2FBZ2JyuNICOfGx7xAwT"
+        "jCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888GCItjn0szWGBJTVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCa"
+        "GqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg=="
+    )
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    info = pdf.image("data:image/png," + quote_from_bytes(png), w=20)
+    assert (info.rendered_width, info.rendered_height) == pytest.approx((20, 20))
 
 
 def test_load_invalid_base64_data():

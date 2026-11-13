@@ -23,7 +23,7 @@ from typing import (
     TypeGuard,
     no_type_check,
 )
-from urllib.parse import urlsplit
+from urllib.parse import unquote_to_bytes, urlsplit
 from urllib.request import (
     HTTPHandler,
     HTTPRedirectHandler,
@@ -396,7 +396,7 @@ def preload_image(
         _validate_resource_access(name, resource_access_policy)
 
     # Identify and load SVG data:
-    if isinstance(name, str) and name.endswith(".svg"):
+    if isinstance(name, str) and (name.endswith(".svg") or _is_svg_data_uri(name)):
         try:
             return get_svg_info(
                 name,
@@ -526,20 +526,26 @@ def load_image(
         ) as url_file:  # nosec B310
             return BytesIO(url_file.read())
     elif filename.startswith("data:"):
-        return _decode_base64_image(filename)
+        return _decode_data_uri(filename)
     _validate_resource_access(filename, resource_access_policy)
     with open(filename, "rb") as local_file:
         return BytesIO(local_file.read())
 
 
-def _decode_base64_image(base64Image: str) -> BytesIO:
-    "Decode the base 64 image string into an io byte stream."
-    frags = base64Image.split("base64,")
-    if len(frags) != 2:
-        raise NotImplementedError("Unsupported non-base64 image data")
-    imageData = frags[1]
-    decodedData = base64.b64decode(imageData)
-    return BytesIO(decodedData)
+def _decode_data_uri(data_uri: str) -> BytesIO:
+    "Decode the data of a data: URI, in base 64 or percent-encoded (RFC 2397), into an io byte stream."
+    media_type, comma, data = data_uri[len("data:") :].partition(",")
+    if not comma:
+        raise NotImplementedError("Unsupported data URI without a comma")
+    if media_type.lower().endswith(";base64"):
+        return BytesIO(base64.b64decode(data))
+    return BytesIO(unquote_to_bytes(data))
+
+
+def _is_svg_data_uri(name: str) -> bool:
+    "Whether a data: URI holds an SVG image, such as data:image/svg+xml;base64,..."
+    media_type = name[len("data:") :].partition(",")[0].partition(";")[0]
+    return name.startswith("data:") and media_type.strip().lower() == "image/svg+xml"
 
 
 @no_type_check
