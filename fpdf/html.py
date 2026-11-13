@@ -955,8 +955,12 @@ class HTML2FPDF(HTMLParser):
             # <a name="..."> and <a id="..."> are anchors, not links: no href means plain text
             self.href = attrs_dict.get("href") or ""
             if self.href == "#":
-                # An empty fragment is the top of the document, as in browsers
-                self.href = self.pdf.add_link(page=1)
+                # An empty fragment is the top of the document, as in browsers.
+                # add_link() measures from the top of the current page, which may
+                # not have the height of the first one, e.g. in landscape
+                link = self.pdf.add_link(page=1)
+                self.pdf.links[link].top = self.pdf.pages[1].dimensions()[1]
+                self.href = link
             else:
                 try:
                     page = int(self.href)

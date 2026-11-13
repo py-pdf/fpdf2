@@ -1182,6 +1182,20 @@ def test_html_link_to_the_top_of_the_document():
     assert link.top == pytest.approx(pdf.h * pdf.k)
 
 
+@pytest.mark.parametrize("orientation", ["portrait", "landscape"])
+def test_html_link_to_the_top_of_the_document_from_another_orientation(orientation):
+    # the top of the first page, whatever the height of the page with the link
+    pdf = FPDF(orientation=orientation)
+    pdf.add_page()
+    first_page_height = pdf.h * pdf.k
+    pdf.add_page(orientation="L" if orientation == "portrait" else "P")
+    pdf.write_html('<a href="#">Back to top</a>')
+    pdf.output()
+    link = next(iter(pdf.links.values()))
+    assert link.page_number == 1
+    assert link.top == pytest.approx(first_page_height)
+
+
 def test_html_link_to_a_table():
     pdf = FPDF()
     pdf.add_page()
