@@ -557,6 +557,33 @@ test_svg_attribute_conversion = (
         id="fill color rgb() percentages",
     ),
     pytest.param(
+        # the label background of Mermaid's default theme
+        '<path fill="rgba(232,232,232, 0.8)"/>',
+        Gs(
+            fill_color=DeviceRGB(232 / 255, 232 / 255, 232 / 255, 0.8), fill_opacity=0.8
+        ),
+        no_error(),
+        id="fill color rgba()",
+    ),
+    pytest.param(
+        '<path fill="rgb(255 0 0)"/>',
+        Gs(fill_color="#f00"),
+        no_error(),
+        id="fill color rgb() space-separated",
+    ),
+    pytest.param(
+        '<path fill="rgb(100% 0% 0% / 25%)"/>',
+        Gs(fill_color=DeviceRGB(1, 0, 0, 0.25), fill_opacity=0.25),
+        no_error(),
+        id="fill color rgb() space-separated with alpha",
+    ),
+    pytest.param(
+        '<path fill="rgba(255, 0)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgba() color",
+    ),
+    pytest.param(
         '<path fill="BLACK"/>',
         Gs(fill_color="#000"),
         no_error(),
