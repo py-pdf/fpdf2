@@ -139,6 +139,26 @@ class TestSVGPathParsing:
             fpdf.svg.svg_path_converter(pdf_path, "Q 1 2 3 4")
         with pytest.raises(ValueError):
             fpdf.svg.svg_path_converter(pdf_path, "A 1 2 0 1 0 4 5")
+        with pytest.raises(ValueError):
+            fpdf.svg.svg_path_converter(pdf_path, "L 1 2 L 3")
+
+    @pytest.mark.parametrize(
+        "start, repeated, count, end",
+        [
+            # an invalid arc flag, then many numbers
+            ("M0 0 L10 0 A5 5 0 2", " 1", 50_000, ""),
+            # many arcs, then an invalid arc flag
+            ("M0 0", " A5 5 0 0 1 3 3", 5_000, " A5 5 0 2"),
+            # a lineto without its last number
+            ("M0 0 L", " 1 2", 50_000, " 3"),
+        ],
+    )
+    def test_path_error_found_in_one_pass(self, start, repeated, count, end):
+        # the error is found by reading the path data forward once
+        pdf_path = fpdf.drawing.PaintedPath()
+        fpdf.svg.svg_path_converter(pdf_path, start + repeated * count + end)
+        items = pdf_path._root_graphics_context.path_items
+        assert len(items) == (2 if repeated == " 1" else count + 1)
 
     @pytest.mark.parametrize("path, expected", parameters.svg_path_render_tests)
     def test_rendering_smooth_curves(self, path, expected):
