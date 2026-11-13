@@ -765,6 +765,10 @@ FONT_FAMILY_ALIASES = {
     "verdana": "helvetica",
     "tahoma": "helvetica",
     "segoe ui": "helvetica",
+    # the generic families of CSS Fonts 4, for the fonts of the user interface
+    "system-ui": "helvetica",
+    "ui-sans-serif": "helvetica",
+    "ui-rounded": "helvetica",
     # serif
     "serif": "times",
     "times": "times",
@@ -772,12 +776,14 @@ FONT_FAMILY_ALIASES = {
     "georgia": "times",
     "cambria": "times",
     "garamond": "times",
+    "ui-serif": "times",
     # mono
     "monospace": "courier",
     "courier": "courier",
     "courier new": "courier",
     "consolas": "courier",
     "monaco": "courier",
+    "ui-monospace": "courier",
     # symbol
     "symbol": "symbol",
     "zapfdingbats": "zapfdingbats",
