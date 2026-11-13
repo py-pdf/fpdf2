@@ -563,6 +563,39 @@ def _current_color(
     return None
 
 
+def _resolve_inherited_color(
+    style: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """A color of inherit or currentColor is the color of the parent, as in CSS."""
+    color = style.get("color")
+    if isinstance(color, str) and color.strip().lower() in ("inherit", "currentcolor"):
+        parent_color = (inherited_style or {}).get("color")
+        if parent_color is None:
+            style.pop("color")
+        else:
+            style["color"] = parent_color
+
+
+def _with_inherited_current_color(
+    style_map: dict[str, Any],
+    svg_element: "Element",
+    inherited_style: Optional[dict[str, Any]],
+) -> dict[str, Any]:
+    """
+    CSS inherits a fill or stroke of currentColor as the keyword, so an element that
+    sets its own color and inherits it paints with its own color.
+    """
+    if not inherited_style or "color" not in style_map:
+        return style_map
+    inherited_paints = {
+        attr: "currentColor"
+        for attr in ("fill", "stroke")
+        if str(inherited_style.get(attr, "")).strip().lower() == "currentcolor"
+        and _get_attr_or_style(svg_element, attr, style_map) is None
+    }
+    return {**style_map, **inherited_paints} if inherited_paints else style_map
+
+
 def apply_styles(
     stylable: PaintedPath | GraphicsContext,
     svg_element: "Element",
@@ -2505,7 +2538,7 @@ class SVGObject:
         apply_styles(
             pdf_group,
             xref,
-            style_map,
+            _with_inherited_current_color(style_map, xref, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
 
@@ -2606,6 +2639,7 @@ class SVGObject:
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_inherited_color(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
@@ -2617,6 +2651,12 @@ class SVGObject:
                 and self._extract_gradient_id(inherited_value) in self._pattern_elements
             ):
                 merged_style[attr] = inherited_value
+            elif (
+                local_value is not None
+                and local_value.strip().lower() == "currentcolor"
+            ):
+                # descendants resolve it with their own color
+                merged_style[attr] = "currentColor"
             elif local_value is not None and (
                 attr in merged_style
                 or self._extract_gradient_id(local_value) in self._pattern_elements
@@ -2717,6 +2757,7 @@ class SVGObject:
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_inherited_color(merged_style, inherited_style)
         pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
         apply_styles(
@@ -2749,7 +2790,7 @@ class SVGObject:
         apply_styles(
             pdf_path,
             path,
-            style_map,
+            _with_inherited_current_color(style_map, path, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
         self._apply_gradient_paint(pdf_path, path, style_map)
@@ -2773,7 +2814,7 @@ class SVGObject:
         apply_styles(
             shape_path,
             shape,
-            style_map,
+            _with_inherited_current_color(style_map, shape, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
         self._apply_gradient_paint(shape_path, shape, style_map)
@@ -2949,6 +2990,7 @@ class SVGObject:
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
+        _resolve_inherited_color(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
             inherited_value = (inherited_style or {}).get(attr)

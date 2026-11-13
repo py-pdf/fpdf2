@@ -443,6 +443,49 @@ class TestSVGObject:
         ).draw_to_page(pdf)
         assert "1 0 0 rg" in bytes(pdf.output()).decode("latin-1")
 
+    @pytest.mark.parametrize(
+        "body, color",
+        [
+            # an inherited currentColor takes the color of the element that uses it
+            (
+                '<g color="red" fill="currentColor">'
+                '<rect color="blue" width="5" height="5"/></g>',
+                "0 0 1 rg",
+            ),
+            (
+                '<g color="red" stroke="currentColor" fill="none">'
+                '<path color="blue" d="M0 0h5v5z"/></g>',
+                "0 0 1 RG",
+            ),
+            (
+                '<g color="red" fill="currentColor">'
+                '<g color="blue"><rect width="5" height="5"/></g></g>',
+                "0 0 1 rg",
+            ),
+            # a color of inherit or currentColor is the color of the parent
+            (
+                '<g color="red"><g color="inherit">'
+                '<rect width="5" height="5" fill="currentColor"/></g></g>',
+                "1 0 0 rg",
+            ),
+            (
+                '<g color="red"><g color="currentColor">'
+                '<rect width="5" height="5" fill="currentColor"/></g></g>',
+                "1 0 0 rg",
+            ),
+        ],
+    )
+    def test_svg_current_color_inheritance(self, body, color):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        pdf.set_fill_color(0, 255, 0)
+        pdf.set_draw_color(0, 255, 0)
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">{body}</svg>'
+        ).draw_to_page(pdf)
+        assert color in bytes(pdf.output()).decode("latin-1")
+
     def test_svg_current_color_without_color_property(self):
         # with no color property in the SVG, currentColor keeps the color of the FPDF
         pdf = fpdf.FPDF()
