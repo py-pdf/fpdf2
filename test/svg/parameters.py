@@ -626,6 +626,12 @@ test_svg_attribute_conversion = (
         id="invalid hsl() color",
     ),
     pytest.param(
+        '<path fill="oklch(50% 0.1)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid oklch() color",
+    ),
+    pytest.param(
         '<path fill="#0007"/>',
         Gs(fill_color="#0007", fill_opacity=0x77 / 0xFF),
         no_error(),

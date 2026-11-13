@@ -104,6 +104,27 @@ def test_optional_converter():
     assert conv is canary
 
 
+@pytest.mark.parametrize(
+    "color, rgba",
+    [
+        # as in the social preview images of react-window
+        ("oklch(62.8% 0.2577 29.23)", (1, 0, 0, None)),
+        ("oklab(0.452 -0.0325 -0.3115)", (0, 0, 1, None)),
+        ("OKLCH(86.6% 0.295 142.5)", (0, 1, 0, None)),
+        ("oklch(100% 0 none / 25%)", (1, 1, 1, 0.25)),
+        ("oklch(0% 0 0 / 0.5)", (0, 0, 0, 0.5)),
+        # "none" is 0: without chroma, a gray
+        ("oklch(60% none 120)", (0.5, 0.5, 0.5, None)),
+        # outside sRGB, the color is clipped
+        ("oklab(50% 100% -100%)", (0.8, 0, 1, None)),
+    ],
+)
+def test_svgcolor_oklab_and_oklch(color, rgba):
+    result = fpdf.svg.svgcolor(color)
+    assert (result.r, result.g, result.b) == pytest.approx(rgba[:3], abs=0.01)
+    assert result.a == rgba[3]
+
+
 class TestSVGPathParsing:
     @pytest.mark.parametrize("path, result", parameters.svg_path_directives)
     def test_parsing_all_directives(self, path, result):
