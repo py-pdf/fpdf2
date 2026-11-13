@@ -2111,6 +2111,11 @@ class SVGObject:
 
         width_str = root_tag.get("width")
         height_str = root_tag.get("height")
+        # width="auto", as Figma writes it, sizes the image like no width at all
+        if width_str is not None and width_str.strip().lower() == "auto":
+            width_str = None
+        if height_str is not None and height_str.strip().lower() == "auto":
+            height_str = None
         viewbox = root_tag.get("viewBox")
         # we don't fully support this, just check for its existence
         preserve_ar = root_tag.get("preserveAspectRatio", True)
