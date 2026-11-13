@@ -2009,6 +2009,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "johannesrohrer",
+      "name": "johannesrohrer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3010382?v=4",
+      "profile": "https://github.com/johannesrohrer",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
