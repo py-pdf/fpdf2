@@ -364,14 +364,20 @@ class TestSVGObject:
         with pytest.raises(ValueError):
             fpdf.svg.SVGObject(svg_data)
 
-    def test_missing_xref(self):
+    def test_missing_xref(self, caplog):
+        # As in the matplotlib charts of the RapidFuzz docs, which use the glyph
+        # of a space that was removed when they were minified
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
             'xmlns:xlink="http://www.w3.org/1999/xlink">'
-            '<use xlink:href="#missing"/></svg>'
+            '<use xlink:href="#missing"/><rect width="10" height="10"/></svg>'
         )
-        with pytest.raises(ValueError):
-            fpdf.svg.SVGObject(svg_data)
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring <use> of nonexistent ref id #missing" in caplog.text
+        use, rect = svg.base_group.path_items
+        assert isinstance(use, fpdf.drawing.GraphicsContext) and not use.path_items
+        assert isinstance(rect, fpdf.drawing.PaintedPath)
 
     def test_svg_without_xmlns_with_unsupported_tag(self, caplog):
         # Older and hand-written SVG files often omit the xmlns declaration
