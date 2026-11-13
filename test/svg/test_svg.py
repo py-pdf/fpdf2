@@ -448,29 +448,39 @@ class TestSVGObject:
         [
             # an inherited currentColor takes the color of the element that uses it
             (
-                '<g color="red" fill="currentColor">'
-                '<rect color="blue" width="5" height="5"/></g>',
+                (
+                    '<g color="red" fill="currentColor">'
+                    '<rect color="blue" width="5" height="5"/></g>'
+                ),
                 "0 0 1 rg",
             ),
             (
-                '<g color="red" stroke="currentColor" fill="none">'
-                '<path color="blue" d="M0 0h5v5z"/></g>',
+                (
+                    '<g color="red" stroke="currentColor" fill="none">'
+                    '<path color="blue" d="M0 0h5v5z"/></g>'
+                ),
                 "0 0 1 RG",
             ),
             (
-                '<g color="red" fill="currentColor">'
-                '<g color="blue"><rect width="5" height="5"/></g></g>',
+                (
+                    '<g color="red" fill="currentColor">'
+                    '<g color="blue"><rect width="5" height="5"/></g></g>'
+                ),
                 "0 0 1 rg",
             ),
             # a color of inherit or currentColor is the color of the parent
             (
-                '<g color="red"><g color="inherit">'
-                '<rect width="5" height="5" fill="currentColor"/></g></g>',
+                (
+                    '<g color="red"><g color="inherit">'
+                    '<rect width="5" height="5" fill="currentColor"/></g></g>'
+                ),
                 "1 0 0 rg",
             ),
             (
-                '<g color="red"><g color="currentColor">'
-                '<rect width="5" height="5" fill="currentColor"/></g></g>',
+                (
+                    '<g color="red"><g color="currentColor">'
+                    '<rect width="5" height="5" fill="currentColor"/></g></g>'
+                ),
                 "1 0 0 rg",
             ),
         ],
