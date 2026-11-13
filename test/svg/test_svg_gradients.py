@@ -389,6 +389,135 @@ def test_gradient_without_stops_is_skipped():
     assert "#empty" not in svg_obj.gradient_definitions
 
 
+def test_gradient_inherits_stops_with_href():
+    # as Inkscape writes gradients: the stops are in a gradient of their own
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"
+         xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <linearGradient id="linearGradient1">
+          <stop offset="0" stop-color="red" />
+          <stop offset="1" stop-color="blue" />
+        </linearGradient>
+        <linearGradient xlink:href="#linearGradient1" id="linearGradient2"
+                        x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse" />
+      </defs>
+      <rect width="200" height="200" fill="url(#linearGradient2)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    paint = svg_obj.gradient_definitions["#linearGradient2"]
+    assert paint.units == GradientUnits.USER_SPACE_ON_USE
+    assert paint.gradient.coords == (0, 0, 200, 0)
+    assert (
+        paint.gradient.colors
+        == svg_obj.gradient_definitions["#linearGradient1"].gradient.colors
+    )
+
+
+def test_gradient_inherits_attributes_with_href():
+    # through a chain of references, also to a gradient defined later
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="a" href="#b" r="0.25" />
+        <radialGradient id="b" href="#c" cx="0.25" />
+        <radialGradient id="c" cx="0.75" cy="0.75" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="white" />
+          <stop offset="1" stop-color="black" />
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="80" fill="url(#a)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    paint = svg_obj.gradient_definitions["#a"]
+    assert paint.units == GradientUnits.USER_SPACE_ON_USE
+    # x0, y0, r0 (the focal point, fx and fy default to cx and cy), x1, y1, r1
+    assert paint.gradient.coords == pytest.approx((0.25, 0.75, 0, 0.25, 0.75, 0.25))
+
+
+def test_gradient_href_cycle_without_stops_is_skipped():
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="a" href="#b" />
+        <linearGradient id="b" href="#a" />
+      </defs>
+      <rect width="200" height="200" fill="url(#a)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    assert not svg_obj.gradient_definitions
+
+
+@pytest.mark.parametrize("a_first", [True, False])
+def test_gradient_href_cycle_does_not_depend_on_order(a_first):
+    # a -> b -> a, where only a has stops: both resolve, whichever comes first
+    a = (
+        '<linearGradient id="a" href="#b">'
+        '<stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/>'
+        "</linearGradient>"
+    )
+    b = '<linearGradient id="b" href="#a"/>'
+    svg = f"""
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>{a + b if a_first else b + a}</defs>
+      <rect width="200" height="200" fill="url(#b)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    assert {"#a", "#b"} <= svg_obj.gradient_definitions.keys()
+
+
+def test_gradient_with_invalid_stops_does_not_inherit_stops():
+    # its own <stop> elements are used, even when none of them can be read
+    svg = """
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="a">
+          <stop offset="0" stop-color="red" />
+          <stop offset="1" stop-color="blue" />
+        </linearGradient>
+        <linearGradient id="b" href="#a">
+          <stop offset="0" stop-color="not-a-color" />
+        </linearGradient>
+      </defs>
+      <rect width="200" height="200" fill="url(#b)" />
+    </svg>
+    """
+    svg_obj = SVGObject(svg)
+
+    assert "#a" in svg_obj.gradient_definitions
+    assert "#b" not in svg_obj.gradient_definitions
+
+
+def test_gradient_long_href_chain():
+    # each gradient is resolved once, so a long chain neither recurses nor slows down
+    count = 2000
+    defs = [
+        (
+            '<linearGradient id="g0" x2="0.5">'
+            '<stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/>'
+            "</linearGradient>"
+        )
+    ] + [f'<linearGradient id="g{i}" href="#g{i - 1}"/>' for i in range(1, count)]
+    svg = (
+        '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">'
+        f'<defs>{"".join(defs)}</defs>'
+        f'<rect width="200" height="200" fill="url(#g{count - 1})"/></svg>'
+    )
+    svg_obj = SVGObject(svg)
+
+    paint = svg_obj.gradient_definitions[f"#g{count - 1}"]
+    assert paint.gradient.coords == pytest.approx((0, 0, 0.5, 0))
+    assert len(svg_obj.gradient_definitions) == count
+
+
 def test_gradient_percentage_coordinates():
     svg = """
     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">

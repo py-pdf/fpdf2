@@ -10,6 +10,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/SVG.html>
 
 # pyright: reportUnknownLambdaType=false, reportUnknownArgumentType=false, reportUnknownMemberType=false
 
+import colorsys
 import logging
 import math
 import re
@@ -295,14 +296,53 @@ shape_tags = xmlns_lookup(
 def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     # color keywords are ASCII case-insensitive in SVG/CSS: "Red" is "red"
     colorstr = html.COLOR_DICT.get(colorstr.strip().lower(), colorstr.strip())
+    if colorstr.lower().startswith("hsl"):
+        return _hsl_color(colorstr.lower())
 
     if colorstr.startswith("#"):
         return color_from_hex_string(colorstr)
 
-    if colorstr.lower().startswith("rgb"):
-        return color_from_rgb_string(colorstr.lower())
+    lowered = colorstr.lower()
+    if lowered.startswith("rgba(") or (
+        lowered.startswith("rgb(") and ("," not in lowered or "/" in lowered)
+    ):
+        return _css_rgb_color(lowered)
+
+    if lowered.startswith("rgb"):
+        return color_from_rgb_string(lowered)
 
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _css_rgb_color(colorstr: str) -> DeviceRGB:
+    """
+    Parse rgba(R, G, B, A), or rgb() and rgba() in the space-separated syntax of
+    CSS Color 4: rgb(R G B) and rgb(R G B / A). A is a number from 0 to 1 or a
+    percentage, unlike the 0-255 alpha of fpdf2's own rgb(R, G, B, A).
+    """
+    body = colorstr[colorstr.index("(") + 1 : -1] if colorstr.endswith(")") else ""
+    alpha: Optional[str] = None
+    if "/" in body:
+        body, alpha = body.split("/", 1)
+        channels = body.split()
+    elif "," in body:
+        channels = [part.strip() for part in body.split(",")]
+        if len(channels) == 4:
+            alpha = channels.pop()
+    else:
+        channels = body.split()
+    if len(channels) != 3:
+        raise ValueError(f"{colorstr} could not be interpreted as a rgb() color")
+
+    def fraction(value: str, scale: float) -> float:
+        value = value.strip()
+        number = (
+            float(value[:-1]) / 100 if value.endswith("%") else float(value) / scale
+        )
+        return min(max(number, 0.0), 1.0)
+
+    r, g, b = (fraction(channel, 255) for channel in channels)
+    return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
 
 
 def _light_color(colorstr: str) -> str:
@@ -316,6 +356,51 @@ def _light_color(colorstr: str) -> str:
             _split_top_level_commas(stripped[len("light-dark(") : -1])[0].strip()
         )
     return colorstr
+
+
+_DEGREES_PER_ANGLE_UNIT = {"deg": 1.0, "grad": 0.9, "rad": 180 / math.pi, "turn": 360.0}
+
+
+def _hsl_color(colorstr: str) -> DeviceRGB:
+    """
+    Parse hsl() and hsla(), with commas or with the space-separated syntax of CSS
+    Color 4: hsl(H, S%, L%), hsla(H, S%, L%, A), hsl(H S% L%) and hsl(H S% L% / A).
+    The hue may have an angle unit, and A is a number from 0 to 1 or a percentage.
+    """
+    match = re.fullmatch(r"hsla?\((.*)\)", colorstr.strip(), re.DOTALL)
+    body = match.group(1) if match else ""
+    alpha: Optional[str] = None
+    if "/" in body:
+        body, alpha = body.split("/", 1)
+        parts = body.split()
+    else:
+        parts = (
+            [part.strip() for part in body.split(",")] if "," in body else body.split()
+        )
+        if len(parts) == 4:
+            alpha = parts.pop()
+    if len(parts) != 3:
+        raise ValueError(f"{colorstr} could not be interpreted as a hsl() color")
+
+    hue = parts[0]
+    # "grad" is tried before "rad", which it ends with
+    unit = next((u for u in _DEGREES_PER_ANGLE_UNIT if hue.endswith(u)), None)
+    degrees = (
+        float(hue[: -len(unit)]) * _DEGREES_PER_ANGLE_UNIT[unit] if unit else float(hue)
+    )
+
+    def fraction(value: str, scale: float) -> float:
+        value = value.strip()
+        number = (
+            float(value[:-1]) / 100 if value.endswith("%") else float(value) / scale
+        )
+        return min(max(number, 0.0), 1.0)
+
+    # a saturation or lightness without % is a percentage too
+    saturation, lightness = (fraction(part, 100) for part in parts[1:])
+    # DeviceRGB takes fractions, so the color is kept exactly, not rounded to 8 bits
+    r, g, b = colorsys.hls_to_rgb((degrees % 360) / 360, lightness, saturation)
+    return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
 
 
 def _split_top_level_commas(value: str) -> list[str]:
@@ -1315,6 +1400,15 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "pattern")
             and element.attrib.get("id")
         }
+        self._gradient_cache: dict[
+            "Element", tuple[dict[str, str], Optional["Element"]]
+        ] = {}
+        self._gradient_elements = {
+            "#" + element.attrib["id"]: element
+            for element in svg_tree.iter()
+            if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
+            and element.attrib.get("id")
+        }
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -1658,6 +1752,64 @@ class SVGObject:
         return None
 
     @force_nodocument
+    def _gradient_inheritance(
+        self, grad_element: "Element"
+    ) -> tuple[dict[str, str], Optional["Element"]]:
+        """
+        The attributes of a gradient, with those it inherits through href, and the
+        gradient whose <stop> elements it uses: its own if it has any, else those of
+        the gradient it references, as Inkscape writes them.
+
+        Each gradient is resolved once and cached, so long reference chains stay
+        linear. In a reference cycle, each gradient follows the cycle from itself,
+        so that the result does not depend on the order of the definitions.
+        """
+
+        def inherit(
+            element: "Element", inherited: tuple[dict[str, str], Optional["Element"]]
+        ) -> tuple[dict[str, str], Optional["Element"]]:
+            has_stops = any(without_ns(child.tag) == "stop" for child in element)
+            return (
+                {**inherited[0], **element.attrib},
+                element if has_stops else inherited[1],
+            )
+
+        path: list["Element"] = []
+        seen: set["Element"] = set()
+        element: Optional["Element"] = grad_element
+        while (
+            element is not None
+            and element not in self._gradient_cache
+            and element not in seen
+        ):
+            seen.add(element)
+            path.append(element)
+            href = element.attrib.get(
+                "href", element.attrib.get("{http://www.w3.org/1999/xlink}href")
+            )
+            element = self._gradient_elements.get(href) if href else None
+        if element is not None and element in seen:
+            # the walk came back to a gradient of the path: path[start:] is a cycle.
+            # Going round it backwards twice, each member gets the nearest attribute
+            # and <stop> elements that follow it, all the way round.
+            start = path.index(element)
+            cycle, path = path[start:], path[:start]
+            inherited: tuple[dict[str, str], Optional["Element"]] = ({}, None)
+            for member in reversed(cycle * 2):
+                inherited = inherit(member, inherited)
+                self._gradient_cache[member] = inherited
+        else:
+            inherited = (
+                self._gradient_cache[element]
+                if element is not None and element in self._gradient_cache
+                else ({}, None)
+            )
+        for element in reversed(path):
+            inherited = inherit(element, inherited)
+            self._gradient_cache[element] = inherited
+        return self._gradient_cache[grad_element]
+
+    @force_nodocument
     def _parse_linear_gradient(self, grad_element: "Element") -> None:
         """Parse a <linearGradient> element and store it in gradient_definitions."""
         grad_id: Optional[str] = grad_element.attrib.get("id")
@@ -1668,23 +1820,24 @@ class SVGObject:
         if not grad_id.startswith("#"):
             grad_id = "#" + grad_id
 
-        x1 = grad_element.attrib.get("x1", "0%")
-        y1 = grad_element.attrib.get("y1", "0%")
-        x2 = grad_element.attrib.get("x2", "100%")
-        y2 = grad_element.attrib.get("y2", "0%")
+        attrs, stops_element = self._gradient_inheritance(grad_element)
+        x1 = attrs.get("x1", "0%")
+        y1 = attrs.get("y1", "0%")
+        x2 = attrs.get("x2", "100%")
+        y2 = attrs.get("y2", "0%")
 
         x1_val = self._convert_gradient_coordinate(x1, "0")
         y1_val = self._convert_gradient_coordinate(y1, "0")
         x2_val = self._convert_gradient_coordinate(x2, "1")
         y2_val = self._convert_gradient_coordinate(y2, "0")
 
-        units_str = grad_element.attrib.get("gradientUnits", "objectBoundingBox")
+        units_str = attrs.get("gradientUnits", "objectBoundingBox")
         if units_str == "userSpaceOnUse":
             units = GradientUnits.USER_SPACE_ON_USE
         else:
             units = GradientUnits.OBJECT_BOUNDING_BOX
 
-        spread_str = grad_element.attrib.get("spreadMethod", "pad")
+        spread_str = attrs.get("spreadMethod", "pad")
         try:
             spread_method = GradientSpreadMethod.coerce(spread_str)
         except (ValueError, AttributeError):
@@ -1692,14 +1845,18 @@ class SVGObject:
             LOGGER.warning("Invalid spreadMethod '%s', using PAD", spread_str)
 
         transform = None
-        transform_str = grad_element.attrib.get("gradientTransform")
+        transform_str = attrs.get("gradientTransform")
         if transform_str:
             try:
                 transform = convert_transforms(transform_str)
             except (ValueError, AttributeError, TypeError) as e:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
-        stops = self._parse_gradient_stops(grad_element)
+        stops = (
+            self._parse_gradient_stops(stops_element)
+            if stops_element is not None
+            else []
+        )
 
         if not stops:
             LOGGER.warning("Linear gradient '%s' has no valid stops, skipping", grad_id)
@@ -1736,12 +1893,13 @@ class SVGObject:
         if not grad_id.startswith("#"):
             grad_id = "#" + grad_id
 
-        cx = grad_element.attrib.get("cx", "50%")
-        cy = grad_element.attrib.get("cy", "50%")
-        r = grad_element.attrib.get("r", "50%")
-        fx = grad_element.attrib.get("fx", cx)
-        fy = grad_element.attrib.get("fy", cy)
-        fr = grad_element.attrib.get("fr", "0%")
+        attrs, stops_element = self._gradient_inheritance(grad_element)
+        cx = attrs.get("cx", "50%")
+        cy = attrs.get("cy", "50%")
+        r = attrs.get("r", "50%")
+        fx = attrs.get("fx", cx)
+        fy = attrs.get("fy", cy)
+        fr = attrs.get("fr", "0%")
 
         cx_val = self._convert_gradient_coordinate(cx, "0.5")
         cy_val = self._convert_gradient_coordinate(cy, "0.5")
@@ -1756,28 +1914,32 @@ class SVGObject:
             )
             return
 
-        units_str = grad_element.attrib.get("gradientUnits", "objectBoundingBox")
+        units_str = attrs.get("gradientUnits", "objectBoundingBox")
         units = (
             GradientUnits.USER_SPACE_ON_USE
             if units_str == "userSpaceOnUse"
             else GradientUnits.OBJECT_BOUNDING_BOX
         )
 
-        spread_str = grad_element.attrib.get("spreadMethod", "pad")
+        spread_str = attrs.get("spreadMethod", "pad")
         try:
             spread_method = GradientSpreadMethod.coerce(spread_str)
         except (ValueError, AttributeError):
             spread_method = GradientSpreadMethod.PAD
 
         transform = None
-        transform_str = grad_element.attrib.get("gradientTransform")
+        transform_str = attrs.get("gradientTransform")
         if transform_str:
             try:
                 transform = convert_transforms(transform_str)
             except (ValueError, AttributeError, TypeError) as e:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
-        stops = self._parse_gradient_stops(grad_element)
+        stops = (
+            self._parse_gradient_stops(stops_element)
+            if stops_element is not None
+            else []
+        )
         if not stops:
             LOGGER.warning("Radial gradient '%s' has no valid stops, skipping", grad_id)
             return
@@ -1973,6 +2135,11 @@ class SVGObject:
 
         width_str = root_tag.get("width")
         height_str = root_tag.get("height")
+        # width="auto", as Figma writes it, sizes the image like no width at all
+        if width_str is not None and width_str.strip().lower() == "auto":
+            width_str = None
+        if height_str is not None and height_str.strip().lower() == "auto":
+            height_str = None
         viewbox = root_tag.get("viewBox")
         # we don't fully support this, just check for its existence
         preserve_ar = root_tag.get("preserveAspectRatio", True)
