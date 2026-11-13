@@ -1176,7 +1176,8 @@ def test_html_link_to_the_top_of_the_document():
     pdf.write_html("<p>line</p>" * 60 + '<a href="#">Back to top</a>')
     pdf.output()
     assert pdf.pages_count == 2
-    (link,) = pdf.links.values()
+    assert len(pdf.links) == 1
+    link = next(iter(pdf.links.values()))
     assert link.page_number == 1
     assert link.top == pytest.approx(pdf.h * pdf.k)
 
