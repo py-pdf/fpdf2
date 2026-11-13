@@ -796,6 +796,9 @@ class TestSVGObject:
                 ".a { fill: red }"
             ),
             '@charset "utf-8"; @import "theme.css" screen; .a { fill: red }',
+            # a ")" or ";" in a quoted URL, and escaped quotes and parentheses
+            '@import url("theme(x);dark.css"); .a { fill: red }',
+            r'@import "x\";y.css"; @import url(a\);b.css); .a { fill: red }',
         ],
     )
     def test_svg_css_rules_after_at_statements(self, css):

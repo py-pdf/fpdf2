@@ -99,9 +99,11 @@ COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
 # An at-rule without a block, such as @import url("...;..."); or @charset "utf-8";
-# a ";" in a string or a url() does not end it
+# a ";" or ")" in a string, an escape or a url() does not end it
+_CSS_STRING = r""""(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'"""
 CSS_AT_STATEMENT_RE = re.compile(
-    r"""@[\w-]+(?:[^;{}'"(]|\([^)]*\)|"[^"]*"|'[^']*')*;"""
+    rf"""@[\w-]+(?:[^;{{}}'"(\\]|\\.|\((?:[^)'"\\]|\\.|{_CSS_STRING})*\)|{_CSS_STRING})*;""",
+    re.DOTALL,
 )
 
 SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
