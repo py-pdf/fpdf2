@@ -2238,7 +2238,7 @@ class SVGObject:
             elif child.tag in xmlns_lookup("svg", "image"):
                 self.build_image(child)
             elif child.tag in shape_tags:
-                self.build_shape(child)
+                self.build_shape(child, self._ancestors_font_style(child))
             elif child.tag in xmlns_lookup("svg", "linearGradient"):
                 self._parse_linear_gradient(child)
             elif child.tag in xmlns_lookup("svg", "radialGradient"):
@@ -2527,6 +2527,34 @@ class SVGObject:
         self.update_xref(path.attrib.get("id"), pdf_path)
         return pdf_path
 
+    @staticmethod
+    def _shape_font_size(
+        style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+    ) -> float:
+        """The font size of a shape in pt: em and ex in its lengths are relative to it, as in CSS."""
+        font_style = {**(inherited_style or {}), **style_map}
+        _resolve_relative_font_size(font_style, inherited_style)
+        return _font_size_pt(font_style.get("font-size"))
+
+    def _ancestors_font_style(self, element: "Element") -> dict[str, Any]:
+        """
+        The font size that the ancestors of an element give it, for an element that is
+        not built while its ancestors are, such as in <defs> or a <clipPath>.
+        """
+        ancestors = []
+        parent = self._pattern_parents.get(element)
+        while parent is not None:
+            ancestors.append(parent)
+            parent = self._pattern_parents.get(parent)
+        inherited: dict[str, Any] = {}
+        for ancestor in reversed(ancestors):
+            font_size = self._style_map_for(ancestor).get("font-size")
+            if font_size is not None:
+                style = {"font-size": font_size}
+                _resolve_relative_font_size(style, inherited)
+                inherited = style
+        return inherited
+
     @force_nodocument
     def build_shape(
         self, shape: "Element", inherited_style: Optional[dict[str, Any]] = None
@@ -2538,10 +2566,7 @@ class SVGObject:
         if shape_tags[shape.tag] in ("polyline", "polygon"):
             shape_path = shape_builder(shape)
         else:
-            # em and ex in its lengths are relative to its font size, as in CSS
-            font_style = {**(inherited_style or {}), **style_map}
-            _resolve_relative_font_size(font_style, inherited_style)
-            font_size = _font_size_pt(font_style.get("font-size"))
+            font_size = self._shape_font_size(style_map, inherited_style)
             shape_path = shape_builder(shape, font_size=font_size)
         assert isinstance(shape_path, PaintedPath)
         apply_styles(shape_path, shape, style_map)
@@ -2570,7 +2595,13 @@ class SVGObject:
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
-            clipping_path_shape: PaintedPath = shape_builder(shape, True)
+            if shape_tags[shape.tag] in ("polyline", "polygon"):
+                clipping_path_shape: PaintedPath = shape_builder(shape, True)
+            else:
+                font_size = self._shape_font_size(
+                    style_map, self._ancestors_font_style(shape)
+                )
+                clipping_path_shape = shape_builder(shape, True, font_size=font_size)
             apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
             self._record_resolved_elements(1)
