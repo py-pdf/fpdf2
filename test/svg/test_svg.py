@@ -326,6 +326,65 @@ class TestSVGObject:
         assert svg.width == pytest.approx(100)
         assert svg.height == pytest.approx(100)
 
+    @pytest.mark.parametrize(
+        "rect_attributes, expected",
+        [
+            # as in the logo of APIAuto
+            (
+                'style="transform: matrix(4,0,0,4,93,749)"',
+                fpdf.drawing.Transform(4, 0, 0, 4, 93, 749),
+            ),
+            ('class="a"', fpdf.drawing.Transform.translation(3, 6)),
+            # the CSS property wins over the attribute
+            (
+                'transform="scale(3)" style="transform: scale(2)"',
+                fpdf.drawing.Transform.scaling(2),
+            ),
+            (
+                'transform="scale(3)" style="transform: none"',
+                fpdf.drawing.Transform.identity(),
+            ),
+        ],
+    )
+    def test_svg_transform_css_property(self, rect_attributes, expected):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            "<style>.a { transform: translate(4px, 8px) }</style>"
+            f'<rect {rect_attributes} width="5" height="5"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.transform == pytest.approx(expected)
+
+    @pytest.mark.parametrize(
+        "inner_attributes, expected",
+        [
+            ("", None),
+            ('transform="translate(5, 0)"', fpdf.drawing.Transform.translation(5, 0)),
+        ],
+    )
+    def test_svg_transform_css_property_not_inherited(self, inner_attributes, expected):
+        # as in CSS, the transform of a group applies once, through the group
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="transform: scale(2)">'
+            f'<g {inner_attributes}><rect width="5" height="5"/></g></g></svg>'
+        )
+        outer = svg.base_group.path_items[0]
+        inner = outer.path_items[0]
+        assert outer.transform == pytest.approx(fpdf.drawing.Transform.scaling(2))
+        assert inner.transform == (
+            None if expected is None else pytest.approx(expected)
+        )
+
+    def test_svg_transform_css_property_of_image(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<image href="image.png" width="5" height="5" style="transform: scale(2)"/>'
+            "</svg>"
+        )
+        wrapper = svg.base_group.path_items[0]
+        assert isinstance(wrapper, fpdf.drawing.GraphicsContext)
+        assert wrapper.transform == pytest.approx(fpdf.drawing.Transform.scaling(2))
+
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):
         svg = fpdf.svg.SVGObject.from_file(svg_file)
@@ -1215,6 +1274,28 @@ def test_svg_image_length_units(unit, scale):
     assert (image.x, image.y, image.width, image.height) == pytest.approx(
         (10 * scale, 20 * scale, 40 * scale, 30 * scale)
     )
+
+
+@pytest.mark.parametrize(
+    "size, expected",
+    [
+        ('width="auto" height="30"', (0, 30)),
+        ('width="AUTO" height="auto"', (0, 0)),
+        ('width="40" height=" auto "', (40, 0)),
+    ],
+)
+def test_svg_image_size_auto(size, expected):
+    # as in SVG 2, auto is the size of the image itself: 0, as when it is missing,
+    # which size_in_document_units() reads as the image size or ratio
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" {size}/></svg>'
+    )
+    image = svg.base_group.path_items[0]
+    assert (image.width, image.height) == expected
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg.draw_to_page(pdf)
 
 
 def test_svg_image_transform(caplog):
