@@ -2529,7 +2529,12 @@ class SVGObject:
     ) -> GraphicsContext:
         """Handle nested items within a group <g> tag."""
         local_style = self._style_map_for(group)
-        merged_style = dict(inherited_style or {})
+        # transform is not inherited, as in CSS: the group applies it to its children
+        merged_style = {
+            key: value
+            for key, value in (inherited_style or {}).items()
+            if key != "transform"
+        }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         if pdf_group is None:
@@ -2635,7 +2640,12 @@ class SVGObject:
         skipped, which allows a following unconditional fallback to be rendered.
         """
         local_style = self._style_map_for(switch)
-        merged_style = dict(inherited_style or {})
+        # transform is not inherited, as in CSS: the group applies it to its children
+        merged_style = {
+            key: value
+            for key, value in (inherited_style or {}).items()
+            if key != "transform"
+        }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         pdf_group = GraphicsContext()
@@ -2820,7 +2830,7 @@ class SVGObject:
         )
 
         style_map = self._style_map_for(image)
-        has_transform = "transform" in image.attrib
+        has_transform = "transform" in image.attrib or "transform" in style_map
         has_opacity = "opacity" in image.attrib or "opacity" in style_map
         has_clip = "clip-path" in image.attrib or "clip-path" in style_map
 
