@@ -190,9 +190,8 @@ test_svg_shape_tags = (
         no_error(),
         id="circle negative r",
     ),
-    pytest.param(
-        '<circle cx="10" cy="10"/>', [], pytest.raises(KeyError), id="circle no r"
-    ),
+    pytest.param('<circle cx="10" cy="10"/>', [], no_error(), id="circle no r"),
+    pytest.param('<circle cx="10" cy="10" r="0"/>', [], no_error(), id="circle r 0"),
     pytest.param(
         '<ellipse rx="10"/>',
         [M(0, 0), El(10, 10, 0, 0)],
@@ -261,9 +260,16 @@ test_svg_shape_tags = (
     ),
     pytest.param(
         '<line y1="0" x2="10" y2="10"/>',
-        [],
-        pytest.raises(KeyError),
+        [M(0, 0), L(10, 10)],
+        no_error(),
         id="line no x1",
+    ),
+    pytest.param(
+        # a tick of a D3 axis
+        '<line stroke="currentColor" y2="6"/>',
+        [M(0, 0), L(0, 6)],
+        no_error(),
+        id="line only y2",
     ),
     pytest.param(
         '<polyline points="1, 0 10, 10, -20, -50"/>',
@@ -274,7 +280,7 @@ test_svg_shape_tags = (
     pytest.param(
         "<polyline/>",
         [],
-        pytest.raises(KeyError),
+        no_error(),
         id="polyline no points",
     ),
     pytest.param(
@@ -310,7 +316,7 @@ test_svg_shape_tags = (
     pytest.param(
         "<polygon/>",
         [],
-        pytest.raises(KeyError),
+        no_error(),
         id="polygon no points",
     ),
     pytest.param(
@@ -574,6 +580,43 @@ test_svg_attribute_conversion = (
         id="fill color invalid",
     ),
     pytest.param(
+        '<path fill="light-dark(rgb(255, 0, 0), rgba(226, 228, 233, 0.82))"/>',
+        Gs(fill_color="#f00"),
+        no_error(),
+        id="fill color light-dark()",
+    ),
+    pytest.param(
+        # as Mermaid writes the style of a node
+        '<path style="fill:#f9f !important;stroke:none!IMPORTANT"/>',
+        Gs(fill_color="#f9f", stroke_color=None),
+        no_error(),
+        id="style with !important",
+    ),
+    pytest.param(
+        '<path stroke="Light-Dark(#00f, white)"/>',
+        Gs(stroke_color="#00f"),
+        no_error(),
+        id="stroke color light-dark() uppercase",
+    ),
+    pytest.param(
+        '<path fill="light-dark(1, red)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill color light-dark() invalid",
+    ),
+    pytest.param(
+        '<path fill="light-dark(transparent, red)"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color light-dark() transparent",
+    ),
+    pytest.param(
+        '<path stroke="light-dark(currentColor, white)"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color light-dark() currentColor",
+    ),
+    pytest.param(
         '<path fill-rule="inherit"/>',
         Gs(intersection_rule=GraphicsStyle.INHERIT),
         no_error(),
@@ -746,6 +789,18 @@ test_svg_attribute_conversion = (
         Gs(stroke_dash_pattern=[1], stroke_dash_phase=1),
         no_error(),
         id="stroke-dashoffset",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="4px, 2px" stroke-dashoffset="2px"/>',
+        Gs(stroke_dash_pattern=[4 * 0.75, 2 * 0.75], stroke_dash_phase=2 * 0.75),
+        no_error(),
+        id="stroke-dasharray and stroke-dashoffset with units",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1mm 2"/>',
+        Gs(stroke_dash_pattern=[72 / 25.4, 2]),
+        no_error(),
+        id="stroke-dasharray mixed units",
     ),
     pytest.param(
         '<path stroke-linecap="butt"/>',
@@ -1100,6 +1155,25 @@ svg_path_render_tests = (
         "q 4 5 m 6 1 l h B Q",
         id="relative arc ending at its start point is omitted",
     ),
+    pytest.param(
+        # the rings of Font Awesome's instagram.svg: rounding made the radii of the
+        # second ring look a bit too small for the arc, which made sqrt() fail
+        (
+            "M224.3 141a115 115 0 1 0 -.6 230 115 115 0 1 0 .6-230z"
+            "m-.6 40.4a74.6 74.6 0 1 1 .6 149.2 74.6 74.6 0 1 1 -.6-149.2z"
+        ),
+        (
+            "q 224.3 141 m 160.7873 140.8343 109.1657 192.1873 109 255.7 c "
+            "108.8343 319.2127 160.1873 370.8343 223.7 371 c "
+            "287.2127 371.1657 338.8343 319.8127 339 256.3 c "
+            "339.1657 192.7873 287.8127 141.1657 224.3 141 c h "
+            "223.7 181.4 m 264.9004 181.2343 298.4343 214.4996 298.6 255.7 c "
+            "298.7657 296.9004 265.5004 330.4343 224.3 330.6 c "
+            "183.0996 330.7657 149.5657 297.5004 149.4 256.3 c "
+            "149.2343 215.0996 182.4996 181.5657 223.7 181.4 c h B Q"
+        ),
+        id="arc whose radii are scaled up to fit, with rounding errors",
+    ),
 )
 
 svg_path_implicit_directives = (
@@ -1245,6 +1319,21 @@ svg_shape_info_tests = (
         Transform.identity(),
         no_error(),
         id="different shape",
+    ),
+    # as written by icon sets, relative to the default font size of 16px
+    pytest.param(
+        svg_snippet(width="1em", height="1em"),
+        (resolve_length("16px"),) * 2,
+        Transform.identity(),
+        no_error(),
+        id="em",
+    ),
+    pytest.param(
+        svg_snippet(width="2em", height="1ex"),
+        (resolve_length("32px"), resolve_length("8px")),
+        Transform.identity(),
+        no_error(),
+        id="em and ex",
     ),
     pytest.param(
         svg_snippet(width="110%", height="90%"),

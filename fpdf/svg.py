@@ -117,6 +117,45 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     return value
 
 
+_IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
+
+
+def _split_important(value: str) -> tuple[str, bool]:
+    """Separate a CSS value from its "!important" flag, as in "fill: none !important"."""
+    match = _IMPORTANT_RE.search(value)
+    if match:
+        return value[: match.start()], True
+    return value, False
+
+
+def _overrides(earlier: str, later: str) -> bool:
+    """Whether a later declaration of a property replaces an earlier one: not when only
+    the earlier one is !important."""
+    return not (_split_important(earlier)[1] and not _split_important(later)[1])
+
+
+def _parse_css_declarations(style: str) -> dict[str, str]:
+    """
+    The declarations of a style attribute or CSS rule, with their "!important" flags.
+    A property declared twice is resolved while the flags are known, so that
+    "fill: red !important; fill: blue" keeps red.
+    """
+    declarations: dict[str, str] = {}
+    for declaration in style.split(";"):
+        for key, value in html.parse_css_style(declaration).items():
+            if key not in declarations or _overrides(declarations[key], value):
+                declarations[key] = value
+    return declarations
+
+
+def _parse_style_attribute(style: str) -> dict[str, str]:
+    """The declarations of a style attribute, without their "!important" flags."""
+    return {
+        key: _split_important(value)[0]
+        for key, value in _parse_css_declarations(style).items()
+    }
+
+
 def _has_switch_conditional_attrs(tag: "Element") -> bool:
     return any(
         attribute in tag.attrib for attribute in SVG_SWITCH_CONDITIONAL_ATTRIBUTES
@@ -266,6 +305,35 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     raise ValueError(f"unsupported color specification {colorstr}")
 
 
+def _light_color(colorstr: str) -> str:
+    """
+    CSS Color 5: without a color-scheme, which SVG documents rarely set,
+    light-dark() is its first, light color. Any other value is returned as is.
+    """
+    stripped = colorstr.strip()
+    if stripped.lower().startswith("light-dark(") and stripped.endswith(")"):
+        return _light_color(
+            _split_top_level_commas(stripped[len("light-dark(") : -1])[0].strip()
+        )
+    return colorstr
+
+
+def _split_top_level_commas(value: str) -> list[str]:
+    """Split on the commas that are not inside parentheses, as in "rgb(1, 2, 3), red"."""
+    parts: list[str] = []
+    depth, start = 0, 0
+    for index, character in enumerate(value):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        elif character == "," and depth == 0:
+            parts.append(value[start:index])
+            start = index + 1
+    parts.append(value[start:])
+    return parts
+
+
 @force_nodocument
 def convert_stroke_width(incoming: str) -> Optional[float]:
     val = resolve_length(incoming)
@@ -274,6 +342,15 @@ def convert_stroke_width(incoming: str) -> Optional[float]:
     if val == 0:
         return None
     return val
+
+
+@force_nodocument
+def convert_dash_length(incoming: str) -> float:
+    # a plain number stays a float, so that "nan" and "inf" get their own error later
+    try:
+        return float(incoming)
+    except ValueError:
+        return resolve_length(incoming)
 
 
 @force_nodocument
@@ -328,6 +405,8 @@ def optional(
 @force_nodocument
 def svg_paint(colorstr: Optional[str]) -> Any:
     """A fill or stroke paint: "transparent" paints nothing, like "none"."""
+    if colorstr:
+        colorstr = _light_color(colorstr)
     if colorstr and colorstr.startswith("url("):
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
@@ -359,14 +438,16 @@ svg_attr_map: dict[str, Any] = {
         "stroke_dash_pattern",
         optional(
             dasharray,
-            lambda da: [float(item) for item in NUMBER_SPLIT.split(da) if item],
+            lambda da: [
+                convert_dash_length(item) for item in NUMBER_SPLIT.split(da) if item
+            ],
         ),
     ),
     # stroke-dashoffset may be a percentage, which we don't support currently
     # https://www.w3.org/TR/SVG11/painting.html#StrokeDashoffsetProperty
     "stroke-dashoffset": lambda dashoff: (
         "stroke_dash_phase",
-        inheritable(dashoff, float),
+        inheritable(dashoff, convert_dash_length),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeLinecapProperty
     "stroke-linecap": lambda capstr: ("stroke_cap_style", inheritable(capstr)),
@@ -397,7 +478,7 @@ def apply_styles(
         style = computed_style
     else:
         style = {}
-        for key, value in html.parse_css_style(
+        for key, value in _parse_style_attribute(
             svg_element.attrib.get("style", "")
         ).items():
             norm_value = _normalize_css_value(value)
@@ -702,11 +783,48 @@ def _get_attr_or_style(
         if value is not None:
             return value
     if style_map is None:
-        inline = html.parse_css_style(tag.attrib.get("style", ""))
+        inline = _parse_style_attribute(tag.attrib.get("style", ""))
         value = _normalize_css_value(inline.get(name))
         if value is not None:
             return value
     return _normalize_css_value(tag.attrib.get(name))
+
+
+def _resolve_relative_font_size(
+    style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """
+    Make a relative font-size (em, ex or %) absolute, against the inherited one, so
+    that descendants inherit the computed size, as in CSS.
+    """
+    value = style_map.get("font-size")
+    match = unit_splitter.fullmatch(value.strip()) if isinstance(value, str) else None
+    if match is None:
+        return
+    factor = {"em": 1.0, "ex": 0.5, "%": 0.01}.get(match.group("unit") or "")
+    if factor is None:
+        return
+    inherited = (inherited_style or {}).get("font-size")
+    parent_size = resolve_length(inherited) if inherited else resolve_length("16px")
+    style_map["font-size"] = f"{float(match.group('value')) * factor * parent_size}pt"
+
+
+def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
+    """
+    Resolve the width or height of the root <svg>. As in browsers, a length in em
+    or ex, such as the width="1em" of icon sets, is relative to its font size,
+    16px if it sets none.
+    """
+    match = unit_splitter.fullmatch(length_str)
+    unit = match.group("unit") if match else None
+    if match is None or unit not in ("em", "ex"):
+        return resolve_length(length_str)
+    font_size = _get_attr_or_style(root_tag, "font-size")
+    try:
+        font_size_pt = resolve_length(font_size or "16px")
+    except ValueError:
+        font_size_pt = resolve_length("16px")
+    return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
 
 
 def _parse_font_attrs(
@@ -821,7 +939,7 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
 
     cleaned = CSS_COMMENT_RE.sub("", css_text)
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
-        declarations = html.parse_css_style(body)
+        declarations = _parse_css_declarations(body)
         if not declarations:
             continue
         normalized = {}
@@ -912,9 +1030,12 @@ class ShapeBuilder:
         """Convert an SVG <circle> into a PDF path."""
         cx = resolve_length(tag.attrib.get("cx", "0"))
         cy = resolve_length(tag.attrib.get("cy", "0"))
-        r = resolve_length(tag.attrib["r"])
+        r = resolve_length(tag.attrib.get("r", "0"))
 
         path = cls.new_path(tag, clipping_path)
+        if r == 0:
+            # 0, the initial value, disables rendering, as for an <ellipse>
+            return path
         path.circle(cx, cy, r)
         return path
 
@@ -946,10 +1067,10 @@ class ShapeBuilder:
     @classmethod
     def line(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <line> into a PDF path."""
-        x1 = resolve_length(tag.attrib["x1"])
-        y1 = resolve_length(tag.attrib["y1"])
-        x2 = resolve_length(tag.attrib["x2"])
-        y2 = resolve_length(tag.attrib["y2"])
+        x1 = resolve_length(tag.attrib.get("x1", "0"))
+        y1 = resolve_length(tag.attrib.get("y1", "0"))
+        x2 = resolve_length(tag.attrib.get("x2", "0"))
+        y2 = resolve_length(tag.attrib.get("y2", "0"))
 
         path = cls.new_path(tag)
         path.move_to(x1, y1)
@@ -979,7 +1100,7 @@ class ShapeBuilder:
     def polyline(cls, tag: "Element") -> PaintedPath:
         """Convert an SVG <polyline> into a PDF path."""
         path = cls.new_path(tag)
-        points = cls._complete_points(tag.attrib["points"])
+        points = cls._complete_points(tag.attrib.get("points", ""))
         if points:
             svg_path_converter(path, "M" + points)
         return path
@@ -988,7 +1109,7 @@ class ShapeBuilder:
     def polygon(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <polygon> into a PDF path."""
         path = cls.new_path(tag, clipping_path)
-        points = cls._complete_points(tag.attrib["points"])
+        points = cls._complete_points(tag.attrib.get("points", ""))
         if points:
             svg_path_converter(path, "M" + points + "Z")
         return path
@@ -1113,7 +1234,7 @@ class SVGObject:
         cls,
         filename: str | PathLike[str],
         *args: Any,
-        encoding: str = "utf-8",
+        encoding: Optional[str] = None,
         **kwargs: Any,
     ) -> "SVGObject":
         """
@@ -1123,11 +1244,17 @@ class SVGObject:
             filename (path-like): the path to a file containing SVG data.
             *args: forwarded directly to the SVGObject initializer. For subclass use.
             encoding (str): optional charset encoding to use when reading the file.
+                By default, the encoding declared by the file is used, as in
+                `FPDF.image()`, and UTF-8 if it declares none.
             **kwargs: forwarded directly to the SVGObject initializer. For subclass use.
 
         Returns:
             A converted `SVGObject`.
         """
+        if encoding is None:
+            # The XML parser reads the encoding declaration of the file
+            with open(filename, "rb") as svgfile:
+                return cls(svgfile.read(), *args, **kwargs)
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
@@ -1165,6 +1292,11 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "pattern")
             and element.attrib.get("id")
         }
+        self._elements_by_id = {
+            "#" + element.attrib["id"]: element
+            for element in svg_tree.iter()
+            if element.attrib.get("id")
+        }
         self._pattern_parents = {
             child: parent for parent in svg_tree.iter() for child in parent
         }
@@ -1176,6 +1308,12 @@ class SVGObject:
             else (float(self.width or 300), float(self.height or 150))
         )
         self._check_svg_limits(svg_tree)
+        # A <use> of an element that is itself hidden draws nothing.
+        self._hidden_references = {
+            "#" + element.attrib["id"]
+            for element in svg_tree.iter()
+            if element.attrib.get("id") and self._is_display_none(element)
+        }
         self.convert_graphics(svg_tree)
 
     @force_nodocument
@@ -1338,19 +1476,37 @@ class SVGObject:
                 css_text = "".join(node.itertext() or [])
                 for class_name, declarations in _extract_css_class_styles(css_text):
                     existing = self.css_class_styles.setdefault(class_name, {})
-                    existing.update(declarations)
+                    for key, value in declarations.items():
+                        # a later rule does not override an !important declaration
+                        if key not in existing or _overrides(existing[key], value):
+                            existing[key] = value
+
+    def _is_display_none(self, tag: "Element") -> bool:
+        display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
+        return display is not None and display.strip().lower() == "none"
 
     def _style_map_for(self, tag: "Element") -> dict[str, Any]:
         style_map: dict[str, Any] = {}
+        # an !important declaration of a stylesheet wins over a normal inline one
+        important: set[str] = set()
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
             if class_attr:
                 for class_name in class_attr.split():
                     class_styles = self.css_class_styles.get(class_name)
                     if class_styles:
-                        style_map.update(class_styles)
-        inline = html.parse_css_style(tag.attrib.get("style", ""))
-        for key, value in inline.items():
+                        for key, declared in class_styles.items():
+                            value, is_important = _split_important(declared)
+                            if key in important and not is_important:
+                                continue
+                            style_map[key] = value
+                            if is_important:
+                                important.add(key)
+        inline = _parse_css_declarations(tag.attrib.get("style", ""))
+        for key, declared in inline.items():
+            value, is_important = _split_important(declared)
+            if key in important and not is_important:
+                continue
             norm_value = _normalize_css_value(value)
             if norm_value is not None:
                 style_map[key] = norm_value
@@ -1410,12 +1566,8 @@ class SVGObject:
             if tag_name != "stop":
                 continue
 
-            offset_str = stop_element.attrib.get("offset")
-            if offset_str is None:
-                LOGGER.warning("Found <stop> without offset, skipping")
-                continue
-
-            offset_str = offset_str.strip()
+            # The initial value of offset is 0
+            offset_str = stop_element.attrib.get("offset", "0").strip()
             if offset_str.endswith("%"):
                 offset = float(offset_str[:-1]) / 100.0
             else:
@@ -1436,7 +1588,7 @@ class SVGObject:
 
             style = stop_element.attrib.get("style", "")
             if style:
-                style_dict = html.parse_css_style(style)
+                style_dict = _parse_style_attribute(style)
                 stop_color = style_dict.get("stop-color")
                 stop_opacity_str = style_dict.get("stop-opacity")
                 if stop_opacity_str:
@@ -1451,7 +1603,7 @@ class SVGObject:
                 stop_color = stop_element.attrib.get("stop-color", "black")
 
             try:
-                color_obj = svgcolor(stop_color)
+                color_obj = svgcolor(_light_color(stop_color))
 
                 color_alpha = color_obj.a if color_obj.a is not None else 1.0
                 effective_opacity = color_alpha * stop_opacity
@@ -1708,10 +1860,12 @@ class SVGObject:
             )
             for ancestor in reversed(ancestors):
                 styles = self._style_map_for(ancestor)
+                parent_style = dict(inherited)
                 for attr in (*svg_attr_map, *font_keys):
                     value = _get_attr_or_style(ancestor, attr, styles)
                     if value is not None:
                         inherited[attr] = value
+                _resolve_relative_font_size(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
             apply_styles(group, empty, inherited)
@@ -1809,7 +1963,7 @@ class SVGObject:
             if width_str.endswith("%"):
                 self.width = Percent(width_str[:-1])
             else:
-                self.width = resolve_length(width_str)
+                self.width = _resolve_root_length(width_str, root_tag)
 
         self.height = None
         if height_str is not None:
@@ -1817,7 +1971,7 @@ class SVGObject:
             if height_str.endswith("%"):
                 self.height = Percent(height_str[:-1])
             else:
-                self.height = resolve_length(height_str)
+                self.height = _resolve_root_length(height_str, root_tag)
 
         if viewbox is None:
             self.viewbox = None
@@ -1833,7 +1987,17 @@ class SVGObject:
         base_group.style.auto_close = False
         base_group.style.stroke_cap_style = StrokeCapStyle.BUTT
 
-        self.build_group(root_tag, base_group)
+        # A clip-path may reference a <clipPath> that comes after it, in or
+        # outside <defs>, so they are all built first.
+        for element in root_tag.iter():
+            if element.tag in xmlns_lookup("svg", "clipPath"):
+                self.build_clip_path_tag(element)
+
+        if self._is_display_none(root_tag):
+            # Nothing is drawn, but the ids are built as for a hidden group.
+            self.build_group(root_tag, GraphicsContext())
+        else:
+            self.build_group(root_tag, base_group)
 
         self.base_group = base_group
 
@@ -2048,12 +2212,8 @@ class SVGObject:
                 # Definitions are resolved lazily, including forward references.
                 continue
             elif child.tag in xmlns_lookup("svg", "clipPath"):
-                try:
-                    clip_id = child.attrib["id"]
-                except KeyError:
-                    clip_id = None
-                for child_ in child:
-                    self.build_clipping_path(child_, clip_id)
+                # Already built in convert_graphics()
+                continue
             elif child.tag in xmlns_lookup("svg", "style"):
                 # Styles handled globally during parsing
                 continue
@@ -2115,6 +2275,8 @@ class SVGObject:
             raise ValueError(
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
+        if ref in self._hidden_references:
+            return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         referenced = deepcopy(referenced)
         pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
@@ -2192,6 +2354,7 @@ class SVGObject:
         local_style = self._style_map_for(group)
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
+        _resolve_relative_font_size(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
@@ -2232,6 +2395,10 @@ class SVGObject:
         inherited_style: dict[str, Any],
     ) -> None:
         """Convert one graphics child while preserving its parent's style."""
+        if self._is_display_none(child):
+            # The element and its children are not drawn, as for a hidden Inkscape
+            # layer. It is still built, so that ids inside it can be referenced.
+            pdf_group = GraphicsContext()
         if child.tag in xmlns_lookup("svg", "defs"):
             self.handle_defs(child)
         elif child.tag in xmlns_lookup(
@@ -2243,6 +2410,10 @@ class SVGObject:
             return
         elif child.tag in xmlns_lookup("svg", "symbol"):
             self.build_symbol(child)
+        elif child.tag in xmlns_lookup("svg", "clipPath"):
+            # Never rendered directly, wherever it is placed; already built in
+            # convert_graphics()
+            return
         elif child.tag in xmlns_lookup("svg", "g"):
             pdf_group.add_item(self.build_group(child, None, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "switch"):
@@ -2289,6 +2460,7 @@ class SVGObject:
         local_style = self._style_map_for(switch)
         merged_style = dict(inherited_style or {})
         merged_style.update(local_style)
+        _resolve_relative_font_size(merged_style, inherited_style)
         pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
         apply_styles(pdf_group, switch, merged_style)
@@ -2335,29 +2507,73 @@ class SVGObject:
         return shape_path
 
     @force_nodocument
+    def build_clip_path_tag(self, clip_path: "Element") -> None:
+        """Produce the lookup for a <clipPath> tag, whose children make the clipping path."""
+        clip_id = clip_path.attrib.get("id")
+        for child in clip_path:
+            self.build_clipping_path(child, clip_id)
+
+    @force_nodocument
     def build_clipping_path(self, shape: "Element", clip_id: Optional[str]) -> None:
+        clipping_path_shape = self._clipping_path_shape(shape)
+        if clipping_path_shape is not None:
+            self.update_xref(clip_id, clipping_path_shape)
+
+    def _clipping_path_shape(
+        self, shape: "Element", allow_use: bool = True
+    ) -> Optional[PaintedPath]:
         if shape.tag in shape_tags:
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
             shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
-            clipping_path_shape = shape_builder(shape, True)
+            clipping_path_shape: PaintedPath = shape_builder(shape, True)
             apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
-            clipping_path_shape = PaintedPath()
+            clipping_path_shape = ClippingPath()
             apply_styles(clipping_path_shape, shape, style_map)
             clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")
             if svg_path is not None:
                 svg_path_converter(clipping_path_shape, svg_path)
+        elif allow_use and shape.tag in xmlns_lookup("svg", "use"):
+            # A <use> in a <clipPath> must reference a shape or a path directly
+            ref = next(
+                (
+                    shape.attrib[key]
+                    for key in xmlns_lookup("xlink", "href")
+                    if key in shape.attrib
+                ),
+                None,
+            )
+            referenced = self._elements_by_id.get(ref) if ref else None
+            if referenced is None:
+                LOGGER.warning("Ignoring <use> without a valid reference in <clipPath>")
+                return None
+            referenced_shape = self._clipping_path_shape(referenced, allow_use=False)
+            if referenced_shape is None:
+                return None
+            clipping_path_shape = referenced_shape
+            if {"x", "y", "transform"} & shape.attrib.keys():
+                # > The x and y properties define an additional transformation translate(x,y)
+                x = float(shape.attrib.get("x", 0))
+                y = float(shape.attrib.get("y", 0))
+                placement = Transform.translation(x=x, y=y)
+                if "transform" in shape.attrib:
+                    placement = placement @ convert_transforms(
+                        shape.attrib["transform"]
+                    )
+                if clipping_path_shape.transform:
+                    placement = clipping_path_shape.transform @ placement
+                clipping_path_shape.transform = placement
         else:
             LOGGER.warning(
                 "Ignoring unsupported <clipPath> child tag: <%s> (contributions are welcome to add support for it)",
                 without_ns(shape.tag),
             )
-            return
-        self.update_xref(clip_id, clipping_path_shape)
+            return None
+        return clipping_path_shape
 
     @force_nodocument
     def apply_clipping_path(
@@ -2386,8 +2602,8 @@ class SVGObject:
                 break
         if not href:
             raise ValueError("<image> is missing a href attribute")
-        width = float(image.attrib.get("width", 0))
-        height = float(image.attrib.get("height", 0))
+        width = resolve_length(image.attrib.get("width", "0"))
+        height = resolve_length(image.attrib.get("height", "0"))
 
         keep_aspect_ratio = True
         preserve_aspect_ratio = image.attrib.get("preserveAspectRatio")
@@ -2418,8 +2634,8 @@ class SVGObject:
         # Note: at this moment, self.image_cache is not set yet:
         svg_image = SVGImage(
             href=href,
-            x=float(image.attrib.get("x", "0")),
-            y=float(image.attrib.get("y", "0")),
+            x=resolve_length(image.attrib.get("x", "0")),
+            y=resolve_length(image.attrib.get("y", "0")),
             width=width,
             height=height,
             svg_obj=self,
@@ -2457,6 +2673,7 @@ class SVGObject:
         local_style = self._style_map_for(text_tag)
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
+        _resolve_relative_font_size(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
             inherited_value = (inherited_style or {}).get(attr)
@@ -2584,6 +2801,7 @@ class SVGObject:
                 child_local_style = self._style_map_for(child)
                 child_effective_style = dict(effective_style)
                 child_effective_style.update(child_local_style)
+                _resolve_relative_font_size(child_effective_style, effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )
@@ -2610,19 +2828,20 @@ class SVGObject:
                 ):
                     abs_y = y
 
-                _add_run(
-                    run_text,
-                    fam,
-                    emph,
-                    size,
-                    preserve=child_preserve,
-                    dx_extra=dx,
-                    dy_extra=dy,
-                    abs_x=abs_x,
-                    abs_y=abs_y,
-                    style_tag=child,
-                    style_map_for_tag=child_local_style,
-                )
+                if not self._is_display_none(child):
+                    _add_run(
+                        run_text,
+                        fam,
+                        emph,
+                        size,
+                        preserve=child_preserve,
+                        dx_extra=dx,
+                        dy_extra=dy,
+                        abs_x=abs_x,
+                        abs_y=abs_y,
+                        style_tag=child,
+                        style_map_for_tag=child_local_style,
+                    )
 
                 # Text between tspans inherits parent style
                 _add_run(

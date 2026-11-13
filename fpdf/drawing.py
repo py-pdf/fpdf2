@@ -57,6 +57,7 @@ from .enums import (
     StrokeCapStyle,
     StrokeJoinStyle,
 )
+from .errors import FPDFUnicodeEncodingException
 from .pattern import (
     Gradient,
     LinearGradient,
@@ -68,6 +69,7 @@ from .pattern import (
     shape_radial_gradient,
 )
 from .syntax import Name, PDFObject, Raw, render_pdf_primitive
+from .unicode_font_utils import suggest_unicode_font_for_error
 from .util import FloatTolerance, Number, NumberClass, number_to_str
 
 if TYPE_CHECKING:
@@ -2066,9 +2068,10 @@ class Arc(NamedTuple):
         rxpy2 = (radii.x * prime.y) ** 2
         rypx2 = (radii.y * prime.x) ** 2
 
+        # 0 when the radii were scaled up, but rounding can make it slightly negative
         centerprime = (
             sign
-            * math.sqrt(round(rxry2 - rxpy2 - rypx2, 8) / (rxpy2 + rypx2))
+            * math.sqrt(max(0.0, round(rxry2 - rxpy2 - rypx2, 8)) / (rxpy2 + rypx2))
             * Point(
                 x=radii.x * prime.y / radii.y,
                 y=-radii.y * prime.x / radii.x,
@@ -2645,6 +2648,19 @@ class Text(NamedTuple):
 
         for run in self.text_runs:
             font = resource_registry.get_font_from_family(run.family, run.emphasis)
+            if font.type == "core":
+                # Same error as FPDF.normalize_text() gives for text outside of the
+                # characters of a core font
+                for index, character in enumerate(run.text):
+                    if character not in font.cw:
+                        raise FPDFUnicodeEncodingException(
+                            text_index=index,
+                            character=character,
+                            font_name=font.fontkey,
+                            suggestion=suggest_unicode_font_for_error(
+                                run.text, font.fontkey
+                            ),
+                        )
             _, width = font.get_text_width(run.text, run.size, None)
             if run.abs_x is not None:
                 pen_x = run.abs_x
