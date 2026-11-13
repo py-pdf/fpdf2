@@ -639,6 +639,41 @@ class TestSVGObject:
 
         assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
 
+    @pytest.mark.parametrize(
+        "css, rect_attributes, fill",
+        [
+            ("rect { fill: red }", "", "#f00"),
+            ("* { fill: red }", "", "#f00"),
+            ("circle { fill: blue }", 'fill="red"', "#f00"),
+            # a stylesheet wins over a presentation attribute
+            ("rect { fill: red }", 'fill="blue"', "#f00"),
+            # specificity: inline style, then class, then element, then *
+            ("rect { fill: blue }", 'style="fill: red"', "#f00"),
+            (".a { fill: red } rect { fill: blue }", 'class="a"', "#f00"),
+            ("rect { fill: red } * { fill: blue }", "", "#f00"),
+            # unless the less specific rule is !important
+            (".a { fill: blue } rect { fill: red !important }", 'class="a"', "#f00"),
+        ],
+    )
+    def test_svg_css_type_and_universal_selectors(self, css, rect_attributes, fill):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            f'<rect {rect_attributes} width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
+
+    def test_svg_css_universal_selector_of_matplotlib(self):
+        # every SVG that matplotlib writes starts with this rule
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/css">'
+            "*{stroke-linejoin: round; stroke-linecap: butt}</style>"
+            '<path d="M0 0L10 10L0 20" style="fill: none; stroke: #1f77b4"/></svg>'
+        )
+        path = svg.base_group.path_items[0]
+        assert path.style.stroke_join_style == fpdf.enums.StrokeJoinStyle.ROUND
+        assert path.style.stroke_cap_style == fpdf.enums.StrokeCapStyle.BUTT
+
     def test_svg_switch_uses_the_first_unconditional_child(self):
         svg_data = """
             <svg xmlns="http://www.w3.org/2000/svg">
@@ -803,6 +838,32 @@ class TestSVGObject:
         )
         contents = b"".join(zlib.decompress(stream) for stream in streams)
         assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == font_sizes
+
+    @pytest.mark.parametrize(
+        "text, font_sizes",
+        [
+            # the CSS Fonts scale around medium, 16px (12pt)
+            ('<text y="10" font-size="large">a</text>', ["14.4"]),
+            ('<text y="10" style="font-size: X-Small">a</text>', ["9"]),
+            ('<text y="10" font-size="medium">a</text>', ["12"]),
+            # larger and smaller scale the inherited size by 1.2
+            ('<g font-size="20"><text y="10" font-size="larger">a</text></g>', ["24"]),
+            ('<g font-size="24"><text y="10" font-size="smaller">a</text></g>', ["20"]),
+            (
+                '<g font-size="large"><text y="10" font-size="2em">a</text></g>',
+                ["28.8"],
+            ),
+        ],
+    )
+    def test_svg_font_size_keywords(self, text, font_sizes):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg">{text}</svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert re.findall(r"/F\d+ ([\d.]+) Tf", output) == font_sizes
 
     @pytest.mark.parametrize(
         "hidden_rect",

@@ -875,23 +875,49 @@ def _get_attr_or_style(
     return _normalize_css_value(tag.attrib.get(name))
 
 
+# The absolute font-size keywords of CSS Fonts, as factors of medium (16px)
+_FONT_SIZE_KEYWORDS = {
+    "xx-small": 3 / 5,
+    "x-small": 3 / 4,
+    "small": 8 / 9,
+    "medium": 1.0,
+    "large": 6 / 5,
+    "x-large": 3 / 2,
+    "xx-large": 2.0,
+    "xxx-large": 3.0,
+}
+# larger and smaller scale the inherited size, by the same factor as browsers
+_RELATIVE_FONT_SIZE_KEYWORDS = {"larger": 1.2, "smaller": 1 / 1.2}
+
+
 def _resolve_relative_font_size(
     style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
     """
-    Make a relative font-size (em, ex or %) absolute, against the inherited one, so
-    that descendants inherit the computed size, as in CSS.
+    Make a relative font-size (em, ex, % or larger and smaller) or a font-size keyword
+    absolute, against the inherited one, so that descendants inherit the computed
+    size, as in CSS.
     """
     value = style_map.get("font-size")
-    match = unit_splitter.fullmatch(value.strip()) if isinstance(value, str) else None
-    if match is None:
+    if not isinstance(value, str):
         return
-    factor = {"em": 1.0, "ex": 0.5, "%": 0.01}.get(match.group("unit") or "")
-    if factor is None:
+    keyword = value.strip().lower()
+    if keyword in _FONT_SIZE_KEYWORDS:
+        style_map["font-size"] = (
+            f"{_FONT_SIZE_KEYWORDS[keyword] * resolve_length('16px')}pt"
+        )
+        return
+    match = unit_splitter.fullmatch(value.strip())
+    if keyword in _RELATIVE_FONT_SIZE_KEYWORDS:
+        factor, number = _RELATIVE_FONT_SIZE_KEYWORDS[keyword], 1.0
+    elif match is not None and match.group("unit") in ("em", "ex", "%"):
+        factor = {"em": 1.0, "ex": 0.5, "%": 0.01}[match.group("unit")]
+        number = float(match.group("value"))
+    else:
         return
     inherited = (inherited_style or {}).get("font-size")
     parent_size = resolve_length(inherited) if inherited else resolve_length("16px")
-    style_map["font-size"] = f"{float(match.group('value')) * factor * parent_size}pt"
+    style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
 def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
@@ -1017,10 +1043,11 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
-def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]:
-    styles: list[tuple[str, dict[str, Any]]] = []
+def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
+    """The (selector, declarations) of each rule of a stylesheet, one per selector."""
+    rules: list[tuple[str, dict[str, Any]]] = []
     if not css_text:
-        return styles
+        return rules
 
     cleaned = CSS_COMMENT_RE.sub("", css_text)
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
@@ -1034,15 +1061,25 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
                 normalized[key] = norm_value
         if not normalized:
             continue
-        selectors = [selector.strip() for selector in selector_block.split(",")]
-        for selector in selectors:
-            if not selector.startswith("."):
-                continue
-            class_name = selector[1:].split(":", 1)[0].strip()
-            if not class_name:
-                continue
-            styles.append((class_name, dict(normalized)))
+        for selector in selector_block.split(","):
+            rules.append((selector.strip(), dict(normalized)))
+    return rules
+
+
+def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]:
+    styles: list[tuple[str, dict[str, Any]]] = []
+    for selector, declarations in _extract_css_rules(css_text):
+        if not selector.startswith("."):
+            continue
+        class_name = selector[1:].split(":", 1)[0].strip()
+        if not class_name:
+            continue
+        styles.append((class_name, declarations))
     return styles
+
+
+# A universal selector or an element name, such as "*" or "rect"
+CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
 
 
 @force_nodocument
@@ -1358,6 +1395,8 @@ class SVGObject:
         self._cross_reference_costs: dict[str, int] = {}
         self.symbol_info: dict[str, SymbolInfo] = {}
         self.css_class_styles: dict[str, dict[str, Any]] = {}
+        # rules of "*" and element names, such as matplotlib's * { stroke-linejoin: round }
+        self.css_type_styles: dict[str, dict[str, Any]] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
             {}
         )  # Store parsed gradients by ID
@@ -1574,6 +1613,12 @@ class SVGObject:
                         # a later rule does not override an !important declaration
                         if key not in existing or _overrides(existing[key], value):
                             existing[key] = value
+                for selector, declarations in _extract_css_rules(css_text):
+                    if CSS_TYPE_SELECTOR_RE.fullmatch(selector):
+                        existing = self.css_type_styles.setdefault(selector, {})
+                        for key, value in declarations.items():
+                            if key not in existing or _overrides(existing[key], value):
+                                existing[key] = value
 
     def _is_display_none(self, tag: "Element") -> bool:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
@@ -1583,19 +1628,28 @@ class SVGObject:
         style_map: dict[str, Any] = {}
         # an !important declaration of a stylesheet wins over a normal inline one
         important: set[str] = set()
+
+        def apply_rules(rules: dict[str, Any]) -> None:
+            for key, declared in rules.items():
+                value, is_important = _split_important(declared)
+                if key in important and not is_important:
+                    continue
+                style_map[key] = value
+                if is_important:
+                    important.add(key)
+
+        # as in CSS, a class rule wins over an element rule, which wins over "*"
+        for selector in ("*", without_ns(tag.tag)):
+            type_styles = self.css_type_styles.get(selector)
+            if type_styles:
+                apply_rules(type_styles)
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
             if class_attr:
                 for class_name in class_attr.split():
                     class_styles = self.css_class_styles.get(class_name)
                     if class_styles:
-                        for key, declared in class_styles.items():
-                            value, is_important = _split_important(declared)
-                            if key in important and not is_important:
-                                continue
-                            style_map[key] = value
-                            if is_important:
-                                important.add(key)
+                        apply_rules(class_styles)
         inline = _parse_css_declarations(tag.attrib.get("style", ""))
         for key, declared in inline.items():
             value, is_important = _split_important(declared)
