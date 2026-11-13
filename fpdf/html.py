@@ -954,11 +954,15 @@ class HTML2FPDF(HTMLParser):
         if tag == "a":
             # <a name="..."> and <a id="..."> are anchors, not links: no href means plain text
             self.href = attrs_dict.get("href") or ""
-            try:
-                page = int(self.href)
-                self.href = self.pdf.add_link(page=page)
-            except ValueError:
-                pass
+            if self.href == "#":
+                # An empty fragment is the top of the document, as in browsers
+                self.href = self.pdf.add_link(page=1)
+            else:
+                try:
+                    page = int(self.href)
+                    self.href = self.pdf.add_link(page=page)
+                except ValueError:
+                    pass
         if tag == "br":
             self._write_paragraph("\n")
         if tag == "hr":

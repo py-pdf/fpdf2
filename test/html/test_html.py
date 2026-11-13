@@ -1169,6 +1169,18 @@ def test_html_link_to_an_anchor_with_id_and_name():
     assert pdf.named_destinations["modern"] == pdf.named_destinations["legacy"]
 
 
+def test_html_link_to_the_top_of_the_document():
+    'Like browsers, href="#" is a link to the top of the document.'
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("<p>line</p>" * 60 + '<a href="#">Back to top</a>')
+    pdf.output()
+    assert pdf.pages_count == 2
+    (link,) = pdf.links.values()
+    assert link.page_number == 1
+    assert link.top == pytest.approx(pdf.h * pdf.k)
+
+
 def test_html_link_to_a_table():
     pdf = FPDF()
     pdf.add_page()
