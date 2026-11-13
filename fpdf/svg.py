@@ -2591,9 +2591,9 @@ class SVGObject:
             referenced = self.cross_references[ref]
             referenced_cost = self._cross_reference_costs[ref]
         except KeyError:
-            raise ValueError(
-                f"use {xref} references nonexistent ref id {ref}"
-            ) from None
+            # Browsers draw nothing for it, and the rest of the image
+            LOGGER.warning("Ignoring <use> of nonexistent ref id %s", ref)
+            return pdf_group
         if ref in self._hidden_references:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
