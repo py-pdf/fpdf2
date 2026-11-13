@@ -626,6 +626,19 @@ test_svg_attribute_conversion = (
         id="invalid hsl() color",
     ),
     pytest.param(
+        # as Inkscape writes, e.g. in the icon of Deluge
+        '<path fill="#094491 icc-color(sRGB, 0.18046845, 0.27837034, 0.41960784)"/>',
+        Gs(fill_color="#094491"),
+        no_error(),
+        id="fill color with an ICC color",
+    ),
+    pytest.param(
+        '<path stroke="red ICC-COLOR(sRGB-IEC61966-2, 0.1, 1, 0, 0)"/>',
+        Gs(stroke_color="#f00"),
+        no_error(),
+        id="stroke color name with an ICC color",
+    ),
+    pytest.param(
         '<path fill="#0007"/>',
         Gs(fill_color="#0007", fill_opacity=0x77 / 0xFF),
         no_error(),

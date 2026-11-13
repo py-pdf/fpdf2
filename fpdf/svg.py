@@ -99,6 +99,8 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+# https://www.w3.org/TR/SVG11/painting.html#SpecifyingPaint
+ICC_COLOR_RE = re.compile(r"\s+icc-color\([^)]*\)\s*$", re.IGNORECASE)
 
 SVG_SWITCH_CONDITIONAL_ATTRIBUTES = (
     "requiredFeatures",
@@ -294,6 +296,9 @@ shape_tags = xmlns_lookup(
 
 @force_nodocument
 def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
+    # SVG 1.1: an sRGB color can be followed by an ICC color, as Inkscape writes them;
+    # without color management, the sRGB color is used, as in browsers
+    colorstr = ICC_COLOR_RE.sub("", colorstr)
     # color keywords are ASCII case-insensitive in SVG/CSS: "Red" is "red"
     colorstr = html.COLOR_DICT.get(colorstr.strip().lower(), colorstr.strip())
     if colorstr.lower().startswith("hsl"):
