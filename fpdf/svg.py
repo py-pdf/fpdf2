@@ -102,9 +102,7 @@ CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
 # The start of an @media block, or a brace; a media query has no "@" in it
 CSS_MEDIA_TOKEN_RE = re.compile(r"@media\b[^{};@]*\{|[{}]", re.IGNORECASE)
-CSS_COLOR_SCHEME_RE = re.compile(
-    r"\(\s*prefers-color-scheme\s*:\s*(\w+)\s*\)", re.IGNORECASE
-)
+CSS_MEDIA_QUERY_TOKEN_RE = re.compile(r"[(),]|[^\s(),]+")
 # https://www.w3.org/TR/SVG11/painting.html#SpecifyingPaint
 ICC_COLOR_RE = re.compile(r"\s+icc-color\([^)]*\)\s*$", re.IGNORECASE)
 
@@ -1057,20 +1055,71 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
+def _media_feature_matches(words: list[str]) -> bool:
+    """
+    Whether a media feature, such as (prefers-color-scheme: dark), matches. Only
+    prefers-color-scheme is evaluated, as light, the default of browsers and the
+    colors of a white page; the other features match.
+    """
+    name, _, value = "".join(words).partition(":")
+    if name == "prefers-color-scheme":
+        # in a boolean context, without a value, it matches
+        return value in ("light", "")
+    return True
+
+
+def _media_condition_matches(items: list[str | bool]) -> bool:
+    """
+    Whether a media condition matches: features and conditions in parentheses, already
+    evaluated, and a media type, joined with and, or and a leading not. The media
+    type is screen, as in browsers.
+    """
+    negate = bool(items) and items[0] == "not"
+    result: Optional[bool] = None
+    operator = "and"
+    for item in items[1:] if negate else items:
+        if item in ("and", "or"):
+            operator = str(item)
+        elif item != "only":
+            value = item if isinstance(item, bool) else item in ("all", "screen")
+            if result is None:
+                result = value
+            elif operator == "and":
+                result = result and value
+            else:
+                result = result or value
+    return (True if result is None else result) != negate
+
+
 def _media_query_matches(query_list: str) -> bool:
     """
-    Whether one of the queries of an @media rule matches. Only prefers-color-scheme
-    is evaluated, as light, the default of browsers and the colors of a white page;
-    a query without it matches.
+    Whether one of the queries of an @media rule matches, read in a single pass:
+    the content of each pair of parentheses is evaluated when it is closed.
     """
-    for query in query_list.split(","):
-        scheme = CSS_COLOR_SCHEME_RE.search(query)
-        if scheme is None:
-            return True
-        is_light = scheme.group(1).lower() == "light"
-        if is_light != query.strip().lower().startswith("not "):
-            return True
-    return False
+    # the items of each open pair of parentheses, and of the query itself
+    frames: list[list[str | bool]] = [[]]
+
+    def close_parenthesis() -> None:
+        items = frames.pop()
+        if all(isinstance(item, str) for item in items):
+            frames[-1].append(_media_feature_matches([str(item) for item in items]))
+        else:
+            frames[-1].append(_media_condition_matches(items))
+
+    for token in CSS_MEDIA_QUERY_TOKEN_RE.findall(query_list.lower()):
+        if token == "(":
+            frames.append([])
+        elif token == ")" and len(frames) > 1:
+            close_parenthesis()
+        elif token == "," and len(frames) == 1:
+            if _media_condition_matches(frames[0]):
+                return True
+            frames[0] = []
+        elif token not in "),":
+            frames[-1].append(token)
+    while len(frames) > 1:  # parentheses left open are closed, as in CSS
+        close_parenthesis()
+    return _media_condition_matches(frames[0])
 
 
 def _resolve_css_media_rules(css_text: str) -> str:

@@ -725,9 +725,53 @@ class TestSVGObject:
                 "rect { fill: red } @media (prefers-color-scheme: dark) "
                 "{ @media screen { rect { fill: blue } } }"
             ),
-            # other media queries are not evaluated, so their rules apply
+            # and for the screen media type, as in browsers
             "rect { fill: blue } @media screen { rect { fill: red } }",
             "rect { fill: blue } @media not print { rect { fill: red } }",
+            "rect { fill: red } @media print { rect { fill: blue } }",
+            # other media features are not evaluated, so they match
+            "rect { fill: blue } @media (min-width: 1px) { rect { fill: red } }",
+            # the conditions are combined with and, or and not, also in parentheses
+            (
+                "rect { fill: blue } @media (prefers-color-scheme: dark) or "
+                "(prefers-color-scheme: light) { rect { fill: red } }"
+            ),
+            (
+                "rect { fill: red } @media (prefers-color-scheme: dark) and "
+                "(min-width: 1px) { rect { fill: blue } }"
+            ),
+            (
+                "rect { fill: blue } @media (not (prefers-color-scheme: dark)) "
+                "{ rect { fill: red } }"
+            ),
+            (
+                "rect { fill: red } @media (not ((prefers-color-scheme: light))) "
+                "{ rect { fill: blue } }"
+            ),
+            (
+                "rect { fill: blue } @media ((prefers-color-scheme: dark) or "
+                "(prefers-color-scheme)) { rect { fill: red } }"
+            ),
+            (
+                "rect { fill: blue } @media only screen and "
+                "(prefers-color-scheme: light) { rect { fill: red } }"
+            ),
+            (
+                "rect { fill: blue } @media not screen and "
+                "(prefers-color-scheme: dark) { rect { fill: red } }"
+            ),
+            (
+                "rect { fill: blue } @media (prefers-color-scheme: light), print "
+                "{ rect { fill: red } }"
+            ),
+            # a parenthesis that closes nothing is ignored
+            (
+                "rect { fill: blue } @media (prefers-color-scheme: light)) "
+                "{ rect { fill: red } }"
+            ),
+            # parentheses left open are closed
+            "rect { fill: red } @media (prefers-color-scheme: dark { rect { fill: blue } }",
+            "rect { fill: blue } @media (not (prefers-color-scheme: dark { rect { fill: red } }",
             # an unterminated block
             "rect { fill: red } @media (prefers-color-scheme: dark) { rect { fill: blue }",
         ],
@@ -748,6 +792,13 @@ class TestSVGObject:
         # nested @media blocks are read in a single pass
         css = repeated * 50_000 + " .a { fill: red }"
         rules = fpdf.svg._extract_css_rules(css)
+        assert rules == ([(".a", {"fill": "red"})] if rule_kept else [])
+
+    @pytest.mark.parametrize("count, rule_kept", [(50_000, False), (50_001, True)])
+    def test_svg_css_media_query_nesting(self, count, rule_kept):
+        # nested conditions are evaluated in a single pass, without recursion
+        query = "(not " * count + "(prefers-color-scheme: dark"
+        rules = fpdf.svg._extract_css_rules(f"@media {query} {{ .a {{ fill: red }} }}")
         assert rules == ([(".a", {"fill": "red"})] if rule_kept else [])
 
     def test_svg_render_content_in_a_tag(self, tmp_path):
