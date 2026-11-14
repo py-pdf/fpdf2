@@ -1169,6 +1169,33 @@ def test_html_link_to_an_anchor_with_id_and_name():
     assert pdf.named_destinations["modern"] == pdf.named_destinations["legacy"]
 
 
+def test_html_link_to_the_top_of_the_document():
+    'Like browsers, href="#" is a link to the top of the document.'
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("<p>line</p>" * 60 + '<a href="#">Back to top</a>')
+    pdf.output()
+    assert pdf.pages_count == 2
+    assert len(pdf.links) == 1
+    link = next(iter(pdf.links.values()))
+    assert link.page_number == 1
+    assert link.top == pytest.approx(pdf.h * pdf.k)
+
+
+@pytest.mark.parametrize("orientation", ["portrait", "landscape"])
+def test_html_link_to_the_top_of_the_document_from_another_orientation(orientation):
+    # the top of the first page, whatever the height of the page with the link
+    pdf = FPDF(orientation=orientation)
+    pdf.add_page()
+    first_page_height = pdf.h * pdf.k
+    pdf.add_page(orientation="L" if orientation == "portrait" else "P")
+    pdf.write_html('<a href="#">Back to top</a>')
+    pdf.output()
+    link = next(iter(pdf.links.values()))
+    assert link.page_number == 1
+    assert link.top == pytest.approx(first_page_height)
+
+
 def test_html_link_to_a_table():
     pdf = FPDF()
     pdf.add_page()
