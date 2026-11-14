@@ -575,7 +575,36 @@ def svg_paint(colorstr: Optional[str]) -> Any:
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
         return None
+    if colorstr and colorstr.strip().lower() in ("context-fill", "context-stroke"):
+        # The paint of the context element, as in the icons of Firefox. A <use>
+        # replaces it with its own paint, see SVGObject._context_paints; outside a
+        # <use>, the context is the document drawing the SVG, so it is inherited, as
+        # from the color set on the FPDF
+        return GraphicsStyle.INHERIT
     return optional(colorstr, svgcolor)
+
+
+@force_nodocument
+def svg_opacity(opacitystr: str) -> Any:
+    """A fill-opacity or stroke-opacity, which can be that of the context element."""
+    if opacitystr.strip().lower() in ("context-fill-opacity", "context-stroke-opacity"):
+        return GraphicsStyle.INHERIT
+    return clamp_float(0.0, 1.0)(opacitystr)
+
+
+# the context paints that each property can take, and the property of the <use> they are
+_CONTEXT_PAINT_KEYWORDS = {
+    "fill": {"context-fill": "fill", "context-stroke": "stroke"},
+    "stroke": {"context-fill": "fill", "context-stroke": "stroke"},
+    "fill-opacity": {
+        "context-fill-opacity": "fill-opacity",
+        "context-stroke-opacity": "stroke-opacity",
+    },
+    "stroke-opacity": {
+        "context-fill-opacity": "fill-opacity",
+        "context-stroke-opacity": "stroke-opacity",
+    },
+}
 
 
 @force_nodocument
@@ -602,7 +631,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#FillOpacityProperty
     "fill-opacity": lambda filopstr: (
         "fill_opacity",
-        inheritable(filopstr, clamp_float(0.0, 1.0)),
+        inheritable(filopstr, svg_opacity),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeProperty
     "stroke": lambda colorstr: ("stroke_color", svg_paint(colorstr)),
@@ -642,7 +671,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#StrokeOpacityProperty
     "stroke-opacity": lambda stropstr: (
         "stroke_opacity",
-        inheritable(stropstr, clamp_float(0.0, 1.0)),
+        inheritable(stropstr, svg_opacity),
     ),
 }
 
@@ -1673,6 +1702,9 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
+        # the fill, stroke and their opacities of each <use> being built, from the
+        # innermost, for the context-fill and context-stroke of the element it draws
+        self._context_paints: list[dict[str, Optional[str]]] = []
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -1921,6 +1953,13 @@ class SVGObject:
                 norm_value = _normalize_css_value(tag.attrib.get(attr))
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
+        if self._context_paints:
+            context = self._context_paints[-1]
+            for attr, keywords in _CONTEXT_PAINT_KEYWORDS.items():
+                paint = style_map.get(attr, tag.attrib.get(attr))
+                source = keywords.get(str(paint).strip().lower())
+                if source is not None and context[source] is not None:
+                    style_map[attr] = context[source]
         return style_map
 
     @force_nodocument
@@ -2754,7 +2793,13 @@ class SVGObject:
             self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
-        referenced = deepcopy(referenced)
+        element = self._elements_by_id.get(ref)
+        if element is not None and self._uses_context_paint(element):
+            referenced = self._build_with_context_paints(
+                ref, element, xref, style_map, inherited_style
+            )
+        else:
+            referenced = deepcopy(referenced)
         pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(xref, attr, style_map)
@@ -2802,6 +2847,61 @@ class SVGObject:
         # a <use> can itself be referenced, as Inkscape does for a clone of a clone
         self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
+
+    def _uses_context_paint(self, element: "Element") -> bool:
+        """Whether an element or one of its descendants paints with context-fill & co."""
+        return any(
+            str(value).strip().lower().startswith("context-")
+            for descendant in element.iter()
+            for attr in _CONTEXT_PAINT_KEYWORDS
+            for value in (
+                self._style_map_for(descendant).get(attr),
+                descendant.attrib.get(attr),
+            )
+        )
+
+    def _build_with_context_paints(
+        self,
+        ref: str,
+        element: "Element",
+        xref: "Element",
+        style_map: dict[str, Any],
+        inherited_style: Optional[dict[str, Any]],
+    ) -> Any:
+        """
+        Build the element a <use> draws again, with its context-fill, context-stroke
+        and their opacities replaced by the fill, stroke and opacities of the <use>.
+        """
+        context: dict[str, Optional[str]] = {}
+        for attr in ("fill", "stroke", "fill-opacity", "stroke-opacity"):
+            value = _get_attr_or_style(xref, attr, style_map)
+            # else inherited, also as a presentation attribute of an ancestor
+            ancestor = self._pattern_parents.get(xref)
+            while value in (None, "inherit") and ancestor is not None:
+                value = _get_attr_or_style(
+                    ancestor, attr, self._style_map_for(ancestor)
+                )
+                ancestor = self._pattern_parents.get(ancestor)
+            if value in (None, "inherit"):
+                value = (inherited_style or {}).get(attr)
+            context[attr] = value
+        ids = ["#" + e.attrib["id"] for e in element.iter() if e.attrib.get("id")]
+        saved = [
+            (key, self.cross_references[key], self._cross_reference_costs[key])
+            for key in ids
+            if key in self.cross_references
+        ]
+        self._context_paints.append(context)
+        try:
+            self._build_group_child(GraphicsContext(), element, {})
+            built = self.cross_references[ref]
+        finally:
+            self._context_paints.pop()
+            # the element itself keeps its context paints, for the other <use>
+            for key, referenced, cost in saved:
+                self.cross_references[key] = referenced
+                self._cross_reference_costs[key] = cost
+        return built
 
     def _bind_reference_patterns(
         self,
