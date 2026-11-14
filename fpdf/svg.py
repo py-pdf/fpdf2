@@ -2597,8 +2597,11 @@ class SVGObject:
         except KeyError:
             # Browsers draw nothing for it, and the rest of the image
             LOGGER.warning("Ignoring <use> of nonexistent ref id %s", ref)
+            self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         if ref in self._hidden_references:
+            # a <use> of this <use> draws nothing either
+            self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         referenced = deepcopy(referenced)

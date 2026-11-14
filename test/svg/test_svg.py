@@ -1022,6 +1022,25 @@ class TestSVGObject:
         assert inner.transform == fpdf.drawing.Transform.translation(10, 0)
         assert isinstance(inner.path_items[0], fpdf.drawing.PaintedPath)
 
+    @pytest.mark.parametrize(
+        "referenced",
+        [
+            '<rect id="hidden" display="none" width="10" height="10"/>',
+            # and of an id that is not defined
+            "",
+        ],
+    )
+    def test_svg_use_of_use_of_nothing(self, referenced, caplog):
+        """A <use> of a <use> that draws nothing draws nothing either."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f'<defs>{referenced}<use id="clone" href="#hidden"/></defs>'
+            '<use href="#clone"/></svg>'
+        )
+        outer = svg.base_group.path_items[0]
+        assert outer.path_items[0].path_items == []
+        assert "#clone" not in caplog.text
+
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
         svg = fpdf.svg.SVGObject(
