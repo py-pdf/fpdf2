@@ -6,6 +6,7 @@ from pypdf import PdfReader
 
 from fpdf import FPDF
 from fpdf.drawing import GradientPaint
+from fpdf.drawing_primitives import DeviceGray
 from fpdf.enums import GradientUnits
 from fpdf.svg import SVGObject
 
@@ -127,6 +128,21 @@ def test_gradient_stop_opacity_multiplies_color_alpha(opacity):
     # pylint: enable=protected-access
     assert len(stops) == 2
     assert stops[0][1].a == pytest.approx((128 / 255) * 0.5)
+
+
+def test_gradient_stop_color_with_icc_color():
+    # the sRGB color before an ICC color is used, as in browsers
+    gradient = fromstring(
+        '<linearGradient xmlns="http://www.w3.org/2000/svg">'
+        '<stop offset="0" style="stop-color:#666666 icc-color(sRGB-IEC61966-2, 0.1, '
+        '0.4, 0.4, 0.4)"/>'
+        '<stop offset="1" stop-color="#fff"/>'
+        "</linearGradient>"
+    )
+    # pylint: disable=protected-access
+    stops = SVGObject._parse_gradient_stops(gradient)
+    # pylint: enable=protected-access
+    assert stops[0][1] == DeviceGray(0.4)
 
 
 def test_gradient_stop_without_offset():

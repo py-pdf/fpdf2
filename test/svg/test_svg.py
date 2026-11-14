@@ -139,6 +139,26 @@ class TestSVGPathParsing:
             fpdf.svg.svg_path_converter(pdf_path, "Q 1 2 3 4")
         with pytest.raises(ValueError):
             fpdf.svg.svg_path_converter(pdf_path, "A 1 2 0 1 0 4 5")
+        with pytest.raises(ValueError):
+            fpdf.svg.svg_path_converter(pdf_path, "L 1 2 L 3")
+
+    @pytest.mark.parametrize(
+        "start, repeated, count, end",
+        [
+            # an invalid arc flag, then many numbers
+            ("M0 0 L10 0 A5 5 0 2", " 1", 50_000, ""),
+            # many arcs, then an invalid arc flag
+            ("M0 0", " A5 5 0 0 1 3 3", 5_000, " A5 5 0 2"),
+            # a lineto without its last number
+            ("M0 0 L", " 1 2", 50_000, " 3"),
+        ],
+    )
+    def test_path_error_found_in_one_pass(self, start, repeated, count, end):
+        # the error is found by reading the path data forward once
+        pdf_path = fpdf.drawing.PaintedPath()
+        fpdf.svg.svg_path_converter(pdf_path, start + repeated * count + end)
+        items = pdf_path._root_graphics_context.path_items
+        assert len(items) == (2 if repeated == " 1" else count + 1)
 
     @pytest.mark.parametrize("path, expected", parameters.svg_path_render_tests)
     def test_rendering_smooth_curves(self, path, expected):
@@ -306,6 +326,65 @@ class TestSVGObject:
         assert svg.width == pytest.approx(100)
         assert svg.height == pytest.approx(100)
 
+    @pytest.mark.parametrize(
+        "rect_attributes, expected",
+        [
+            # as in the logo of APIAuto
+            (
+                'style="transform: matrix(4,0,0,4,93,749)"',
+                fpdf.drawing.Transform(4, 0, 0, 4, 93, 749),
+            ),
+            ('class="a"', fpdf.drawing.Transform.translation(3, 6)),
+            # the CSS property wins over the attribute
+            (
+                'transform="scale(3)" style="transform: scale(2)"',
+                fpdf.drawing.Transform.scaling(2),
+            ),
+            (
+                'transform="scale(3)" style="transform: none"',
+                fpdf.drawing.Transform.identity(),
+            ),
+        ],
+    )
+    def test_svg_transform_css_property(self, rect_attributes, expected):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            "<style>.a { transform: translate(4px, 8px) }</style>"
+            f'<rect {rect_attributes} width="5" height="5"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.transform == pytest.approx(expected)
+
+    @pytest.mark.parametrize(
+        "inner_attributes, expected",
+        [
+            ("", None),
+            ('transform="translate(5, 0)"', fpdf.drawing.Transform.translation(5, 0)),
+        ],
+    )
+    def test_svg_transform_css_property_not_inherited(self, inner_attributes, expected):
+        # as in CSS, the transform of a group applies once, through the group
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="transform: scale(2)">'
+            f'<g {inner_attributes}><rect width="5" height="5"/></g></g></svg>'
+        )
+        outer = svg.base_group.path_items[0]
+        inner = outer.path_items[0]
+        assert outer.transform == pytest.approx(fpdf.drawing.Transform.scaling(2))
+        assert inner.transform == (
+            None if expected is None else pytest.approx(expected)
+        )
+
+    def test_svg_transform_css_property_of_image(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<image href="image.png" width="5" height="5" style="transform: scale(2)"/>'
+            "</svg>"
+        )
+        wrapper = svg.base_group.path_items[0]
+        assert isinstance(wrapper, fpdf.drawing.GraphicsContext)
+        assert wrapper.transform == pytest.approx(fpdf.drawing.Transform.scaling(2))
+
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):
         svg = fpdf.svg.SVGObject.from_file(svg_file)
@@ -380,14 +459,20 @@ class TestSVGObject:
         with pytest.raises(ValueError):
             fpdf.svg.SVGObject(svg_data)
 
-    def test_missing_xref(self):
+    def test_missing_xref(self, caplog):
+        # As in the matplotlib charts of the RapidFuzz docs, which use the glyph
+        # of a space that was removed when they were minified
         svg_data = (
             '<svg xmlns="http://www.w3.org/2000/svg" '
             'xmlns:xlink="http://www.w3.org/1999/xlink">'
-            '<use xlink:href="#missing"/></svg>'
+            '<use xlink:href="#missing"/><rect width="10" height="10"/></svg>'
         )
-        with pytest.raises(ValueError):
-            fpdf.svg.SVGObject(svg_data)
+        with caplog.at_level("WARNING"):
+            svg = fpdf.svg.SVGObject(svg_data)
+        assert "Ignoring <use> of nonexistent ref id #missing" in caplog.text
+        use, rect = svg.base_group.path_items
+        assert isinstance(use, fpdf.drawing.GraphicsContext) and not use.path_items
+        assert isinstance(rect, fpdf.drawing.PaintedPath)
 
     def test_svg_without_xmlns_with_unsupported_tag(self, caplog):
         # Older and hand-written SVG files often omit the xmlns declaration
@@ -1221,6 +1306,28 @@ def test_svg_image_length_units(unit, scale):
     assert (image.x, image.y, image.width, image.height) == pytest.approx(
         (10 * scale, 20 * scale, 40 * scale, 30 * scale)
     )
+
+
+@pytest.mark.parametrize(
+    "size, expected",
+    [
+        ('width="auto" height="30"', (0, 30)),
+        ('width="AUTO" height="auto"', (0, 0)),
+        ('width="40" height=" auto "', (40, 0)),
+    ],
+)
+def test_svg_image_size_auto(size, expected):
+    # as in SVG 2, auto is the size of the image itself: 0, as when it is missing,
+    # which size_in_document_units() reads as the image size or ratio
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        f'<image href="{TINY_PNG_DATA_URI}" {size}/></svg>'
+    )
+    image = svg.base_group.path_items[0]
+    assert (image.width, image.height) == expected
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg.draw_to_page(pdf)
 
 
 def test_svg_image_transform(caplog):
