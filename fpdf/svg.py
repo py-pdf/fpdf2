@@ -304,6 +304,8 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     colorstr = html.COLOR_DICT.get(colorstr.strip().lower(), colorstr.strip())
     if colorstr.lower().startswith("hsl"):
         return _hsl_color(colorstr.lower())
+    if colorstr.lower().startswith(("oklab(", "oklch(")):
+        return _oklab_color(colorstr.lower())
 
     if colorstr.startswith("#"):
         return color_from_hex_string(colorstr)
@@ -367,6 +369,15 @@ def _light_color(colorstr: str) -> str:
 _DEGREES_PER_ANGLE_UNIT = {"deg": 1.0, "grad": 0.9, "rad": 180 / math.pi, "turn": 360.0}
 
 
+def _hue_degrees(hue: str) -> float:
+    """A CSS hue in degrees: a number, or an angle with a unit."""
+    # "grad" is tried before "rad", which it ends with
+    unit = next((u for u in _DEGREES_PER_ANGLE_UNIT if hue.endswith(u)), None)
+    return (
+        float(hue[: -len(unit)]) * _DEGREES_PER_ANGLE_UNIT[unit] if unit else float(hue)
+    )
+
+
 def _hsl_color(colorstr: str) -> DeviceRGB:
     """
     Parse hsl() and hsla(), with commas or with the space-separated syntax of CSS
@@ -388,12 +399,7 @@ def _hsl_color(colorstr: str) -> DeviceRGB:
     if len(parts) != 3:
         raise ValueError(f"{colorstr} could not be interpreted as a hsl() color")
 
-    hue = parts[0]
-    # "grad" is tried before "rad", which it ends with
-    unit = next((u for u in _DEGREES_PER_ANGLE_UNIT if hue.endswith(u)), None)
-    degrees = (
-        float(hue[: -len(unit)]) * _DEGREES_PER_ANGLE_UNIT[unit] if unit else float(hue)
-    )
+    degrees = _hue_degrees(parts[0])
 
     def fraction(value: str, scale: float) -> float:
         value = value.strip()
@@ -407,6 +413,65 @@ def _hsl_color(colorstr: str) -> DeviceRGB:
     # DeviceRGB takes fractions, so the color is kept exactly, not rounded to 8 bits
     r, g, b = colorsys.hls_to_rgb((degrees % 360) / 360, lightness, saturation)
     return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
+
+
+def _oklab_color(colorstr: str) -> DeviceRGB:
+    """
+    Parse oklab(L a b) and oklch(L C H) of CSS Color 4, with an optional "/ A".
+    L is a number from 0 to 1 or a percentage, a, b and C are numbers or percentages
+    of 0.4, H is a hue, and "none" is 0. L is clamped to [0, 1] and C to 0 or more, as
+    CSS does when parsing; an L of 0 or 1 is black or white, as in CSS gamut mapping,
+    and other colors are converted to sRGB, then clipped.
+    https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch
+    """
+    match = re.fullmatch(r"(oklab|oklch)\((.*)\)", colorstr.strip(), re.DOTALL)
+    function, body = match.groups() if match else ("oklab", "")
+    alpha: Optional[str] = None
+    if "/" in body:
+        body, alpha = body.split("/", 1)
+    parts = body.split()
+    if len(parts) != 3:
+        raise ValueError(f"{colorstr} could not be interpreted as a {function}() color")
+
+    def number(value: str, percent_of: float) -> float:
+        if value == "none":
+            return 0.0
+        if value.endswith("%"):
+            return float(value[:-1]) / 100 * percent_of
+        return float(value)
+
+    lightness = min(max(number(parts[0], 1), 0.0), 1.0)
+    if function == "oklab":
+        a, b = number(parts[1], 0.4), number(parts[2], 0.4)
+    else:
+        chroma = max(number(parts[1], 0.4), 0.0)
+        hue = math.radians(0 if parts[2] == "none" else _hue_degrees(parts[2]))
+        a, b = chroma * math.cos(hue), chroma * math.sin(hue)
+
+    # https://bottosson.github.io/posts/oklab/
+    l_ = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3
+    m_ = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3
+    s_ = (lightness - 0.0894841775 * a - 1.2914855480 * b) ** 3
+    linear = (
+        4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+        -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+        -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_,
+    )
+
+    def srgb(channel: float) -> float:
+        channel = min(max(channel, 0.0), 1.0)
+        if channel <= 0.0031308:
+            return 12.92 * channel
+        return 1.055 * math.pow(channel, 1 / 2.4) - 0.055
+
+    if lightness in (0.0, 1.0):
+        r = g = b = lightness
+    else:
+        r, g, b = (srgb(channel) for channel in linear)
+    if alpha is not None:
+        opacity = number(alpha.strip(), 1)
+        return DeviceRGB(r, g, b, min(max(opacity, 0.0), 1.0))
+    return DeviceRGB(r, g, b)
 
 
 def _split_top_level_commas(value: str) -> list[str]:
