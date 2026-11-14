@@ -637,6 +637,12 @@ test_svg_attribute_conversion = (
         id="invalid hsl() color",
     ),
     pytest.param(
+        '<path fill="oklch(50% 0.1)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid oklch() color",
+    ),
+    pytest.param(
         # as Inkscape writes, e.g. in the icon of Deluge
         '<path fill="#094491 icc-color(sRGB, 0.18046845, 0.27837034, 0.41960784)"/>',
         Gs(fill_color="#094491"),

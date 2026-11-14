@@ -104,6 +104,36 @@ def test_optional_converter():
     assert conv is canary
 
 
+@pytest.mark.parametrize(
+    "color, rgba",
+    [
+        # as in the social preview images of react-window
+        ("oklch(62.8% 0.2577 29.23)", (1, 0, 0, None)),
+        ("oklab(0.452 -0.0325 -0.3115)", (0, 0, 1, None)),
+        ("OKLCH(86.6% 0.295 142.5)", (0, 1, 0, None)),
+        ("oklch(100% 0 none / 25%)", (1, 1, 1, 0.25)),
+        ("oklch(0% 0 0 / 0.5)", (0, 0, 0, 0.5)),
+        # "none" is 0: without chroma, a gray
+        ("oklch(60% none 120)", (0.5, 0.5, 0.5, None)),
+        # outside sRGB, the color is clipped
+        ("oklab(50% 100% -100%)", (0.8, 0, 1, None)),
+        # an alpha of "none" is 0
+        ("oklch(50% 0.1 30 / none)", (0.58, 0.29, 0.25, 0)),
+        # a negative chroma is 0, a gray
+        ("oklch(60% -0.2 30)", (0.5, 0.5, 0.5, None)),
+        # the lightness is clamped, and 0 and 1 are black and white
+        ("oklab(100% 0.2 0.1)", (1, 1, 1, None)),
+        ("oklab(120% 0 0)", (1, 1, 1, None)),
+        ("oklch(0% 0.3 140)", (0, 0, 0, None)),
+        ("oklab(-5% 0.1 0)", (0, 0, 0, None)),
+    ],
+)
+def test_svgcolor_oklab_and_oklch(color, rgba):
+    result = fpdf.svg.svgcolor(color)
+    assert (result.r, result.g, result.b) == pytest.approx(rgba[:3], abs=0.01)
+    assert result.a == rgba[3]
+
+
 class TestSVGPathParsing:
     @pytest.mark.parametrize("path, result", parameters.svg_path_directives)
     def test_parsing_all_directives(self, path, result):
@@ -710,6 +740,26 @@ class TestSVGObject:
             pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
         )
 
+    @pytest.mark.parametrize(
+        "linejoin, join_style",
+        [
+            ("miter-clip", fpdf.enums.StrokeJoinStyle.MITER),
+            ("arcs", fpdf.enums.StrokeJoinStyle.MITER),
+            ("Miter-Clip", fpdf.enums.StrokeJoinStyle.MITER),
+            ("round", fpdf.enums.StrokeJoinStyle.ROUND),
+        ],
+    )
+    def test_svg_stroke_linejoin_svg2(self, linejoin, join_style):
+        # the line joins of SVG 2 that PDF does not have are drawn as miter
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<path d="M0 0 L10 10 L20 0" stroke="red" stroke-linejoin="{linejoin}"/>'
+            f'<path d="M0 0 L10 10" stroke="red" style="stroke-linejoin: {linejoin}"/>'
+            "</svg>"
+        )
+        for path in svg.base_group.path_items:
+            assert path.style.stroke_join_style == join_style
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 
@@ -923,6 +973,68 @@ class TestSVGObject:
         )
         contents = b"".join(zlib.decompress(stream) for stream in streams)
         assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == font_sizes
+
+    @pytest.mark.parametrize(
+        "css",
+        [
+            "@import url(theme.css); .a { fill: red }",
+            # a ";" in the URL, as Google Fonts writes font weights
+            (
+                "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700');"
+                ".a { fill: red }"
+            ),
+            '@charset "utf-8"; @import "theme.css" screen; .a { fill: red }',
+            # a ")" or ";" in a quoted URL, and escaped quotes and parentheses
+            '@import url("theme(x);dark.css"); .a { fill: red }',
+            r'@import "x\";y.css"; @import url(a\);b.css); .a { fill: red }',
+            # an at-rule left unterminated at the end
+            ".a { fill: red } @import url(theme.css)",
+        ],
+    )
+    def test_svg_css_rules_after_at_statements(self, css):
+        # an @import or @charset before the rules no longer hides the first of them
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "css",
+        [
+            ".a { fill: url(#paint@dark); stroke: red; }",
+            '.a { font-family: "x;@a"; stroke: red; }',
+            ".a { font-family: x\\@a; stroke: red; }",
+            "@media screen { .a { fill: url(#p@d); stroke: red; } }",
+            "@import url(theme.css); .a { fill: url(#p@d); stroke: red; }",
+        ],
+    )
+    def test_svg_css_at_sign_inside_a_declaration(self, css):
+        # only an @ that starts a statement begins an at-rule
+        assert fpdf.svg._strip_css_at_statements(css) == css.replace(
+            "@import url(theme.css);", ""
+        )
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.stroke_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "start, repeated, end",
+        [
+            ("@", "a", " {}"),
+            ("", "@a ", "{}"),
+            ("", '@x "', "\n"),
+        ],
+    )
+    def test_svg_css_at_statements_linear_time(self, start, repeated, end):
+        # at-rules without a ";" are scanned once, not again from every "@"
+        css = start + repeated * 50_000 + end + " .a { fill: red }"
+        stripped = fpdf.svg._strip_css_at_statements(css)
+        assert stripped.endswith(".a { fill: red }")
 
     @pytest.mark.parametrize(
         "text, font_sizes",
