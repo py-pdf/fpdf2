@@ -1106,6 +1106,70 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
 
 # A universal selector or an element name, such as "*" or "rect"
 CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
+# A class selector, read by _extract_css_class_styles()
+CSS_CLASS_SELECTOR_RE = re.compile(r"\.[\w-]+(?::.*)?", re.DOTALL)
+# A compound selector: an element name or "*", then ids and classes, as in rect#a.b
+CSS_COMPOUND_SELECTOR_RE = re.compile(r"(\*|[A-Za-z][\w-]*)?((?:[#.][\w-]+)*)")
+CSS_SELECTOR_TOKEN_RE = re.compile(r"\s*>\s*|\s+|[^\s>]+")
+# longer selectors are ignored, so that matching them stays fast
+_MAX_CSS_COMPOUND_SELECTORS = 32
+
+
+class CSSCompoundSelector(NamedTuple):
+    combinator: str  # " " for a descendant, ">" for a child, "" for the first one
+    element_name: Optional[str]
+    ids: tuple[str, ...]
+    classes: frozenset[str]
+
+    def matches(self, element: "Element") -> bool:
+        if self.element_name not in (None, "*") and (
+            without_ns(element.tag) != self.element_name
+        ):
+            return False
+        if any(element.attrib.get("id") != element_id for element_id in self.ids):
+            return False
+        return self.classes <= set(element.attrib.get("class", "").split())
+
+
+def _parse_css_selector(
+    selector: str,
+) -> Optional[tuple[tuple[CSSCompoundSelector, ...], tuple[int, int, int]]]:
+    """
+    The compound selectors of a selector made of element names, ids and classes,
+    joined by descendant or child combinators, as in "#mermaid-svg .node rect", from
+    the outermost, and its specificity; None for other selectors.
+    """
+    compounds: list[CSSCompoundSelector] = []
+    combinator = ""
+    for token in CSS_SELECTOR_TOKEN_RE.findall(selector.strip()):
+        if not token.strip():
+            combinator = combinator or " "
+            continue
+        if token.strip() == ">":
+            combinator = ">"
+            continue
+        match = CSS_COMPOUND_SELECTOR_RE.fullmatch(token)
+        if match is None or (combinator == "") != (not compounds):
+            return None
+        element_name, rest = match.groups()
+        parts = re.findall(r"[#.][\w-]+", rest)
+        compounds.append(
+            CSSCompoundSelector(
+                combinator,
+                element_name,
+                tuple(part[1:] for part in parts if part[0] == "#"),
+                frozenset(part[1:] for part in parts if part[0] == "."),
+            )
+        )
+        combinator = ""
+    if not compounds or combinator or len(compounds) > _MAX_CSS_COMPOUND_SELECTORS:
+        return None
+    specificity = (
+        sum(len(compound.ids) for compound in compounds),
+        sum(len(compound.classes) for compound in compounds),
+        sum(compound.element_name not in (None, "*") for compound in compounds),
+    )
+    return tuple(compounds), specificity
 
 
 @force_nodocument
@@ -1512,6 +1576,18 @@ class SVGObject:
         self.css_class_styles: dict[str, dict[str, Any]] = {}
         # rules of "*" and element names, such as matplotlib's * { stroke-linejoin: round }
         self.css_type_styles: dict[str, dict[str, Any]] = {}
+        # rules of the other selectors with ids, classes and combinators, such as
+        # Mermaid's #mermaid-svg .node rect, with their specificity, in order
+        self.css_selector_rules: list[
+            tuple[tuple[CSSCompoundSelector, ...], tuple[int, int, int], dict[str, Any]]
+        ] = []
+        self._selector_rules_cache: dict[
+            "Element", list[tuple[tuple[int, int, int], int, dict[str, Any]]]
+        ] = {}
+        self._selector_memos: dict[
+            int,
+            tuple[dict[tuple[int, "Element"], bool], dict[tuple[int, "Element"], bool]],
+        ] = {}
         self.gradient_definitions: dict[str, GradientPaint] = (
             {}
         )  # Store parsed gradients by ID
@@ -1734,6 +1810,73 @@ class SVGObject:
                         for key, value in declarations.items():
                             if key not in existing or _overrides(existing[key], value):
                                 existing[key] = value
+                    elif not CSS_CLASS_SELECTOR_RE.fullmatch(selector):
+                        parsed = _parse_css_selector(selector)
+                        if parsed is not None:
+                            self.css_selector_rules.append((*parsed, declarations))
+
+    def _selector_matches(self, order: int, tag: "Element") -> bool:
+        """
+        Whether a selector rule matches an element, through its ancestors. What is known
+        of each element is kept, so that matching takes linear time in their number.
+        """
+        compounds = self.css_selector_rules[order][0]
+        # whether compounds[:index + 1] match, with the last one on an element, and
+        # whether they match on an ancestor of it
+        matched, ancestor_matched = self._selector_memos.setdefault(order, ({}, {}))
+
+        def matches(index: int, element: "Element") -> bool:
+            key = (index, element)
+            if key not in matched:
+                compound = compounds[index]
+                result = compound.matches(element)
+                if result and index > 0:
+                    parent = self._pattern_parents.get(element)
+                    if parent is None:
+                        result = False
+                    elif compound.combinator == ">":
+                        result = matches(index - 1, parent)
+                    else:
+                        result = matches(index - 1, parent) or ancestor_matches(
+                            index - 1, parent
+                        )
+                matched[key] = result
+            return matched[key]
+
+        def ancestor_matches(index: int, element: "Element") -> bool:
+            chain: list["Element"] = []
+            node = element
+            while (index, node) not in ancestor_matched:
+                parent = self._pattern_parents.get(node)
+                chain.append(node)
+                if parent is None:
+                    result = False
+                    break
+                if matches(index, parent):
+                    result = True
+                    break
+                node = parent
+            else:
+                result = ancestor_matched[(index, node)]
+            for node in chain:
+                ancestor_matched[(index, node)] = result
+            return result
+
+        return matches(len(compounds) - 1, tag)
+
+    def _selector_rules_for(
+        self, tag: "Element"
+    ) -> list[tuple[tuple[int, int, int], int, dict[str, Any]]]:
+        """The (specificity, order, declarations) of the selector rules of an element."""
+        if tag not in self._selector_rules_cache:
+            self._selector_rules_cache[tag] = [
+                (specificity, order, declarations)
+                for order, (_, specificity, declarations) in enumerate(
+                    self.css_selector_rules
+                )
+                if self._selector_matches(order, tag)
+            ]
+        return self._selector_rules_cache[tag]
 
     def _is_display_none(self, tag: "Element") -> bool:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
@@ -1753,18 +1896,28 @@ class SVGObject:
                 if is_important:
                     important.add(key)
 
-        # as in CSS, a class rule wins over an element rule, which wins over "*"
-        for selector in ("*", without_ns(tag.tag)):
+        # as in CSS, the rules apply by specificity, then in order: a class rule wins
+        # over an element rule, which wins over "*"
+        rules: list[tuple[tuple[int, int, int], int, dict[str, Any]]] = []
+        for selector, specificity in (
+            ("*", (0, 0, 0)),
+            (without_ns(tag.tag), (0, 0, 1)),
+        ):
             type_styles = self.css_type_styles.get(selector)
             if type_styles:
-                apply_rules(type_styles)
+                rules.append((specificity, -1, type_styles))
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
             if class_attr:
                 for class_name in class_attr.split():
                     class_styles = self.css_class_styles.get(class_name)
                     if class_styles:
-                        apply_rules(class_styles)
+                        rules.append(((0, 1, 0), -1, class_styles))
+        if self.css_selector_rules:
+            rules.extend(self._selector_rules_for(tag))
+        rules.sort(key=lambda rule: rule[:2])
+        for _, _, declarations in rules:
+            apply_rules(declarations)
         inline = _parse_css_declarations(tag.attrib.get("style", ""))
         for key, declared in inline.items():
             value, is_important = _split_important(declared)
