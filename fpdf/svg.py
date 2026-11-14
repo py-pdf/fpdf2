@@ -315,11 +315,12 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
         return _css_rgb_color(lowered)
 
     if lowered.startswith("rgb"):
-        # The 4th value of fpdf2's own rgb(R, G, B, A) is an alpha from 0 to 255, so a
-        # fraction or a percentage, as in rgb(0,0,0, 0.5) of Mermaid diagrams, can only
-        # be the alpha from 0 to 1 that CSS Color 4 allows in rgb()
+        # The 4th value of fpdf2's own rgb(R, G, B, A) is an integer alpha from 0 to
+        # 255, with or without a sign, so a fraction or a percentage, as in
+        # rgb(0,0,0, 0.5) of Mermaid diagrams, can only be the alpha from 0 to 1 that
+        # CSS Color 4 allows in rgb()
         channels = lowered[lowered.find("(") + 1 :].rstrip(")").split(",")
-        if len(channels) == 4 and not channels[3].strip().isdigit():
+        if len(channels) == 4 and not re.fullmatch(r"[+-]?\d+", channels[3].strip()):
             return _css_rgb_color(lowered)
         return color_from_rgb_string(lowered)
 

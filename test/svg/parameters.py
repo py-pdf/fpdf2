@@ -590,6 +590,19 @@ test_svg_attribute_conversion = (
         id="fill color rgb() with a percentage alpha",
     ),
     pytest.param(
+        # an integer alpha, with or without a sign, keeps fpdf2's scale from 0 to 255
+        '<path fill="rgb(255, 0, 0, +51)"/>',
+        Gs(fill_color=DeviceRGB(1, 0, 0, 0.2), fill_opacity=0.2),
+        no_error(),
+        id="fill color rgb() with a signed integer alpha",
+    ),
+    pytest.param(
+        '<path fill="rgb(255, 0, 0, 51)"/>',
+        Gs(fill_color=DeviceRGB(1, 0, 0, 0.2), fill_opacity=0.2),
+        no_error(),
+        id="fill color rgb() with an integer alpha",
+    ),
+    pytest.param(
         '<path fill="rgb(255 0 0)"/>',
         Gs(fill_color="#f00"),
         no_error(),
