@@ -975,6 +975,68 @@ class TestSVGObject:
         assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == font_sizes
 
     @pytest.mark.parametrize(
+        "css",
+        [
+            "@import url(theme.css); .a { fill: red }",
+            # a ";" in the URL, as Google Fonts writes font weights
+            (
+                "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700');"
+                ".a { fill: red }"
+            ),
+            '@charset "utf-8"; @import "theme.css" screen; .a { fill: red }',
+            # a ")" or ";" in a quoted URL, and escaped quotes and parentheses
+            '@import url("theme(x);dark.css"); .a { fill: red }',
+            r'@import "x\";y.css"; @import url(a\);b.css); .a { fill: red }',
+            # an at-rule left unterminated at the end
+            ".a { fill: red } @import url(theme.css)",
+        ],
+    )
+    def test_svg_css_rules_after_at_statements(self, css):
+        # an @import or @charset before the rules no longer hides the first of them
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "css",
+        [
+            ".a { fill: url(#paint@dark); stroke: red; }",
+            '.a { font-family: "x;@a"; stroke: red; }',
+            ".a { font-family: x\\@a; stroke: red; }",
+            "@media screen { .a { fill: url(#p@d); stroke: red; } }",
+            "@import url(theme.css); .a { fill: url(#p@d); stroke: red; }",
+        ],
+    )
+    def test_svg_css_at_sign_inside_a_declaration(self, css):
+        # only an @ that starts a statement begins an at-rule
+        assert fpdf.svg._strip_css_at_statements(css) == css.replace(
+            "@import url(theme.css);", ""
+        )
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.stroke_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "start, repeated, end",
+        [
+            ("@", "a", " {}"),
+            ("", "@a ", "{}"),
+            ("", '@x "', "\n"),
+        ],
+    )
+    def test_svg_css_at_statements_linear_time(self, start, repeated, end):
+        # at-rules without a ";" are scanned once, not again from every "@"
+        css = start + repeated * 50_000 + end + " .a { fill: red }"
+        stripped = fpdf.svg._strip_css_at_statements(css)
+        assert stripped.endswith(".a { fill: red }")
+
+    @pytest.mark.parametrize(
         "text, font_sizes",
         [
             # the CSS Fonts scale around medium, 16px (12pt)

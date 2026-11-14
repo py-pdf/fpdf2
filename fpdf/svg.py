@@ -100,6 +100,7 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+CSS_AT_KEYWORD_RE = re.compile(r"@[\w-]+")
 # https://www.w3.org/TR/SVG11/painting.html#SpecifyingPaint
 ICC_COLOR_RE = re.compile(r"\s+icc-color\([^)]*\)\s*$", re.IGNORECASE)
 
@@ -1134,13 +1135,73 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
+def _strip_css_at_statements(css_text: str) -> str:
+    """Remove the at-rules without a block, such as @import url("...;..."); or @charset "utf-8";
+
+    Only an @ that starts a statement begins an at-rule: one in a declaration, as in
+    url(#paint@dark), or in a string is kept. A ";" in a string, after an escape or
+    between parentheses, as in a url(), does not end the statement. The text is
+    scanned once, so it takes linear time.
+    """
+    kept = []
+    end = len(css_text)
+    copied = 0
+    i = 0
+    quote = ""
+    statement_start = True
+    while i < end:
+        char = css_text[i]
+        if char == "\\":
+            statement_start = False
+            i += 2
+            continue
+        if quote:
+            if char == quote:
+                quote = ""
+        elif char in "\"'":
+            quote = char
+            statement_start = False
+        elif char in ";{}":
+            statement_start = True
+        elif statement_start and CSS_AT_KEYWORD_RE.match(css_text, i):
+            start = i
+            depth = 0
+            while i < end:
+                char = css_text[i]
+                if char == "\\":
+                    i += 1
+                elif quote:
+                    if char == quote:
+                        quote = ""
+                elif char in "\"'":
+                    quote = char
+                elif char == "(":
+                    depth += 1
+                elif char == ")" and depth:
+                    depth -= 1
+                elif not depth and char in ";{}":
+                    break
+                i += 1
+            if i < end and css_text[i] == ";":
+                kept.append(css_text[copied:start])
+                copied = i + 1  # drop the statement
+                i += 1
+            # else an at-rule with a block, such as @media, or an unterminated one
+            continue
+        elif not char.isspace():
+            statement_start = False
+        i += 1
+    kept.append(css_text[copied:])
+    return "".join(kept)
+
+
 def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
     """The (selector, declarations) of each rule of a stylesheet, one per selector."""
     rules: list[tuple[str, dict[str, Any]]] = []
     if not css_text:
         return rules
 
-    cleaned = CSS_COMMENT_RE.sub("", css_text)
+    cleaned = _strip_css_at_statements(CSS_COMMENT_RE.sub("", css_text))
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
         declarations = _parse_css_declarations(body)
         if not declarations:
