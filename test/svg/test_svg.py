@@ -360,6 +360,18 @@ class TestSVGObject:
         rect = svg.cross_references["#c"]._root_graphics_context.path_items[1]
         assert (rect.size.x, rect.size.y) == pytest.approx((40, 20))
 
+    @pytest.mark.parametrize("root, use", [("", "40"), (' font-size="20"', "2em")])
+    def test_clipping_path_use_em_lengths_use_its_font_size(self, root, use):
+        # the shape a <use> in a <clipPath> references inherits the font size of the <use>
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"{root}><defs>'
+            '<rect id="r" width="1em" height="1ex"/></defs><clipPath id="c">'
+            f'<use href="#r" font-size="{use}"/></clipPath>'
+            '<rect width="5" height="5" clip-path="url(#c)"/></svg>'
+        )
+        rect = svg.cross_references["#c"]._root_graphics_context.path_items[1]
+        assert (rect.size.x, rect.size.y) == pytest.approx((40, 20))
+
     def test_clipping_path_polygon(self):
         # a <polygon> has no em or ex lengths to resolve
         svg = fpdf.svg.SVGObject(
@@ -446,6 +458,28 @@ class TestSVGObject:
                     '<use href="#r" font-size="2em"/>'
                 ),
                 [(24, 12)],
+            ),
+            # also in a <symbol> or a <switch>, or through another <use>
+            (
+                (
+                    '<defs><symbol id="r"><rect width="1em" height="1ex"/></symbol>'
+                    '</defs><use href="#r" font-size="40"/>'
+                ),
+                [(40, 20)],
+            ),
+            (
+                (
+                    '<defs><switch id="r"><rect width="1em" height="1ex"/></switch>'
+                    '</defs><use href="#r" font-size="40"/>'
+                ),
+                [(40, 20)],
+            ),
+            (
+                (
+                    '<defs><rect id="r" width="1em" height="1ex"/>'
+                    '<use id="u" href="#r"/></defs><use href="#u" font-size="40"/>'
+                ),
+                [(40, 20)],
             ),
         ],
     )

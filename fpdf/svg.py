@@ -1034,17 +1034,9 @@ def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
     )
 
 
-def _has_em_lengths(element: "Element") -> bool:
-    """Whether a shape, or a shape in a <g>, has a length in em or ex."""
-    if element.tag not in shape_tags and element.tag not in xmlns_lookup("svg", "g"):
-        return False
-    return any(
-        (match := unit_splitter.fullmatch(value.strip())) is not None
-        and match.group("unit") in ("em", "ex")
-        for shape in element.iter()
-        if shape.tag in shape_tags
-        for value in shape.attrib.values()
-    )
+def _is_em_length(value: str) -> bool:
+    match = unit_splitter.fullmatch(value.strip())
+    return match is not None and match.group("unit") in ("em", "ex")
 
 
 def _font_size_pt(font_size: Optional[str]) -> float:
@@ -1725,6 +1717,7 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
+        self._em_lengths_cache: dict["Element", bool] = {}
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -2809,7 +2802,7 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and _has_em_lengths(element):
+        if element is not None and self._has_em_lengths(element):
             # the em and ex of the referenced shapes are relative to the font size
             # that the <use> gives them, as its copy inherits from it
             use_style = {**(inherited_style or {}), **style_map}
@@ -2817,7 +2810,7 @@ class SVGObject:
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
-            referenced = self._rebuild_for_use(element, font_style)
+            referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
         pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
@@ -2868,26 +2861,59 @@ class SVGObject:
         self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
 
+    def _has_em_lengths(self, element: "Element") -> bool:
+        """
+        Whether an element, or what it draws, also through a <use>, has a shape with a
+        length in em or ex.
+        """
+        if element not in self._em_lengths_cache:
+            found = False
+            pending = [element]
+            seen: set["Element"] = set()
+            while pending and not found:
+                node = pending.pop()
+                if node in seen:
+                    continue
+                seen.add(node)
+                for descendant in node.iter():
+                    if descendant.tag in shape_tags and any(
+                        _is_em_length(value) for value in descendant.attrib.values()
+                    ):
+                        found = True
+                        break
+                    if descendant.tag in xmlns_lookup("svg", "use"):
+                        ref = next(
+                            (
+                                descendant.attrib[key]
+                                for key in xmlns_lookup("xlink", "href")
+                                if key in descendant.attrib
+                            ),
+                            None,
+                        )
+                        target = self._elements_by_id.get(ref) if ref else None
+                        if target is not None:
+                            pending.append(target)
+            self._em_lengths_cache[element] = found
+        return self._em_lengths_cache[element]
+
     def _rebuild_for_use(
-        self, element: "Element", font_style: dict[str, Any]
-    ) -> GraphicsContext | PaintedPath:
-        """Build a shape or a <g> again, for a <use> that gives it another font size."""
+        self, ref: str, element: "Element", font_style: dict[str, Any]
+    ) -> Any:
+        """Build the element a <use> draws again, with the font size of the <use>."""
         ids = ["#" + e.attrib["id"] for e in element.iter() if e.attrib.get("id")]
         saved = [
             (key, self.cross_references[key], self._cross_reference_costs[key])
             for key in ids
             if key in self.cross_references
         ]
-        if element.tag in shape_tags:
-            rebuilt: GraphicsContext | PaintedPath = self.build_shape(
-                element, font_style
-            )
-        else:
-            rebuilt = self.build_group(element, None, font_style)
-        # the definition itself keeps the font size of its own ancestors
-        for key, referenced, cost in saved:
-            self.cross_references[key] = referenced
-            self._cross_reference_costs[key] = cost
+        try:
+            self._build_group_child(GraphicsContext(), element, font_style)
+            rebuilt = self.cross_references[ref]
+        finally:
+            # the definition itself keeps the font size of its own ancestors
+            for key, referenced, cost in saved:
+                self.cross_references[key] = referenced
+                self._cross_reference_costs[key] = cost
         return rebuilt
 
     def _bind_reference_patterns(
@@ -3130,7 +3156,10 @@ class SVGObject:
             self.update_xref(clip_id, clipping_path_shape)
 
     def _clipping_path_shape(
-        self, shape: "Element", allow_use: bool = True
+        self,
+        shape: "Element",
+        allow_use: bool = True,
+        font_style: Optional[dict[str, Any]] = None,
     ) -> Optional[PaintedPath]:
         if shape.tag in shape_tags:
             self._record_resolved_elements(1)
@@ -3139,9 +3168,9 @@ class SVGObject:
             if shape_tags[shape.tag] in ("polyline", "polygon"):
                 clipping_path_shape: PaintedPath = shape_builder(shape, True)
             else:
-                font_size = self._shape_font_size(
-                    style_map, self._ancestors_font_style(shape)
-                )
+                if font_style is None:
+                    font_style = self._ancestors_font_style(shape)
+                font_size = self._shape_font_size(style_map, font_style)
                 clipping_path_shape = shape_builder(shape, True, font_size=font_size)
             apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
@@ -3167,7 +3196,16 @@ class SVGObject:
             if referenced is None:
                 LOGGER.warning("Ignoring <use> without a valid reference in <clipPath>")
                 return None
-            referenced_shape = self._clipping_path_shape(referenced, allow_use=False)
+            # the referenced shape inherits the font size of the <use>
+            use_font_style = self._ancestors_font_style(shape)
+            own_font_size = self._style_map_for(shape).get("font-size")
+            if own_font_size is not None:
+                own = {"font-size": own_font_size}
+                _resolve_relative_font_size(own, use_font_style)
+                use_font_style = own
+            referenced_shape = self._clipping_path_shape(
+                referenced, allow_use=False, font_style=use_font_style
+            )
             if referenced_shape is None:
                 return None
             clipping_path_shape = referenced_shape
