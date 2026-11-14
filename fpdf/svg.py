@@ -419,7 +419,9 @@ def _oklab_color(colorstr: str) -> DeviceRGB:
     """
     Parse oklab(L a b) and oklch(L C H) of CSS Color 4, with an optional "/ A".
     L is a number from 0 to 1 or a percentage, a, b and C are numbers or percentages
-    of 0.4, H is a hue, and "none" is 0. The color is converted to sRGB, then clipped.
+    of 0.4, H is a hue, and "none" is 0. L is clamped to [0, 1] and C to 0 or more, as
+    CSS does when parsing; an L of 0 or 1 is black or white, as in CSS gamut mapping,
+    and other colors are converted to sRGB, then clipped.
     https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch
     """
     match = re.fullmatch(r"(oklab|oklch)\((.*)\)", colorstr.strip(), re.DOTALL)
@@ -438,11 +440,11 @@ def _oklab_color(colorstr: str) -> DeviceRGB:
             return float(value[:-1]) / 100 * percent_of
         return float(value)
 
-    lightness = number(parts[0], 1)
+    lightness = min(max(number(parts[0], 1), 0.0), 1.0)
     if function == "oklab":
         a, b = number(parts[1], 0.4), number(parts[2], 0.4)
     else:
-        chroma = number(parts[1], 0.4)
+        chroma = max(number(parts[1], 0.4), 0.0)
         hue = math.radians(0 if parts[2] == "none" else _hue_degrees(parts[2]))
         a, b = chroma * math.cos(hue), chroma * math.sin(hue)
 
@@ -462,10 +464,12 @@ def _oklab_color(colorstr: str) -> DeviceRGB:
             return 12.92 * channel
         return 1.055 * math.pow(channel, 1 / 2.4) - 0.055
 
-    r, g, b = (srgb(channel) for channel in linear)
+    if lightness in (0.0, 1.0):
+        r = g = b = lightness
+    else:
+        r, g, b = (srgb(channel) for channel in linear)
     if alpha is not None:
-        alpha = alpha.strip()
-        opacity = float(alpha[:-1]) / 100 if alpha.endswith("%") else float(alpha)
+        opacity = number(alpha.strip(), 1)
         return DeviceRGB(r, g, b, min(max(opacity, 0.0), 1.0))
     return DeviceRGB(r, g, b)
 

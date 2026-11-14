@@ -117,6 +117,15 @@ def test_optional_converter():
         ("oklch(60% none 120)", (0.5, 0.5, 0.5, None)),
         # outside sRGB, the color is clipped
         ("oklab(50% 100% -100%)", (0.8, 0, 1, None)),
+        # an alpha of "none" is 0
+        ("oklch(50% 0.1 30 / none)", (0.58, 0.29, 0.25, 0)),
+        # a negative chroma is 0, a gray
+        ("oklch(60% -0.2 30)", (0.5, 0.5, 0.5, None)),
+        # the lightness is clamped, and 0 and 1 are black and white
+        ("oklab(100% 0.2 0.1)", (1, 1, 1, None)),
+        ("oklab(120% 0 0)", (1, 1, 1, None)),
+        ("oklch(0% 0.3 140)", (0, 0, 0, None)),
+        ("oklab(-5% 0.1 0)", (0, 0, 0, None)),
     ],
 )
 def test_svgcolor_oklab_and_oklch(color, rgba):
