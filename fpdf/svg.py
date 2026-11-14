@@ -100,6 +100,10 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+# The start of an @media block, or a brace; a media query has no "@" in it
+CSS_MEDIA_TOKEN_RE = re.compile(r"@media\b[^{};@]*\{|[{}]", re.IGNORECASE)
+CSS_MEDIA_QUERY_TOKEN_RE = re.compile(r"[(),]|[^\s(),]+")
+
 CSS_AT_KEYWORD_RE = re.compile(r"@[\w-]+")
 # https://www.w3.org/TR/SVG11/painting.html#SpecifyingPaint
 ICC_COLOR_RE = re.compile(r"\s+icc-color\([^)]*\)\s*$", re.IGNORECASE)
@@ -1142,6 +1146,104 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
+def _media_feature_matches(words: list[str]) -> bool:
+    """
+    Whether a media feature, such as (prefers-color-scheme: dark), matches. Only
+    prefers-color-scheme is evaluated, as light, the default of browsers and the
+    colors of a white page; the other features match.
+    """
+    name, _, value = "".join(words).partition(":")
+    if name == "prefers-color-scheme":
+        # in a boolean context, without a value, it matches
+        return value in ("light", "")
+    return True
+
+
+def _media_condition_matches(items: list[str | bool]) -> bool:
+    """
+    Whether a media condition matches: features and conditions in parentheses, already
+    evaluated, and a media type, joined with and, or and a leading not. The media
+    type is screen, as in browsers.
+    """
+    negate = bool(items) and items[0] == "not"
+    result: Optional[bool] = None
+    operator = "and"
+    for item in items[1:] if negate else items:
+        if item in ("and", "or"):
+            operator = str(item)
+        elif item != "only":
+            value = item if isinstance(item, bool) else item in ("all", "screen")
+            if result is None:
+                result = value
+            elif operator == "and":
+                result = result and value
+            else:
+                result = result or value
+    return (True if result is None else result) != negate
+
+
+def _media_query_matches(query_list: str) -> bool:
+    """
+    Whether one of the queries of an @media rule matches, read in a single pass:
+    the content of each pair of parentheses is evaluated when it is closed.
+    """
+    # the items of each open pair of parentheses, and of the query itself
+    frames: list[list[str | bool]] = [[]]
+
+    def close_parenthesis() -> None:
+        items = frames.pop()
+        if all(isinstance(item, str) for item in items):
+            frames[-1].append(_media_feature_matches([str(item) for item in items]))
+        else:
+            frames[-1].append(_media_condition_matches(items))
+
+    for query_part in CSS_MEDIA_QUERY_TOKEN_RE.findall(query_list.lower()):
+        if query_part == "(":
+            frames.append([])
+        elif query_part == ")" and len(frames) > 1:
+            close_parenthesis()
+        elif query_part == "," and len(frames) == 1:
+            if _media_condition_matches(frames[0]):
+                return True
+            frames[0] = []
+        elif query_part not in "),":
+            frames[-1].append(query_part)
+    while len(frames) > 1:  # parentheses left open are closed, as in CSS
+        close_parenthesis()
+    return _media_condition_matches(frames[0])
+
+
+def _resolve_css_media_rules(css_text: str) -> str:
+    """
+    The stylesheet with the rules of the @media blocks that match, and without the
+    others, read in a single pass.
+    """
+    kept = []
+    # for each open block: whether its content is kept, and whether it is an @media
+    blocks = [(True, False)]
+    pos = 0
+    for match in CSS_MEDIA_TOKEN_RE.finditer(css_text):
+        keep = blocks[-1][0]
+        if keep:
+            kept.append(css_text[pos : match.start()])
+        pos = match.end()
+        text = match.group()
+        if text == "{":
+            blocks.append((keep, False))
+            if keep:
+                kept.append(text)
+        elif text == "}":
+            is_media = blocks.pop()[1] if len(blocks) > 1 else False
+            if keep and not is_media:
+                kept.append(text)
+        else:
+            query_list = text[len("@media") : -1]
+            blocks.append((keep and _media_query_matches(query_list), True))
+    if blocks[-1][0]:
+        kept.append(css_text[pos:])
+    return "".join(kept)
+
+
 def _strip_css_at_statements(css_text: str) -> str:
     """Remove the at-rules without a block, such as @import url("...;..."); or @charset "utf-8";
 
@@ -1208,7 +1310,9 @@ def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
     if not css_text:
         return rules
 
-    cleaned = _strip_css_at_statements(CSS_COMMENT_RE.sub("", css_text))
+    cleaned = _resolve_css_media_rules(
+        _strip_css_at_statements(CSS_COMMENT_RE.sub("", css_text))
+    )
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
         declarations = _parse_css_declarations(body)
         if not declarations:
