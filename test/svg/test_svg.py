@@ -598,6 +598,21 @@ class TestSVGObject:
                 ),
                 "0 0 1 rg",
             ),
+            # also through a <switch>
+            (
+                (
+                    '<switch color="red" fill="currentColor">'
+                    '<rect color="blue" width="5" height="5"/></switch>'
+                ),
+                "0 0 1 rg",
+            ),
+            (
+                (
+                    '<g color="red" fill="currentColor"><switch fill="inherit">'
+                    '<rect color="blue" width="5" height="5"/></switch></g>'
+                ),
+                "0 0 1 rg",
+            ),
             # an explicit fill="inherit" inherits the keyword, like an omitted fill
             (
                 (

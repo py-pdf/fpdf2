@@ -2909,24 +2909,7 @@ class SVGObject:
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
-        for attr in ("fill", "stroke"):
-            local_value = _get_attr_or_style(group, attr, local_style)
-            inherited_value = (inherited_style or {}).get(attr)
-            if (
-                local_value == "inherit"
-                and self._extract_gradient_id(inherited_value) in self._pattern_elements
-            ):
-                merged_style[attr] = inherited_value
-            elif _is_current_color(local_value) or (
-                local_value == "inherit" and _is_current_color(inherited_value)
-            ):
-                # descendants resolve it with their own color
-                merged_style[attr] = "currentColor"
-            elif local_value is not None and (
-                attr in merged_style
-                or self._extract_gradient_id(local_value) in self._pattern_elements
-            ):
-                merged_style[attr] = local_value
+        self._merge_inherited_paints(group, local_style, inherited_style, merged_style)
         apply_styles(
             pdf_group,
             group,
@@ -3008,6 +2991,36 @@ class SVGObject:
                 without_ns(child.tag),
             )
 
+    def _merge_inherited_paints(
+        self,
+        element: "Element",
+        local_style: dict[str, Any],
+        inherited_style: Optional[dict[str, Any]],
+        merged_style: dict[str, Any],
+    ) -> None:
+        """
+        The fill and stroke that a <g> or a <switch> passes to its children: a pattern
+        it inherits, or the currentColor keyword, which they resolve with their own
+        color, as in CSS.
+        """
+        for attr in ("fill", "stroke"):
+            local_value = _get_attr_or_style(element, attr, local_style)
+            inherited_value = (inherited_style or {}).get(attr)
+            if (
+                local_value == "inherit"
+                and self._extract_gradient_id(inherited_value) in self._pattern_elements
+            ):
+                merged_style[attr] = inherited_value
+            elif _is_current_color(local_value) or (
+                local_value == "inherit" and _is_current_color(inherited_value)
+            ):
+                merged_style[attr] = "currentColor"
+            elif local_value is not None and (
+                attr in merged_style
+                or self._extract_gradient_id(local_value) in self._pattern_elements
+            ):
+                merged_style[attr] = local_value
+
     @force_nodocument
     def build_switch(
         self, switch: "Element", inherited_style: Optional[dict[str, Any]] = None
@@ -3028,6 +3041,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
+        self._merge_inherited_paints(switch, local_style, inherited_style, merged_style)
         pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
         apply_styles(
