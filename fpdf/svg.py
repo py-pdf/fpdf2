@@ -122,6 +122,42 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     return value
 
 
+# a var(), with an optional fallback that can contain parentheses, as in rgb()
+CSS_VAR_RE = re.compile(
+    r"var\(\s*(--[\w-]+)\s*(?:,([^()]*(?:\([^()]*\)[^()]*)*))?\)", re.IGNORECASE
+)
+# to stop at custom properties that reference each other in a cycle
+_MAX_CSS_VAR_SUBSTITUTIONS = 16
+_MAX_CSS_VAR_LENGTH = 10_000
+
+
+def _substitute_css_var(value: str, properties: dict[str, str]) -> Optional[str]:
+    """
+    A value with each var() replaced by the custom property it names, or else by its
+    fallback; None if it is invalid: without either, or with a cycle.
+    """
+    for _ in range(_MAX_CSS_VAR_SUBSTITUTIONS):
+        if "var(" not in value.lower():
+            return value.strip()
+        invalid = False
+
+        def replace(match: re.Match[str]) -> str:
+            nonlocal invalid
+            name, fallback = match.groups()
+            if name in properties:
+                return properties[name]
+            if fallback is not None:
+                return fallback
+            invalid = True
+            return ""
+
+        substituted = CSS_VAR_RE.sub(replace, value)
+        if invalid or substituted == value or len(substituted) > _MAX_CSS_VAR_LENGTH:
+            return None
+        value = substituted
+    return None
+
+
 _IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
 
 
@@ -667,18 +703,24 @@ def apply_styles(
                 style[key] = norm_value
     stylable.style.auto_close = False
 
+    def declared(name: str) -> Optional[str]:
+        value = _normalize_css_value(style.get(name))
+        if value is None:
+            value = _normalize_css_value(svg_element.attrib.get(name))
+        if isinstance(value, str) and "var(" in value.lower():
+            # not resolved by SVGObject._style_map_for() against the custom
+            # properties: its fallback, or else not set
+            value = _substitute_css_var(value, {})
+        return value
+
     if allow_fill_and_stroke:
         for attr_name, converter in svg_attr_map.items():
-            attr_value = _normalize_css_value(style.get(attr_name))
-            if attr_value is None:
-                attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+            attr_value = declared(attr_name)
             if attr_value is not None:
                 setattr(stylable.style, *converter(attr_value))
 
     # handle this separately for now
-    opacity_str = _normalize_css_value(style.get("opacity"))
-    if opacity_str is None:
-        opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
+    opacity_str = declared("opacity")
     if opacity_str is not None:
         # out-of-range values are clamped, as for fill-opacity and stroke-opacity
         opacity = clamp_float(0.0, 1.0)(opacity_str)
@@ -686,9 +728,7 @@ def apply_styles(
         stylable.style.stroke_opacity = opacity
 
     # in SVG 2 transform is also a CSS property, which wins over the attribute
-    tfstr = _normalize_css_value(style.get("transform"))
-    if tfstr is None:
-        tfstr = svg_element.attrib.get("transform")
+    tfstr = declared("transform")
     if tfstr:
         stylable.transform = convert_transforms(tfstr)
 
@@ -1673,6 +1713,7 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
+        self._custom_properties_cache: dict["Element", dict[str, str]] = {}
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -1872,7 +1913,9 @@ class SVGObject:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
         return display is not None and display.strip().lower() == "none"
 
-    def _style_map_for(self, tag: "Element") -> dict[str, Any]:
+    def _style_map_for(
+        self, tag: "Element", substitute_vars: bool = True
+    ) -> dict[str, Any]:
         style_map: dict[str, Any] = {}
         # an !important declaration of a stylesheet wins over a normal inline one
         important: set[str] = set()
@@ -1921,7 +1964,59 @@ class SVGObject:
                 norm_value = _normalize_css_value(tag.attrib.get(attr))
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
+        if substitute_vars:
+            self._substitute_css_vars(tag, style_map)
         return style_map
+
+    def _custom_properties(self, tag: "Element") -> dict[str, str]:
+        """The CSS custom properties, such as --color, of an element and its ancestors."""
+        cache = self._custom_properties_cache
+        chain: list["Element"] = []
+        ancestor: Optional["Element"] = tag
+        while ancestor is not None and ancestor not in cache:
+            chain.append(ancestor)
+            ancestor = self._pattern_parents.get(ancestor)
+        properties = cache[ancestor] if ancestor is not None else {}
+        # from the outermost ancestor, so that the nearest declaration wins
+        for element in reversed(chain):
+            own = {
+                key: value
+                for key, value in self._style_map_for(element, False).items()
+                if key.startswith("--")
+            }
+            if own:
+                properties = {**properties, **own}
+            cache[element] = properties
+        return properties
+
+    def _substitute_css_vars(self, tag: "Element", style_map: dict[str, Any]) -> None:
+        """
+        Replace the var() of the style of an element, or of its attributes, as in the
+        fill="var(--fill-0, #171D25)" of Figma, with the value of the custom property,
+        or else its fallback. A value left invalid, with neither, is inherited.
+        """
+        declared = {
+            key: value
+            for key, value in style_map.items()
+            if isinstance(value, str) and "var(" in value.lower()
+        }
+        for key, value in tag.attrib.items():
+            if key not in style_map and "var(" in value.lower():
+                declared[key] = value
+        if not declared:
+            return
+        properties = self._custom_properties(tag)
+        for key, value in declared.items():
+            if key.startswith("--"):
+                continue
+            substituted = _substitute_css_var(value, properties)
+            if substituted is not None:
+                style_map[key] = substituted
+            elif key in svg_attr_map:
+                # invalid when computed: not set, so inherited
+                style_map[key] = "inherit"
+            else:
+                style_map.pop(key, None)
 
     @force_nodocument
     @staticmethod
