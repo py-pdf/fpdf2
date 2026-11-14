@@ -507,6 +507,17 @@ test_svg_transforms = (
         no_error(),
         id="multiple",
     ),
+    # CSS writes the arguments with units, which were ignored
+    pytest.param(
+        "rotate(90deg) translate(4px, 1in)",
+        Transform.translation(3, 72).rotate_d(90),
+        no_error(),
+        id="units",
+    ),
+    pytest.param("rotate(0.25turn)", Transform.rotation_d(90), no_error(), id="turn"),
+    pytest.param(
+        "scale(50%, 200%)", Transform.scaling(0.5, 2), no_error(), id="scale percent"
+    ),
 )
 
 test_svg_transform_documents = (
@@ -630,6 +641,19 @@ test_svg_attribute_conversion = (
         Gs(),
         pytest.raises(ValueError),
         id="invalid oklch() color",
+    ),
+    pytest.param(
+        # as Inkscape writes, e.g. in the icon of Deluge
+        '<path fill="#094491 icc-color(sRGB, 0.18046845, 0.27837034, 0.41960784)"/>',
+        Gs(fill_color="#094491"),
+        no_error(),
+        id="fill color with an ICC color",
+    ),
+    pytest.param(
+        '<path stroke="red ICC-COLOR(sRGB-IEC61966-2, 0.1, 1, 0, 0)"/>',
+        Gs(stroke_color="#f00"),
+        no_error(),
+        id="stroke color name with an ICC color",
     ),
     pytest.param(
         '<path fill="#0007"/>',
@@ -1165,6 +1189,30 @@ svg_path_directives = (
         "M 0 1 a5.168 5.168 0 013.06-1.837",
         [M(0, 1), A(P(5.168, 5.168), 0.0, False, True, P(3.06, -0.837))],
         id="arc with joined arguments",  # cf. issue #450
+    ),
+    # an error is rendered up to the last correct command, as in browsers
+    pytest.param(
+        "M 0 1 L 2 3 Z 4 5", [M(0, 1), L(2, 3), Z()], id="numbers after closepath"
+    ),
+    pytest.param("M 0 1 L 2 3 L", [M(0, 1), L(2, 3)], id="command without numbers"),
+    pytest.param("M 0 1 L 2 3 A", [M(0, 1), L(2, 3)], id="arc without numbers"),
+    pytest.param(
+        "M 0 1 L 2 3 A 5 5 0 0", [M(0, 1), L(2, 3)], id="arc without all its numbers"
+    ),
+    pytest.param(
+        "M 0 1 L 2 3 A 5 5 0 0 0 20 0 5",
+        [M(0, 1), L(2, 3), A(P(5, 5), 0, False, False, P(20, 0))],
+        id="repeated arc without all its numbers",
+    ),
+    pytest.param(
+        "M 0 1 L 2 3 4 A",
+        [M(0, 1), L(2, 3)],
+        id="repeated line without all its numbers",
+    ),
+    pytest.param(
+        "M 0 1 L 2 3 Z 4 A 5",
+        [M(0, 1), L(2, 3), Z()],
+        id="numbers after closepath, then an arc without its numbers",
     ),
 )
 
