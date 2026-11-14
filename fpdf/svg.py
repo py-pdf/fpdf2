@@ -1104,6 +1104,9 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
     return styles
 
 
+# the paints of the paint-order property, in their usual order
+_PAINTS = ("fill", "stroke", "markers")
+
 # A universal selector or an element name, such as "*" or "rect"
 CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
 
@@ -1780,6 +1783,7 @@ class SVGObject:
             "font-size",
             "font-style",
             "font-weight",
+            "paint-order",
             "text-anchor",
             "white-space",
         )
@@ -2535,11 +2539,11 @@ class SVGObject:
                 )
                 self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "path"):
-                self.build_path(child)
+                self._apply_paint_order(self.build_path(child), child, None)
             elif child.tag in xmlns_lookup("svg", "image"):
                 self.build_image(child)
             elif child.tag in shape_tags:
-                self.build_shape(child)
+                self._apply_paint_order(self.build_shape(child), child, None)
             elif child.tag in xmlns_lookup("svg", "linearGradient"):
                 self._parse_linear_gradient(child)
             elif child.tag in xmlns_lookup("svg", "radialGradient"):
@@ -2770,11 +2774,15 @@ class SVGObject:
         elif child.tag in xmlns_lookup("svg", "path"):
             path = self.build_path(child)
             self._apply_inherited_pattern(path, child, inherited_style)
-            pdf_group.add_item(path, False)
+            pdf_group.add_item(
+                self._apply_paint_order(path, child, inherited_style), False
+            )
         elif child.tag in shape_tags:
             path = self.build_shape(child)
             self._apply_inherited_pattern(path, child, inherited_style)
-            pdf_group.add_item(path, False)
+            pdf_group.add_item(
+                self._apply_paint_order(path, child, inherited_style), False
+            )
         elif child.tag in xmlns_lookup("svg", "use"):
             pdf_group.add_item(self.build_xref(child, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "image"):
@@ -2782,12 +2790,45 @@ class SVGObject:
         elif child.tag in xmlns_lookup("svg", "text"):
             text_path = self.build_text(child, inherited_style)
             if text_path:
-                pdf_group.add_item(text_path, False)
+                pdf_group.add_item(
+                    self._apply_paint_order(text_path, child, inherited_style), False
+                )
         else:
             LOGGER.warning(
                 "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
                 without_ns(child.tag),
             )
+
+    def _apply_paint_order(
+        self,
+        path: PaintedPath,
+        element: "Element",
+        inherited_style: Optional[dict[str, Any]],
+    ) -> PaintedPath | GraphicsContext:
+        """
+        A path or a text whose paint-order paints its stroke before its fill, as in the
+        paint-order="markers stroke fill" of Inkscape, as a group of a copy with only
+        its stroke, then a copy with only its fill.
+        """
+        value = _get_attr_or_style(element, "paint-order", self._style_map_for(element))
+        if value is None or value.strip().lower() == "inherit":
+            value = (inherited_style or {}).get("paint-order")
+        if value is None:
+            return path
+        # the paints that are not given follow in their usual order
+        order = [token for token in value.lower().split() if token in _PAINTS]
+        order += [paint for paint in _PAINTS if paint not in order]
+        if order.index("stroke") > order.index("fill"):
+            return path
+        stroke = deepcopy(path)
+        stroke.style.fill_color = None
+        fill = deepcopy(path)
+        fill.style.stroke_color = None
+        group = GraphicsContext()
+        group.add_item(stroke, False)
+        group.add_item(fill, False)
+        self.update_xref(element.attrib.get("id"), group)
+        return group
 
     @force_nodocument
     def build_switch(
