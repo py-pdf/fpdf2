@@ -2513,6 +2513,8 @@ class TextRun(NamedTuple):
     abs_y: Optional[float] = None
     transform: Optional[Transform] = None
     run_style: Optional[GraphicsStyle] = None
+    # added after each character, as the letter-spacing of CSS
+    letter_spacing: float = 0.0
 
 
 class Text(NamedTuple):
@@ -2554,7 +2556,7 @@ class Text(NamedTuple):
             pen_x += run.dx
             pen_y += run.dy
             # Fallback width estimation: ~0.5em per glyph
-            approx_width = 0.5 * run.size * max(0, len(run.text))
+            approx_width = (0.5 * run.size + run.letter_spacing) * max(0, len(run.text))
             positions.append((pen_x, pen_y, approx_width))
             min_left = min(min_left, pen_x)
             max_right = max(max_right, pen_x + approx_width)
@@ -2662,6 +2664,7 @@ class Text(NamedTuple):
                             ),
                         )
             _, width = font.get_text_width(run.text, run.size, None)
+            width += run.letter_spacing * len(run.text)
             if run.abs_x is not None:
                 pen_x = run.abs_x
             if run.abs_y is not None:
@@ -2772,10 +2775,20 @@ class Text(NamedTuple):
                     f"/F{font.i} {number_to_str(run.size)} Tf",
                     f"{number_to_str(tr)} Tr",
                     f"1 0 0 -1 {number_to_str(run_x + anchor_offset)} {number_to_str(run_y)} Tm",
-                    font.encode_text(run.text),
-                    "ET",
                 ]
             )
+            if run.letter_spacing:
+                # the character spacing is reset, as it outlasts the text object
+                run_ops.extend(
+                    [
+                        f"{number_to_str(run.letter_spacing)} Tc",
+                        font.encode_text(run.text),
+                        "0 Tc",
+                        "ET",
+                    ]
+                )
+            else:
+                run_ops.extend([font.encode_text(run.text), "ET"])
 
             if run.run_style is not None:
                 run_ops = ["q"] + run_ops + ["Q"]
