@@ -104,6 +104,36 @@ def test_optional_converter():
     assert conv is canary
 
 
+@pytest.mark.parametrize(
+    "color, rgba",
+    [
+        # as in the social preview images of react-window
+        ("oklch(62.8% 0.2577 29.23)", (1, 0, 0, None)),
+        ("oklab(0.452 -0.0325 -0.3115)", (0, 0, 1, None)),
+        ("OKLCH(86.6% 0.295 142.5)", (0, 1, 0, None)),
+        ("oklch(100% 0 none / 25%)", (1, 1, 1, 0.25)),
+        ("oklch(0% 0 0 / 0.5)", (0, 0, 0, 0.5)),
+        # "none" is 0: without chroma, a gray
+        ("oklch(60% none 120)", (0.5, 0.5, 0.5, None)),
+        # outside sRGB, the color is clipped
+        ("oklab(50% 100% -100%)", (0.8, 0, 1, None)),
+        # an alpha of "none" is 0
+        ("oklch(50% 0.1 30 / none)", (0.58, 0.29, 0.25, 0)),
+        # a negative chroma is 0, a gray
+        ("oklch(60% -0.2 30)", (0.5, 0.5, 0.5, None)),
+        # the lightness is clamped, and 0 and 1 are black and white
+        ("oklab(100% 0.2 0.1)", (1, 1, 1, None)),
+        ("oklab(120% 0 0)", (1, 1, 1, None)),
+        ("oklch(0% 0.3 140)", (0, 0, 0, None)),
+        ("oklab(-5% 0.1 0)", (0, 0, 0, None)),
+    ],
+)
+def test_svgcolor_oklab_and_oklch(color, rgba):
+    result = fpdf.svg.svgcolor(color)
+    assert (result.r, result.g, result.b) == pytest.approx(rgba[:3], abs=0.01)
+    assert result.a == rgba[3]
+
+
 class TestSVGPathParsing:
     @pytest.mark.parametrize("path, result", parameters.svg_path_directives)
     def test_parsing_all_directives(self, path, result):
@@ -945,6 +975,68 @@ class TestSVGObject:
         assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == font_sizes
 
     @pytest.mark.parametrize(
+        "css",
+        [
+            "@import url(theme.css); .a { fill: red }",
+            # a ";" in the URL, as Google Fonts writes font weights
+            (
+                "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700');"
+                ".a { fill: red }"
+            ),
+            '@charset "utf-8"; @import "theme.css" screen; .a { fill: red }',
+            # a ")" or ";" in a quoted URL, and escaped quotes and parentheses
+            '@import url("theme(x);dark.css"); .a { fill: red }',
+            r'@import "x\";y.css"; @import url(a\);b.css); .a { fill: red }',
+            # an at-rule left unterminated at the end
+            ".a { fill: red } @import url(theme.css)",
+        ],
+    )
+    def test_svg_css_rules_after_at_statements(self, css):
+        # an @import or @charset before the rules no longer hides the first of them
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "css",
+        [
+            ".a { fill: url(#paint@dark); stroke: red; }",
+            '.a { font-family: "x;@a"; stroke: red; }',
+            ".a { font-family: x\\@a; stroke: red; }",
+            "@media screen { .a { fill: url(#p@d); stroke: red; } }",
+            "@import url(theme.css); .a { fill: url(#p@d); stroke: red; }",
+        ],
+    )
+    def test_svg_css_at_sign_inside_a_declaration(self, css):
+        # only an @ that starts a statement begins an at-rule
+        assert fpdf.svg._strip_css_at_statements(css) == css.replace(
+            "@import url(theme.css);", ""
+        )
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.stroke_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
+        "start, repeated, end",
+        [
+            ("@", "a", " {}"),
+            ("", "@a ", "{}"),
+            ("", '@x "', "\n"),
+        ],
+    )
+    def test_svg_css_at_statements_linear_time(self, start, repeated, end):
+        # at-rules without a ";" are scanned once, not again from every "@"
+        css = start + repeated * 50_000 + end + " .a { fill: red }"
+        stripped = fpdf.svg._strip_css_at_statements(css)
+        assert stripped.endswith(".a { fill: red }")
+
+    @pytest.mark.parametrize(
         "text, font_sizes",
         [
             # the CSS Fonts scale around medium, 16px (12pt)
@@ -1004,6 +1096,62 @@ class TestSVGObject:
         )
         use = svg.base_group.path_items[0]
         assert use.transform == fpdf.drawing.Transform.translation(15, 72)
+
+    @pytest.mark.parametrize(
+        "content",
+        [
+            # a clone of a clone, as Inkscape writes them
+            (
+                '<rect id="square" width="10" height="10"/>'
+                '<use id="clone" href="#square" x="10"/>'
+                '<use href="#clone" y="20"/>'
+            ),
+            (
+                '<defs><rect id="square" width="10" height="10"/>'
+                '<use id="clone" href="#square" x="10"/></defs>'
+                '<use href="#clone" y="20"/>'
+            ),
+            # references to elements defined later, as in browsers
+            (
+                '<use href="#clone" y="20"/><use id="clone" href="#square" x="10"/>'
+                '<rect id="square" width="10" height="10"/>'
+            ),
+        ],
+    )
+    def test_svg_use_of_use(self, content):
+        """A <use> can reference another <use>, defined before or after it."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f"{content}</svg>"
+        )
+        outer = next(
+            item
+            for item in svg.base_group.path_items
+            if item.transform == fpdf.drawing.Transform.translation(0, 20)
+        )
+        assert outer.transform == fpdf.drawing.Transform.translation(0, 20)
+        inner = outer.path_items[0]
+        assert inner.transform == fpdf.drawing.Transform.translation(10, 0)
+        assert isinstance(inner.path_items[0], fpdf.drawing.PaintedPath)
+
+    @pytest.mark.parametrize(
+        "referenced",
+        [
+            '<rect id="hidden" display="none" width="10" height="10"/>',
+            # and of an id that is not defined
+            "",
+        ],
+    )
+    def test_svg_use_of_use_of_nothing(self, referenced, caplog):
+        """A <use> of a <use> that draws nothing draws nothing either."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f'<defs>{referenced}<use id="clone" href="#hidden"/></defs>'
+            '<use href="#clone"/></svg>'
+        )
+        outer = svg.base_group.path_items[0]
+        assert outer.path_items[0].path_items == []
+        assert "#clone" not in caplog.text
 
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
