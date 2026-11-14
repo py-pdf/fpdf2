@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
-from fontTools.ttLib import TTCollection, woff2
+from fpdf.enums import FontDescriptorFlags
+from fontTools.ttLib import TTCollection, TTFont, woff2
 from test.conftest import LOREM_IPSUM, assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
@@ -164,6 +165,27 @@ def test_add_font_missing_notdef_glyph(caplog):
         "TrueType Font 'roboto' is missing the '.notdef' glyph. "
         "Fallback glyph will be provided."
     ) in caplog.text
+
+
+@pytest.mark.parametrize(
+    "fname, mac_style, bold",
+    [("DejaVuSans.ttf", 0, False), ("DejaVuSans-Bold.ttf", 1, True)],
+)
+def test_add_font_without_os2_table(tmp_path, fname, mac_style, bold):
+    # The OS/2 table is optional in Apple fonts, such as the Courier.ttc of macOS
+    font = TTFont(HERE / fname)
+    del font["OS/2"]
+    font["head"].macStyle = mac_style
+    font.save(tmp_path / fname)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="DejaVu", fname=tmp_path / fname)
+    pdf.set_font("DejaVu", "S", 12)
+    pdf.cell(text="struck out")
+    pdf.output()
+    font = pdf.fonts["dejavu"]
+    assert (font.sp, font.ss) == (250, 50)  # as for the core fonts
+    assert bool(font.desc.flags & FontDescriptorFlags.FORCE_BOLD) == bold
 
 
 def test_font_missing_glyphs(caplog):
