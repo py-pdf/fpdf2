@@ -476,12 +476,17 @@ class TTFFont:
             self.scale * self.ttfont["hmtx"].metrics[".notdef"][0]
         )
 
-        os2_table = self.ttfont["OS/2"]
+        # The OS/2 table is optional in Apple fonts, such as the Courier.ttc of macOS
+        os2_table = self.ttfont["OS/2"] if "OS/2" in self.ttfont else None
         post_table = self.ttfont["post"]
+        if os2_table is not None:
+            weight_class = os2_table.usWeightClass
+        else:
+            weight_class = 700 if self.ttfont["head"].macStyle & 1 else 400
 
-        try:
-            cap_height = os2_table.sCapHeight
-        except AttributeError:
+        # sCapHeight is only in version 2 and later of the OS/2 table
+        cap_height = getattr(os2_table, "sCapHeight", None)
+        if cap_height is None:
             cap_height = self.ttfont["hhea"].ascent
 
         # entry for the PDF font descriptor specifying various characteristics of the font
@@ -490,7 +495,7 @@ class TTFFont:
             flags |= FontDescriptorFlags.FIXED_PITCH
         if post_table.italicAngle != 0:
             flags |= FontDescriptorFlags.ITALIC
-        if os2_table.usWeightClass >= 600:
+        if weight_class >= 600:
             flags |= FontDescriptorFlags.FORCE_BOLD
 
         self.desc = PDFFontDescriptor(
@@ -503,7 +508,7 @@ class TTFFont:
                 f" {self.ttfont['head'].xMax * self.scale:.0f} {self.ttfont['head'].yMax * self.scale:.0f}]"
             ),
             italic_angle=int(post_table.italicAngle),
-            stem_v=round(50 + int(pow((os2_table.usWeightClass / 65), 2))),
+            stem_v=round(50 + int(pow((weight_class / 65), 2))),
             missing_width=default_width,
         )
 
@@ -555,8 +560,12 @@ class TTFFont:
         self.name = re.sub("[ ()]", "", self.ttfont["name"].getBestFullName())
         self.up = round(post_table.underlinePosition * self.scale)
         self.ut = round(post_table.underlineThickness * self.scale)
-        self.sp = round(os2_table.yStrikeoutPosition * self.scale)
-        self.ss = round(os2_table.yStrikeoutSize * self.scale)
+        if os2_table is not None:
+            self.sp = round(os2_table.yStrikeoutPosition * self.scale)
+            self.ss = round(os2_table.yStrikeoutSize * self.scale)
+        else:  # as for the core fonts
+            self.sp = 250
+            self.ss = 50
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self)
         self.palette_index = palette_index if palette_index is not None else 0
