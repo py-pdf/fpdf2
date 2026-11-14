@@ -327,6 +327,199 @@ class TestSVGObject:
         assert (svg.width, svg.height) == (expected, 2 * expected)
 
     @pytest.mark.parametrize(
+        "shape, expected",
+        [
+            ('<g font-size="10"><rect width="2em" height="1ex"/></g>', (0, 0, 20, 5)),
+            ('<rect width="2em" height="1em" style="font-size:9pt"/>', (0, 0, 18, 9)),
+            (
+                '<g font-size="10"><g font-size="2em"><rect x="1em" width="1em" height="1em"/></g></g>',
+                (20, 0, 20, 20),
+            ),
+            ('<rect width="1em" height="1ex"/>', (0, 0, 12, 6)),  # 16px
+        ],
+    )
+    def test_shape_em_lengths_use_font_size(self, shape, expected):
+        # as in CSS, em and ex in the lengths of a shape are relative to its font size
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg">{shape}</svg>'
+        )
+        group = svg.base_group
+        while not isinstance(group.path_items[0], fpdf.drawing.PaintedPath):
+            group = group.path_items[0]
+        rect = group.path_items[0]._root_graphics_context.path_items[1]
+        assert (rect.org.x, rect.org.y, rect.size.x, rect.size.y) == pytest.approx(
+            expected
+        )
+
+    def test_clipping_path_em_lengths_use_font_size(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><clipPath id="c">'
+            '<rect font-size="40" width="1em" height="1ex"/></clipPath>'
+            '<rect width="5" height="5" clip-path="url(#c)"/></svg>'
+        )
+        rect = svg.cross_references["#c"]._root_graphics_context.path_items[1]
+        assert (rect.size.x, rect.size.y) == pytest.approx((40, 20))
+
+    @pytest.mark.parametrize("root, use", [("", "40"), (' font-size="20"', "2em")])
+    def test_clipping_path_use_em_lengths_use_its_font_size(self, root, use):
+        # the shape a <use> in a <clipPath> references inherits the font size of the <use>
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"{root}><defs>'
+            '<rect id="r" width="1em" height="1ex"/></defs><clipPath id="c">'
+            f'<use href="#r" font-size="{use}"/></clipPath>'
+            '<rect width="5" height="5" clip-path="url(#c)"/></svg>'
+        )
+        rect = svg.cross_references["#c"]._root_graphics_context.path_items[1]
+        assert (rect.size.x, rect.size.y) == pytest.approx((40, 20))
+
+    def test_clipping_path_polygon(self):
+        # a <polygon> has no em or ex lengths to resolve
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><clipPath id="c">'
+            '<polygon points="0,0 10,0 10,10"/></clipPath>'
+            '<rect width="5" height="5" clip-path="url(#c)"/></svg>'
+        )
+        points = svg.cross_references["#c"]._root_graphics_context.path_items
+        assert [(p.pt.x, p.pt.y) for p in points[:3]] == [(0, 0), (10, 0), (10, 10)]
+
+    def test_defs_em_lengths_use_font_size(self):
+        # a shape in <defs> inherits the font size of the root, like a sibling of <defs>
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" '
+            'xmlns:xlink="http://www.w3.org/1999/xlink" font-size="40">'
+            '<defs><rect id="r" width="1em" height="1ex"/></defs>'
+            '<use xlink:href="#r"/><rect width="1em" height="1ex"/></svg>'
+        )
+        used, sibling = (
+            item._root_graphics_context.path_items[1]
+            for item in (
+                svg.cross_references["#r"],
+                svg.base_group.path_items[1],
+            )
+        )
+        assert (used.size.x, used.size.y) == pytest.approx((40, 20))
+        assert (sibling.size.x, sibling.size.y) == pytest.approx((40, 20))
+
+    @pytest.mark.parametrize(
+        "content",
+        [
+            '<defs><g id="r"><rect width="1em" height="1ex"/></g></defs>',
+            '<defs><symbol id="r"><rect width="1em" height="1ex"/></symbol></defs>',
+            '<defs><switch id="r"><rect width="1em" height="1ex"/></switch></defs>',
+            '<defs><a id="r"><rect width="1em" height="1ex"/></a></defs>',
+            '<symbol id="r"><rect width="1em" height="1ex"/></symbol>',
+        ],
+    )
+    def test_grouped_defs_em_lengths_use_font_size(self, content):
+        # a shape in a group or a symbol that is only drawn by a <use> also
+        # inherits the font size of the root
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" font-size="40">'
+            f'{content}<use href="#r"/></svg>'
+        )
+        group = svg.cross_references["#r"]
+        rect = group.path_items[0]._root_graphics_context.path_items[1]
+        assert (rect.size.x, rect.size.y) == pytest.approx((40, 20))
+
+    @pytest.mark.parametrize(
+        "content, sizes",
+        [
+            (
+                '<g font-size="40"><rect font-size="inherit" width="1em" height="1ex"/></g>',
+                [(40, 20)],
+            ),
+            (
+                (
+                    '<g font-size="40"><g font-size="inherit">'
+                    '<rect width="1em" height="1ex"/></g></g>'
+                ),
+                [(40, 20)],
+            ),
+            # nothing to inherit: the initial value, medium
+            ('<rect font-size="inherit" width="1em" height="1ex"/>', [(12, 6)]),
+            # the copy of a <use> inherits the font size of the <use>
+            (
+                (
+                    '<defs><rect id="r" width="1em" height="1ex"/></defs>'
+                    '<use href="#r" font-size="40"/>'
+                ),
+                [(40, 20)],
+            ),
+            (
+                (
+                    '<defs><rect id="r" width="1em" height="1ex"/></defs>'
+                    '<g font-size="40"><use href="#r"/></g><use href="#r"/>'
+                ),
+                [(40, 20), (12, 6)],
+            ),
+            (
+                (
+                    '<defs><g id="r"><rect width="1em" height="1ex"/></g></defs>'
+                    '<use href="#r" font-size="2em"/>'
+                ),
+                [(24, 12)],
+            ),
+            # also in a <symbol> or a <switch>, or through another <use>
+            (
+                (
+                    '<defs><symbol id="r"><rect width="1em" height="1ex"/></symbol>'
+                    '</defs><use href="#r" font-size="40"/>'
+                ),
+                [(40, 20)],
+            ),
+            (
+                (
+                    '<defs><switch id="r"><rect width="1em" height="1ex"/></switch>'
+                    '</defs><use href="#r" font-size="40"/>'
+                ),
+                [(40, 20)],
+            ),
+            (
+                (
+                    '<defs><rect id="r" width="1em" height="1ex"/>'
+                    '<use id="u" href="#r"/></defs><use href="#u" font-size="40"/>'
+                ),
+                [(40, 20)],
+            ),
+        ],
+    )
+    def test_em_lengths_with_inherited_or_use_font_size(self, content, sizes):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg">{content}</svg>'
+        )
+
+        def rect_sizes(group):
+            for item in group.path_items:
+                if isinstance(item, fpdf.drawing.PaintedPath):
+                    rect = item._root_graphics_context.path_items[1]
+                    yield (rect.size.x, rect.size.y)
+                else:
+                    yield from rect_sizes(item)
+
+        assert list(rect_sizes(svg.base_group)) == pytest.approx(sizes)
+
+    def test_text_font_size_inherit(self):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<g font-size="40"><text y="10" font-size="inherit">a</text></g>'
+            '<text y="20" font-size="inherit">b</text></svg>'
+        )
+        svg.draw_to_page(pdf)
+        contents = bytes(pdf.output())
+        assert re.findall(rb"/F\d+ ([\d.]+) Tf", contents) == [b"40", b"12"]
+
+    def test_line_em_lengths_use_font_size(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<line x2="1ex" y2="1em" font-size="20" stroke="red"/></svg>'
+        )
+        line = svg.base_group.path_items[0]._root_graphics_context.path_items
+        assert (line[1].pt.x, line[1].pt.y) == pytest.approx((10, 20))
+
+    @pytest.mark.parametrize(
         "size", ['width="auto" height="auto"', 'width="AUTO"', 'height=" auto "']
     )
     def test_document_size_auto(self, size):
