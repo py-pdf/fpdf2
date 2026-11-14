@@ -505,6 +505,20 @@ def svg_paint(colorstr: Optional[str]) -> Any:
     return optional(colorstr, svgcolor)
 
 
+@force_nodocument
+def svg_line_join(joinstr: str) -> str:
+    """
+    A stroke-linejoin. PDF has no line join like "miter-clip" or "arcs" of SVG 2,
+    which extend a miter join past the miter limit, so they are drawn as "miter",
+    as in browsers that do not support them; JPEXS Free Flash Decompiler writes
+    "miter-clip".
+    https://www.w3.org/TR/SVG2/painting.html#LineJoin
+    """
+    if joinstr.strip().lower() in ("miter-clip", "arcs"):
+        return "miter"
+    return joinstr
+
+
 # this is mostly SVG 1.1 stuff. SVG 2 changed some of this and the documentation is much
 # harder to assemble into something coherently understandable
 svg_attr_map: dict[str, Any] = {
@@ -543,7 +557,10 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#StrokeLinecapProperty
     "stroke-linecap": lambda capstr: ("stroke_cap_style", inheritable(capstr)),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeLinejoinProperty
-    "stroke-linejoin": lambda joinstr: ("stroke_join_style", inheritable(joinstr)),
+    "stroke-linejoin": lambda joinstr: (
+        "stroke_join_style",
+        inheritable(joinstr, svg_line_join),
+    ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeMiterlimitProperty
     "stroke-miterlimit": lambda limstr: (
         "stroke_miter_limit",
