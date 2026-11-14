@@ -1097,6 +1097,62 @@ class TestSVGObject:
         use = svg.base_group.path_items[0]
         assert use.transform == fpdf.drawing.Transform.translation(15, 72)
 
+    @pytest.mark.parametrize(
+        "content",
+        [
+            # a clone of a clone, as Inkscape writes them
+            (
+                '<rect id="square" width="10" height="10"/>'
+                '<use id="clone" href="#square" x="10"/>'
+                '<use href="#clone" y="20"/>'
+            ),
+            (
+                '<defs><rect id="square" width="10" height="10"/>'
+                '<use id="clone" href="#square" x="10"/></defs>'
+                '<use href="#clone" y="20"/>'
+            ),
+            # references to elements defined later, as in browsers
+            (
+                '<use href="#clone" y="20"/><use id="clone" href="#square" x="10"/>'
+                '<rect id="square" width="10" height="10"/>'
+            ),
+        ],
+    )
+    def test_svg_use_of_use(self, content):
+        """A <use> can reference another <use>, defined before or after it."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f"{content}</svg>"
+        )
+        outer = next(
+            item
+            for item in svg.base_group.path_items
+            if item.transform == fpdf.drawing.Transform.translation(0, 20)
+        )
+        assert outer.transform == fpdf.drawing.Transform.translation(0, 20)
+        inner = outer.path_items[0]
+        assert inner.transform == fpdf.drawing.Transform.translation(10, 0)
+        assert isinstance(inner.path_items[0], fpdf.drawing.PaintedPath)
+
+    @pytest.mark.parametrize(
+        "referenced",
+        [
+            '<rect id="hidden" display="none" width="10" height="10"/>',
+            # and of an id that is not defined
+            "",
+        ],
+    )
+    def test_svg_use_of_use_of_nothing(self, referenced, caplog):
+        """A <use> of a <use> that draws nothing draws nothing either."""
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50">'
+            f'<defs>{referenced}<use id="clone" href="#hidden"/></defs>'
+            '<use href="#clone"/></svg>'
+        )
+        outer = svg.base_group.path_items[0]
+        assert outer.path_items[0].path_items == []
+        assert "#clone" not in caplog.text
+
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
         svg = fpdf.svg.SVGObject(

@@ -2666,6 +2666,8 @@ class SVGObject:
                 self.build_image(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
+            elif child.tag in xmlns_lookup("svg", "use"):
+                self.build_xref(child)
             elif child.tag in xmlns_lookup("svg", "linearGradient"):
                 self._parse_linear_gradient(child)
             elif child.tag in xmlns_lookup("svg", "radialGradient"):
@@ -2710,8 +2712,6 @@ class SVGObject:
                 )
         return group
 
-    # this assumes xrefs only reference already-defined ids.
-    # I don't know if this is required by the SVG spec.
     @force_nodocument
     def build_xref(
         self, xref: "Element", inherited_style: Optional[dict[str, Any]] = None
@@ -2730,14 +2730,21 @@ class SVGObject:
         else:
             raise ValueError(f"use {xref} doesn't contain known xref attribute")
 
+        if ref not in self.cross_references and ref in self._elements_by_id:
+            # A <use> can reference an element defined after it, as in browsers:
+            # build that element now, apart from its ancestors, as for <defs>
+            self._build_group_child(GraphicsContext(), self._elements_by_id[ref], {})
         try:
             referenced = self.cross_references[ref]
             referenced_cost = self._cross_reference_costs[ref]
         except KeyError:
             # Browsers draw nothing for it, and the rest of the image
             LOGGER.warning("Ignoring <use> of nonexistent ref id %s", ref)
+            self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         if ref in self._hidden_references:
+            # a <use> of this <use> draws nothing either
+            self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         referenced = deepcopy(referenced)
@@ -2785,6 +2792,8 @@ class SVGObject:
             else:
                 pdf_group.transform = placement_transform
 
+        # a <use> can itself be referenced, as Inkscape does for a clone of a clone
+        self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
 
     def _bind_reference_patterns(
