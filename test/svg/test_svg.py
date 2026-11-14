@@ -740,6 +740,26 @@ class TestSVGObject:
             pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
         )
 
+    @pytest.mark.parametrize(
+        "linejoin, join_style",
+        [
+            ("miter-clip", fpdf.enums.StrokeJoinStyle.MITER),
+            ("arcs", fpdf.enums.StrokeJoinStyle.MITER),
+            ("Miter-Clip", fpdf.enums.StrokeJoinStyle.MITER),
+            ("round", fpdf.enums.StrokeJoinStyle.ROUND),
+        ],
+    )
+    def test_svg_stroke_linejoin_svg2(self, linejoin, join_style):
+        # the line joins of SVG 2 that PDF does not have are drawn as miter
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<path d="M0 0 L10 10 L20 0" stroke="red" stroke-linejoin="{linejoin}"/>'
+            f'<path d="M0 0 L10 10" stroke="red" style="stroke-linejoin: {linejoin}"/>'
+            "</svg>"
+        )
+        for path in svg.base_group.path_items:
+            assert path.style.stroke_join_style == join_style
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 
