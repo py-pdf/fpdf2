@@ -736,6 +736,56 @@ class TestSVGObject:
         output = bytes(pdf.output()).decode("latin-1")
         assert "1 0 0 rg" in output and "0 1 0 RG" in output
 
+    @pytest.mark.parametrize(
+        "path, use, expected",
+        [
+            # context-stroke is the stroke of the <use>, also in a fill
+            (
+                'fill="context-stroke" stroke="context-fill"',
+                'fill="red" stroke="lime"',
+                {"fill_color": "#0f0", "stroke_color": "#f00"},
+            ),
+            (
+                'style="fill: context-stroke"',
+                'style="stroke: lime"',
+                {"fill_color": "#0f0"},
+            ),
+            (
+                'fill="context-fill" fill-opacity="context-stroke-opacity"',
+                'fill="red" stroke-opacity="0.5"',
+                {"fill_color": "#f00", "fill_opacity": 0.5},
+            ),
+        ],
+    )
+    def test_svg_context_paints_of_the_use(self, path, use, expected):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f'<defs><path id="p" d="M0 0h5v5z" {path}/></defs>'
+            f'<use href="#p" {use}/></svg>'
+        )
+        style = svg.base_group.path_items[0].path_items[0].style
+        for attr, value in expected.items():
+            if attr.endswith("_color"):
+                value = fpdf.drawing.color_from_hex_string(value)
+            assert getattr(style, attr) == value
+
+    def test_svg_context_fill_through_a_group(self):
+        # the fill of a group between the <use> and the path does not replace it
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            '<defs><g id="p" fill="blue"><path d="M0 0h5v5z" fill="context-fill"/></g>'
+            '</defs><use href="#p" fill="red"/><use href="#p" fill="lime"/></svg>'
+        )
+        first, second = svg.base_group.path_items
+        red, lime = (
+            fpdf.drawing.color_from_hex_string(color) for color in ("#f00", "#0f0")
+        )
+        assert first.path_items[0].path_items[0].style.fill_color == red
+        assert second.path_items[0].path_items[0].style.fill_color == lime
+        # the definition keeps its context-fill
+        definition = svg.cross_references["#p"].path_items[0]
+        assert definition.style.fill_color is fpdf.drawing.GraphicsStyle.INHERIT
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 
