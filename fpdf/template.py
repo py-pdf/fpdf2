@@ -13,10 +13,10 @@ import json
 import locale
 import os
 import warnings
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, List
 
 from .deprecation import get_stack_level
-from .enums import WrapMode
+from .enums import WrapMode, XPos, YPos
 from .errors import FPDFException
 from .fpdf import FPDF
 
@@ -83,6 +83,10 @@ class FlexTemplate:
             "type": (str, type(None)),
             "x1": (int, float),
             "y1": (int, float),
+            "w": (int, float),
+            "h": (int, float),
+            "new_x": (str, type(None)),
+            "new_y": (str, type(None)),
             "x2": (int, float),
             "y2": (int, float),
             "font": (str, type(None)),
@@ -108,28 +112,47 @@ class FlexTemplate:
             # priority is optional, but we need a default for sorting.
             if not "priority" in e:
                 e["priority"] = 0
-            for k in ("name", "type", "x1", "y1", "y2"):
+            for k in ("name", "type"):
                 if k not in e:
-                    if e["type"] == "C39":
-                        # lots of legacy special casing.
-                        # We need to do that here, so that rotation and scaling
-                        # still work.
-                        if k == "x1" and "x" in e:
-                            e["x1"] = e["x"]
-                            continue
-                        if k == "y1" and "y" in e:
-                            e["y1"] = e["y"]
-                            continue
-                        if k == "y2" and "h" in e:
-                            e["y2"] = e["y1"] + e["h"]
-                            continue
                     raise KeyError(f"Mandatory key '{k}' missing in input data")
-            # x2 is optional for barcode types, but needed for offset rendering
+            # Text elements may use cursor-relative positioning and cell dimensions
+            # (w/h) instead of the legacy bounding box (x1/y1/x2/y2).
+            cursor_text = e["type"].upper() == "T" and (
+                "new_x" in e
+                or "new_y" in e
+                or "x1" not in e
+                or "y1" not in e
+                or "w" in e
+                or "h" in e
+            )
+            # Text elements may specify dimensions using w/h instead of x2/y2.
+            if e["type"].upper() == "T":
+                if "x2" not in e and "w" in e:
+                    e["x2"] = e.get("x1", 0) + e["w"]
+
+                if "y2" not in e and "h" in e and "y1" in e:
+                    e["y2"] = e["y1"] + e["h"]
+
+            if e["type"] == "C39":
+                # Preserve legacy aliases, including support for rotation/scaling.
+                if "x1" not in e and "x" in e:
+                    e["x1"] = e["x"]
+                if "y1" not in e and "y" in e:
+                    e["y1"] = e["y"]
+                if "y2" not in e and "h" in e and "y1" in e:
+                    e["y2"] = e["y1"] + e["h"]
+            # x2 is optional for barcode types and cursor-positioned text.
             if "x2" not in e:
                 if e["type"] in ["BC", "C39"]:
                     e["x2"] = 0
+            for k in ("x1", "y1", "x2", "y2"):
+                if k not in e and not cursor_text:
+                    raise KeyError(f"Mandatory key '{k}' missing in input data")
+            if cursor_text and "y2" not in e:
+                if "h" in e:
+                    e["y2"] = e.get("y1", 0) + e["h"]
                 else:
-                    raise KeyError("Mandatory key 'x2' missing in input data")
+                    e["y2"] = e.get("y1", 0)
             if not "size" in e and e["type"] == "C39":
                 if "w" in e:
                     e["size"] = e["w"]
@@ -234,10 +257,10 @@ class FlexTemplate:
             # key, converter, mandatory
             ("name", str, True),
             ("type", str, True),
-            ("x1", _varsep_float, True),
-            ("y1", _varsep_float, True),
-            ("x2", _varsep_float, True),
-            ("y2", _varsep_float, True),
+            ("x1", _varsep_float, False),
+            ("y1", _varsep_float, False),
+            ("x2", _varsep_float, False),
+            ("y2", _varsep_float, False),
             ("font", str, False),
             ("size", _varsep_float, False),
             ("bold", int, False),
@@ -252,8 +275,13 @@ class FlexTemplate:
             ("rotate", _varsep_float, False),
             ("wrapmode", str, False),
             ("keep_aspect_ratio", int, False),
+            ("w", _varsep_float, False),
+            ("h", _varsep_float, False),
+            ("new_x", str, False),
+            ("new_y", str, False),
         )
-        self.elements = []
+
+        elements: List[dict[str, Any]] = []
         if encoding is None:
             encoding = locale.getpreferredencoding()
         with open(infile, encoding=encoding) as f:
@@ -278,8 +306,8 @@ class FlexTemplate:
                         # otherwise, let the type handlers use their own defaults
                     else:
                         kargs[cfg[0]] = cfg[1](vs)  # type: ignore[operator]
-                self.elements.append(kargs)
-        self.keys = [val["name"].lower() for val in self.elements]
+                elements.append(kargs)
+        self.load_elements(elements)
 
     def __setitem__(self, name: str, value: Any) -> None:
         assert isinstance(
@@ -359,10 +387,12 @@ class FlexTemplate:
     def _text(
         self,
         *_: Any,
-        x1: float = 0,
-        y1: float = 0,
+        x1: Optional[float] = None,
+        y1: Optional[float] = None,
         x2: float = 0,
         y2: float = 0,
+        w: Optional[float] = None,
+        h: Optional[float] = None,
         text: str = "",
         font: str = "helvetica",
         size: float = 10,
@@ -375,9 +405,11 @@ class FlexTemplate:
         background: Optional[int] = None,
         multiline: Optional[bool] = None,
         wrapmode: str = "WORD",
+        new_x: Optional[str] = None,
+        new_y: Optional[str] = None,
         **__: Any,
     ) -> None:
-        if not text:
+        if not text and new_x is None and new_y is None:
             return
         pdf = self.pdf
         if pdf.text_color != _rgb_as_str(foreground):  # type: ignore[comparison-overlap]
@@ -402,10 +434,32 @@ class FlexTemplate:
         if underline:
             style += "U"
         pdf.set_font(font, style, size * scale)
-        pdf.set_xy(x1, y1)
-        width, height = x2 - x1, y2 - y1
+        # Omitted coordinates deliberately mean "leave the current cursor
+        # coordinate unchanged", not coordinate zero.
+        if x1 is not None or y1 is not None:
+            pdf.set_xy(
+                pdf.get_x() if x1 is None else x1,
+                pdf.get_y() if y1 is None else y1,
+            )
+        width = w if w is not None else x2 - (x1 if x1 is not None else pdf.get_x())
+        height = h if h is not None else y2 - (y1 if y1 is not None else pdf.get_y())
+
+        # set default values, because cell() does not know how to
+        # treat None as value for new_x, new_y
+        new_xx = XPos.RIGHT if new_x is None else new_x
+        new_yy = YPos.TOP if new_y is None else new_y
+
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill)
+            pdf.cell(
+                w=width,
+                h=height,
+                text=text,
+                border=0,
+                align=align,
+                fill=fill,
+                new_x=new_xx,
+                new_y=new_yy,
+            )
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
                 w=width,
@@ -415,6 +469,8 @@ class FlexTemplate:
                 align=align,
                 fill=fill,
                 wrapmode=WrapMode.coerce(wrapmode),
+                new_x=new_xx,
+                new_y=new_yy,
             )
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(  # type: ignore[index,assignment]
@@ -426,7 +482,16 @@ class FlexTemplate:
                 dry_run=True,
                 output="LINES",
             )[0]
-            pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill)
+            pdf.cell(
+                w=width,
+                h=height,
+                text=text,
+                border=0,
+                align=align,
+                fill=fill,
+                new_x=new_xx,
+                new_y=new_yy,
+            )
 
     def _line(
         self,
@@ -703,36 +768,70 @@ class FlexTemplate:
             scale (float): Scale the inserted template by this factor.
         """
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
+
+        # make sure scaling is considered if the first element in the template
+        # has no x1 and/or y1 coordinate
+        scaled_cursor_x = self.pdf.get_x() * scale
+        scaled_cursor_y = self.pdf.get_y() * scale
+        if offsetx:
+            scaled_cursor_x += offsetx
+        if offsety:
+            scaled_cursor_y += offsety
+        self.pdf.set_xy(scaled_cursor_x, scaled_cursor_y)
         with self.pdf.local_context():
             for element in sorted_elements:
                 ele = element.copy()  # don't want to modify the callers original
                 ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
                 if scale != 1.0:
-                    ele["x1"] = ele["x1"] * scale
-                    ele["y1"] = ele["y1"] * scale
-                    ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
-                    ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
-                if offsetx:
-                    ele["x1"] = ele["x1"] + offsetx
-                    ele["x2"] = ele["x2"] + offsetx
-                if offsety:
-                    ele["y1"] = ele["y1"] + offsety
-                    ele["y2"] = ele["y2"] + offsety
+                    if "w" in ele:
+                        ele["w"] *= scale
+                    if "h" in ele:
+                        ele["h"] *= scale
+                    if "x1" in ele:
+                        ele["x1"] *= scale
+                    if "y1" in ele:
+                        ele["y1"] *= scale
+                    if "x2" in ele:
+                        ele["x2"] *= scale
+                    if "y2" in ele:
+                        ele["y2"] *= scale
+                if offsetx and "x1" in ele:
+                    ele["x1"] += offsetx
+                if offsetx and "x2" in ele:
+                    ele["x2"] += offsetx
+                if offsety and "y1" in ele:
+                    ele["y1"] += offsety
+                if offsety and "y2" in ele:
+                    ele["y2"] += offsety
                 ele["scale"] = scale
                 handler_name = ele["type"].upper()
                 if rotate:  # don't rotate by 0.0 degrees
                     with self.pdf.rotation(rotate, offsetx, offsety):
+                        rot_pos_x = ele["x1"] if "x1" in ele else self.pdf.get_x()
+                        rot_pos_y = ele["y1"] if "y1" in ele else self.pdf.get_y()
                         if "rotate" in ele and ele["rotate"]:
-                            with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                            with self.pdf.rotation(ele["rotate"], rot_pos_x, rot_pos_y):
                                 self.handlers[handler_name](**ele)
                         else:
                             self.handlers[handler_name](**ele)
                 else:
                     if "rotate" in ele and ele["rotate"]:
-                        with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                        rot_pos_x = ele["x1"] if "x1" in ele else self.pdf.get_x()
+                        rot_pos_y = ele["y1"] if "y1" in ele else self.pdf.get_y()
+                        with self.pdf.rotation(ele["rotate"], rot_pos_x, rot_pos_y):
                             self.handlers[handler_name](**ele)
                     else:
                         self.handlers[handler_name](**ele)
+                # need to move cursor if absolute new positions are requested
+                # and offsets are applied
+                if "new_x" in ele and ele["new_x"] in ["LMARGIN", "RMARGIN"]:
+                    self.pdf.set_x(self.pdf.get_x() + offsetx)
+
+                if "new_y" in ele and ele["new_y"] in ["TMARGIN", "BMARGIN"]:
+                    current_x = self.pdf.get_x()
+                    self.pdf.set_y(self.pdf.get_y() + offsety)
+                    self.pdf.set_x(current_x)  # set_y is overwriting x!
+
         self.texts = {}  # reset modified entries for the next page
 
 

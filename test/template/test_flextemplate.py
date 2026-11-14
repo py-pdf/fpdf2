@@ -497,6 +497,643 @@ def test_flextemplate_elements(tmp_path):
     assert_pdf_equal(pdf, HERE / "flextemplate_elements.pdf", tmp_path)
 
 
+def test_flextempalte_floating(tmp_path):
+    a = "2026-10-10"
+    b = "S0000"
+    c = ("test " * 50).strip()
+
+    pdf_mc = FPDF()
+    pdf_mc.add_page()
+
+    pdf_mc.set_font("helvetica", size=12)
+    pdf_mc.set_left_margin(20)
+
+    pdf_mc.set_xy(20, 10)
+    pdf_mc.multi_cell(text=a, w=115, h=5, align="L", new_y="TOP")
+
+    pdf_mc.set_x(80)
+    pdf_mc.multi_cell(w=110.0, h=5.0, align="R", text=b, new_x="LMARGIN", new_y="NEXT")
+    #
+    pdf_mc.multi_cell(text=c, w=170, h=5, align="L", new_x="LEFT", new_y="NEXT")
+    pdf_mc.multi_cell(text="", w=12, h=5, align="L", new_x="LMARGIN", new_y="NEXT")
+    pdf_mc.multi_cell(
+        text="LMARING", w=30, h=5, align="L", new_x="CENTER", new_y="NEXT"
+    )
+    pdf_mc.multi_cell(text="CENTER", w=30, h=5, align="L", new_x="END", new_y="NEXT")
+    pdf_mc.multi_cell(text="END", w=30, h=5, align="L", new_x="RIGHT", new_y="NEXT")
+    pdf_mc.multi_cell(text="RIGHT", w=30, h=5, align="L", new_x="START", new_y="NEXT")
+    pdf_mc.multi_cell(text="START", w=30, h=5, align="L", new_x="LEFT", new_y="NEXT")
+    pdf_mc.multi_cell(text="LEFT", w=30, h=5, align="L", new_x="RMARGIN", new_y="NEXT")
+    pdf_mc.multi_cell(
+        text="RMARGIN", w=30, h=5, align="L", new_x="LMARGIN", new_y="NEXT"
+    )
+
+    pdf_mc.multi_cell(text="LMARING", w=30, h=5, align="L", new_x="END", new_y="TOP")
+    pdf_mc.multi_cell(text="TOP", w=10, h=5, align="L", new_x="END", new_y="LAST")
+    pdf_mc.multi_cell(text="LAST", w=10, h=5, align="L", new_x="END", new_y="LAST")
+
+    elements = [
+        {
+            "name": "a",
+            "type": "T",
+            "x1": 20,
+            "y1": 10,
+            "w": 115,
+            "h": 5.0,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": a,
+            "priority": 2,
+            "multiline": False,
+        },
+        {
+            "name": "b",
+            "type": "T",
+            "x1": 80.0,
+            "w": 110,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "R",
+            "text": b,
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "c",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": c,
+            "priority": 2,
+            "multiline": True,
+            "wrapmode": "WORD",
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "xxx",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LMARGIN",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "CENTER",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "CENTER",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "END",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "END",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "RIGHT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "RIGHT",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "START",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "START",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LEFT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LEFT",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "RMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "RMARGIN",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LMARGIN",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LMARGIN",
+            "priority": 2,
+            "multiline": True,
+            "new_x": "END",
+            "new_y": "TOP",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 10,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "TOP",
+            "priority": 2,
+            "multiline": True,
+            "new_x": "END",
+            "new_y": "LAST",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 10,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LAST",
+            "priority": 2,
+            "multiline": True,
+            "new_x": "END",
+            "new_y": "NEXT",
+        },
+    ]
+
+    pdf_temp = FPDF()
+    pdf_temp.add_page()
+    pdf_temp.set_font("helvetica", size=12)
+    pdf_temp.set_left_margin(20)
+
+    f = FlexTemplate(pdf_temp, elements=elements)
+    f.render()
+
+    assert_pdf_equal(pdf_temp, HERE / "flextemplate_floating_template.pdf", tmp_path)
+    assert_pdf_equal(pdf_mc, HERE / "flextemplate_floating_multicell.pdf", tmp_path)
+    # the following test does not work even though the two pdfs are visually
+    # equal. In the template case, the output is wrapped by "q" ... "Q"
+    # used to store the and restore the graphics state.
+    # assert_pdf_equal(pdf_temp, pdf_mc, tmp_path)
+
+    pdf_csv = FPDF()
+    pdf_csv.add_page()
+    pdf_csv.set_font("helvetica", size=12)
+    pdf_csv.set_left_margin(20)
+    t = FlexTemplate(pdf_csv)
+    t.parse_csv(HERE / "template_floating.csv", delimiter=";")
+    t.render()
+    assert_pdf_equal(pdf_csv, HERE / "flextemplate_floating_template.pdf", tmp_path)
+
+
+def test_flextemplate_elements_scale(tmp_path):
+    grid_elements = (
+        dict(name="v02", type="L", x1=20, y1=20, x2=20, y2=280),
+        dict(name="v04", type="L", x1=40, y1=20, x2=40, y2=280),
+        dict(name="v06", type="L", x1=60, y1=20, x2=60, y2=280),
+        dict(name="v08", type="L", x1=80, y1=20, x2=80, y2=280),
+        dict(name="v10", type="L", x1=100, y1=20, x2=100, y2=280),
+        dict(name="v12", type="L", x1=120, y1=20, x2=120, y2=280),
+        dict(name="v14", type="L", x1=140, y1=20, x2=140, y2=280),
+        dict(name="v15", type="L", x1=160, y1=20, x2=160, y2=280),
+        dict(name="v18", type="L", x1=180, y1=20, x2=180, y2=280),
+        dict(name="h02", type="L", x1=20, y1=20, x2=180, y2=20),
+        dict(name="h04", type="L", x1=20, y1=40, x2=180, y2=40),
+        dict(name="h06", type="L", x1=20, y1=60, x2=180, y2=60),
+        dict(name="h08", type="L", x1=20, y1=80, x2=180, y2=80),
+        dict(name="h10", type="L", x1=20, y1=100, x2=180, y2=100),
+        dict(name="h12", type="L", x1=20, y1=120, x2=180, y2=120),
+        dict(name="h14", type="L", x1=20, y1=140, x2=180, y2=140),
+        dict(name="h16", type="L", x1=20, y1=160, x2=180, y2=160),
+        dict(name="h18", type="L", x1=20, y1=180, x2=180, y2=180),
+        dict(name="h20", type="L", x1=20, y1=200, x2=180, y2=200),
+        dict(name="h22", type="L", x1=20, y1=220, x2=180, y2=220),
+        dict(name="h24", type="L", x1=20, y1=240, x2=180, y2=240),
+        dict(name="h26", type="L", x1=20, y1=260, x2=180, y2=260),
+        dict(name="h28", type="L", x1=20, y1=280, x2=180, y2=280),
+    )
+
+    text_elements_abs = (
+        dict(
+            name="t",
+            type="T",
+            x1=0,
+            y1=0,
+            x2=10,
+            y2=4,
+            text="text0",
+            background=0xFFFF00,
+        ),
+        dict(
+            name="t2",
+            type="T",
+            x1=20,
+            y1=0,
+            x2=30,
+            y2=4,
+            text="text2",
+            background=0xFFBB00,
+        ),
+        dict(
+            name="t3",
+            type="T",
+            x1=00,
+            y1=30,
+            x2=10,
+            y2=34,
+            text="text3",
+            background=0xBBBF00,
+            rotate=10,
+        ),
+    )
+    ml_elements_abs = (
+        dict(
+            name="ml",
+            type="T",
+            x1=0,
+            y1=0,
+            x2=15,
+            y2=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+        ),
+        dict(
+            name="ml2",
+            type="T",
+            x1=20,
+            y1=0,
+            x2=35,
+            y2=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+        ),
+        dict(
+            name="ml3",
+            type="T",
+            x1=00,
+            y1=30,
+            x2=15,
+            y2=34,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            rotate=10,
+        ),
+    )
+
+    text_elements = (
+        dict(
+            name="t",
+            type="T",
+            x1=0,
+            y1=0,
+            w=10,
+            h=4,
+            text="text0",
+            background=0xFFFF00,
+            new_y="TOP",
+        ),
+        dict(
+            name="t2",
+            type="T",
+            x1=20,
+            w=10,
+            h=4,
+            text="text2",
+            background=0xFFBB00,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        ),
+        dict(
+            name="t3",
+            type="T",
+            y1=30,
+            w=10,
+            h=4,
+            text="text3",
+            background=0xBBBF00,
+            rotate=10,
+            new_x="END",
+            new_y="TOP",
+        ),
+    )
+    ml_elements = (
+        dict(
+            name="ml",
+            type="T",
+            x1=0,
+            y1=0,
+            w=15,
+            h=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            new_y="TOP",
+        ),
+        dict(
+            name="ml2",
+            type="T",
+            x1=20,
+            w=15,
+            h=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            new_x="LMARGIN",
+        ),
+        dict(
+            name="ml3",
+            type="T",
+            y1=30,
+            w=15,
+            h=4,
+            text="Lorem ipsum dolor sit amet",
+            multiline=True,
+            rotate=10,
+            new_x="END",
+            new_y="TOP",
+        ),
+    )
+
+    pdf_abs = FPDF()
+    grid_t = FlexTemplate(pdf_abs, grid_elements)
+    pdf_abs.add_page()
+    grid_t.render()
+    text_t = FlexTemplate(pdf_abs, text_elements_abs)
+    text_t.render(offsetx=40, offsety=40)
+    text_t.render(offsetx=40, offsety=100, rotate=30)
+    text_t.render(offsetx=80, offsety=200, rotate=45)
+    pdf_abs.add_page()
+    grid_t.render()
+    ml_t = FlexTemplate(pdf_abs, ml_elements_abs)
+    ml_t.render(offsetx=40, offsety=40)
+    ml_t.render(offsetx=40, offsety=100, rotate=30)
+    ml_t.render(offsetx=80, offsety=200, rotate=45)
+
+    assert_pdf_equal(pdf_abs, HERE / "flextemplate_float_scaled_abs.pdf", tmp_path)
+
+    pdf_rel = FPDF()
+    pdf_rel.set_left_margin(0)
+    pdf_rel.set_top_margin(0)
+    grid_t = FlexTemplate(pdf_rel, grid_elements)
+    pdf_rel.add_page()
+    grid_t.render()
+    text_t = FlexTemplate(pdf_rel, text_elements)
+    text_t.render(offsetx=40, offsety=40)
+    text_t.render(offsetx=40, offsety=100, rotate=30)
+    text_t.render(offsetx=80, offsety=200, rotate=45)
+    pdf_rel.add_page()
+    grid_t.render()
+    ml_t = FlexTemplate(pdf_rel, ml_elements)
+    ml_t.render(offsetx=40, offsety=40)
+    ml_t.render(offsetx=40, offsety=100, rotate=30)
+    ml_t.render(offsetx=80, offsety=200, rotate=45)
+
+    assert_pdf_equal(pdf_rel, HERE / "flextemplate_float_scaled_rel.pdf", tmp_path)
+
+    assert_pdf_equal(pdf_abs, pdf_rel, tmp_path)
+
+
+def test_flextemplate_floating_rotation(tmp_path):
+    elements_abs = [
+        {
+            "name": "text!",
+            "type": "T",
+            "x1": 40,
+            "y1": 10,
+            "x2": 60,
+            "y2": 15,
+            "text": "rotatapalooza!",
+            "rotate": -15.0,
+        },
+        {
+            "name": "multi",
+            "type": "T",
+            "x1": 80,
+            "y1": 10,
+            "x2": 100,
+            "y2": 15,
+            "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+            "rotate": 90.0,
+            "background": 0xEEFFFF,
+            "multiline": True,
+        },
+    ]
+    elements_rel = [
+        {
+            "name": "text!",
+            "type": "T",
+            "x1": 40,
+            "y1": 10,
+            "w": 40,
+            "h": 5,
+            "text": "rotatapalooza!",
+            "rotate": -15.0,
+            "new_x": "RIGHT",
+            "new_y": "TOP",
+        },
+        {
+            "name": "multi",
+            "type": "T",
+            # "x1": 80,
+            # "y1": 10,
+            "w": 20,
+            "h": 5,
+            "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+            "rotate": 90.0,
+            "background": 0xEEFFFF,
+            "multiline": True,
+        },
+    ]
+
+    pdf_abs = FPDF()
+    pdf_abs.add_page()
+    pdf_abs.set_font("courier", size=10)
+    templ = FlexTemplate(pdf_abs, elements_abs)
+    templ.render(offsetx=100, offsety=100, rotate=5)
+    pdf_abs.add_page()
+    scale = 1.2
+    for i in range(0, 360, 6):
+        templ.render(offsetx=100, offsety=130, rotate=i, scale=scale)
+        scale -= 0.01
+    assert_pdf_equal(pdf_abs, HERE / "flextemplate_rotation_abs.pdf", tmp_path)
+
+    pdf_rel = FPDF()
+    pdf_rel.add_page()
+    pdf_rel.set_font("courier", size=10)
+    templ = FlexTemplate(pdf_rel, elements_rel)
+    templ.render(offsetx=100, offsety=100, rotate=5)
+    pdf_rel.add_page()
+    scale = 1.2
+    for i in range(0, 360, 6):
+        templ.render(offsetx=100, offsety=130, rotate=i, scale=scale)
+        scale -= 0.01
+    assert_pdf_equal(pdf_rel, HERE / "flextemplate_rotation_rel.pdf", tmp_path)
+
+    assert_pdf_equal(pdf_abs, pdf_rel, tmp_path)
+
+
+def test_flextempalte_floating_scaled(tmp_path):
+    elements = [
+        {
+            "name": "xxx",
+            "type": "T",
+            "w": 170,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "cursor",
+            "priority": 2,
+            "multiline": False,
+            "new_x": "LEFT",
+            "new_y": "NEXT",
+        },
+        {
+            "name": "d",
+            "type": "T",
+            "w": 30,
+            "h": 5,
+            "font": "helvetica",
+            "size": 12.0,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "align": "L",
+            "text": "LEFT",
+            "priority": 2,
+            "multiline": False,
+        },
+    ]
+
+    pdf_temp = FPDF()
+    pdf_temp.add_page()
+    pdf_temp.set_font("helvetica", size=12)
+    pdf_temp.set_left_margin(20)
+    pdf_temp.set_y(50)
+
+    f = FlexTemplate(pdf_temp, elements=elements)
+    f.render(scale=2.0)
+
+    assert_pdf_equal(
+        pdf_temp, HERE / "flextemplate_floating_template_scaled.pdf", tmp_path
+    )
+
+
 def test_flextemplate_leak(tmp_path):  # issue #570
     # rendering a template should not change the current graphics context.
     pdf = FPDF()

@@ -106,6 +106,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `RadialGradient` raises a clear `ValueError` for a negative, NaN or infinite circle radius, instead of writing it into the shading `/Coords`, where the PDF specification requires radii of zero or more - thanks to @RavSinghChandan
 * `LinearGradient` and `RadialGradient` raise a clear `ValueError` for `bounds` outside [0, 1], decreasing or NaN, instead of writing them into the shading function, where the PDF specification requires increasing values within its domain - thanks to @RavSinghChandan
 * `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
+* Support cursor-relative positioning of text elements in FlexTemplate. Text elements can now use the current PDF cursor position instead of fixed coordinates. Added `w` and `h` properties to define template element dimensions, and `new_x` and `new_y` properties to control the cursor position after rendering. This simplifies layouts with dynamically sized and multi-line text.
 
 ## [2.9.0] - 2026-10-29
 ### Added

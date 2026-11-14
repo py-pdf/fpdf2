@@ -1,0 +1,14 @@
+a;T;20.0;10.0;;;helvetica;12.0;0;0;0;;;L;2026-10-10;2;0;;;;115.0;5.0
+b;T;80.0;;;;helvetica;12.0;0;0;0;;;R;S0000;2;0;;;;110.0;5.0;LMARGIN;NEXT
+c;T;;;;;helvetica;12.0;0;0;0;;;L;test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test;2;1;;WORD;;170.0;5.0;LMARGIN;NEXT
+xxx;T;;;;;helvetica;12.0;0;0;0;;;L;;2;1;;;;170.0;5.0;LMARGIN;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;LMARGIN;2;1;;;;170.0;5.0;CENTER;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;CENTER;2;1;;;;30.0;5.0;END;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;END;2;1;;;;30.0;5.0;RIGHT;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;RIGHT;2;1;;;;30.0;5.0;START;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;START;2;1;;;;30.0;5.0;LEFT;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;LEFT;2;1;;;;30.0;5.0;RMARGIN;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;RMARGIN;2;1;;;;30.0;5.0;LMARGIN;NEXT
+d;T;;;;;helvetica;12.0;0;0;0;;;L;LMARGIN;2;1;;;;30.0;5.0;END;TOP
+d;T;;;;;helvetica;12.0;0;0;0;;;L;TOP;2;1;;;;10.0;5.0;END;LAST
+d;T;;;;;helvetica;12.0;0;0;0;;;L;LAST;2;1;;;;10.0;5.0;END;NEXT
