@@ -1153,6 +1153,21 @@ class TestSVGObject:
         assert outer.path_items[0].path_items == []
         assert "#clone" not in caplog.text
 
+    def test_svg_line_in_clip_path(self):
+        """A <line> has no area, so a clipping path made of it clips everything away."""
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            '<clipPath id="c"><line x1="0" y1="5" x2="10" y2="5"/></clipPath>'
+            '<rect width="10" height="10" fill="red" clip-path="url(#c)"/></svg>'
+        )
+        assert isinstance(svg.cross_references["#c"], fpdf.drawing.ClippingPath)
+        svg.draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "0 5 m 10 5 l W n 0 0 m 0 0 10 10 re f" in output
+
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
         svg = fpdf.svg.SVGObject(

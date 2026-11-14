@@ -1346,14 +1346,17 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def line(cls, tag: "Element") -> PaintedPath:
-        """Convert an SVG <line> into a PDF path."""
+    def line(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
+        """
+        Convert an SVG <line> into a PDF path. In a <clipPath>, it has no area, so it
+        clips everything away, as in browsers.
+        """
         x1 = resolve_length(tag.attrib.get("x1", "0"))
         y1 = resolve_length(tag.attrib.get("y1", "0"))
         x2 = resolve_length(tag.attrib.get("x2", "0"))
         y2 = resolve_length(tag.attrib.get("y2", "0"))
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
         path.move_to(x1, y1)
         path.line_to(x2, y2)
         return path
