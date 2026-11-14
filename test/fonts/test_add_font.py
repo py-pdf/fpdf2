@@ -205,6 +205,26 @@ def test_add_font_without_os2_table(tmp_path, fname, mac_style, bold):
     assert bool(font.desc.flags & FontDescriptorFlags.FORCE_BOLD) == bold
 
 
+@pytest.mark.parametrize("bitmap_only", [True, False])
+def test_add_font_without_head_table(tmp_path, bitmap_only):
+    # Like the NISC18030.ttf of macOS, which has a 'bhed' table instead, and only
+    # bitmap glyphs
+    font = TTFont(HERE / "DejaVuSans.ttf")
+    if bitmap_only:
+        font["bhed"] = DefaultTable("bhed")
+        font["bhed"].data = font.reader["head"]
+    del font["head"]
+    font.save(tmp_path / "DejaVuSans-no-head.ttf")
+    pdf = FPDF()
+    kind = " bitmap-only font" if bitmap_only else ""
+    with pytest.raises(NotImplementedError) as error:
+        pdf.add_font(family="DejaVu", fname=tmp_path / "DejaVuSans-no-head.ttf")
+    assert str(error.value) == (
+        f"Font not supported. The{kind} {tmp_path / 'DejaVuSans-no-head.ttf'} "
+        "has no 'head' table."
+    )
+
+
 def test_font_missing_glyphs(caplog):
     pdf = FPDF()
     pdf.add_page()
