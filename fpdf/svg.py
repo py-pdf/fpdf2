@@ -100,6 +100,7 @@ TRANSFORM_GETTER = re.compile(
 COORDINATE_RE = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*,?")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_BLOCK_RE = re.compile(r"(?s)([^{}]+)\{([^{}]*)\}")
+CSS_AT_KEYWORD_RE = re.compile(r"@[\w-]+")
 # https://www.w3.org/TR/SVG11/painting.html#SpecifyingPaint
 ICC_COLOR_RE = re.compile(r"\s+icc-color\([^)]*\)\s*$", re.IGNORECASE)
 
@@ -304,6 +305,8 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
     colorstr = html.COLOR_DICT.get(colorstr.strip().lower(), colorstr.strip())
     if colorstr.lower().startswith("hsl"):
         return _hsl_color(colorstr.lower())
+    if colorstr.lower().startswith(("oklab(", "oklch(")):
+        return _oklab_color(colorstr.lower())
 
     if colorstr.startswith("#"):
         return color_from_hex_string(colorstr)
@@ -315,6 +318,13 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
         return _css_rgb_color(lowered)
 
     if lowered.startswith("rgb"):
+        # The 4th value of fpdf2's own rgb(R, G, B, A) is an integer alpha from 0 to
+        # 255, with or without a sign, so a fraction or a percentage, as in
+        # rgb(0,0,0, 0.5) of Mermaid diagrams, can only be the alpha from 0 to 1 that
+        # CSS Color 4 allows in rgb()
+        channels = lowered[lowered.find("(") + 1 :].rstrip(")").split(",")
+        if len(channels) == 4 and not re.fullmatch(r"[+-]?\d+", channels[3].strip()):
+            return _css_rgb_color(lowered)
         return color_from_rgb_string(lowered)
 
     raise ValueError(f"unsupported color specification {colorstr}")
@@ -367,6 +377,15 @@ def _light_color(colorstr: str) -> str:
 _DEGREES_PER_ANGLE_UNIT = {"deg": 1.0, "grad": 0.9, "rad": 180 / math.pi, "turn": 360.0}
 
 
+def _hue_degrees(hue: str) -> float:
+    """A CSS hue in degrees: a number, or an angle with a unit."""
+    # "grad" is tried before "rad", which it ends with
+    unit = next((u for u in _DEGREES_PER_ANGLE_UNIT if hue.endswith(u)), None)
+    return (
+        float(hue[: -len(unit)]) * _DEGREES_PER_ANGLE_UNIT[unit] if unit else float(hue)
+    )
+
+
 def _hsl_color(colorstr: str) -> DeviceRGB:
     """
     Parse hsl() and hsla(), with commas or with the space-separated syntax of CSS
@@ -388,12 +407,7 @@ def _hsl_color(colorstr: str) -> DeviceRGB:
     if len(parts) != 3:
         raise ValueError(f"{colorstr} could not be interpreted as a hsl() color")
 
-    hue = parts[0]
-    # "grad" is tried before "rad", which it ends with
-    unit = next((u for u in _DEGREES_PER_ANGLE_UNIT if hue.endswith(u)), None)
-    degrees = (
-        float(hue[: -len(unit)]) * _DEGREES_PER_ANGLE_UNIT[unit] if unit else float(hue)
-    )
+    degrees = _hue_degrees(parts[0])
 
     def fraction(value: str, scale: float) -> float:
         value = value.strip()
@@ -407,6 +421,65 @@ def _hsl_color(colorstr: str) -> DeviceRGB:
     # DeviceRGB takes fractions, so the color is kept exactly, not rounded to 8 bits
     r, g, b = colorsys.hls_to_rgb((degrees % 360) / 360, lightness, saturation)
     return DeviceRGB(r, g, b, None if alpha is None else fraction(alpha, 1))
+
+
+def _oklab_color(colorstr: str) -> DeviceRGB:
+    """
+    Parse oklab(L a b) and oklch(L C H) of CSS Color 4, with an optional "/ A".
+    L is a number from 0 to 1 or a percentage, a, b and C are numbers or percentages
+    of 0.4, H is a hue, and "none" is 0. L is clamped to [0, 1] and C to 0 or more, as
+    CSS does when parsing; an L of 0 or 1 is black or white, as in CSS gamut mapping,
+    and other colors are converted to sRGB, then clipped.
+    https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch
+    """
+    match = re.fullmatch(r"(oklab|oklch)\((.*)\)", colorstr.strip(), re.DOTALL)
+    function, body = match.groups() if match else ("oklab", "")
+    alpha: Optional[str] = None
+    if "/" in body:
+        body, alpha = body.split("/", 1)
+    parts = body.split()
+    if len(parts) != 3:
+        raise ValueError(f"{colorstr} could not be interpreted as a {function}() color")
+
+    def number(value: str, percent_of: float) -> float:
+        if value == "none":
+            return 0.0
+        if value.endswith("%"):
+            return float(value[:-1]) / 100 * percent_of
+        return float(value)
+
+    lightness = min(max(number(parts[0], 1), 0.0), 1.0)
+    if function == "oklab":
+        a, b = number(parts[1], 0.4), number(parts[2], 0.4)
+    else:
+        chroma = max(number(parts[1], 0.4), 0.0)
+        hue = math.radians(0 if parts[2] == "none" else _hue_degrees(parts[2]))
+        a, b = chroma * math.cos(hue), chroma * math.sin(hue)
+
+    # https://bottosson.github.io/posts/oklab/
+    l_ = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3
+    m_ = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3
+    s_ = (lightness - 0.0894841775 * a - 1.2914855480 * b) ** 3
+    linear = (
+        4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+        -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+        -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_,
+    )
+
+    def srgb(channel: float) -> float:
+        channel = min(max(channel, 0.0), 1.0)
+        if channel <= 0.0031308:
+            return 12.92 * channel
+        return 1.055 * math.pow(channel, 1 / 2.4) - 0.055
+
+    if lightness in (0.0, 1.0):
+        r = g = b = lightness
+    else:
+        r, g, b = (srgb(channel) for channel in linear)
+    if alpha is not None:
+        opacity = number(alpha.strip(), 1)
+        return DeviceRGB(r, g, b, min(max(opacity, 0.0), 1.0))
+    return DeviceRGB(r, g, b)
 
 
 def _split_top_level_commas(value: str) -> list[str]:
@@ -1069,13 +1142,73 @@ def _parse_xy_delta(
     return x, y, dx, dy
 
 
+def _strip_css_at_statements(css_text: str) -> str:
+    """Remove the at-rules without a block, such as @import url("...;..."); or @charset "utf-8";
+
+    Only an @ that starts a statement begins an at-rule: one in a declaration, as in
+    url(#paint@dark), or in a string is kept. A ";" in a string, after an escape or
+    between parentheses, as in a url(), does not end the statement. The text is
+    scanned once, so it takes linear time.
+    """
+    kept = []
+    end = len(css_text)
+    copied = 0
+    i = 0
+    quote = ""
+    statement_start = True
+    while i < end:
+        char = css_text[i]
+        if char == "\\":
+            statement_start = False
+            i += 2
+            continue
+        if quote:
+            if char == quote:
+                quote = ""
+        elif char in "\"'":
+            quote = char
+            statement_start = False
+        elif char in ";{}":
+            statement_start = True
+        elif statement_start and CSS_AT_KEYWORD_RE.match(css_text, i):
+            start = i
+            depth = 0
+            while i < end:
+                char = css_text[i]
+                if char == "\\":
+                    i += 1
+                elif quote:
+                    if char == quote:
+                        quote = ""
+                elif char in "\"'":
+                    quote = char
+                elif char == "(":
+                    depth += 1
+                elif char == ")" and depth:
+                    depth -= 1
+                elif not depth and char in ";{}":
+                    break
+                i += 1
+            if i < end and css_text[i] == ";":
+                kept.append(css_text[copied:start])
+                copied = i + 1  # drop the statement
+                i += 1
+            # else an at-rule with a block, such as @media, or an unterminated one
+            continue
+        elif not char.isspace():
+            statement_start = False
+        i += 1
+    kept.append(css_text[copied:])
+    return "".join(kept)
+
+
 def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
     """The (selector, declarations) of each rule of a stylesheet, one per selector."""
     rules: list[tuple[str, dict[str, Any]]] = []
     if not css_text:
         return rules
 
-    cleaned = CSS_COMMENT_RE.sub("", css_text)
+    cleaned = _strip_css_at_statements(CSS_COMMENT_RE.sub("", css_text))
     for selector_block, body in CSS_BLOCK_RE.findall(cleaned):
         declarations = _parse_css_declarations(body)
         if not declarations:
@@ -2693,6 +2826,8 @@ class SVGObject:
                 self.build_image(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
+            elif child.tag in xmlns_lookup("svg", "use"):
+                self.build_xref(child)
             elif child.tag in xmlns_lookup("svg", "linearGradient"):
                 self._parse_linear_gradient(child)
             elif child.tag in xmlns_lookup("svg", "radialGradient"):
@@ -2737,8 +2872,6 @@ class SVGObject:
                 )
         return group
 
-    # this assumes xrefs only reference already-defined ids.
-    # I don't know if this is required by the SVG spec.
     @force_nodocument
     def build_xref(
         self, xref: "Element", inherited_style: Optional[dict[str, Any]] = None
@@ -2757,14 +2890,21 @@ class SVGObject:
         else:
             raise ValueError(f"use {xref} doesn't contain known xref attribute")
 
+        if ref not in self.cross_references and ref in self._elements_by_id:
+            # A <use> can reference an element defined after it, as in browsers:
+            # build that element now, apart from its ancestors, as for <defs>
+            self._build_group_child(GraphicsContext(), self._elements_by_id[ref], {})
         try:
             referenced = self.cross_references[ref]
             referenced_cost = self._cross_reference_costs[ref]
         except KeyError:
             # Browsers draw nothing for it, and the rest of the image
             LOGGER.warning("Ignoring <use> of nonexistent ref id %s", ref)
+            self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         if ref in self._hidden_references:
+            # a <use> of this <use> draws nothing either
+            self.update_xref(xref.attrib.get("id"), pdf_group)
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         referenced = deepcopy(referenced)
@@ -2812,6 +2952,8 @@ class SVGObject:
             else:
                 pdf_group.transform = placement_transform
 
+        # a <use> can itself be referenced, as Inkscape does for a clone of a clone
+        self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
 
     def _bind_reference_patterns(
