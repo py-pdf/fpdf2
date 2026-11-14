@@ -3078,8 +3078,23 @@ class SVGObject:
             clip_value = svg_element.attrib.get("clip-path")
         # "none" (or any value that is not a url(#id) reference) clips nothing
         clipping_path_id = self._extract_gradient_id(clip_value)
-        if clipping_path_id:
-            stylable.clipping_path = self.cross_references[clipping_path_id]
+        if not clipping_path_id:
+            return
+        element = self._elements_by_id.get(clipping_path_id)
+        if element is None or element.tag not in xmlns_lookup("svg", "clipPath"):
+            # Browsers draw the element without clipping it
+            LOGGER.warning(
+                "Ignoring clip-path reference to nonexistent <clipPath> %s",
+                clipping_path_id,
+            )
+            return
+        clipping_path = self.cross_references.get(clipping_path_id)
+        if clipping_path is None:
+            # A <clipPath> without any shape it can clip with, such as one without
+            # children or with only a <g>, is empty: it clips the whole element away
+            clipping_path = ClippingPath()
+            clipping_path.rectangle(0, 0, 0, 0)
+        stylable.clipping_path = clipping_path
 
     @force_nodocument
     def build_image(self, image: "Element") -> "SVGImage | GraphicsContext":

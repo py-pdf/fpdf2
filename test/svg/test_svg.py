@@ -1153,6 +1153,41 @@ class TestSVGObject:
         assert outer.path_items[0].path_items == []
         assert "#clone" not in caplog.text
 
+    @pytest.mark.parametrize(
+        "clip_path",
+        [
+            '<clipPath id="c"/>',
+            # children that cannot be part of a clipping path
+            '<clipPath id="c"><g><rect width="5" height="5"/></g></clipPath>',
+            '<clipPath id="c"><switch><rect width="5" height="5"/></switch></clipPath>',
+        ],
+    )
+    def test_svg_empty_clip_path(self, clip_path):
+        """A clipping path without any shape clips the whole element away."""
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f'{clip_path}<rect width="10" height="10" fill="red" clip-path="url(#c)"/>'
+            "</svg>"
+        ).draw_to_page(pdf)
+        assert "1 0 0 rg 0 0 m W n 0 0 m 0 0 10 10 re f" in bytes(pdf.output()).decode(
+            "latin-1"
+        )
+
+    @pytest.mark.parametrize("target", ["", '<rect id="c" width="5" height="5"/>'])
+    def test_svg_clip_path_reference_to_nothing(self, target, caplog):
+        """Browsers draw an element whose clip-path references no clipPath unclipped."""
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>{target}'
+            '</defs><path d="M0 0h5v5z" fill="red" clip-path="url(#c)"/></svg>'
+        )
+        assert svg.base_group.path_items[-1].clipping_path is None
+        assert (
+            "Ignoring clip-path reference to nonexistent <clipPath> #c" in caplog.text
+        )
+
     def test_svg_display_none_referenced(self):
         """An element in a hidden group can still be drawn by a <use>."""
         svg = fpdf.svg.SVGObject(
