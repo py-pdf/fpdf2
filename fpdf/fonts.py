@@ -395,6 +395,14 @@ class TTFFont:
                 ) from exc
             raise
 
+        if "head" not in self.ttfont:
+            # Apple bitmap-only fonts, such as the NISC18030.ttf of macOS, have a
+            # 'bhed' table instead, and no outlines to draw their glyphs with
+            kind = " bitmap-only font" if "bhed" in self.ttfont else ""
+            raise NotImplementedError(
+                f"Font not supported. The{kind} {self.ttffile} has no 'head' table."
+            )
+
         if axes_dict is not None:
             if "fvar" not in self.ttfont:
                 raise AttributeError(f"{self.ttffile} is not a variable font")
