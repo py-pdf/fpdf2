@@ -760,6 +760,60 @@ class TestSVGObject:
         for path in svg.base_group.path_items:
             assert path.style.stroke_join_style == join_style
 
+    @pytest.mark.parametrize(
+        "text, operators",
+        [
+            # as spaCy's displaCy writes the labels of its dependency diagrams
+            (
+                '<text y="20" style="letter-spacing: 2px">ab</text>',
+                ["1 0 0 -1 0 20 Tm 1.5 Tc (ab) Tj 0 Tc ET"],
+            ),
+            # inherited, in em of the font size, and normal in a <tspan>
+            (
+                (
+                    '<g letter-spacing="0.1em"><text y="20" x="50" font-size="20" '
+                    'text-anchor="middle">ab<tspan letter-spacing="normal">c</tspan>'
+                    "d</text></g>"
+                ),
+                [
+                    "1 0 0 -1 25.32 20 Tm 2 Tc (ab) Tj 0 Tc ET",
+                    "1 0 0 -1 51.56 20 Tm (c) Tj ET",
+                    "1 0 0 -1 61.56 20 Tm 2 Tc (d) Tj 0 Tc ET",
+                ],
+            ),
+            (
+                (
+                    '<text y="20" letter-spacing="3">a<tspan letter-spacing="inherit">'
+                    "b</tspan></text>"
+                ),
+                ["3 Tc (a) Tj 0 Tc ET", "3 Tc (b) Tj 0 Tc ET"],
+            ),
+            # as Inkscape writes it
+            ('<text y="20" style="letter-spacing:0px">a</text>', ["Tm (a) Tj ET"]),
+            ('<text y="20" letter-spacing="wide">a</text>', ["Tm (a) Tj ET"]),
+        ],
+    )
+    def test_svg_text_letter_spacing(self, text, operators):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30">{text}'
+            "</svg>"
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        for operator in operators:
+            assert operator in output
+
+    def test_svg_text_letter_spacing_bounding_box(self):
+        text = fpdf.drawing.Text(
+            0,
+            10,
+            (fpdf.drawing.TextRun("ab", "helvetica", "", 10, letter_spacing=2),),
+        )
+        bbox, _ = text.bounding_box(fpdf.drawing.Point(0, 0))
+        assert bbox.x1 - bbox.x0 == pytest.approx(2 * (0.5 * 10 + 2))
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 

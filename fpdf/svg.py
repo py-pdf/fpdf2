@@ -1019,6 +1019,28 @@ def _resolve_relative_font_size(
     style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
+def _letter_spacing(
+    style: dict[str, Any], parent_style: Optional[dict[str, Any]], font_size: float
+) -> float:
+    """
+    The letter-spacing of a text in pt, with em and ex relative to its font size;
+    0 for normal or a value that cannot be read, as in browsers.
+    """
+    value = style.get("letter-spacing")
+    if isinstance(value, str) and value.strip().lower() == "inherit":
+        value = (parent_style or {}).get("letter-spacing")
+    if not isinstance(value, str) or value.strip().lower() == "normal":
+        return 0.0
+    match = unit_splitter.fullmatch(value.strip())
+    if match is not None and match.group("unit") in ("em", "ex"):
+        factor = 0.5 if match.group("unit") == "ex" else 1.0
+        return float(match.group("value")) * font_size * factor
+    try:
+        return resolve_length(value)
+    except ValueError:
+        return 0.0
+
+
 def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
     """
     Resolve the width or height of the root <svg>. As in browsers, a length in em
@@ -1913,6 +1935,7 @@ class SVGObject:
             "font-size",
             "font-style",
             "font-weight",
+            "letter-spacing",
             "text-anchor",
             "white-space",
         )
@@ -2319,6 +2342,7 @@ class SVGObject:
                 "font-size",
                 "font-style",
                 "font-weight",
+                "letter-spacing",
                 "text-anchor",
                 "white-space",
             )
@@ -3234,6 +3258,7 @@ class SVGObject:
             abs_y: Optional[float] = None,
             style_tag: Optional["Element"] = None,
             style_map_for_tag: Optional[dict[str, Any]] = None,
+            letter_spacing: float = 0.0,
         ) -> None:
             nonlocal pending_dx, pending_dy
             raw = raw_text or ""
@@ -3278,9 +3303,13 @@ class SVGObject:
                     abs_x=abs_x,
                     abs_y=abs_y,
                     run_style=run_style,
+                    letter_spacing=letter_spacing,
                 )
             )
 
+        base_spacing = _letter_spacing(
+            effective_style, inherited_style, default_font_size
+        )
         # Leading text (before child <tspan>)
         _add_run(
             text_tag.text or "",
@@ -3290,6 +3319,7 @@ class SVGObject:
             preserve=preserve_parent,
             style_tag=None,
             style_map_for_tag=None,
+            letter_spacing=base_spacing,
         )
 
         for child in text_tag:
@@ -3337,6 +3367,9 @@ class SVGObject:
                         abs_y=abs_y,
                         style_tag=child,
                         style_map_for_tag=child_local_style,
+                        letter_spacing=_letter_spacing(
+                            child_effective_style, effective_style, run_font_size
+                        ),
                     )
 
                 # Text between tspans inherits parent style
@@ -3348,6 +3381,7 @@ class SVGObject:
                     preserve=preserve_parent,
                     style_tag=None,
                     style_map_for_tag=None,
+                    letter_spacing=base_spacing,
                 )
             else:
                 # other child tags are ignored (already logged elsewhere)
