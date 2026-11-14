@@ -97,12 +97,27 @@ def test_load_base64_data(tmp_path):
     "data_uri",
     [
         # the placeholder that WordPress puts in the src of lazy-loaded images
-        "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'"
-        "%20viewBox='0%200%20640%20480'%3E%3C/svg%3E",
-        "data:image/svg+xml;base64,"
-        "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDgwIi8+",
-        "data:image/svg+xml;charset=utf-8,"
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 480'/>",
+        (
+            "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'"
+            "%20viewBox='0%200%20640%20480'%3E%3C/svg%3E"
+        ),
+        (
+            "data:image/svg+xml;base64,"
+            "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDgwIi8+"
+        ),
+        # base 64 data with percent escapes, as %2B for "+" and %3D for "="
+        (
+            "data:image/svg+xml;base64,"
+            "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDgwIi8%2B"
+        ),
+        (
+            "data:image/svg+xml;base64,"
+            "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDgwIiAvPg%3D%3D"
+        ),
+        (
+            "data:image/svg+xml;charset=utf-8,"
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 480'/>"
+        ),
     ],
 )
 def test_load_svg_data_uri(data_uri):

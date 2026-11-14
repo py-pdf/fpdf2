@@ -538,7 +538,8 @@ def _decode_data_uri(data_uri: str) -> BytesIO:
     if not comma:
         raise NotImplementedError("Unsupported data URI without a comma")
     if media_type.lower().endswith(";base64"):
-        return BytesIO(base64.b64decode(data))
+        # the base 64 data can be percent-encoded too, as %3D for "=" or %2B for "+"
+        return BytesIO(base64.b64decode(unquote_to_bytes(data)))
     return BytesIO(unquote_to_bytes(data))
 
 
