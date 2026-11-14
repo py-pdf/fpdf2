@@ -648,13 +648,66 @@ svg_attr_map: dict[str, Any] = {
 
 
 @force_nodocument
+def _current_color(
+    style_map: Optional[dict[str, Any]], inherited_style: Optional[dict[str, Any]]
+) -> Optional[str]:
+    """The color property of an element, its own or inherited, or None if not set."""
+    for styles in (style_map, inherited_style):
+        color = _normalize_css_value((styles or {}).get("color"))
+        if color is not None and color.lower() not in ("currentcolor", "inherit"):
+            return color
+    return None
+
+
+def _is_current_color(value: Any) -> bool:
+    return isinstance(value, str) and value.strip().lower() == "currentcolor"
+
+
+def _resolve_inherited_color(
+    style: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """A color of inherit or currentColor is the color of the parent, as in CSS."""
+    color = style.get("color")
+    if isinstance(color, str) and color.strip().lower() in ("inherit", "currentcolor"):
+        parent_color = (inherited_style or {}).get("color")
+        if parent_color is None:
+            style.pop("color")
+        else:
+            style["color"] = parent_color
+
+
+def _with_inherited_current_color(
+    style_map: dict[str, Any],
+    svg_element: "Element",
+    inherited_style: Optional[dict[str, Any]],
+) -> dict[str, Any]:
+    """
+    CSS inherits a fill or stroke of currentColor as the keyword, so an element that
+    sets its own color and inherits it paints with its own color.
+    """
+    if not inherited_style or "color" not in style_map:
+        return style_map
+    inherited_paints = {
+        attr: "currentColor"
+        for attr in ("fill", "stroke")
+        if _is_current_color(inherited_style.get(attr))
+        and _get_attr_or_style(svg_element, attr, style_map) in (None, "inherit")
+    }
+    return {**style_map, **inherited_paints} if inherited_paints else style_map
+
+
 def apply_styles(
     stylable: PaintedPath | GraphicsContext,
     svg_element: "Element",
     computed_style: Optional[dict[str, Any]] = None,
     allow_fill_and_stroke: bool = True,
+    current_color: Optional[str] = None,
 ) -> None:
-    """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
+    """
+    Apply the known styles from `svg_element` to the pdf path/group `stylable`.
+    A fill or stroke of currentColor takes `current_color`, the color property, when
+    the SVG sets one; otherwise it is inherited, as from the color set on the FPDF.
+    """
     if computed_style is not None:
         style = computed_style
     else:
@@ -672,6 +725,13 @@ def apply_styles(
             attr_value = _normalize_css_value(style.get(attr_name))
             if attr_value is None:
                 attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+            if (
+                current_color is not None
+                and attr_name in ("fill", "stroke")
+                and isinstance(attr_value, str)
+                and attr_value.lower() == "currentcolor"
+            ):
+                attr_value = current_color
             if attr_value is not None:
                 setattr(stylable.style, *converter(attr_value))
 
@@ -1909,6 +1969,7 @@ class SVGObject:
             elif key in style_map:
                 style_map.pop(key, None)
         inheritable_attrs = (
+            "color",
             "font-family",
             "font-size",
             "font-style",
@@ -2726,7 +2787,12 @@ class SVGObject:
         """Resolve a cross-reference to an already-seen SVG element by ID."""
         style_map = self._style_map_for(xref)
         pdf_group = GraphicsContext()
-        apply_styles(pdf_group, xref, style_map)
+        apply_styles(
+            pdf_group,
+            xref,
+            _with_inherited_current_color(style_map, xref, inherited_style),
+            current_color=_current_color(style_map, inherited_style),
+        )
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
@@ -2839,23 +2905,17 @@ class SVGObject:
         }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_inherited_color(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
-        for attr in ("fill", "stroke"):
-            local_value = _get_attr_or_style(group, attr, local_style)
-            inherited_value = (inherited_style or {}).get(attr)
-            if (
-                local_value == "inherit"
-                and self._extract_gradient_id(inherited_value) in self._pattern_elements
-            ):
-                merged_style[attr] = inherited_value
-            elif local_value is not None and (
-                attr in merged_style
-                or self._extract_gradient_id(local_value) in self._pattern_elements
-            ):
-                merged_style[attr] = local_value
-        apply_styles(pdf_group, group, merged_style)
+        self._merge_inherited_paints(group, local_style, inherited_style, merged_style)
+        apply_styles(
+            pdf_group,
+            group,
+            merged_style,
+            current_color=_current_color(merged_style, None),
+        )
 
         # handle defs before anything else
         for child in [
@@ -2910,11 +2970,11 @@ class SVGObject:
             )
             pdf_group.add_item(self.build_group(child, None, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "path"):
-            path = self.build_path(child)
+            path = self.build_path(child, inherited_style)
             self._apply_inherited_pattern(path, child, inherited_style)
             pdf_group.add_item(path, False)
         elif child.tag in shape_tags:
-            path = self.build_shape(child)
+            path = self.build_shape(child, inherited_style)
             self._apply_inherited_pattern(path, child, inherited_style)
             pdf_group.add_item(path, False)
         elif child.tag in xmlns_lookup("svg", "use"):
@@ -2930,6 +2990,36 @@ class SVGObject:
                 "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
                 without_ns(child.tag),
             )
+
+    def _merge_inherited_paints(
+        self,
+        element: "Element",
+        local_style: dict[str, Any],
+        inherited_style: Optional[dict[str, Any]],
+        merged_style: dict[str, Any],
+    ) -> None:
+        """
+        The fill and stroke that a <g> or a <switch> passes to its children: a pattern
+        it inherits, or the currentColor keyword, which they resolve with their own
+        color, as in CSS.
+        """
+        for attr in ("fill", "stroke"):
+            local_value = _get_attr_or_style(element, attr, local_style)
+            inherited_value = (inherited_style or {}).get(attr)
+            if (
+                local_value == "inherit"
+                and self._extract_gradient_id(inherited_value) in self._pattern_elements
+            ):
+                merged_style[attr] = inherited_value
+            elif _is_current_color(local_value) or (
+                local_value == "inherit" and _is_current_color(inherited_value)
+            ):
+                merged_style[attr] = "currentColor"
+            elif local_value is not None and (
+                attr in merged_style
+                or self._extract_gradient_id(local_value) in self._pattern_elements
+            ):
+                merged_style[attr] = local_value
 
     @force_nodocument
     def build_switch(
@@ -2950,9 +3040,16 @@ class SVGObject:
         }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_inherited_color(merged_style, inherited_style)
+        self._merge_inherited_paints(switch, local_style, inherited_style, merged_style)
         pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
-        apply_styles(pdf_group, switch, merged_style)
+        apply_styles(
+            pdf_group,
+            switch,
+            merged_style,
+            current_color=_current_color(merged_style, None),
+        )
 
         for child in switch:
             if _has_switch_conditional_attrs(child):
@@ -2967,12 +3064,19 @@ class SVGObject:
         return pdf_group
 
     @force_nodocument
-    def build_path(self, path: "Element") -> PaintedPath:
+    def build_path(
+        self, path: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> PaintedPath:
         """Convert an SVG <path> tag into a PDF path object."""
         self._record_resolved_elements(1)
         style_map = self._style_map_for(path)
         pdf_path = PaintedPath()
-        apply_styles(pdf_path, path, style_map)
+        apply_styles(
+            pdf_path,
+            path,
+            _with_inherited_current_color(style_map, path, inherited_style),
+            current_color=_current_color(style_map, inherited_style),
+        )
         self._apply_gradient_paint(pdf_path, path, style_map)
         self.apply_clipping_path(pdf_path, path, style_map)
         svg_path = path.attrib.get("d")
@@ -2982,14 +3086,21 @@ class SVGObject:
         return pdf_path
 
     @force_nodocument
-    def build_shape(self, shape: "Element") -> PaintedPath:
+    def build_shape(
+        self, shape: "Element", inherited_style: Optional[dict[str, Any]] = None
+    ) -> PaintedPath:
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
         self._record_resolved_elements(1)
         style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
         shape_path = shape_builder(shape)
         assert isinstance(shape_path, PaintedPath)
-        apply_styles(shape_path, shape, style_map)
+        apply_styles(
+            shape_path,
+            shape,
+            _with_inherited_current_color(style_map, shape, inherited_style),
+            current_color=_current_color(style_map, inherited_style),
+        )
         self._apply_gradient_paint(shape_path, shape, style_map)
         self.apply_clipping_path(shape_path, shape, style_map)
         self.update_xref(shape.attrib.get("id"), shape_path)
@@ -3170,6 +3281,7 @@ class SVGObject:
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
+        _resolve_inherited_color(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
             inherited_value = (inherited_style or {}).get(attr)
@@ -3178,10 +3290,17 @@ class SVGObject:
                 and self._extract_gradient_id(inherited_value) in self._pattern_elements
             ):
                 effective_style[attr] = inherited_value
+            elif value == "inherit" and _is_current_color(inherited_value):
+                effective_style[attr] = "currentColor"
             elif value is not None:
                 effective_style[attr] = value
         path = PaintedPath()
-        apply_styles(path, text_tag, local_style)
+        apply_styles(
+            path,
+            text_tag,
+            _with_inherited_current_color(local_style, text_tag, inherited_style),
+            current_color=_current_color(effective_style, None),
+        )
         self._apply_gradient_paint(path, text_tag, effective_style)
         self.apply_clipping_path(path, text_tag, effective_style)
 
@@ -3211,7 +3330,12 @@ class SVGObject:
             if tag is None or style_map_for_tag is None:
                 return None
             context = GraphicsContext()
-            apply_styles(context, tag, style_map_for_tag)
+            apply_styles(
+                context,
+                tag,
+                _with_inherited_current_color(style_map_for_tag, tag, effective_style),
+                current_color=_current_color(style_map_for_tag, effective_style),
+            )
             self._apply_gradient_paint(context, tag, style_map_for_tag)
             context.style.auto_close = GraphicsStyle.INHERIT
             overrides = any(
