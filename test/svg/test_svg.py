@@ -553,6 +553,43 @@ class TestSVGObject:
                 ),
                 "0 0 1 rg",
             ),
+            # also for text and a <tspan>
+            (
+                (
+                    '<g color="red" fill="currentColor">'
+                    '<text color="blue" y="9">a</text></g>'
+                ),
+                "0 0 1 rg",
+            ),
+            (
+                (
+                    '<text color="red" fill="currentColor" y="9">'
+                    'a<tspan color="blue">b</tspan></text>'
+                ),
+                "0 0 1 rg",
+            ),
+            # an explicit fill="inherit" inherits the keyword, like an omitted fill
+            (
+                (
+                    '<g color="red" fill="currentColor">'
+                    '<rect color="blue" fill="inherit" width="5" height="5"/></g>'
+                ),
+                "0 0 1 rg",
+            ),
+            (
+                (
+                    '<g color="red" fill="currentColor"><g color="blue" fill="inherit">'
+                    '<rect width="5" height="5"/></g></g>'
+                ),
+                "0 0 1 rg",
+            ),
+            (
+                (
+                    '<g color="red" fill="currentColor">'
+                    '<text color="blue" fill="inherit" y="9">a</text></g>'
+                ),
+                "0 0 1 rg",
+            ),
             # a color of inherit or currentColor is the color of the parent
             (
                 (

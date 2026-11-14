@@ -569,6 +569,10 @@ def _current_color(
     return None
 
 
+def _is_current_color(value: Any) -> bool:
+    return isinstance(value, str) and value.strip().lower() == "currentcolor"
+
+
 def _resolve_inherited_color(
     style: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
@@ -596,8 +600,8 @@ def _with_inherited_current_color(
     inherited_paints = {
         attr: "currentColor"
         for attr in ("fill", "stroke")
-        if str(inherited_style.get(attr, "")).strip().lower() == "currentcolor"
-        and _get_attr_or_style(svg_element, attr, style_map) is None
+        if _is_current_color(inherited_style.get(attr))
+        and _get_attr_or_style(svg_element, attr, style_map) in (None, "inherit")
     }
     return {**style_map, **inherited_paints} if inherited_paints else style_map
 
@@ -2754,9 +2758,8 @@ class SVGObject:
                 and self._extract_gradient_id(inherited_value) in self._pattern_elements
             ):
                 merged_style[attr] = inherited_value
-            elif (
-                local_value is not None
-                and local_value.strip().lower() == "currentcolor"
+            elif _is_current_color(local_value) or (
+                local_value == "inherit" and _is_current_color(inherited_value)
             ):
                 # descendants resolve it with their own color
                 merged_style[attr] = "currentColor"
@@ -3114,13 +3117,15 @@ class SVGObject:
                 and self._extract_gradient_id(inherited_value) in self._pattern_elements
             ):
                 effective_style[attr] = inherited_value
+            elif value == "inherit" and _is_current_color(inherited_value):
+                effective_style[attr] = "currentColor"
             elif value is not None:
                 effective_style[attr] = value
         path = PaintedPath()
         apply_styles(
             path,
             text_tag,
-            local_style,
+            _with_inherited_current_color(local_style, text_tag, inherited_style),
             current_color=_current_color(effective_style, None),
         )
         self._apply_gradient_paint(path, text_tag, effective_style)
@@ -3155,7 +3160,7 @@ class SVGObject:
             apply_styles(
                 context,
                 tag,
-                style_map_for_tag,
+                _with_inherited_current_color(style_map_for_tag, tag, effective_style),
                 current_color=_current_color(style_map_for_tag, effective_style),
             )
             self._apply_gradient_paint(context, tag, style_map_for_tag)
