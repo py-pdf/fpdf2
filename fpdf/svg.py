@@ -911,6 +911,10 @@ def _resolve_relative_font_size(
     if not isinstance(value, str):
         return
     keyword = value.strip().lower()
+    if keyword == "inherit":
+        # the initial value, medium, when there is nothing to inherit
+        style_map["font-size"] = (inherited_style or {}).get("font-size") or "16px"
+        return
     if keyword in _FONT_SIZE_KEYWORDS:
         style_map["font-size"] = (
             f"{_FONT_SIZE_KEYWORDS[keyword] * resolve_length('16px')}pt"
@@ -937,6 +941,19 @@ def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
     """
     return _em_length(_font_size_pt(_get_attr_or_style(root_tag, "font-size")))(
         length_str
+    )
+
+
+def _has_em_lengths(element: "Element") -> bool:
+    """Whether a shape, or a shape in a <g>, has a length in em or ex."""
+    if element.tag not in shape_tags and element.tag not in xmlns_lookup("svg", "g"):
+        return False
+    return any(
+        (match := unit_splitter.fullmatch(value.strip())) is not None
+        and match.group("unit") in ("em", "ex")
+        for shape in element.iter()
+        if shape.tag in shape_tags
+        for value in shape.attrib.values()
     )
 
 
@@ -2634,7 +2651,18 @@ class SVGObject:
         if ref in self._hidden_references:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
-        referenced = deepcopy(referenced)
+        element = self._elements_by_id.get(ref)
+        if element is not None and _has_em_lengths(element):
+            # the em and ex of the referenced shapes are relative to the font size
+            # that the <use> gives them, as its copy inherits from it
+            use_style = {**(inherited_style or {}), **style_map}
+            _resolve_relative_font_size(use_style, inherited_style)
+            font_style = {}
+            if "font-size" in use_style:
+                font_style["font-size"] = use_style["font-size"]
+            referenced = self._rebuild_for_use(element, font_style)
+        else:
+            referenced = deepcopy(referenced)
         pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(xref, attr, style_map)
@@ -2680,6 +2708,28 @@ class SVGObject:
                 pdf_group.transform = placement_transform
 
         return pdf_group
+
+    def _rebuild_for_use(
+        self, element: "Element", font_style: dict[str, Any]
+    ) -> GraphicsContext | PaintedPath:
+        """Build a shape or a <g> again, for a <use> that gives it another font size."""
+        ids = ["#" + e.attrib["id"] for e in element.iter() if e.attrib.get("id")]
+        saved = [
+            (key, self.cross_references[key], self._cross_reference_costs[key])
+            for key in ids
+            if key in self.cross_references
+        ]
+        if element.tag in shape_tags:
+            rebuilt: GraphicsContext | PaintedPath = self.build_shape(
+                element, font_style
+            )
+        else:
+            rebuilt = self.build_group(element, None, font_style)
+        # the definition itself keeps the font size of its own ancestors
+        for key, referenced, cost in saved:
+            self.cross_references[key] = referenced
+            self._cross_reference_costs[key] = cost
+        return rebuilt
 
     def _bind_reference_patterns(
         self,
