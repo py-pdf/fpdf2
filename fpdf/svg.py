@@ -2875,6 +2875,13 @@ class SVGObject:
         context: dict[str, Optional[str]] = {}
         for attr in ("fill", "stroke", "fill-opacity", "stroke-opacity"):
             value = _get_attr_or_style(xref, attr, style_map)
+            # else inherited, also as a presentation attribute of an ancestor
+            ancestor = self._pattern_parents.get(xref)
+            while value in (None, "inherit") and ancestor is not None:
+                value = _get_attr_or_style(
+                    ancestor, attr, self._style_map_for(ancestor)
+                )
+                ancestor = self._pattern_parents.get(ancestor)
             if value in (None, "inherit"):
                 value = (inherited_style or {}).get(attr)
             context[attr] = value

@@ -796,8 +796,29 @@ class TestSVGObject:
         style = svg.base_group.path_items[0].path_items[0].style
         for attr, value in expected.items():
             if attr.endswith("_color"):
-                value = fpdf.drawing.color_from_hex_string(value)
-            assert getattr(style, attr) == value
+                expected_value = fpdf.drawing.color_from_hex_string(value)
+            else:
+                expected_value = value
+            assert getattr(style, attr) == expected_value
+
+    @pytest.mark.parametrize(
+        "group",
+        ['fill="red" stroke="lime" stroke-opacity="0.5"', 'style="stroke: lime"'],
+    )
+    def test_svg_context_paints_inherited_by_the_use(self, group):
+        # the <use> inherits them from its parent, also as presentation attributes
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<path id="p" d="M0 0h5v5z" fill="context-stroke" '
+            'fill-opacity="context-stroke-opacity"/></defs>'
+            f'<g {group}><g><use href="#p"/></g></g></svg>'
+        )
+        path = svg.base_group.path_items[0].path_items[0].path_items[0].path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string("#0f0")
+        expected_opacity = (
+            0.5 if "opacity" in group else fpdf.drawing.GraphicsStyle.INHERIT
+        )
+        assert path.style.fill_opacity == expected_opacity
 
     def test_svg_context_fill_through_a_group(self):
         # the fill of a group between the <use> and the path does not replace it
