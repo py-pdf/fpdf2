@@ -951,6 +951,28 @@ class TestSVGObject:
         assert rect.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
 
     @pytest.mark.parametrize(
+        "css",
+        [
+            ".a { fill: url(#paint@dark); stroke: red; }",
+            '.a { font-family: "x;@a"; stroke: red; }',
+            ".a { font-family: x\\@a; stroke: red; }",
+            "@media screen { .a { fill: url(#p@d); stroke: red; } }",
+            "@import url(theme.css); .a { fill: url(#p@d); stroke: red; }",
+        ],
+    )
+    def test_svg_css_at_sign_inside_a_declaration(self, css):
+        # only an @ that starts a statement begins an at-rule
+        assert fpdf.svg._strip_css_at_statements(css) == css.replace(
+            "@import url(theme.css);", ""
+        )
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg"><style>{css}</style>'
+            '<rect class="a" width="10" height="10"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.style.stroke_color == fpdf.drawing.color_from_hex_string("#f00")
+
+    @pytest.mark.parametrize(
         "start, repeated, end",
         [
             ("@", "a", " {}"),
