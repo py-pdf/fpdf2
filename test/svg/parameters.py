@@ -603,6 +603,19 @@ test_svg_attribute_conversion = (
         id="fill color rgb() with an integer alpha",
     ),
     pytest.param(
+        # numbers that are not integers are allowed in CSS Color 4
+        '<path fill="rgb(0, 127.5, 1e2)"/>',
+        Gs(fill_color=DeviceRGB(0, 0.5, 100 / 255)),
+        no_error(),
+        id="fill color rgb() with numbers that are not integers",
+    ),
+    pytest.param(
+        '<path fill="rgb(255, 127.5, 0, 51)"/>',
+        Gs(fill_color=DeviceRGB(1, 0.5, 0, 0.2), fill_opacity=0.2),
+        no_error(),
+        id="fill color rgb() with a number that is not an integer and an alpha",
+    ),
+    pytest.param(
         '<path fill="rgb(255 0 0)"/>',
         Gs(fill_color="#f00"),
         no_error(),

@@ -318,16 +318,31 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
         return _css_rgb_color(lowered)
 
     if lowered.startswith("rgb"):
-        # The 4th value of fpdf2's own rgb(R, G, B, A) is an integer alpha from 0 to
-        # 255, with or without a sign, so a fraction or a percentage, as in
-        # rgb(0,0,0, 0.5) of Mermaid diagrams, can only be the alpha from 0 to 1 that
-        # CSS Color 4 allows in rgb()
-        channels = lowered[lowered.find("(") + 1 :].rstrip(")").split(",")
-        if len(channels) == 4 and not re.fullmatch(r"[+-]?\d+", channels[3].strip()):
-            return _css_rgb_color(lowered)
-        return color_from_rgb_string(lowered)
+        return _comma_rgb_color(lowered)
 
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _comma_rgb_color(lowered: str) -> DeviceRGB | DeviceGray:
+    """An rgb() or rgba() color with commas."""
+    # The 4th value of fpdf2's own rgb(R, G, B, A) is an integer alpha from 0 to
+    # 255, with or without a sign, so a fraction or a percentage, as in
+    # rgb(0,0,0, 0.5) of Mermaid diagrams, can only be the alpha from 0 to 1 that
+    # CSS Color 4 allows in rgb()
+    channels = lowered[lowered.find("(") + 1 :].rstrip(")").split(",")
+    if len(channels) == 4 and not re.fullmatch(r"[+-]?\d+", channels[3].strip()):
+        return _css_rgb_color(lowered)
+    # and its R, G and B are integers or percentages: other numbers, such as
+    # rgb(0.8, 127.5, 14.2), are those of CSS Color 4
+    if any(
+        not re.fullmatch(r"[+-]?\d+%?", channel.strip()) for channel in channels[:3]
+    ):
+        color = _css_rgb_color("rgb(" + ",".join(channels[:3]) + ")")
+        if len(channels) == 4:
+            # the integer alpha is still from 0 to 255
+            return DeviceRGB(color.r, color.g, color.b, int(channels[3]) / 255)
+        return color
+    return color_from_rgb_string(lowered)
 
 
 def _css_rgb_color(colorstr: str) -> DeviceRGB:
