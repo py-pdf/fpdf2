@@ -374,9 +374,11 @@ class FlexTemplate:
         if element.get("underline"):
             style += "U"
         self.splitting_pdf.set_font(element["font"], style, element["size"])
+        w_cell = element["w"] if "w" in element else element["x2"] - element["x1"]
+        h_cell = element["h"] if "h" in element else element["y2"] - element["y1"]
         return self.splitting_pdf.multi_cell(  # type: ignore[return-value]
-            w=element["x2"] - element["x1"],
-            h=element["y2"] - element["y1"],
+            w=w_cell,
+            h=h_cell,
             text=str(text),
             align=element.get("align", ""),
             dry_run=True,
