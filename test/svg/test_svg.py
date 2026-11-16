@@ -230,6 +230,24 @@ def test_svg_shape_conversion(shape, output, guard):
         assert output == path._root_graphics_context.path_items
 
 
+@pytest.mark.parametrize("shape, output", parameters.test_svg_shape_tags_with_viewport)
+def test_svg_shape_conversion_with_viewport(shape, output):
+    xml = parse_xml_str(shape)
+    converter = getattr(fpdf.svg.ShapeBuilder, xml.tag)
+    path = converter(xml, viewport=(200, 100))
+    assert output == path._root_graphics_context.path_items
+
+
+def test_svg_shape_percent_lengths_of_the_svg_size():
+    # as python-barcode writes it: without a viewBox, the size of the <svg>
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="25.28mm" height="23.764mm">'
+        '<rect width="100%" height="100%" style="fill:white"/></svg>'
+    )
+    rect = svg.base_group.path_items[0]._root_graphics_context.path_items[1]
+    assert (rect.size.x, rect.size.y) == (svg.width, svg.height)
+
+
 class TestSVGAttributeConversion:
     @pytest.mark.parametrize(
         "transform, expected, guard", parameters.test_svg_transforms
