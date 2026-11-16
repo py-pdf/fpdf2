@@ -1027,6 +1027,29 @@ def _resolve_relative_font_size(
     style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
+# the values of dominant-baseline that place a text differently from its
+# alphabetic baseline; the others, such as auto, keep it
+DOMINANT_BASELINES = (
+    "middle",
+    "central",
+    "mathematical",
+    "hanging",
+    "text-before-edge",
+    "text-top",
+    "text-after-edge",
+    "text-bottom",
+    "ideographic",
+)
+
+
+def _dominant_baseline(style: dict[str, Any]) -> Optional[str]:
+    """The dominant-baseline of a text, as Mermaid sets it to center labels."""
+    value = style.get("dominant-baseline")
+    if isinstance(value, str) and value.strip().lower() in DOMINANT_BASELINES:
+        return value.strip().lower()
+    return None
+
+
 def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
     """
     Resolve the width or height of the root <svg>. As in browsers, a length in em
@@ -2066,6 +2089,7 @@ class SVGObject:
             elif key in style_map:
                 style_map.pop(key, None)
         inheritable_attrs = (
+            "dominant-baseline",
             "font-family",
             "font-size",
             "font-style",
@@ -3526,6 +3550,7 @@ class SVGObject:
             abs_y: Optional[float] = None,
             style_tag: Optional["Element"] = None,
             style_map_for_tag: Optional[dict[str, Any]] = None,
+            dominant_baseline: Optional[str] = None,
         ) -> None:
             nonlocal pending_dx, pending_dy
             raw = raw_text or ""
@@ -3570,9 +3595,11 @@ class SVGObject:
                     abs_x=abs_x,
                     abs_y=abs_y,
                     run_style=run_style,
+                    dominant_baseline=dominant_baseline,
                 )
             )
 
+        base_baseline = _dominant_baseline(effective_style)
         # Leading text (before child <tspan>)
         _add_run(
             text_tag.text or "",
@@ -3582,6 +3609,7 @@ class SVGObject:
             preserve=preserve_parent,
             style_tag=None,
             style_map_for_tag=None,
+            dominant_baseline=base_baseline,
         )
 
         for child in text_tag:
@@ -3629,6 +3657,7 @@ class SVGObject:
                         abs_y=abs_y,
                         style_tag=child,
                         style_map_for_tag=child_local_style,
+                        dominant_baseline=_dominant_baseline(child_effective_style),
                     )
 
                 # Text between tspans inherits parent style
@@ -3640,6 +3669,7 @@ class SVGObject:
                     preserve=preserve_parent,
                     style_tag=None,
                     style_map_for_tag=None,
+                    dominant_baseline=base_baseline,
                 )
             else:
                 # other child tags are ignored (already logged elsewhere)
