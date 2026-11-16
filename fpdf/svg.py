@@ -1493,7 +1493,12 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def line(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
+    def line(
+        cls,
+        tag: "Element",
+        clipping_path: bool = False,
+        font_size: Optional[float] = None,
+    ) -> PaintedPath:
         """
         Convert an SVG <line> into a PDF path. In a <clipPath>, it has no area, so it
         clips everything away. em and ex are relative to font_size.
