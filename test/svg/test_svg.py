@@ -815,10 +815,39 @@ class TestSVGObject:
         )
         path = svg.base_group.path_items[0].path_items[0].path_items[0].path_items[0]
         assert path.style.fill_color == fpdf.drawing.color_from_hex_string("#0f0")
-        expected_opacity = (
-            0.5 if "opacity" in group else fpdf.drawing.GraphicsStyle.INHERIT
+        # without one, the opacity of the <use> is the initial 1
+        assert path.style.fill_opacity == (0.5 if "opacity" in group else 1)
+
+    @pytest.mark.parametrize(
+        "defs, fill",
+        [
+            # a <use> of a <use> inherits the paint of the outer one
+            ('<use id="u" href="#p"/>', "#0f0"),
+            ('<use id="u" href="#p" stroke="blue"/>', "#00f"),
+            ('<g id="u"><use href="#p"/></g>', "#0f0"),
+            ('<g id="u" stroke="red"><use href="#p"/></g>', "#f00"),
+        ],
+    )
+    def test_svg_context_paints_through_a_use_of_a_use(self, defs, fill):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            f'<path id="p" d="M0 0h5v5z" fill="context-stroke"/>{defs}</defs>'
+            '<use href="#u" stroke="lime"/></svg>'
         )
-        assert path.style.fill_opacity == expected_opacity
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
+
+    def test_svg_context_opacity_not_set_on_the_use(self):
+        # the initial opacity of the <use>, not that of a group in between
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<g id="p" fill-opacity="0.2"><path d="M0 0h5v5z" fill="red" '
+            'fill-opacity="context-stroke-opacity"/></g></defs><use href="#p"/></svg>'
+        )
+        path = svg.base_group.path_items[0].path_items[0].path_items[0]
+        assert path.style.fill_opacity == 1
 
     def test_svg_context_fill_through_a_group(self):
         # the fill of a group between the <use> and the path does not replace it
