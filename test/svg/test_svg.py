@@ -496,7 +496,10 @@ class TestSVGObject:
                 else:
                     yield from rect_sizes(item)
 
-        assert list(rect_sizes(svg.base_group)) == pytest.approx(sizes)
+        actual_sizes = list(rect_sizes(svg.base_group))
+        assert len(actual_sizes) == len(sizes)
+        for actual, expected in zip(actual_sizes, sizes):
+            assert actual == pytest.approx(expected)
 
     def test_text_font_size_inherit(self):
         pdf = fpdf.FPDF()
