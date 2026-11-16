@@ -663,6 +663,22 @@ class TestSVGObject:
         ).draw_to_page(pdf)
         assert color in bytes(pdf.output()).decode("latin-1")
 
+    @pytest.mark.parametrize("color", ['color="red"', 'style="color: red"'])
+    def test_svg_current_color_in_pattern(self, color):
+        # the contents of a <pattern> inherit the color of its ancestors
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" {color}>'
+            '<pattern id="p" width="10" height="10" patternUnits="userSpaceOnUse">'
+            '<rect width="10" height="10" fill="currentColor"/></pattern>'
+            '<rect width="10" height="10" fill="url(#p)"/></svg>'
+        ).draw_to_page(pdf)
+        streams = re.findall(
+            rb"/FlateDecode.*?stream\r?\n(.*?)\r?\nendstream", bytes(pdf.output()), re.S
+        )
+        assert b"1 0 0 rg" in b"".join(zlib.decompress(stream) for stream in streams)
+
     def test_svg_current_color_without_color_property(self):
         # with no color property in the SVG, currentColor keeps the color of the FPDF
         pdf = fpdf.FPDF()

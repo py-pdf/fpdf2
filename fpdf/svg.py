@@ -2386,11 +2386,12 @@ class SVGObject:
             for ancestor in reversed(ancestors):
                 styles = self._style_map_for(ancestor)
                 parent_style = dict(inherited)
-                for attr in (*svg_attr_map, *font_keys):
+                for attr in (*svg_attr_map, *font_keys, "color"):
                     value = _get_attr_or_style(ancestor, attr, styles)
                     if value is not None:
                         inherited[attr] = value
                 _resolve_relative_font_size(inherited, parent_style)
+                _resolve_inherited_color(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
             apply_styles(group, empty, inherited)
@@ -2401,7 +2402,7 @@ class SVGObject:
                 {
                     key: value
                     for key, value in inherited.items()
-                    if key in font_keys
+                    if key in (*font_keys, "color")
                     or (
                         key in ("fill", "stroke")
                         and self._extract_gradient_id(value) in self._pattern_elements
