@@ -875,6 +875,25 @@ test_svg_attribute_conversion = (
         id="stroke-dasharray single value",
     ),
     pytest.param(
+        # as Mermaid gives its solid edges: values that are all 0 are a solid line
+        '<path stroke-dasharray="0"/>',
+        Gs(stroke_dash_pattern=None),
+        no_error(),
+        id="stroke-dasharray 0",
+    ),
+    pytest.param(
+        '<path style="stroke-dasharray: 0px, 0"/>',
+        Gs(stroke_dash_pattern=None),
+        no_error(),
+        id="stroke-dasharray of 0 values",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="0 5"/>',
+        Gs(stroke_dash_pattern=[0, 5]),
+        no_error(),
+        id="stroke-dasharray with a 0 dash",
+    ),
+    pytest.param(
         '<path stroke-dasharray="inherit"/>',
         Gs(),
         no_error(),
