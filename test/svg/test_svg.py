@@ -1118,6 +1118,14 @@ class TestSVGObject:
                 ["0 0 1 rg"],
             ),
             (
+                '<g fill="blue"><rect width="5" height="5" fill="var(--c, red"/></g>',
+                ["0 0 1 rg"],
+            ),
+            (
+                '<g fill="blue"><rect width="5" height="5" fill="var(c, red)"/></g>',
+                ["0 0 1 rg"],
+            ),
+            (
                 (
                     '<g style="--a: var(--b); --b: var(--a)" fill="blue">'
                     '<rect width="5" height="5" fill="var(--a)"/></g>'
@@ -1149,6 +1157,16 @@ class TestSVGObject:
         assert first.transform == fpdf.drawing.Transform.translation(1, 2)
         assert second.style.fill_opacity is fpdf.drawing.GraphicsStyle.INHERIT
 
+    def test_svg_css_var_fallback_not_read_when_the_property_is_set(self):
+        # so a var() in the fallback does not matter
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" '
+            'style="--t: translate(1, 2); '
+            'transform: var(--t, translate(var(--missing), 0))"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.transform == fpdf.drawing.Transform.translation(1, 2)
+
     def test_svg_css_var_references_are_bounded(self):
         # a long chain of custom properties stops being followed
         own = {f"--p{i}": f"var(--p{i + 1})" for i in range(200)}
@@ -1159,8 +1177,10 @@ class TestSVGObject:
 
     def test_svg_css_var_substitutions_are_bounded(self):
         # custom properties that double at each step stop being substituted
-        properties = {f"--p{i}": f"var(--p{i + 1}) var(--p{i + 1})" for i in range(40)}
-        assert fpdf.svg._substitute_css_var("var(--p0)", properties) is None
+        own = {f"--p{i}": f"var(--p{i + 1}) var(--p{i + 1})" for i in range(40)}
+        own["--p40"] = "x"
+        computed = fpdf.svg._compute_custom_properties(own, {})
+        assert computed["--p39"] == "x x" and computed["--p0"] is None
         # and so do fallbacks nested too deeply
         nested = "".join(f"var(--f{i}, " for i in range(20)) + "lime" + ")" * 20
         assert fpdf.svg._substitute_css_var(nested, {}) is None

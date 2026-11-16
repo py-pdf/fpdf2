@@ -127,45 +127,63 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
 
 
 # a var(), with an optional fallback that can contain parentheses, as in rgb()
-CSS_VAR_RE = re.compile(
-    r"var\(\s*(--[\w-]+)\s*(?:,([^()]*(?:\([^()]*\)[^()]*)*))?\)", re.IGNORECASE
-)
 CSS_VAR_NAME_RE = re.compile(r"var\(\s*(--[\w-]+)", re.IGNORECASE)
-# to stop at custom properties that reference each other in a cycle
+CSS_CUSTOM_PROPERTY_RE = re.compile(r"--[\w-]+")
+# to stop at fallbacks nested too deeply, and values that grow too long
 _MAX_CSS_VAR_SUBSTITUTIONS = 16
 _MAX_CSS_VAR_LENGTH = 10_000
 _MAX_CSS_VAR_DEPTH = 64
 
 
 def _substitute_css_var(
-    value: str, properties: dict[str, Optional[str]]
+    value: str, properties: dict[str, Optional[str]], depth: int = 0
 ) -> Optional[str]:
     """
     A value with each var() replaced by the custom property it names, or else by its
-    fallback; None if it is invalid: without either, or with a cycle. A property of
-    None is invalid, so its fallback is used.
+    fallback; None if it is invalid: without either, or too deeply nested. A
+    property of None is invalid, so its fallback is used. The fallback of a var()
+    whose property is set is not read, as in CSS, so a var() inside it does not
+    matter.
     """
-    for _ in range(_MAX_CSS_VAR_SUBSTITUTIONS):
-        if "var(" not in value.lower():
-            return value.strip()
-        invalid = False
-
-        def replace(match: re.Match[str]) -> str:
-            nonlocal invalid
-            name, fallback = match.groups()
-            computed = properties.get(name)
-            if computed is not None:
-                return computed
-            if fallback is not None:
-                return fallback
-            invalid = True
-            return ""
-
-        substituted = CSS_VAR_RE.sub(replace, value)
-        if invalid or substituted == value or len(substituted) > _MAX_CSS_VAR_LENGTH:
+    if depth > _MAX_CSS_VAR_SUBSTITUTIONS:
+        return None
+    lowered = value.lower()
+    parts: list[str] = []
+    length = 0
+    position = 0
+    while (start := lowered.find("var(", position)) >= 0:
+        parts.append(value[position:start])
+        # the closing parenthesis of this var(), and its first comma
+        index, level, comma = start + 4, 1, -1
+        while index < len(value) and level:
+            char = value[index]
+            if char == "(":
+                level += 1
+            elif char == ")":
+                level -= 1
+            elif char == "," and level == 1 and comma < 0:
+                comma = index
+            index += 1
+        if level:
             return None
-        value = substituted
-    return None
+        end = index - 1
+        name = value[start + 4 : comma if comma >= 0 else end].strip()
+        if not CSS_CUSTOM_PROPERTY_RE.fullmatch(name):
+            return None
+        replacement = properties.get(name)
+        if replacement is None and comma >= 0:
+            replacement = _substitute_css_var(
+                value[comma + 1 : end], properties, depth + 1
+            )
+        if replacement is None:
+            return None
+        length += start - position + len(replacement)
+        if length > _MAX_CSS_VAR_LENGTH:
+            return None
+        parts.append(replacement)
+        position = index
+    parts.append(value[position:])
+    return "".join(parts).strip()
 
 
 def _compute_custom_properties(
