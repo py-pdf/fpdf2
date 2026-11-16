@@ -337,6 +337,10 @@ def _comma_rgb_color(lowered: str) -> DeviceRGB | DeviceGray:
     if any(
         not re.fullmatch(r"[+-]?\d+%?", channel.strip()) for channel in channels[:3]
     ):
+        if len(channels) not in (3, 4) or not re.fullmatch(
+            r"rgba?\([^()]*\)", re.sub(r"\s+", "", lowered)
+        ):
+            raise ValueError(f"{lowered} could not be interpreted as a rgb() color")
         color = _css_rgb_color("rgb(" + ",".join(channels[:3]) + ")")
         if len(channels) == 4:
             # the integer alpha is still from 0 to 255

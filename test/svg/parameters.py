@@ -616,6 +616,24 @@ test_svg_attribute_conversion = (
         id="fill color rgb() with a number that is not an integer and an alpha",
     ),
     pytest.param(
+        '<path fill="rgb(0, 127.5, 0, 51, 99)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgb() color with a number that is not an integer and 5 values",
+    ),
+    pytest.param(
+        '<path fill="rgb(0, 127.5, 0"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgb() color with a number that is not an integer and no ')'",
+    ),
+    pytest.param(
+        '<path fill="rgb(0, 127.5, 0))"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgb() color with a number that is not an integer and two ')'",
+    ),
+    pytest.param(
         '<path fill="rgb(255 0 0)"/>',
         Gs(fill_color="#f00"),
         no_error(),
