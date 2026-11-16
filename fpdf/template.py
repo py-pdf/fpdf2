@@ -449,7 +449,10 @@ class FlexTemplate:
         # set default values, because cell() does not know how to
         # treat None as value for new_x, new_y
         new_xx = XPos.RIGHT if new_x is None else new_x
-        new_yy = YPos.TOP if new_y is None else new_y
+        if multiline:
+            new_yy = YPos.NEXT if new_y is None else new_y
+        else:
+            new_yy = YPos.TOP if new_y is None else new_y
 
         if multiline is None:  # write without wrapping/trimming (default)
             pdf.cell(

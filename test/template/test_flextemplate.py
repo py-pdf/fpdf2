@@ -5,6 +5,7 @@ from fpdf.fpdf import FPDF
 from fpdf.template import FlexTemplate
 from ..conftest import assert_pdf_equal
 from test.template.charwrap_test_elements import elements as charwrap_elements
+import pytest
 
 HERE = Path(__file__).resolve().parent
 
@@ -1353,3 +1354,16 @@ def test_flextemplate_keep_aspect_ratio_badinput():
     pdf = FPDF()
     with raises(TypeError):
         FlexTemplate(pdf, tmpl)
+
+
+def test_y_pos_of_multiline():
+    pdf = FPDF()
+    pdf.add_page()
+    FlexTemplate(pdf, elements=[{
+        "name": "text", "type": "T",
+        "x1": 20, "y1": 50, "x2": 80, "y2": 55,
+        "text": "one\ntwo", "multiline": True,
+    }]).render()
+
+    assert pdf.get_x() == pytest.approx(80.0)
+    assert pdf.get_y() == pytest.approx(60.0)
