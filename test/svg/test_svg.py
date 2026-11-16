@@ -795,6 +795,36 @@ class TestSVGObject:
                 ),
                 ["0 1 0 RG", "/LW 3"],
             ),
+            # a custom property is computed where it is declared, then inherited
+            (
+                (
+                    '<g style="--a: red; --b: var(--a)">'
+                    '<rect width="5" height="5" style="--a: lime; fill: var(--b)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            # one that is invalid or in a cycle takes the fallback where it is used
+            (
+                (
+                    '<g style="--a: var(--missing)">'
+                    '<rect width="5" height="5" fill="var(--a, red)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            (
+                (
+                    '<g style="--a: var(--a)">'
+                    '<rect width="5" height="5" fill="var(--a, red)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            (
+                (
+                    '<g style="--a: var(--b, lime); --b: var(--a); --c: var(--a, red)">'
+                    '<rect width="5" height="5" fill="var(--c)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
             # without a value or a fallback, or in a cycle, the property is inherited
             (
                 '<g fill="blue"><rect width="5" height="5" fill="var(--undefined)"/></g>',
@@ -832,10 +862,21 @@ class TestSVGObject:
         assert first.transform == fpdf.drawing.Transform.translation(1, 2)
         assert second.style.fill_opacity is fpdf.drawing.GraphicsStyle.INHERIT
 
+    def test_svg_css_var_references_are_bounded(self):
+        # a long chain of custom properties stops being followed
+        own = {f"--p{i}": f"var(--p{i + 1})" for i in range(200)}
+        own["--p200"] = "lime"
+        computed = fpdf.svg._compute_custom_properties(own, {})
+        assert computed["--p200"] == "lime"
+        assert computed["--p0"] is None
+
     def test_svg_css_var_substitutions_are_bounded(self):
         # custom properties that double at each step stop being substituted
         properties = {f"--p{i}": f"var(--p{i + 1}) var(--p{i + 1})" for i in range(40)}
         assert fpdf.svg._substitute_css_var("var(--p0)", properties) is None
+        # and so do fallbacks nested too deeply
+        nested = "".join(f"var(--f{i}, " for i in range(20)) + "lime" + ")" * 20
+        assert fpdf.svg._substitute_css_var(nested, {}) is None
 
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")

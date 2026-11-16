@@ -126,15 +126,20 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
 CSS_VAR_RE = re.compile(
     r"var\(\s*(--[\w-]+)\s*(?:,([^()]*(?:\([^()]*\)[^()]*)*))?\)", re.IGNORECASE
 )
+CSS_VAR_NAME_RE = re.compile(r"var\(\s*(--[\w-]+)", re.IGNORECASE)
 # to stop at custom properties that reference each other in a cycle
 _MAX_CSS_VAR_SUBSTITUTIONS = 16
 _MAX_CSS_VAR_LENGTH = 10_000
+_MAX_CSS_VAR_DEPTH = 64
 
 
-def _substitute_css_var(value: str, properties: dict[str, str]) -> Optional[str]:
+def _substitute_css_var(
+    value: str, properties: dict[str, Optional[str]]
+) -> Optional[str]:
     """
     A value with each var() replaced by the custom property it names, or else by its
-    fallback; None if it is invalid: without either, or with a cycle.
+    fallback; None if it is invalid: without either, or with a cycle. A property of
+    None is invalid, so its fallback is used.
     """
     for _ in range(_MAX_CSS_VAR_SUBSTITUTIONS):
         if "var(" not in value.lower():
@@ -144,8 +149,9 @@ def _substitute_css_var(value: str, properties: dict[str, str]) -> Optional[str]
         def replace(match: re.Match[str]) -> str:
             nonlocal invalid
             name, fallback = match.groups()
-            if name in properties:
-                return properties[name]
+            computed = properties.get(name)
+            if computed is not None:
+                return computed
             if fallback is not None:
                 return fallback
             invalid = True
@@ -156,6 +162,45 @@ def _substitute_css_var(value: str, properties: dict[str, str]) -> Optional[str]
             return None
         value = substituted
     return None
+
+
+def _compute_custom_properties(
+    own: dict[str, str], inherited: dict[str, Optional[str]]
+) -> dict[str, Optional[str]]:
+    """
+    The computed values of the custom properties declared on an element: a var() in
+    them refers to the computed custom properties of the same element, and all those
+    in a cycle are invalid, None, even when they have a fallback.
+    """
+    computed: dict[str, Optional[str]] = {}
+    stack: list[str] = []
+
+    def compute(name: str) -> Optional[str]:
+        if name in computed:
+            return computed[name]
+        if name in stack:
+            for cyclic in stack[stack.index(name) :]:
+                computed[cyclic] = None
+            return None
+        if len(stack) >= _MAX_CSS_VAR_DEPTH:
+            return None
+        stack.append(name)
+        references = {
+            reference: compute(reference)
+            for reference in CSS_VAR_NAME_RE.findall(own[name])
+            if reference in own
+        }
+        stack.pop()
+        if name not in computed:
+            computed[name] = _substitute_css_var(
+                own[name],
+                {**inherited, **references},
+            )
+        return computed[name]
+
+    for name in own:
+        compute(name)
+    return computed
 
 
 _IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
@@ -1713,7 +1758,7 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
-        self._custom_properties_cache: dict["Element", dict[str, str]] = {}
+        self._custom_properties_cache: dict["Element", dict[str, Optional[str]]] = {}
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -1968,8 +2013,12 @@ class SVGObject:
             self._substitute_css_vars(tag, style_map)
         return style_map
 
-    def _custom_properties(self, tag: "Element") -> dict[str, str]:
-        """The CSS custom properties, such as --color, of an element and its ancestors."""
+    def _custom_properties(self, tag: "Element") -> dict[str, Optional[str]]:
+        """
+        The CSS custom properties, such as --color, of an element and its ancestors,
+        with their var() substituted where they are declared, as in CSS: None for one
+        that is invalid, so that a var() of it takes its fallback.
+        """
         cache = self._custom_properties_cache
         chain: list["Element"] = []
         ancestor: Optional["Element"] = tag
@@ -1985,7 +2034,10 @@ class SVGObject:
                 if key.startswith("--")
             }
             if own:
-                properties = {**properties, **own}
+                properties = {
+                    **properties,
+                    **_compute_custom_properties(own, properties),
+                }
             cache[element] = properties
         return properties
 
