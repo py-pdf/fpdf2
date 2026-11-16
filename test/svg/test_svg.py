@@ -763,7 +763,7 @@ class TestSVGObject:
     @pytest.mark.parametrize(
         "text, operators",
         [
-            # as spaCy's displaCy writes the labels of its dependency diagrams
+            # as spaCy writes the labels of its dependency diagrams
             (
                 '<text y="20" style="letter-spacing: 2px">ab</text>',
                 ["1 0 0 -1 0 20 Tm 1.5 Tc (ab) Tj 0 Tc ET"],
@@ -771,7 +771,8 @@ class TestSVGObject:
             # inherited, in em of the font size, and normal in a <tspan>
             (
                 (
-                    '<g letter-spacing="0.1em"><text y="20" x="50" font-size="20" '
+                    '<g font-size="20" letter-spacing="0.1em"><text y="20" x="50" '
+                    'font-size="20" '
                     'text-anchor="middle">ab<tspan letter-spacing="normal">c</tspan>'
                     "d</text></g>"
                 ),
@@ -780,6 +781,22 @@ class TestSVGObject:
                     "1 0 0 -1 51.56 20 Tm (c) Tj ET",
                     "1 0 0 -1 61.56 20 Tm 2 Tc (d) Tj 0 Tc ET",
                 ],
+            ),
+            # an em is of the font size where letter-spacing is set, and inherited
+            # as that length
+            (
+                (
+                    '<g font-size="20" letter-spacing="0.1em">'
+                    '<text y="20" font-size="40">ab</text></g>'
+                ),
+                ["2 Tc (ab) Tj 0 Tc ET"],
+            ),
+            (
+                (
+                    '<text y="20" font-size="10" letter-spacing="0.2em">a'
+                    '<tspan font-size="20">b</tspan></text>'
+                ),
+                ["2 Tc (a) Tj 0 Tc ET", "2 Tc (b) Tj 0 Tc ET"],
             ),
             (
                 (
@@ -791,6 +808,7 @@ class TestSVGObject:
             # as Inkscape writes it
             ('<text y="20" style="letter-spacing:0px">a</text>', ["Tm (a) Tj ET"]),
             ('<text y="20" letter-spacing="wide">a</text>', ["Tm (a) Tj ET"]),
+            ('<text y="20" letter-spacing="inherit">a</text>', ["Tm (a) Tj ET"]),
         ],
     )
     def test_svg_text_letter_spacing(self, text, operators):

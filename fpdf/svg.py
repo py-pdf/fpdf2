@@ -1019,22 +1019,42 @@ def _resolve_relative_font_size(
     style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
-def _letter_spacing(
-    style: dict[str, Any], parent_style: Optional[dict[str, Any]], font_size: float
-) -> float:
+def _resolve_relative_letter_spacing(
+    style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
     """
-    The letter-spacing of a text in pt, with em and ex relative to its font size;
-    0 for normal or a value that cannot be read, as in browsers.
+    Make a letter-spacing in em or ex absolute, against the font size of the element
+    that sets it, so that descendants inherit the computed spacing, as in CSS.
+    Call it after _resolve_relative_font_size().
+    """
+    value = style_map.get("letter-spacing")
+    if not isinstance(value, str):
+        return
+    if value.strip().lower() == "inherit":
+        parent_value = (inherited_style or {}).get("letter-spacing")
+        if parent_value is None:
+            style_map.pop("letter-spacing")
+        else:
+            style_map["letter-spacing"] = parent_value
+        return
+    match = unit_splitter.fullmatch(value.strip())
+    if match is None or match.group("unit") not in ("em", "ex"):
+        return
+    factor = 0.5 if match.group("unit") == "ex" else 1.0
+    font_size = style_map.get("font-size")
+    size = resolve_length(font_size) if font_size else resolve_length("16px")
+    style_map["letter-spacing"] = f"{float(match.group('value')) * factor * size}pt"
+
+
+def _letter_spacing(style: dict[str, Any]) -> float:
+    """
+    The letter-spacing of a text in pt, made absolute by
+    _resolve_relative_letter_spacing(); 0 for normal or a value that cannot be
+    read, as in browsers.
     """
     value = style.get("letter-spacing")
-    if isinstance(value, str) and value.strip().lower() == "inherit":
-        value = (parent_style or {}).get("letter-spacing")
     if not isinstance(value, str) or value.strip().lower() == "normal":
         return 0.0
-    match = unit_splitter.fullmatch(value.strip())
-    if match is not None and match.group("unit") in ("em", "ex"):
-        factor = 0.5 if match.group("unit") == "ex" else 1.0
-        return float(match.group("value")) * font_size * factor
     try:
         return resolve_length(value)
     except ValueError:
@@ -2354,6 +2374,7 @@ class SVGObject:
                     if value is not None:
                         inherited[attr] = value
                 _resolve_relative_font_size(inherited, parent_style)
+                _resolve_relative_letter_spacing(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
             apply_styles(group, empty, inherited)
@@ -2863,6 +2884,7 @@ class SVGObject:
         }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_relative_letter_spacing(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
@@ -2974,6 +2996,7 @@ class SVGObject:
         }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_relative_letter_spacing(merged_style, inherited_style)
         pdf_group = GraphicsContext()
         self._record_resolved_elements(1)
         apply_styles(pdf_group, switch, merged_style)
@@ -3194,6 +3217,7 @@ class SVGObject:
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
+        _resolve_relative_letter_spacing(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
             inherited_value = (inherited_style or {}).get(attr)
@@ -3307,9 +3331,7 @@ class SVGObject:
                 )
             )
 
-        base_spacing = _letter_spacing(
-            effective_style, inherited_style, default_font_size
-        )
+        base_spacing = _letter_spacing(effective_style)
         # Leading text (before child <tspan>)
         _add_run(
             text_tag.text or "",
@@ -3328,6 +3350,7 @@ class SVGObject:
                 child_effective_style = dict(effective_style)
                 child_effective_style.update(child_local_style)
                 _resolve_relative_font_size(child_effective_style, effective_style)
+                _resolve_relative_letter_spacing(child_effective_style, effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )
@@ -3367,9 +3390,7 @@ class SVGObject:
                         abs_y=abs_y,
                         style_tag=child,
                         style_map_for_tag=child_local_style,
-                        letter_spacing=_letter_spacing(
-                            child_effective_style, effective_style, run_font_size
-                        ),
+                        letter_spacing=_letter_spacing(child_effective_style),
                     )
 
                 # Text between tspans inherits parent style
