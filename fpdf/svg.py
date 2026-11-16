@@ -1225,21 +1225,9 @@ def _extract_css_rules(css_text: str) -> list[tuple[str, dict[str, Any]]]:
     return rules
 
 
-def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]:
-    styles: list[tuple[str, dict[str, Any]]] = []
-    for selector, declarations in _extract_css_rules(css_text):
-        if not selector.startswith("."):
-            continue
-        class_name = selector[1:].split(":", 1)[0].strip()
-        if not class_name:
-            continue
-        styles.append((class_name, declarations))
-    return styles
-
-
 # A universal selector or an element name, such as "*" or "rect"
 CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
-# A class selector, read by _extract_css_class_styles()
+# A class selector, with or without a pseudo-class, such as .a or .a:hover
 CSS_CLASS_SELECTOR_RE = re.compile(r"\.[\w-]+(?::.*)?", re.DOTALL)
 # A compound selector: an element name or "*", then ids and classes, as in rect#a.b
 CSS_COMPOUND_SELECTOR_RE = re.compile(r"(\*|[A-Za-z][\w-]*)?((?:[#.][\w-]+)*)")
@@ -1299,7 +1287,8 @@ def _parse_css_selector(
         return None
     specificity = (
         sum(len(compound.ids) for compound in compounds),
-        sum(len(compound.classes) for compound in compounds),
+        # a repeated class counts each time, as in .a.a
+        sum(token.count(".") for token in CSS_SELECTOR_TOKEN_RE.findall(selector)),
         sum(compound.element_name not in (None, "*") for compound in compounds),
     )
     return tuple(compounds), specificity
@@ -1706,13 +1695,19 @@ class SVGObject:
         self.cross_references: dict[str, Any] = {}
         self._cross_reference_costs: dict[str, int] = {}
         self.symbol_info: dict[str, SymbolInfo] = {}
-        self.css_class_styles: dict[str, dict[str, Any]] = {}
+        # the (order in the stylesheets, declarations) of each rule
+        self.css_class_styles: dict[str, list[tuple[int, dict[str, Any]]]] = {}
         # rules of "*" and element names, such as matplotlib's * { stroke-linejoin: round }
-        self.css_type_styles: dict[str, dict[str, Any]] = {}
+        self.css_type_styles: dict[str, list[tuple[int, dict[str, Any]]]] = {}
         # rules of the other selectors with ids, classes and combinators, such as
-        # Mermaid's #mermaid-svg .node rect, with their specificity, in order
+        # Mermaid's #mermaid-svg .node rect, with their specificity and order
         self.css_selector_rules: list[
-            tuple[tuple[CSSCompoundSelector, ...], tuple[int, int, int], dict[str, Any]]
+            tuple[
+                tuple[CSSCompoundSelector, ...],
+                tuple[int, int, int],
+                dict[str, Any],
+                int,
+            ]
         ] = []
         self._selector_rules_cache: dict[
             "Element", list[tuple[tuple[int, int, int], int, dict[str, Any]]]
@@ -1928,35 +1923,39 @@ class SVGObject:
         projected_cost(root_tag)
 
     def _collect_css_styles(self, root_tag: "Element") -> None:
+        order = 0
         for node in root_tag.iter():
             if node.tag in xmlns_lookup("svg", "style"):
                 css_text = "".join(node.itertext() or [])
-                for class_name, declarations in _extract_css_class_styles(css_text):
-                    existing = self.css_class_styles.setdefault(class_name, {})
-                    for key, value in declarations.items():
-                        # a later rule does not override an !important declaration
-                        if key not in existing or _overrides(existing[key], value):
-                            existing[key] = value
                 for selector, declarations in _extract_css_rules(css_text):
                     if CSS_TYPE_SELECTOR_RE.fullmatch(selector):
-                        existing = self.css_type_styles.setdefault(selector, {})
-                        for key, value in declarations.items():
-                            if key not in existing or _overrides(existing[key], value):
-                                existing[key] = value
-                    elif not CSS_CLASS_SELECTOR_RE.fullmatch(selector):
+                        self.css_type_styles.setdefault(selector, []).append(
+                            (order, declarations)
+                        )
+                    elif CSS_CLASS_SELECTOR_RE.fullmatch(selector):
+                        class_name = selector[1:].split(":", 1)[0].strip()
+                        self.css_class_styles.setdefault(class_name, []).append(
+                            (order, declarations)
+                        )
+                    else:
                         parsed = _parse_css_selector(selector)
                         if parsed is not None:
-                            self.css_selector_rules.append((*parsed, declarations))
+                            self.css_selector_rules.append(
+                                (*parsed, declarations, order)
+                            )
+                    order += 1
 
-    def _selector_matches(self, order: int, tag: "Element") -> bool:
+    def _selector_matches(self, rule_index: int, tag: "Element") -> bool:
         """
         Whether a selector rule matches an element, through its ancestors. What is known
         of each element is kept, so that matching takes linear time in their number.
         """
-        compounds = self.css_selector_rules[order][0]
+        compounds = self.css_selector_rules[rule_index][0]
         # whether compounds[:index + 1] match, with the last one on an element, and
         # whether they match on an ancestor of it
-        matched, ancestor_matched = self._selector_memos.setdefault(order, ({}, {}))
+        matched, ancestor_matched = self._selector_memos.setdefault(
+            rule_index, ({}, {})
+        )
 
         def matches(index: int, element: "Element") -> bool:
             key = (index, element)
@@ -2004,10 +2003,10 @@ class SVGObject:
         if tag not in self._selector_rules_cache:
             self._selector_rules_cache[tag] = [
                 (specificity, order, declarations)
-                for order, (_, specificity, declarations) in enumerate(
+                for index, (_, specificity, declarations, order) in enumerate(
                     self.css_selector_rules
                 )
-                if self._selector_matches(order, tag)
+                if self._selector_matches(index, tag)
             ]
         return self._selector_rules_cache[tag]
 
@@ -2036,16 +2035,16 @@ class SVGObject:
             ("*", (0, 0, 0)),
             (without_ns(tag.tag), (0, 0, 1)),
         ):
-            type_styles = self.css_type_styles.get(selector)
-            if type_styles:
-                rules.append((specificity, -1, type_styles))
+            for order, declarations in self.css_type_styles.get(selector, ()):
+                rules.append((specificity, order, declarations))
         if self.css_class_styles:
             class_attr = tag.attrib.get("class")
             if class_attr:
-                for class_name in class_attr.split():
-                    class_styles = self.css_class_styles.get(class_name)
-                    if class_styles:
-                        rules.append(((0, 1, 0), -1, class_styles))
+                for class_name in dict.fromkeys(class_attr.split()):
+                    for order, declarations in self.css_class_styles.get(
+                        class_name, ()
+                    ):
+                        rules.append(((0, 1, 0), order, declarations))
         if self.css_selector_rules:
             rules.extend(self._selector_rules_for(tag))
         rules.sort(key=lambda rule: rule[:2])

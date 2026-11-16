@@ -836,6 +836,11 @@ class TestSVGObject:
             ("#m rect { fill: red } .node .a { fill: blue }", "#f00"),
             ("g .a { fill: blue } svg .a { fill: red }", "#f00"),
             ("#r { fill: red } rect { fill: blue !important }", "#00f"),
+            ("*.a { fill: red } .a { fill: blue }", "#00f"),
+            (".a { fill: blue } *.a { fill: red }", "#f00"),
+            ("* { fill: blue } rect { fill: red }", "#f00"),
+            # a repeated class counts each time
+            (".a.a { fill: red } *.a { fill: blue }", "#f00"),
         ],
     )
     def test_svg_css_selectors_with_ids_and_combinators(self, css, fill):
