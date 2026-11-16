@@ -1830,6 +1830,8 @@ class SVGObject:
             and element.attrib.get("id")
         }
         self._em_lengths_cache: dict["Element", bool] = {}
+        # the gradients already parsed when a url() referenced them
+        self._looked_up_gradients: set[str] = set()
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -2511,6 +2513,25 @@ class SVGObject:
             self._patterns_in_progress.remove(pattern_id)
 
     @force_nodocument
+    def _gradient_definition(self, grad_id: str) -> bool:
+        """
+        Whether a url() references a gradient. Like a <pattern>, a gradient can be
+        anywhere in the document, as Mermaid writes one in each link of a Sankey
+        diagram: one that is not a child of a <defs> is parsed when it is first
+        referenced.
+        """
+        if grad_id not in self.gradient_definitions and (
+            grad_id not in self._looked_up_gradients
+        ):
+            self._looked_up_gradients.add(grad_id)
+            element = self._gradient_elements.get(grad_id)
+            if element is not None:
+                if element.tag in xmlns_lookup("svg", "linearGradient"):
+                    self._parse_linear_gradient(element)
+                else:
+                    self._parse_radial_gradient(element)
+        return grad_id in self.gradient_definitions
+
     def _apply_gradient_paint(
         self,
         stylable: PaintedPath | GraphicsContext,
@@ -2521,7 +2542,7 @@ class SVGObject:
         fill_value = _get_attr_or_style(svg_element, "fill", style_map)
         if fill_value:
             grad_id = self._extract_gradient_id(fill_value)
-            if grad_id and grad_id in self.gradient_definitions:
+            if grad_id and self._gradient_definition(grad_id):
                 stylable.style.fill_color = _clone_gradient_paint(
                     self.gradient_definitions[grad_id]
                 )
@@ -2530,7 +2551,7 @@ class SVGObject:
         stroke_value = _get_attr_or_style(svg_element, "stroke", style_map)
         if stroke_value:
             grad_id = self._extract_gradient_id(stroke_value)
-            if grad_id and grad_id in self.gradient_definitions:
+            if grad_id and self._gradient_definition(grad_id):
                 stylable.style.stroke_color = _clone_gradient_paint(
                     self.gradient_definitions[grad_id]
                 )
