@@ -1190,6 +1190,68 @@ class TestSVGObject:
             path = path.path_items[0]
         assert path.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
 
+    @pytest.mark.parametrize(
+        "defs",
+        [
+            pytest.param(
+                '<path id="p" d="M0 0h5v5z" style="fill:context-stroke"/>',
+                id="style",
+            ),
+            pytest.param(
+                (
+                    "<style>.c { fill: context-stroke }</style>"
+                    '<path id="p" d="M0 0h5v5z" class="c"/>'
+                ),
+                id="class",
+            ),
+        ],
+    )
+    def test_svg_context_paints_in_css_through_a_use_of_a_use(self, defs):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f'<defs>{defs}<use id="u" href="#p"/></defs>'
+            '<use href="#u" fill="red" stroke="lime"/></svg>'
+        )
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string("#0f0")
+
+    @pytest.mark.parametrize(
+        "use",
+        [
+            pytest.param('<use href="#g"/>', id="not-set"),
+            pytest.param('<use href="#g" stroke="none"/>', id="none"),
+        ],
+    )
+    def test_svg_context_stroke_not_set_on_the_use_is_none(self, use):
+        # not the fill of the group the path is in
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<g id="g" fill="blue"><path d="M0 0h5v5z" fill="context-stroke"/></g>'
+            f"</defs>{use}</svg>"
+        )
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color is None
+
+    def test_svg_context_paint_detection_is_not_exponential(self):
+        # each <g> is drawn by two <use> of the next one, in the branch of a <switch>
+        # that is not drawn, so the limits do not count them
+        depth = 24
+        levels = "".join(
+            f'<g id="g{i}"><use href="#g{i + 1}"/><use href="#g{i + 1}"/></g>'
+            for i in range(depth)
+        )
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<g id="a"><switch><rect width="1" height="1"/>'
+            f'<g>{levels}<g id="g{depth}"/><use href="#g0"/></g></switch></g>'
+            '</defs><use href="#a"/></svg>'
+        )
+        assert svg.base_group.path_items
+
     def test_svg_context_opacity_not_set_on_the_use(self):
         # the initial opacity of the <use>, not that of a group in between
         svg = fpdf.svg.SVGObject(

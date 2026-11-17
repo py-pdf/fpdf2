@@ -1921,6 +1921,7 @@ class SVGObject:
         # the element each <use> being built draws, with the fill, stroke and their
         # opacities of the <use>, for the context-fill and context-stroke in it
         self._context_paints: list[tuple["Element", dict[str, Optional[str]]]] = []
+        self._context_paint_cache: dict["Element", bool] = {}
         self._em_lengths_cache: dict["Element", bool] = {}
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
@@ -2121,7 +2122,9 @@ class SVGObject:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
         return display is not None and display.strip().lower() == "none"
 
-    def _style_map_for(self, tag: "Element") -> dict[str, Any]:
+    def _style_map_for(
+        self, tag: "Element", resolve_context: bool = True
+    ) -> dict[str, Any]:
         style_map: dict[str, Any] = {}
         # an !important declaration of a stylesheet wins over a normal inline one
         important: set[str] = set()
@@ -2171,7 +2174,7 @@ class SVGObject:
                 norm_value = _normalize_css_value(tag.attrib.get(attr))
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
-        if self._context_paints:
+        if resolve_context and self._context_paints:
             context = self._context_paints[-1][1]
             for attr, keywords in _CONTEXT_PAINT_KEYWORDS.items():
                 paint = style_map.get(attr, tag.attrib.get(attr))
@@ -3091,31 +3094,37 @@ class SVGObject:
         """
         Whether an element or one of its descendants paints with context-fill & co,
         also through the elements a <use> in it draws (a cycle of <use> was refused
-        by _check_svg_limits()).
+        by _check_svg_limits()). The result of each element is kept, so that elements
+        drawn by many <use>, also in a <switch> that is not drawn, are read once.
         """
-        for descendant in element.iter():
-            if any(
-                str(value).strip().lower().startswith("context-")
-                for attr in _CONTEXT_PAINT_KEYWORDS
-                for value in (
-                    self._style_map_for(descendant).get(attr),
-                    descendant.attrib.get(attr),
-                )
-            ):
-                return True
-            if descendant.tag in xmlns_lookup("svg", "use"):
-                ref = next(
-                    (
-                        descendant.attrib[key]
-                        for key in xmlns_lookup("xlink", "href")
-                        if key in descendant.attrib
-                    ),
-                    None,
-                )
-                referenced = self._elements_by_id.get(ref) if ref else None
-                if referenced is not None and self._uses_context_paint(referenced):
-                    return True
-        return False
+        if element not in self._context_paint_cache:
+            found = False
+            for descendant in element.iter():
+                # the styles as written, not with the context paints of an outer <use>
+                styles = self._style_map_for(descendant, resolve_context=False)
+                if any(
+                    str(value).strip().lower().startswith("context-")
+                    for attr in _CONTEXT_PAINT_KEYWORDS
+                    for value in (styles.get(attr), descendant.attrib.get(attr))
+                ):
+                    found = True
+                elif descendant.tag in xmlns_lookup("svg", "use"):
+                    ref = next(
+                        (
+                            descendant.attrib[key]
+                            for key in xmlns_lookup("xlink", "href")
+                            if key in descendant.attrib
+                        ),
+                        None,
+                    )
+                    referenced = self._elements_by_id.get(ref) if ref else None
+                    found = referenced is not None and self._uses_context_paint(
+                        referenced
+                    )
+                if found:
+                    break
+            self._context_paint_cache[element] = found
+        return self._context_paint_cache[element]
 
     def _context_paints_of_use(
         self,
@@ -3145,9 +3154,9 @@ class SVGObject:
                     value = _get_attr_or_style(node, attr, self._style_map_for(node))
             if value in (None, "inherit"):
                 value = (inherited_style or {}).get(attr)
-            if value is None and attr.endswith("-opacity"):
-                # the initial opacity of the <use>
-                value = "1"
+            if value is None:
+                # not set on the <use> or anywhere above it: the initial value
+                value = {"fill": "black", "stroke": "none"}.get(attr, "1")
             context[attr] = value
         return context
 
