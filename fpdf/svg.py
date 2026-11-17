@@ -2802,9 +2802,11 @@ class SVGObject:
             if not ignore_svg_top_attrs and self.preserve_ar and (w_ratio != h_ratio):
                 w_ratio = h_ratio = min(w_ratio, h_ratio)
 
+            # the origin of the viewBox is in user units, so before they are converted
+            # to the units of the document
             transform = (
-                transform
-                @ Transform.translation(x=-vx, y=-vy)
+                Transform.translation(x=-vx, y=-vy)
+                @ transform
                 @ Transform.scaling(x=w_ratio, y=h_ratio)
             )
 

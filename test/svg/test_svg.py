@@ -230,6 +230,30 @@ def test_svg_shape_conversion(shape, output, guard):
         assert output == path._root_graphics_context.path_items
 
 
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+@pytest.mark.parametrize("viewbox", ["0 0 100 100", "-50 -50 100 100", "20 30 100 100"])
+def test_svg_viewbox_origin_in_the_units_of_the_document(unit, viewbox):
+    # The corner of the viewBox is the corner of the SVG, whatever the unit
+    pdf = fpdf.FPDF(unit=unit)
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        f'viewBox="{viewbox}"><rect width="1" height="1"/></svg>'
+    )
+    _, _, group = svg.transform_to_page_viewport(pdf)
+    x0, y0, size, _ = (float(value) for value in viewbox.split())
+
+    def apply(point_x, point_y):
+        transform = group.transform
+        return (
+            transform.a * point_x + transform.c * point_y + transform.e,
+            transform.b * point_x + transform.d * point_y + transform.f,
+        )
+
+    # 100 user units are 100 pt wide, in the units of the document
+    assert apply(x0, y0) == pytest.approx((0, 0))
+    assert apply(x0 + size, y0 + size) == pytest.approx((100 / pdf.k, 100 / pdf.k))
+
+
 class TestSVGAttributeConversion:
     @pytest.mark.parametrize(
         "transform, expected, guard", parameters.test_svg_transforms
