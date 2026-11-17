@@ -1273,6 +1273,44 @@ class TestSVGObject:
         assert stroke.style.fill_color is None
         assert fill.style.stroke_color is None
 
+    @pytest.mark.parametrize(
+        "use",
+        [
+            '<use href="#r" paint-order="stroke"/>',
+            '<use href="#r" style="paint-order: stroke"/>',
+            '<g paint-order="stroke"><use href="#r"/></g>',
+        ],
+    )
+    def test_svg_paint_order_inherited_from_a_use(self, use):
+        # the same as the rect itself with paint-order="stroke"
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<rect id="r" width="5" height="5" fill="red" stroke="blue"/></defs>'
+            f"{use}</svg>"
+        )
+        group = svg.base_group.path_items[0]
+        while not isinstance(group.path_items[0], fpdf.drawing.PaintedPath):
+            group = group.path_items[0]
+        stroke, fill = group.path_items
+        assert stroke.style.fill_color is None
+        assert stroke.style.stroke_color == fpdf.drawing.color_from_hex_string("#00f")
+        assert fill.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+        assert fill.style.stroke_color is None
+
+    def test_svg_paint_order_of_text_with_styled_tspans(self):
+        # the tspan's own fill and stroke must not paint in both copies
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">'
+            '<text y="20" paint-order="stroke">'
+            '<tspan fill="green" stroke="blue">a</tspan></text></svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        # stroke only, then fill only
+        assert re.findall(r"\d Tr", output) == ["1 Tr", "0 Tr"]
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 

@@ -981,6 +981,20 @@ def apply_svg_transform_to_user_space_gradients(
                             transform_paint(paint)
 
 
+def _without_paint(path: PaintedPath, paint: str) -> None:
+    """Remove the fill or stroke of a path, also from the runs of its text."""
+    attr = f"{paint}_color"
+    setattr(path.style, attr, None)
+    for item in path.get_graphics_context().path_items:
+        if isinstance(item, Text):
+            for run in item.text_runs:
+                if (
+                    run.run_style is not None
+                    and getattr(run.run_style, attr) is not GraphicsStyle.INHERIT
+                ):
+                    setattr(run.run_style, attr, None)
+
+
 def _preserve_ws(style_map: dict[str, Any], tag: "Element") -> bool:
     # CSS ‘white-space’ wins; otherwise XML’s xml:space
     ws = (style_map.get("white-space") or "").strip()
@@ -2989,14 +3003,22 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and self._has_em_lengths(element):
-            # the em and ex of the referenced shapes are relative to the font size
-            # that the <use> gives them, as its copy inherits from it
+        use_paint_order = _get_attr_or_style(xref, "paint-order", style_map)
+        if use_paint_order in (None, "inherit"):
+            use_paint_order = (inherited_style or {}).get("paint-order")
+        if element is not None and (
+            use_paint_order is not None or self._has_em_lengths(element)
+        ):
+            # the referenced shapes inherit the font size and the paint-order of the
+            # <use>: their em and ex are relative to that font size, as its copy
+            # inherits from it
             use_style = {**(inherited_style or {}), **style_map}
             _resolve_relative_font_size(use_style, inherited_style)
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
+            if use_paint_order is not None:
+                font_style["paint-order"] = use_paint_order
             referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
@@ -3253,9 +3275,9 @@ class SVGObject:
         if order.index("stroke") > order.index("fill"):
             return path
         stroke = deepcopy(path)
-        stroke.style.fill_color = None
+        _without_paint(stroke, "fill")
         fill = deepcopy(path)
-        fill.style.stroke_color = None
+        _without_paint(fill, "stroke")
         group = GraphicsContext()
         group.add_item(stroke, False)
         group.add_item(fill, False)
