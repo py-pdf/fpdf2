@@ -420,7 +420,7 @@ def test_template_badinput():
         tmpl.render()
     tmpl = Template()
     tmpl.add_page()
-    with raises(FPDFException):
+    with raises(KeyError):
         tmpl.parse_csv(HERE / "mandmissing.csv", delimiter=";")
     with raises(ValueError):
         tmpl.parse_csv(HERE / "badint.csv", delimiter=";")
