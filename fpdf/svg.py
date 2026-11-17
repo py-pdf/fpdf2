@@ -2783,10 +2783,7 @@ class SVGObject:
             context.transform = Transform.identity()
             return 0, 0, context
 
-        if scale == 1:
-            transform = Transform.identity()
-        else:
-            transform = Transform.scaling(1 / scale)
+        transform = Transform.identity()
 
         if self.viewbox:
             vx, vy, vw, vh = self.viewbox
@@ -2802,12 +2799,8 @@ class SVGObject:
             if not ignore_svg_top_attrs and self.preserve_ar and (w_ratio != h_ratio):
                 w_ratio = h_ratio = min(w_ratio, h_ratio)
 
-            # the origin of the viewBox is in user units, so before they are converted
-            # to the units of the document
-            transform = (
-                Transform.translation(x=-vx, y=-vy)
-                @ transform
-                @ Transform.scaling(x=w_ratio, y=h_ratio)
+            transform = Transform.translation(x=-vx, y=-vy) @ Transform.scaling(
+                x=w_ratio, y=h_ratio
             )
 
             if align_viewbox:
@@ -2815,6 +2808,10 @@ class SVGObject:
                     x=vp_width / 2 - (vw / 2) * w_ratio,
                     y=vp_height / 2 - (vh / 2) * h_ratio,
                 )
+
+        if scale != 1:
+            # the transforms above are in user units, the unit of the document is last
+            transform = transform @ Transform.scaling(1 / scale)
 
         self.pattern_viewport = (
             (self.viewbox[2], self.viewbox[3])

@@ -254,6 +254,21 @@ def test_svg_viewbox_origin_in_the_units_of_the_document(unit, viewbox):
     assert apply(x0 + size, y0 + size) == pytest.approx((100 / pdf.k, 100 / pdf.k))
 
 
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+def test_svg_viewbox_alignment_in_the_units_of_the_document(unit):
+    # a square viewBox in a 100 x 50 pt SVG is centered, in any unit of the document
+    pdf = fpdf.FPDF(unit=unit)
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" '
+        'viewBox="0 0 50 50"><rect width="1" height="1"/></svg>'
+    )
+    _, _, group = svg.transform_to_page_viewport(pdf)
+    transform = group.transform
+    scale = pdf.k
+    assert (transform.a * scale, transform.d * scale) == pytest.approx((1, 1))
+    assert (transform.e * scale, transform.f * scale) == pytest.approx((25, 0))
+
+
 class TestSVGAttributeConversion:
     @pytest.mark.parametrize(
         "transform, expected, guard", parameters.test_svg_transforms
