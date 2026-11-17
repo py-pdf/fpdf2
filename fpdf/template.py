@@ -782,10 +782,14 @@ class FlexTemplate:
             scaled_cursor_x += offsetx
         if offsety:
             scaled_cursor_y += offsety
-        self.pdf.set_xy(scaled_cursor_x, scaled_cursor_y)
+        first_text = True
         with self.pdf.local_context():
             for element in sorted_elements:
                 ele = element.copy()  # don't want to modify the callers original
+                # set the cursor once if text elements are given
+                if ele["type"].upper() == "T" and first_text:
+                    self.pdf.set_xy(scaled_cursor_x, scaled_cursor_y)
+                    first_text = False
                 ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
                 if scale != 1.0:
                     if "w" in ele:

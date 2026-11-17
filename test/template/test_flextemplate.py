@@ -1367,3 +1367,16 @@ def test_y_pos_of_multiline():
 
     assert pdf.get_x() == pytest.approx(80.0)
     assert pdf.get_y() == pytest.approx(60.0)
+
+
+def test_xy_pos_for_non_text_template():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_xy(30, 40)
+    FlexTemplate(pdf, elements=[{
+        "name": "line", "type": "L",
+        "x1": 0, "y1": 0, "x2": 10, "y2": 10,
+    }]).render(offsetx=10, offsety=20, scale=2)
+
+    assert pdf.get_x() == pytest.approx(30.0)
+    assert pdf.get_y() == pytest.approx(40.0)
