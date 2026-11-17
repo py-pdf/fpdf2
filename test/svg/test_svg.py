@@ -230,6 +230,23 @@ def test_svg_shape_conversion(shape, output, guard):
         assert output == path._root_graphics_context.path_items
 
 
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+def test_svg_percentage_size_in_the_units_of_the_document(unit):
+    # width="50%" is half the width of the page, whatever its unit
+    pdf = fpdf.FPDF(unit=unit)
+    pdf.add_page()
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="50%" height="50%" '
+        f'viewBox="0 0 {pdf.epw} {pdf.eph}"><rect width="1" height="1"/></svg>'
+    )
+    width, height, group = svg.transform_to_page_viewport(pdf)
+    assert (width, height) == pytest.approx((pdf.epw / 2, pdf.eph / 2))
+    transform = group.transform
+    # the viewBox, as large as the page, is mapped to the half of the page
+    assert (transform.a, transform.d) == pytest.approx((0.5, 0.5))
+    assert (transform.e, transform.f) == pytest.approx((0, 0))
+
+
 class TestSVGAttributeConversion:
     @pytest.mark.parametrize(
         "transform, expected, guard", parameters.test_svg_transforms

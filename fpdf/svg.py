@@ -2760,7 +2760,9 @@ class SVGObject:
                 raise ValueError(
                     'SVG "width" is a percentage, hence a viewport width is required'
                 )
-            vp_width = self.width * width / 100
+            # a percentage of the viewport, in the units of the SVG: the viewport is in
+            # the units of the document, which are `scale` points
+            vp_width = self.width * width * scale / 100
         else:
             vp_width = self.width if self.width is not None else width
 
@@ -2774,7 +2776,7 @@ class SVGObject:
                 raise ValueError(
                     'SVG "height" is a percentage, hence a viewport height is required'
                 )
-            vp_height = self.height * height / 100
+            vp_height = self.height * height * scale / 100
         else:
             vp_height = self.height if self.height is not None else height
 
