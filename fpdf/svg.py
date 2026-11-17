@@ -1877,7 +1877,11 @@ class SVGObject:
         image_cache: Optional[ImageCache] = None,
         resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
         svg_limits: Optional[SVGLimits] = None,
+        _viewport: Optional[tuple[float, float]] = None,
     ) -> None:
+        # _viewport is for transform_to_rect_viewport(), which builds the shapes again
+        # when the size of an SVG without a viewBox is only known by then
+        self._svg_text = svg_text
         self.image_cache = image_cache  # Needed to render images
         self.resource_access_policy = resource_access_policy
         self.svg_limits = svg_limits or SVGLimits()
@@ -1932,6 +1936,8 @@ class SVGObject:
             if self.viewbox
             else (float(self.width or 300), float(self.height or 150))
         )
+        if _viewport is not None:
+            self.pattern_viewport = _viewport
         self._check_svg_limits(svg_tree)
         # A <use> of an element that is itself hidden draws nothing.
         self._hidden_references = {
@@ -2814,6 +2820,19 @@ class SVGObject:
             transform = Transform.identity()
         else:
             transform = Transform.scaling(1 / scale)
+
+        if not self.viewbox and self.pattern_viewport != (vp_width, vp_height):
+            # The percentages of the shapes are of this viewport, not of the one
+            # their geometry was built with, from a width or height that was a
+            # percentage too: build them again
+            SVGObject.__init__(
+                self,
+                self._svg_text,
+                self.image_cache,
+                self.resource_access_policy,
+                self.svg_limits,
+                _viewport=(float(vp_width), float(vp_height)),
+            )
 
         if self.viewbox:
             vx, vy, vw, vh = self.viewbox

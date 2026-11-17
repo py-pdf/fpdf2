@@ -248,6 +248,48 @@ def test_svg_shape_percent_lengths_of_the_svg_size():
     assert (rect.size.x, rect.size.y) == (svg.width, svg.height)
 
 
+@pytest.mark.parametrize(
+    "svg, kwargs, rect_size",
+    [
+        # the viewport of the percentages of the shapes is the resolved size
+        pytest.param(
+            '<svg width="50%" height="50%"><rect width="100%" height="100%"/></svg>',
+            {},
+            (100, 40),
+            id="percentage-size",
+        ),
+        pytest.param(
+            '<svg><rect width="100%" height="50%"/></svg>',
+            {"ignore_svg_top_attrs": True},
+            (200, 40),
+            id="ignored-top-attributes",
+        ),
+        # unchanged with a size, as with a viewBox
+        pytest.param(
+            '<svg width="60" height="30"><rect width="100%" height="100%"/></svg>',
+            {},
+            (60, 30),
+            id="absolute-size",
+        ),
+        pytest.param(
+            '<svg width="50%" viewBox="0 0 20 10"><rect width="100%" height="50%"/></svg>',
+            {},
+            (20, 5),
+            id="viewbox",
+        ),
+    ],
+)
+def test_svg_shape_percentages_of_a_percentage_sized_svg(svg, kwargs, rect_size):
+    svg_obj = fpdf.svg.SVGObject(
+        svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"', 1)
+    )
+    _, _, group = svg_obj.transform_to_rect_viewport(1, 200, 80, **kwargs)
+    while not isinstance(group, fpdf.drawing.PaintedPath):
+        group = group.path_items[0]
+    rect = group._root_graphics_context.path_items[-1]
+    assert (rect.size.x, rect.size.y) == rect_size
+
+
 class TestSVGAttributeConversion:
     @pytest.mark.parametrize(
         "transform, expected, guard", parameters.test_svg_transforms
