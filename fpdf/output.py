@@ -49,7 +49,7 @@ from .syntax import (
     create_list_string as pdf_list,
     iobj_ref as pdf_ref,
 )
-from .util import int2roman, int_to_letters, trim_trailing_zeros
+from .util import int2roman, trim_trailing_zeros
 
 try:
     from endesive import signer
@@ -440,6 +440,14 @@ class PDFICCProfile(PDFContentStream):
         self.alternate = Name(alternate)
 
 
+def _page_label_letters(n: int) -> str:
+    """
+    Letters of page label number `n`, as defined in the PDF specification:
+    A to Z for the first 26 pages, AA to ZZ for the next 26, and so on.
+    """
+    return chr(ord("A") + (n - 1) % 26) * ((n - 1) // 26 + 1)
+
+
 class PDFPageLabel:
     """
     This will be displayed by some PDF readers to identify pages.
@@ -478,11 +486,9 @@ class PDFPageLabel:
             elif self._style == PageLabelStyle.LOWER_ROMAN:
                 ret += int2roman(self.st or 1).lower()
             elif self._style == PageLabelStyle.UPPER_LETTER:
-                start = (self.st or 1) - 1
-                ret += int_to_letters(start)
+                ret += _page_label_letters(self.st or 1)
             elif self._style == PageLabelStyle.LOWER_LETTER:
-                start = (self.st or 1) - 1
-                ret += int_to_letters(start).lower()
+                ret += _page_label_letters(self.st or 1).lower()
         return ret
 
     def serialize(self) -> dict[str, Any]:
