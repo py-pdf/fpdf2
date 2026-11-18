@@ -603,6 +603,37 @@ test_svg_attribute_conversion = (
         id="fill color rgb() with an integer alpha",
     ),
     pytest.param(
+        # numbers that are not integers are allowed in CSS Color 4
+        '<path fill="rgb(0, 127.5, 1e2)"/>',
+        Gs(fill_color=DeviceRGB(0, 0.5, 100 / 255)),
+        no_error(),
+        id="fill color rgb() with numbers that are not integers",
+    ),
+    pytest.param(
+        '<path fill="rgb(255, 127.5, 0, 51)"/>',
+        Gs(fill_color=DeviceRGB(1, 0.5, 0, 0.2), fill_opacity=0.2),
+        no_error(),
+        id="fill color rgb() with a number that is not an integer and an alpha",
+    ),
+    pytest.param(
+        '<path fill="rgb(0, 127.5, 0, 51, 99)"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgb() color with a number that is not an integer and 5 values",
+    ),
+    pytest.param(
+        '<path fill="rgb(0, 127.5, 0"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgb() color with a number that is not an integer and no ')'",
+    ),
+    pytest.param(
+        '<path fill="rgb(0, 127.5, 0))"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="invalid rgb() color with a number that is not an integer and two ')'",
+    ),
+    pytest.param(
         '<path fill="rgb(255 0 0)"/>',
         Gs(fill_color="#f00"),
         no_error(),
@@ -873,6 +904,25 @@ test_svg_attribute_conversion = (
         Gs(stroke_dash_pattern=[1]),
         no_error(),
         id="stroke-dasharray single value",
+    ),
+    pytest.param(
+        # as Mermaid gives its solid edges: values that are all 0 are a solid line
+        '<path stroke-dasharray="0"/>',
+        Gs(stroke_dash_pattern=None),
+        no_error(),
+        id="stroke-dasharray 0",
+    ),
+    pytest.param(
+        '<path style="stroke-dasharray: 0px, 0"/>',
+        Gs(stroke_dash_pattern=None),
+        no_error(),
+        id="stroke-dasharray of 0 values",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="0 5"/>',
+        Gs(stroke_dash_pattern=[0, 5]),
+        no_error(),
+        id="stroke-dasharray with a 0 dash",
     ),
     pytest.param(
         '<path stroke-dasharray="inherit"/>',
