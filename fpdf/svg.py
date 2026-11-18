@@ -541,6 +541,20 @@ def convert_dash_length(incoming: str) -> float:
 
 
 @force_nodocument
+def convert_dasharray(dasharray: str) -> Optional[list[float]]:
+    """
+    The dash lengths of a stroke-dasharray. Values that are all 0, as in the
+    stroke-dasharray: 0 that Mermaid gives its solid edges, draw a solid line, as
+    the SVG specification says, like none: as a PDF dash array, they are invalid
+    and the line is not drawn.
+    """
+    pattern = [
+        convert_dash_length(item) for item in NUMBER_SPLIT.split(dasharray) if item
+    ]
+    return pattern if any(pattern) else None
+
+
+@force_nodocument
 def convert_miterlimit(incoming: str) -> float:
     val = float(incoming)
     if not math.isfinite(val):
@@ -637,12 +651,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#StrokeDasharrayProperty
     "stroke-dasharray": lambda dasharray: (
         "stroke_dash_pattern",
-        optional(
-            dasharray,
-            lambda da: [
-                convert_dash_length(item) for item in NUMBER_SPLIT.split(da) if item
-            ],
-        ),
+        optional(dasharray, convert_dasharray),
     ),
     # stroke-dashoffset may be a percentage, which we don't support currently
     # https://www.w3.org/TR/SVG11/painting.html#StrokeDashoffsetProperty
