@@ -5,7 +5,7 @@ from xml.etree.ElementTree import fromstring
 from pypdf import PdfReader
 
 from fpdf import FPDF
-from fpdf.drawing import GradientPaint
+from fpdf.drawing import GradientPaint, PaintedPath
 from fpdf.drawing_primitives import DeviceGray
 from fpdf.enums import GradientUnits
 from fpdf.svg import SVGObject
@@ -638,3 +638,57 @@ def test_gradient_on_shapes():
     svg_obj = SVGObject(svg)
 
     assert "#grad" in svg_obj.gradient_definitions
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        # as Mermaid writes each link of a Sankey diagram
+        pytest.param(
+            (
+                '<g fill="none"><linearGradient id="grad" x1="10" x2="200" '
+                'gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="red"/>'
+                '<stop offset="100%" stop-color="blue"/></linearGradient>'
+                '<path d="M10 50 L200 50" stroke="url(#grad)" stroke-width="20"/></g>'
+            ),
+            id="in-the-group-of-the-shape",
+        ),
+        pytest.param(
+            (
+                '<path d="M10 50 L200 50" fill="none" stroke="url(#grad)"/>'
+                '<linearGradient id="grad"><stop offset="0%" stop-color="red"/>'
+                '<stop offset="100%" stop-color="blue"/></linearGradient>'
+            ),
+            id="after-the-shape",
+        ),
+        pytest.param(
+            (
+                '<defs><g><radialGradient id="grad">'
+                '<stop offset="0%" stop-color="red"/>'
+                '<stop offset="100%" stop-color="blue"/></radialGradient></g></defs>'
+                '<path d="M10 50 L200 50" fill="none" stroke="url(#grad)"/>'
+            ),
+            id="in-a-group-of-defs",
+        ),
+    ],
+)
+def test_gradient_outside_defs(body):
+    svg_obj = SVGObject(
+        f'<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">{body}</svg>'
+    )
+    path = svg_obj.base_group.path_items[-1]
+    while not isinstance(path, PaintedPath):
+        path = path.path_items[-1]
+    assert isinstance(path.style.stroke_color, GradientPaint)
+
+
+def test_gradient_outside_defs_without_stops_warns_once(caplog):
+    svg = """
+    <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+      <linearGradient id="grad"/>
+      <rect width="80" height="80" fill="url(#grad)" />
+      <rect x="100" width="80" height="80" fill="url(#grad)" />
+    </svg>
+    """
+    SVGObject(svg)
+    assert caplog.text.count("Linear gradient '#grad' has no valid stops") == 1
