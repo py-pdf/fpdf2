@@ -18,6 +18,7 @@ extend-ignore-re = [
     "loca subsetting",
     "np.arange",
     '\("a", 53, "ba"\)', # Alphabetic ordered-list marker test case.
+    '"PHN2Zy[^"\r\n]*"', # Base64-encoded SVG in data: URI test cases.
 ]
 
 [default.extend-identifiers]

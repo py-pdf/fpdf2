@@ -688,7 +688,13 @@ def test_page_label():
     pdf.add_page()
     assert pdf.get_page_label() == "Appendix-AA"
     pdf.add_page()
-    assert pdf.get_page_label() == "Appendix-AB"
+    assert pdf.get_page_label() == "Appendix-BB"
+
+    # Test uppercase letters after ZZ
+    pdf.add_page(label_style="A", label_prefix=None, label_start=52)
+    assert pdf.get_page_label() == "ZZ"
+    pdf.add_page()
+    assert pdf.get_page_label() == "AAA"
 
     # Test lowercase letters starting from 1
     pdf.add_page(label_style="a", label_prefix=None, label_start=1)
@@ -704,7 +710,7 @@ def test_page_label():
     pdf.add_page()
     assert pdf.get_page_label() == "Sec-aa"
     pdf.add_page()
-    assert pdf.get_page_label() == "Sec-ab"
+    assert pdf.get_page_label() == "Sec-bb"
 
 
 def test_toc_no_reset_page_indices(tmp_path):  # cf. issue 1343
