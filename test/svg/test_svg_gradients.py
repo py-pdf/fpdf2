@@ -251,6 +251,41 @@ def test_bounding_box_gradient_in_a_transformed_group(transform):
     assert len(in_group) == 2 and in_group == on_shapes
 
 
+@pytest.mark.parametrize(
+    "nested, flattened",
+    [
+        pytest.param(
+            '<g transform="scale(2)"><g transform="translate(10 0)">{}</g></g>',
+            '<g transform="matrix(2 0 0 2 20 0)">{}</g>',
+            id="scale-then-translate",
+        ),
+        pytest.param(
+            '<g transform="translate(10 0)"><g transform="scale(2)">{}</g></g>',
+            '<g transform="matrix(2 0 0 2 10 0)">{}</g>',
+            id="translate-then-scale",
+        ),
+        pytest.param(
+            (
+                '<g transform="translate(5 0)"><g transform="scale(2)">'
+                '<g transform="translate(10 0)">{}</g></g></g>'
+            ),
+            '<g transform="matrix(2 0 0 2 25 0)">{}</g>',
+            id="three-levels",
+        ),
+    ],
+)
+def test_bounding_box_gradient_in_nested_transformed_groups(nested, flattened):
+    # the transforms of the groups apply from the innermost to the outermost
+    shape = '<rect fill="url(#l)" x="5" y="10" width="60" height="30"/>'
+    assert _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f"{GRADIENTS}{nested.format(shape)}</svg>"
+    ) == _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f"{GRADIENTS}{flattened.format(shape)}</svg>"
+    )
+
+
 def test_bounding_box_gradient_with_a_viewbox_origin():
     shifted = _gradient_matrices(
         '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
