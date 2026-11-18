@@ -421,16 +421,35 @@ def svgcolor(colorstr: str) -> DeviceRGB | DeviceGray:
         return _css_rgb_color(lowered)
 
     if lowered.startswith("rgb"):
-        # The 4th value of fpdf2's own rgb(R, G, B, A) is an integer alpha from 0 to
-        # 255, with or without a sign, so a fraction or a percentage, as in
-        # rgb(0,0,0, 0.5) of Mermaid diagrams, can only be the alpha from 0 to 1 that
-        # CSS Color 4 allows in rgb()
-        channels = lowered[lowered.find("(") + 1 :].rstrip(")").split(",")
-        if len(channels) == 4 and not re.fullmatch(r"[+-]?\d+", channels[3].strip()):
-            return _css_rgb_color(lowered)
-        return color_from_rgb_string(lowered)
+        return _comma_rgb_color(lowered)
 
     raise ValueError(f"unsupported color specification {colorstr}")
+
+
+def _comma_rgb_color(lowered: str) -> DeviceRGB | DeviceGray:
+    """An rgb() or rgba() color with commas."""
+    # The 4th value of fpdf2's own rgb(R, G, B, A) is an integer alpha from 0 to
+    # 255, with or without a sign, so a fraction or a percentage, as in
+    # rgb(0,0,0, 0.5) of Mermaid diagrams, can only be the alpha from 0 to 1 that
+    # CSS Color 4 allows in rgb()
+    channels = lowered[lowered.find("(") + 1 :].rstrip(")").split(",")
+    if len(channels) == 4 and not re.fullmatch(r"[+-]?\d+", channels[3].strip()):
+        return _css_rgb_color(lowered)
+    # and its R, G and B are integers or percentages: other numbers, such as
+    # rgb(0.8, 127.5, 14.2), are those of CSS Color 4
+    if any(
+        not re.fullmatch(r"[+-]?\d+%?", channel.strip()) for channel in channels[:3]
+    ):
+        if len(channels) not in (3, 4) or not re.fullmatch(
+            r"rgba?\([^()]*\)", re.sub(r"\s+", "", lowered)
+        ):
+            raise ValueError(f"{lowered} could not be interpreted as a rgb() color")
+        color = _css_rgb_color("rgb(" + ",".join(channels[:3]) + ")")
+        if len(channels) == 4:
+            # the integer alpha is still from 0 to 255
+            return DeviceRGB(color.r, color.g, color.b, int(channels[3]) / 255)
+        return color
+    return color_from_rgb_string(lowered)
 
 
 def _css_rgb_color(colorstr: str) -> DeviceRGB:
@@ -621,6 +640,20 @@ def convert_dash_length(incoming: str) -> float:
 
 
 @force_nodocument
+def convert_dasharray(dasharray: str) -> Optional[list[float]]:
+    """
+    The dash lengths of a stroke-dasharray. Values that are all 0, as in the
+    stroke-dasharray: 0 that Mermaid gives its solid edges, draw a solid line, as
+    the SVG specification says, like none: as a PDF dash array, they are invalid
+    and the line is not drawn.
+    """
+    pattern = [
+        convert_dash_length(item) for item in NUMBER_SPLIT.split(dasharray) if item
+    ]
+    return pattern if any(pattern) else None
+
+
+@force_nodocument
 def convert_miterlimit(incoming: str) -> float:
     val = float(incoming)
     if not math.isfinite(val):
@@ -717,12 +750,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#StrokeDasharrayProperty
     "stroke-dasharray": lambda dasharray: (
         "stroke_dash_pattern",
-        optional(
-            dasharray,
-            lambda da: [
-                convert_dash_length(item) for item in NUMBER_SPLIT.split(da) if item
-            ],
-        ),
+        optional(dasharray, convert_dasharray),
     ),
     # stroke-dashoffset may be a percentage, which we don't support currently
     # https://www.w3.org/TR/SVG11/painting.html#StrokeDashoffsetProperty
@@ -1188,6 +1216,48 @@ def _resolve_relative_font_size(
     inherited = (inherited_style or {}).get("font-size")
     parent_size = resolve_length(inherited) if inherited else resolve_length("16px")
     style_map["font-size"] = f"{number * factor * parent_size}pt"
+
+
+def _resolve_relative_letter_spacing(
+    style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """
+    Make a letter-spacing in em or ex absolute, against the font size of the element
+    that sets it, so that descendants inherit the computed spacing, as in CSS.
+    Call it after _resolve_relative_font_size().
+    """
+    value = style_map.get("letter-spacing")
+    if not isinstance(value, str):
+        return
+    if value.strip().lower() == "inherit":
+        parent_value = (inherited_style or {}).get("letter-spacing")
+        if parent_value is None:
+            style_map.pop("letter-spacing")
+        else:
+            style_map["letter-spacing"] = parent_value
+        return
+    match = unit_splitter.fullmatch(value.strip())
+    if match is None or match.group("unit") not in ("em", "ex"):
+        return
+    factor = 0.5 if match.group("unit") == "ex" else 1.0
+    font_size = style_map.get("font-size")
+    size = resolve_length(font_size) if font_size else resolve_length("16px")
+    style_map["letter-spacing"] = f"{float(match.group('value')) * factor * size}pt"
+
+
+def _letter_spacing(style: dict[str, Any]) -> float:
+    """
+    The letter-spacing of a text in pt, made absolute by
+    _resolve_relative_letter_spacing(); 0 for normal or a value that cannot be
+    read, as in browsers.
+    """
+    value = style.get("letter-spacing")
+    if not isinstance(value, str) or value.strip().lower() == "normal":
+        return 0.0
+    try:
+        return resolve_length(value)
+    except ValueError:
+        return 0.0
 
 
 def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
@@ -1994,6 +2064,8 @@ class SVGObject:
         }
         self._custom_properties_cache: dict["Element", dict[str, Optional[str]]] = {}
         self._em_lengths_cache: dict["Element", bool] = {}
+        # the gradients already parsed when a url() referenced them
+        self._looked_up_gradients: set[str] = set()
         self._elements_by_id = {
             "#" + element.attrib["id"]: element
             for element in svg_tree.iter()
@@ -2237,6 +2309,7 @@ class SVGObject:
             "font-size",
             "font-style",
             "font-weight",
+            "letter-spacing",
             "text-anchor",
             "white-space",
         )
@@ -2702,6 +2775,7 @@ class SVGObject:
                 "font-size",
                 "font-style",
                 "font-weight",
+                "letter-spacing",
                 "text-anchor",
                 "white-space",
             )
@@ -2713,6 +2787,7 @@ class SVGObject:
                     if value is not None:
                         inherited[attr] = value
                 _resolve_relative_font_size(inherited, parent_style)
+                _resolve_relative_letter_spacing(inherited, parent_style)
                 _resolve_inherited_color(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
@@ -2738,6 +2813,25 @@ class SVGObject:
             self._patterns_in_progress.remove(pattern_id)
 
     @force_nodocument
+    def _gradient_definition(self, grad_id: str) -> bool:
+        """
+        Whether a url() references a gradient. Like a <pattern>, a gradient can be
+        anywhere in the document, as Mermaid writes one in each link of a Sankey
+        diagram: one that is not a child of a <defs> is parsed when it is first
+        referenced.
+        """
+        if grad_id not in self.gradient_definitions and (
+            grad_id not in self._looked_up_gradients
+        ):
+            self._looked_up_gradients.add(grad_id)
+            element = self._gradient_elements.get(grad_id)
+            if element is not None:
+                if element.tag in xmlns_lookup("svg", "linearGradient"):
+                    self._parse_linear_gradient(element)
+                else:
+                    self._parse_radial_gradient(element)
+        return grad_id in self.gradient_definitions
+
     def _apply_gradient_paint(
         self,
         stylable: PaintedPath | GraphicsContext,
@@ -2748,7 +2842,7 @@ class SVGObject:
         fill_value = _get_attr_or_style(svg_element, "fill", style_map)
         if fill_value:
             grad_id = self._extract_gradient_id(fill_value)
-            if grad_id and grad_id in self.gradient_definitions:
+            if grad_id and self._gradient_definition(grad_id):
                 stylable.style.fill_color = _clone_gradient_paint(
                     self.gradient_definitions[grad_id]
                 )
@@ -2757,7 +2851,7 @@ class SVGObject:
         stroke_value = _get_attr_or_style(svg_element, "stroke", style_map)
         if stroke_value:
             grad_id = self._extract_gradient_id(stroke_value)
-            if grad_id and grad_id in self.gradient_definitions:
+            if grad_id and self._gradient_definition(grad_id):
                 stylable.style.stroke_color = _clone_gradient_paint(
                     self.gradient_definitions[grad_id]
                 )
@@ -2925,7 +3019,9 @@ class SVGObject:
                 raise ValueError(
                     'SVG "width" is a percentage, hence a viewport width is required'
                 )
-            vp_width = self.width * width / 100
+            # a percentage of the viewport, in the units of the SVG: the viewport is in
+            # the units of the document, which are `scale` points
+            vp_width = self.width * width * scale / 100
         else:
             vp_width = self.width if self.width is not None else width
 
@@ -2939,7 +3035,7 @@ class SVGObject:
                 raise ValueError(
                     'SVG "height" is a percentage, hence a viewport height is required'
                 )
-            vp_height = self.height * height / 100
+            vp_height = self.height * height * scale / 100
         else:
             vp_height = self.height if self.height is not None else height
 
@@ -2948,10 +3044,7 @@ class SVGObject:
             context.transform = Transform.identity()
             return 0, 0, context
 
-        if scale == 1:
-            transform = Transform.identity()
-        else:
-            transform = Transform.scaling(1 / scale)
+        transform = Transform.identity()
 
         if self.viewbox:
             vx, vy, vw, vh = self.viewbox
@@ -2967,10 +3060,8 @@ class SVGObject:
             if not ignore_svg_top_attrs and self.preserve_ar and (w_ratio != h_ratio):
                 w_ratio = h_ratio = min(w_ratio, h_ratio)
 
-            transform = (
-                transform
-                @ Transform.translation(x=-vx, y=-vy)
-                @ Transform.scaling(x=w_ratio, y=h_ratio)
+            transform = Transform.translation(x=-vx, y=-vy) @ Transform.scaling(
+                x=w_ratio, y=h_ratio
             )
 
             if align_viewbox:
@@ -2978,6 +3069,10 @@ class SVGObject:
                     x=vp_width / 2 - (vw / 2) * w_ratio,
                     y=vp_height / 2 - (vh / 2) * h_ratio,
                 )
+
+        if scale != 1:
+            # the transforms above are in user units, the unit of the document is last
+            transform = transform @ Transform.scaling(1 / scale)
 
         self.pattern_viewport = (
             (self.viewbox[2], self.viewbox[3])
@@ -3296,6 +3391,7 @@ class SVGObject:
         }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_relative_letter_spacing(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
@@ -3431,6 +3527,7 @@ class SVGObject:
         }
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
+        _resolve_relative_letter_spacing(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
         self._merge_inherited_paints(switch, local_style, inherited_style, merged_style)
         pdf_group = GraphicsContext()
@@ -3737,6 +3834,7 @@ class SVGObject:
         effective_style = dict(inherited_style or {})
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
+        _resolve_relative_letter_spacing(effective_style, inherited_style)
         _resolve_inherited_color(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
@@ -3814,6 +3912,7 @@ class SVGObject:
             abs_y: Optional[float] = None,
             style_tag: Optional["Element"] = None,
             style_map_for_tag: Optional[dict[str, Any]] = None,
+            letter_spacing: float = 0.0,
         ) -> None:
             nonlocal pending_dx, pending_dy
             raw = raw_text or ""
@@ -3858,9 +3957,11 @@ class SVGObject:
                     abs_x=abs_x,
                     abs_y=abs_y,
                     run_style=run_style,
+                    letter_spacing=letter_spacing,
                 )
             )
 
+        base_spacing = _letter_spacing(effective_style)
         # Leading text (before child <tspan>)
         _add_run(
             text_tag.text or "",
@@ -3870,6 +3971,7 @@ class SVGObject:
             preserve=preserve_parent,
             style_tag=None,
             style_map_for_tag=None,
+            letter_spacing=base_spacing,
         )
 
         for child in text_tag:
@@ -3878,6 +3980,7 @@ class SVGObject:
                 child_effective_style = dict(effective_style)
                 child_effective_style.update(child_local_style)
                 _resolve_relative_font_size(child_effective_style, effective_style)
+                _resolve_relative_letter_spacing(child_effective_style, effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )
@@ -3917,6 +4020,7 @@ class SVGObject:
                         abs_y=abs_y,
                         style_tag=child,
                         style_map_for_tag=child_local_style,
+                        letter_spacing=_letter_spacing(child_effective_style),
                     )
 
                 # Text between tspans inherits parent style
@@ -3928,6 +4032,7 @@ class SVGObject:
                     preserve=preserve_parent,
                     style_tag=None,
                     style_map_for_tag=None,
+                    letter_spacing=base_spacing,
                 )
             else:
                 # other child tags are ignored (already logged elsewhere)
