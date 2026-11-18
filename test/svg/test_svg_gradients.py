@@ -1,4 +1,5 @@
 from io import BytesIO
+import re
 
 import pytest
 from xml.etree.ElementTree import fromstring
@@ -225,6 +226,52 @@ def test_gradient_units_userSpaceOnUse():
     assert (
         svg_obj.gradient_definitions["#grad"].units == GradientUnits.USER_SPACE_ON_USE
     )
+
+
+def _gradient_matrices(svg):
+    pdf = FPDF(unit="pt")
+    pdf.compress = False
+    pdf.add_page()
+    SVGObject(svg).draw_to_page(pdf)
+    return re.findall(rb"/Matrix \[[^\]]*\]", bytes(pdf.output()))
+
+
+@pytest.mark.parametrize(
+    "nested, flattened",
+    [
+        pytest.param(
+            '<g transform="scale(2)"><g transform="translate(10 0)">{}</g></g>',
+            '<g transform="matrix(2 0 0 2 20 0)">{}</g>',
+            id="scale-then-translate",
+        ),
+        pytest.param(
+            '<g transform="translate(10 0)"><g transform="scale(2)">{}</g></g>',
+            '<g transform="matrix(2 0 0 2 10 0)">{}</g>',
+            id="translate-then-scale",
+        ),
+        pytest.param(
+            (
+                '<g transform="scale(2)">'
+                '<rect width="10" height="10" fill="url(#u)" transform="translate(10 0)"/>'
+                "</g>"
+            ),
+            '<g transform="matrix(2 0 0 2 20 0)">{}</g>',
+            id="own-transform-in-a-group",
+        ),
+    ],
+)
+def test_user_space_gradient_in_nested_transformed_groups(nested, flattened):
+    # the transforms of the groups apply from the innermost to the outermost
+    gradient = (
+        '<defs><linearGradient id="u" gradientUnits="userSpaceOnUse" x1="0" x2="10">'
+        '<stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/>'
+        "</linearGradient></defs>"
+    )
+    shape = '<rect width="10" height="10" fill="url(#u)"/>'
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">{}</svg>'
+    assert _gradient_matrices(
+        svg.format(gradient + nested.format(shape))
+    ) == _gradient_matrices(svg.format(gradient + flattened.format(shape)))
 
 
 def test_gradient_spread_methods():
