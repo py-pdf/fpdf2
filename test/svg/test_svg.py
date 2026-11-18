@@ -230,6 +230,45 @@ def test_svg_shape_conversion(shape, output, guard):
         assert output == path._root_graphics_context.path_items
 
 
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+@pytest.mark.parametrize("viewbox", ["0 0 100 100", "-50 -50 100 100", "20 30 100 100"])
+def test_svg_viewbox_origin_in_the_units_of_the_document(unit, viewbox):
+    # The corner of the viewBox is the corner of the SVG, whatever the unit
+    pdf = fpdf.FPDF(unit=unit)
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        f'viewBox="{viewbox}"><rect width="1" height="1"/></svg>'
+    )
+    _, _, group = svg.transform_to_page_viewport(pdf)
+    x0, y0, size, _ = (float(value) for value in viewbox.split())
+
+    def apply(point_x, point_y):
+        transform = group.transform
+        return (
+            transform.a * point_x + transform.c * point_y + transform.e,
+            transform.b * point_x + transform.d * point_y + transform.f,
+        )
+
+    # 100 user units are 100 pt wide, in the units of the document
+    assert apply(x0, y0) == pytest.approx((0, 0))
+    assert apply(x0 + size, y0 + size) == pytest.approx((100 / pdf.k, 100 / pdf.k))
+
+
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+def test_svg_viewbox_alignment_in_the_units_of_the_document(unit):
+    # a square viewBox in a 100 x 50 pt SVG is centered, in any unit of the document
+    pdf = fpdf.FPDF(unit=unit)
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" '
+        'viewBox="0 0 50 50"><rect width="1" height="1"/></svg>'
+    )
+    _, _, group = svg.transform_to_page_viewport(pdf)
+    transform = group.transform
+    scale = pdf.k
+    assert (transform.a * scale, transform.d * scale) == pytest.approx((1, 1))
+    assert (transform.e * scale, transform.f * scale) == pytest.approx((25, 0))
+
+
 class TestSVGAttributeConversion:
     @pytest.mark.parametrize(
         "transform, expected, guard", parameters.test_svg_transforms
@@ -1390,6 +1429,78 @@ class TestSVGObject:
         for path in svg.base_group.path_items:
             assert path.style.stroke_join_style == join_style
 
+    @pytest.mark.parametrize(
+        "text, operators",
+        [
+            # as spaCy writes the labels of its dependency diagrams
+            (
+                '<text y="20" style="letter-spacing: 2px">ab</text>',
+                ["1 0 0 -1 0 20 Tm 1.5 Tc (ab) Tj 0 Tc ET"],
+            ),
+            # inherited, in em of the font size, and normal in a <tspan>
+            (
+                (
+                    '<g font-size="20" letter-spacing="0.1em"><text y="20" x="50" '
+                    'font-size="20" '
+                    'text-anchor="middle">ab<tspan letter-spacing="normal">c</tspan>'
+                    "d</text></g>"
+                ),
+                [
+                    "1 0 0 -1 25.32 20 Tm 2 Tc (ab) Tj 0 Tc ET",
+                    "1 0 0 -1 51.56 20 Tm (c) Tj ET",
+                    "1 0 0 -1 61.56 20 Tm 2 Tc (d) Tj 0 Tc ET",
+                ],
+            ),
+            # an em is of the font size where letter-spacing is set, and inherited
+            # as that length
+            (
+                (
+                    '<g font-size="20" letter-spacing="0.1em">'
+                    '<text y="20" font-size="40">ab</text></g>'
+                ),
+                ["2 Tc (ab) Tj 0 Tc ET"],
+            ),
+            (
+                (
+                    '<text y="20" font-size="10" letter-spacing="0.2em">a'
+                    '<tspan font-size="20">b</tspan></text>'
+                ),
+                ["2 Tc (a) Tj 0 Tc ET", "2 Tc (b) Tj 0 Tc ET"],
+            ),
+            (
+                (
+                    '<text y="20" letter-spacing="3">a<tspan letter-spacing="inherit">'
+                    "b</tspan></text>"
+                ),
+                ["3 Tc (a) Tj 0 Tc ET", "3 Tc (b) Tj 0 Tc ET"],
+            ),
+            # as Inkscape writes it
+            ('<text y="20" style="letter-spacing:0px">a</text>', ["Tm (a) Tj ET"]),
+            ('<text y="20" letter-spacing="wide">a</text>', ["Tm (a) Tj ET"]),
+            ('<text y="20" letter-spacing="inherit">a</text>', ["Tm (a) Tj ET"]),
+        ],
+    )
+    def test_svg_text_letter_spacing(self, text, operators):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30">{text}'
+            "</svg>"
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        for operator in operators:
+            assert operator in output
+
+    def test_svg_text_letter_spacing_bounding_box(self):
+        text = fpdf.drawing.Text(
+            0,
+            10,
+            (fpdf.drawing.TextRun("ab", "helvetica", "", 10, letter_spacing=2),),
+        )
+        bbox, _ = text.bounding_box(fpdf.drawing.Point(0, 0))
+        assert bbox.x1 - bbox.x0 == pytest.approx(2 * (0.5 * 10 + 2))
+
     def test_svg_render_content_in_a_tag(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 
@@ -2264,3 +2375,20 @@ def test_svg_image_opacity_with_fill_opacity_override(attributes):
     pdf_bytes = bytes(pdf.output())
     assert b"/ca 0.5" in pdf_bytes or b"/ca .5" in pdf_bytes
     assert b"/ca 0\n" not in pdf_bytes and b"/ca 0.0" not in pdf_bytes
+
+
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+def test_svg_percentage_size_in_the_units_of_the_document(unit):
+    # width="50%" is half the width of the page, whatever its unit
+    pdf = fpdf.FPDF(unit=unit)
+    pdf.add_page()
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="50%" height="50%" '
+        f'viewBox="0 0 {pdf.epw} {pdf.eph}"><rect width="1" height="1"/></svg>'
+    )
+    width, height, group = svg.transform_to_page_viewport(pdf)
+    assert (width, height) == pytest.approx((pdf.epw / 2, pdf.eph / 2))
+    transform = group.transform
+    # the viewBox, as large as the page, is mapped to the half of the page
+    assert (transform.a, transform.d) == pytest.approx((0.5, 0.5))
+    assert (transform.e, transform.f) == pytest.approx((0, 0))
