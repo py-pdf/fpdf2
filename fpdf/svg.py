@@ -990,7 +990,7 @@ def apply_svg_transform_to_user_space_gradients(
                 paint.local_bbox = True
                 paint.apply_page_ctm = False
             elif paint.units == GradientUnits.USER_SPACE_ON_USE:
-                paint.gradient_transform = paint.gradient_transform @ current_transform
+                paint.gradient_transform = paint.gradient_transform @ pattern_transform
 
     for paint_attr in ("fill_color", "stroke_color"):
         transform_paint(getattr(node.style, paint_attr))
