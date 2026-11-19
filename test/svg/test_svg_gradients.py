@@ -209,6 +209,97 @@ def test_gradient_units_objectBoundingBox():
     )
 
 
+def _gradient_matrices(svg):
+    pdf = FPDF(unit="pt")
+    pdf.compress = False
+    pdf.add_page()
+    SVGObject(svg).draw_to_page(pdf)
+    return re.findall(rb"/Matrix \[[^\]]*\]", bytes(pdf.output()))
+
+
+GRADIENTS = (
+    '<defs><linearGradient id="l"><stop offset="0" stop-color="red"/>'
+    '<stop offset="1" stop-color="blue"/></linearGradient>'
+    '<radialGradient id="r"><stop offset="0" stop-color="red"/>'
+    '<stop offset="1" stop-color="blue"/></radialGradient></defs>'
+)
+
+
+@pytest.mark.parametrize(
+    "transform",
+    [
+        pytest.param("translate(15 5)", id="translate"),
+        pytest.param("rotate(10 50 50)", id="rotate"),
+        pytest.param("scale(2) translate(-5 0)", id="scale-and-translate"),
+    ],
+)
+def test_bounding_box_gradient_in_a_transformed_group(transform):
+    # as Graphviz draws its gradient nodes, in a group that is translated
+    shapes = (
+        '<rect fill="url(#l)" x="5" y="10" width="60" height="30"{}/>'
+        '<ellipse fill="url(#r)" cx="35" cy="70" rx="30" ry="20"{}/>'
+    )
+    in_group = _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'{GRADIENTS}<g transform="{transform}">{shapes.format("", "")}</g></svg>'
+    )
+    own = f' transform="{transform}"'
+    on_shapes = _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f"{GRADIENTS}{shapes.format(own, own)}</svg>"
+    )
+    assert len(in_group) == 2 and in_group == on_shapes
+
+
+@pytest.mark.parametrize(
+    "nested, flattened",
+    [
+        pytest.param(
+            '<g transform="scale(2)"><g transform="translate(10 0)">{}</g></g>',
+            '<g transform="matrix(2 0 0 2 20 0)">{}</g>',
+            id="scale-then-translate",
+        ),
+        pytest.param(
+            '<g transform="translate(10 0)"><g transform="scale(2)">{}</g></g>',
+            '<g transform="matrix(2 0 0 2 10 0)">{}</g>',
+            id="translate-then-scale",
+        ),
+        pytest.param(
+            (
+                '<g transform="translate(5 0)"><g transform="scale(2)">'
+                '<g transform="translate(10 0)">{}</g></g></g>'
+            ),
+            '<g transform="matrix(2 0 0 2 25 0)">{}</g>',
+            id="three-levels",
+        ),
+    ],
+)
+def test_bounding_box_gradient_in_nested_transformed_groups(nested, flattened):
+    # the transforms of the groups apply from the innermost to the outermost
+    shape = '<rect fill="url(#l)" x="5" y="10" width="60" height="30"/>'
+    assert _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f"{GRADIENTS}{nested.format(shape)}</svg>"
+    ) == _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f"{GRADIENTS}{flattened.format(shape)}</svg>"
+    )
+
+
+def test_bounding_box_gradient_with_a_viewbox_origin():
+    shifted = _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        f'viewBox="0 -100 100 100">{GRADIENTS}'
+        '<rect fill="url(#l)" x="5" y="-90" width="60" height="30"/></svg>'
+    )
+    at_origin = _gradient_matrices(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        f'viewBox="0 0 100 100">{GRADIENTS}'
+        '<rect fill="url(#l)" x="5" y="10" width="60" height="30"/></svg>'
+    )
+    assert len(shifted) == 1 and shifted == at_origin
+
+
 def test_gradient_units_userSpaceOnUse():
     svg = """
     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
