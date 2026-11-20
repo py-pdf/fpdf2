@@ -3054,6 +3054,8 @@ class SVGObject:
             _with_inherited_current_color(style_map, xref, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
+        # a gradient set on the <use> is the paint of what it draws, as for a <g>
+        self._apply_gradient_paint(pdf_group, xref, style_map)
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
             try:

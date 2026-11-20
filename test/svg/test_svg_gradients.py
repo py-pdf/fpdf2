@@ -830,3 +830,65 @@ def test_gradient_outside_defs_without_stops_warns_once(caplog):
     """
     SVGObject(svg)
     assert caplog.text.count("Linear gradient '#grad' has no valid stops") == 1
+
+
+@pytest.mark.parametrize(
+    "paint, shape, use_attributes, operator",
+    [
+        pytest.param("fill", "", "", b"scn", id="fill"),
+        pytest.param(
+            "stroke", ' fill="none"', ' stroke-width="4"', b"SCN", id="stroke"
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "gradient",
+    [
+        pytest.param(
+            (
+                '<linearGradient id="g"><stop offset="0" stop-color="red"/>'
+                '<stop offset="1" stop-color="blue"/></linearGradient>'
+            ),
+            id="bounding-box",
+        ),
+        pytest.param(
+            (
+                '<radialGradient id="g" gradientUnits="userSpaceOnUse" '
+                'cx="50" cy="50" r="40"><stop offset="0" stop-color="red"/>'
+                '<stop offset="1" stop-color="blue"/></radialGradient>'
+            ),
+            id="user-space",
+        ),
+    ],
+)
+def test_gradient_on_a_use(gradient, paint, shape, use_attributes, operator):
+    # as in the icon sprites that write <use fill="url(#gradient)">
+    pdf = FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    SVGObject(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+            f'<defs>{gradient}<rect id="r" x="10" y="10" width="80" height="80"{shape}/>'
+            f'</defs><use href="#r" {paint}="url(#g)"{use_attributes}/></svg>'
+        )
+    ).draw_to_page(pdf)
+    assert re.search(rb"/P\d+ " + operator, bytes(pdf.output()))
+
+
+def test_gradient_on_a_use_does_not_replace_the_fill_of_the_shape():
+    pdf = FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    SVGObject(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs>'
+            '<linearGradient id="g"><stop offset="0" stop-color="blue"/>'
+            '<stop offset="1" stop-color="lime"/></linearGradient>'
+            '<rect id="r" width="50" height="50" fill="red"/></defs>'
+            '<use href="#r" fill="url(#g)"/></svg>'
+        )
+    ).draw_to_page(pdf)
+    # the last fill color set before the rectangle is its own red
+    colors = re.findall(rb"/P\d+ scn|[\d.]+ [\d.]+ [\d.]+ rg", bytes(pdf.output()))
+    assert colors[-1] == b"1 0 0 rg"
