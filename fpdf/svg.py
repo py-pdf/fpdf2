@@ -734,11 +734,14 @@ def apply_styles(
     computed_style: Optional[dict[str, Any]] = None,
     allow_fill_and_stroke: bool = True,
     current_color: Optional[str] = None,
+    font_size: Optional[float] = None,
 ) -> None:
     """
     Apply the known styles from `svg_element` to the pdf path/group `stylable`.
     A fill or stroke of currentColor takes `current_color`, the color property, when
     the SVG sets one; otherwise it is inherited, as from the color set on the FPDF.
+    A stroke-width in em or ex is relative to `font_size` in pt; it is not applied
+    without one.
     """
     if computed_style is not None:
         style = computed_style
@@ -764,6 +767,12 @@ def apply_styles(
                 and attr_value.lower() == "currentcolor"
             ):
                 attr_value = current_color
+            if attr_name == "stroke-width" and isinstance(attr_value, str):
+                width_unit = unit_splitter.fullmatch(attr_value.strip())
+                if width_unit and width_unit.group("unit") in ("em", "ex"):
+                    if font_size is None:
+                        continue
+                    attr_value = f"{_em_length(font_size)(attr_value.strip())}pt"
             if attr_value is not None:
                 setattr(stylable.style, *converter(attr_value))
 
@@ -1511,12 +1520,14 @@ class ShapeBuilder:
     """A namespace within which methods for converting basic shapes can be looked up."""
 
     @staticmethod
-    def new_path(tag: "Element", clipping_path: bool = False) -> PaintedPath:
+    def new_path(
+        tag: "Element", clipping_path: bool = False, font_size: Optional[float] = None
+    ) -> PaintedPath:
         """Create a new path with the appropriate styles."""
         path = PaintedPath()
         if clipping_path:
             path = ClippingPath()
-        apply_styles(path, tag)
+        apply_styles(path, tag, font_size=font_size)
         return path
 
     @classmethod
@@ -1573,7 +1584,7 @@ class ShapeBuilder:
         if ry > (height / 2):
             ry = height / 2
 
-        path = cls.new_path(tag, clipping_path)
+        path = cls.new_path(tag, clipping_path, font_size)
         path.rectangle(x, y, width, height, rx, ry)
         return path
 
@@ -1590,7 +1601,7 @@ class ShapeBuilder:
         cy = length(tag.attrib.get("cy", "0"))
         r = length(tag.attrib.get("r", "0"))
 
-        path = cls.new_path(tag, clipping_path)
+        path = cls.new_path(tag, clipping_path, font_size)
         if r == 0:
             # 0, the initial value, disables rendering, as for an <ellipse>
             return path
@@ -1612,7 +1623,7 @@ class ShapeBuilder:
         rx_str = tag.attrib.get("rx") or "auto"
         ry_str = tag.attrib.get("ry") or "auto"
 
-        path = cls.new_path(tag, clipping_path)
+        path = cls.new_path(tag, clipping_path, font_size)
 
         if (rx_str == ry_str == "auto") or (rx_str == "0") or (ry_str == "0"):
             return path
@@ -1645,7 +1656,7 @@ class ShapeBuilder:
         x2 = length(tag.attrib.get("x2", "0"))
         y2 = length(tag.attrib.get("y2", "0"))
 
-        path = cls.new_path(tag, clipping_path)
+        path = cls.new_path(tag, clipping_path, font_size)
         path.move_to(x1, y1)
         path.line_to(x2, y2)
         return path
@@ -3053,6 +3064,7 @@ class SVGObject:
             xref,
             _with_inherited_current_color(style_map, xref, inherited_style),
             current_color=_current_color(style_map, inherited_style),
+            font_size=self._shape_font_size(style_map, inherited_style),
         )
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
@@ -3243,6 +3255,7 @@ class SVGObject:
             group,
             merged_style,
             current_color=_current_color(merged_style, None),
+            font_size=_font_size_pt(merged_style.get("font-size")),
         )
 
         # handle defs before anything else
@@ -3378,6 +3391,7 @@ class SVGObject:
             switch,
             merged_style,
             current_color=_current_color(merged_style, None),
+            font_size=_font_size_pt(merged_style.get("font-size")),
         )
 
         for child in switch:
@@ -3405,6 +3419,7 @@ class SVGObject:
             path,
             _with_inherited_current_color(style_map, path, inherited_style),
             current_color=_current_color(style_map, inherited_style),
+            font_size=self._shape_font_size(style_map, inherited_style),
         )
         self._apply_gradient_paint(pdf_path, path, style_map)
         self.apply_clipping_path(pdf_path, path, style_map)
@@ -3450,10 +3465,10 @@ class SVGObject:
         self._record_resolved_elements(1)
         style_map = self._style_map_for(shape)
         shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
+        font_size = self._shape_font_size(style_map, inherited_style)
         if shape_tags[shape.tag] in ("polyline", "polygon"):
             shape_path = shape_builder(shape)
         else:
-            font_size = self._shape_font_size(style_map, inherited_style)
             shape_path = shape_builder(shape, font_size=font_size)
         assert isinstance(shape_path, PaintedPath)
         apply_styles(
@@ -3461,6 +3476,7 @@ class SVGObject:
             shape,
             _with_inherited_current_color(style_map, shape, inherited_style),
             current_color=_current_color(style_map, inherited_style),
+            font_size=font_size,
         )
         self._apply_gradient_paint(shape_path, shape, style_map)
         self.apply_clipping_path(shape_path, shape, style_map)
@@ -3695,6 +3711,7 @@ class SVGObject:
             text_tag,
             _with_inherited_current_color(local_style, text_tag, inherited_style),
             current_color=_current_color(effective_style, None),
+            font_size=_font_size_pt(effective_style.get("font-size")),
         )
         self._apply_gradient_paint(path, text_tag, effective_style)
         self.apply_clipping_path(path, text_tag, effective_style)
@@ -3730,6 +3747,7 @@ class SVGObject:
                 tag,
                 _with_inherited_current_color(style_map_for_tag, tag, effective_style),
                 current_color=_current_color(style_map_for_tag, effective_style),
+                font_size=self._shape_font_size(style_map_for_tag, effective_style),
             )
             self._apply_gradient_paint(context, tag, style_map_for_tag)
             context.style.auto_close = GraphicsStyle.INHERIT
