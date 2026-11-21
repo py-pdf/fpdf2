@@ -15,7 +15,7 @@ import logging
 import math
 import re
 from copy import copy, deepcopy
-from dataclasses import dataclass
+from dataclasses import astuple, dataclass
 from os import PathLike
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Optional
 
@@ -1507,6 +1507,33 @@ CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
 
 
 @force_nodocument
+class _SVGClippingPath(ClippingPath):
+    """
+    A clipping path whose own transform, as in `<path transform="..."/>`, moves its
+    points but not what is drawn after it, as in SVG.
+    """
+
+    __slots__ = ()
+
+    def render(
+        self,
+        resource_registry: Any,
+        style: GraphicsStyle,
+        last_item: Any,
+        initial_point: Any,
+    ) -> tuple[str, Any, Any]:
+        rendered, last_item, initial_point = super().render(
+            resource_registry, style, last_item, initial_point
+        )
+        transform = self._root_graphics_context.transform
+        if transform is not None:
+            inverse = transform.inverse()
+            # "+ 0.0" turns a negative zero into 0
+            undo = Transform(*(value + 0.0 for value in astuple(inverse)))
+            rendered += " " + undo.render(last_item)[0]
+        return rendered, last_item, initial_point
+
+
 class ShapeBuilder:
     """A namespace within which methods for converting basic shapes can be looked up."""
 
@@ -1515,7 +1542,7 @@ class ShapeBuilder:
         """Create a new path with the appropriate styles."""
         path = PaintedPath()
         if clipping_path:
-            path = ClippingPath()
+            path = _SVGClippingPath()
         apply_styles(path, tag)
         return path
 
@@ -3137,6 +3164,8 @@ class SVGObject:
             else:
                 pdf_group.transform = placement_transform
 
+        self.apply_clipping_path(pdf_group, xref, style_map)
+
         # a <use> can itself be referenced, as Inkscape does for a clone of a clone
         self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
@@ -3231,6 +3260,8 @@ class SVGObject:
             if key != "transform"
         }
         merged_style.update(local_style)
+        # the clip-path is not inherited either: the group applies it to its children
+        merged_style.pop("clip-path", None)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
@@ -3255,6 +3286,7 @@ class SVGObject:
         for child in group:
             self._build_group_child(pdf_group, child, merged_style)
 
+        self.apply_clipping_path(pdf_group, group, local_style)
         self.update_xref(group.attrib.get("id"), pdf_group)
 
         return pdf_group
@@ -3367,6 +3399,7 @@ class SVGObject:
             if key != "transform"
         }
         merged_style.update(local_style)
+        merged_style.pop("clip-path", None)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
@@ -3389,6 +3422,7 @@ class SVGObject:
             self._build_group_child(pdf_group, child, merged_style)
             break
 
+        self.apply_clipping_path(pdf_group, switch, local_style)
         self.update_xref(switch.attrib.get("id"), pdf_group)
         return pdf_group
 
@@ -3501,7 +3535,7 @@ class SVGObject:
         elif shape.tag in xmlns_lookup("svg", "path"):
             self._record_resolved_elements(1)
             style_map = self._style_map_for(shape)
-            clipping_path_shape = ClippingPath()
+            clipping_path_shape = _SVGClippingPath()
             apply_styles(clipping_path_shape, shape, style_map)
             clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")
