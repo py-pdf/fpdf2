@@ -2189,23 +2189,6 @@ def test_svg_image_opacity_with_fill_opacity_override(attributes):
     assert b"/ca 0\n" not in pdf_bytes and b"/ca 0.0" not in pdf_bytes
 
 
-@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
-def test_svg_percentage_size_in_the_units_of_the_document(unit):
-    # width="50%" is half the width of the page, whatever its unit
-    pdf = fpdf.FPDF(unit=unit)
-    pdf.add_page()
-    svg = fpdf.svg.SVGObject(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="50%" height="50%" '
-        f'viewBox="0 0 {pdf.epw} {pdf.eph}"><rect width="1" height="1"/></svg>'
-    )
-    width, height, group = svg.transform_to_page_viewport(pdf)
-    assert (width, height) == pytest.approx((pdf.epw / 2, pdf.eph / 2))
-    transform = group.transform
-    # the viewBox, as large as the page, is mapped to the half of the page
-    assert (transform.a, transform.d) == pytest.approx((0.5, 0.5))
-    assert (transform.e, transform.f) == pytest.approx((0, 0))
-
-
 _STAR = 'points="50,5 20,95 95,35 5,35 80,95"'
 
 
@@ -2339,3 +2322,20 @@ def test_svg_clip_rule_of_the_clipped_shape_is_not_used():
     output = bytes(pdf.output()).decode("latin-1")
     assert " W n " in output
     assert " W* n " not in output
+
+
+@pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
+def test_svg_percentage_size_in_the_units_of_the_document(unit):
+    # width="50%" is half the width of the page, whatever its unit
+    pdf = fpdf.FPDF(unit=unit)
+    pdf.add_page()
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="50%" height="50%" '
+        f'viewBox="0 0 {pdf.epw} {pdf.eph}"><rect width="1" height="1"/></svg>'
+    )
+    width, height, group = svg.transform_to_page_viewport(pdf)
+    assert (width, height) == pytest.approx((pdf.epw / 2, pdf.eph / 2))
+    transform = group.transform
+    # the viewBox, as large as the page, is mapped to the half of the page
+    assert (transform.a, transform.d) == pytest.approx((0.5, 0.5))
+    assert (transform.e, transform.f) == pytest.approx((0, 0))
