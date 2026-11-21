@@ -1121,6 +1121,42 @@ def _resolve_relative_font_size(
     style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
+# the values of dominant-baseline that place a text differently from its
+# alphabetic baseline; the others, such as auto, keep it
+DOMINANT_BASELINES = (
+    "middle",
+    "central",
+    "mathematical",
+    "hanging",
+    "text-before-edge",
+    "text-top",
+    "text-after-edge",
+    "text-bottom",
+    "ideographic",
+)
+
+
+def _resolve_inherited_baseline(
+    style: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """A dominant-baseline of inherit is the one of the parent, as in CSS."""
+    value = style.get("dominant-baseline")
+    if isinstance(value, str) and value.strip().lower() == "inherit":
+        parent_value = (inherited_style or {}).get("dominant-baseline")
+        if parent_value is None:
+            style.pop("dominant-baseline")
+        else:
+            style["dominant-baseline"] = parent_value
+
+
+def _dominant_baseline(style: dict[str, Any]) -> Optional[str]:
+    """The dominant-baseline of a text, as Mermaid sets it to center labels."""
+    value = style.get("dominant-baseline")
+    if isinstance(value, str) and value.strip().lower() in DOMINANT_BASELINES:
+        return value.strip().lower()
+    return None
+
+
 def _resolve_relative_letter_spacing(
     style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
@@ -2204,6 +2240,7 @@ class SVGObject:
             elif key in style_map:
                 style_map.pop(key, None)
         inheritable_attrs = (
+            "dominant-baseline",
             "color",
             "font-family",
             "font-size",
@@ -2629,6 +2666,7 @@ class SVGObject:
                         inherited[attr] = value
                 _resolve_relative_font_size(inherited, parent_style)
                 _resolve_relative_letter_spacing(inherited, parent_style)
+                _resolve_inherited_baseline(inherited, parent_style)
                 _resolve_inherited_color(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
@@ -3233,6 +3271,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
+        _resolve_inherited_baseline(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
@@ -3369,6 +3408,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
+        _resolve_inherited_baseline(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
         self._merge_inherited_paints(switch, local_style, inherited_style, merged_style)
         pdf_group = GraphicsContext()
@@ -3676,6 +3716,7 @@ class SVGObject:
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
         _resolve_relative_letter_spacing(effective_style, inherited_style)
+        _resolve_inherited_baseline(effective_style, inherited_style)
         _resolve_inherited_color(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
@@ -3754,6 +3795,7 @@ class SVGObject:
             style_tag: Optional["Element"] = None,
             style_map_for_tag: Optional[dict[str, Any]] = None,
             letter_spacing: float = 0.0,
+            dominant_baseline: Optional[str] = None,
         ) -> None:
             nonlocal pending_dx, pending_dy
             raw = raw_text or ""
@@ -3799,9 +3841,11 @@ class SVGObject:
                     abs_y=abs_y,
                     run_style=run_style,
                     letter_spacing=letter_spacing,
+                    dominant_baseline=dominant_baseline,
                 )
             )
 
+        base_baseline = _dominant_baseline(effective_style)
         base_spacing = _letter_spacing(effective_style)
         # Leading text (before child <tspan>)
         _add_run(
@@ -3813,6 +3857,7 @@ class SVGObject:
             style_tag=None,
             style_map_for_tag=None,
             letter_spacing=base_spacing,
+            dominant_baseline=base_baseline,
         )
 
         for child in text_tag:
@@ -3822,6 +3867,7 @@ class SVGObject:
                 child_effective_style.update(child_local_style)
                 _resolve_relative_font_size(child_effective_style, effective_style)
                 _resolve_relative_letter_spacing(child_effective_style, effective_style)
+                _resolve_inherited_baseline(child_effective_style, effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )
@@ -3862,6 +3908,7 @@ class SVGObject:
                         style_tag=child,
                         style_map_for_tag=child_local_style,
                         letter_spacing=_letter_spacing(child_effective_style),
+                        dominant_baseline=_dominant_baseline(child_effective_style),
                     )
 
                 # Text between tspans inherits parent style
@@ -3874,6 +3921,7 @@ class SVGObject:
                     style_tag=None,
                     style_map_for_tag=None,
                     letter_spacing=base_spacing,
+                    dominant_baseline=base_baseline,
                 )
             else:
                 # other child tags are ignored (already logged elsewhere)
