@@ -2189,6 +2189,141 @@ def test_svg_image_opacity_with_fill_opacity_override(attributes):
     assert b"/ca 0\n" not in pdf_bytes and b"/ca 0.0" not in pdf_bytes
 
 
+_STAR = 'points="50,5 20,95 95,35 5,35 80,95"'
+
+
+@pytest.mark.parametrize(
+    ("svg_body", "rule"),
+    [
+        pytest.param(f"<polygon {_STAR}/>", "W", id="initial-value"),
+        pytest.param(f'<polygon clip-rule="evenodd" {_STAR}/>', "W*", id="attribute"),
+        pytest.param(
+            f'<polygon clip-rule="nonzero" {_STAR}/>', "W", id="attribute-nonzero"
+        ),
+        pytest.param(
+            f'<polygon style="clip-rule: evenodd" {_STAR}/>', "W*", id="style"
+        ),
+        pytest.param(
+            f'<polygon clip-rule="nonzero" style="clip-rule:evenodd" {_STAR}/>',
+            "W*",
+            id="style-over-attribute",
+        ),
+        pytest.param(
+            f'<style>.e{{clip-rule:evenodd}}</style><polygon class="e" {_STAR}/>',
+            "W*",
+            id="class-rule",
+        ),
+        pytest.param(
+            '<path clip-rule="evenodd" d="M50 5L20 95L95 35L5 35L80 95Z"/>',
+            "W*",
+            id="path",
+        ),
+        pytest.param(f'<polygon clip-rule="bogus" {_STAR}/>', "W", id="invalid-value"),
+        pytest.param(
+            f'<polygon clip-rule="inherit" {_STAR}/>', "W", id="inherit-without-parent"
+        ),
+        pytest.param(
+            f'<polygon fill-rule="evenodd" {_STAR}/>', "W", id="fill-rule-is-ignored"
+        ),
+        pytest.param(
+            f'<polygon clip-rule="evenodd" fill-rule="nonzero" {_STAR}/>',
+            "W*",
+            id="clip-rule-and-fill-rule",
+        ),
+    ],
+)
+def test_svg_clip_rule(svg_body, rule):
+    """The shapes of a <clipPath> clip with their clip-rule, not their fill-rule."""
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'<clipPath id="c">{svg_body}</clipPath>'
+        '<rect width="100" height="100" fill="green" clip-path="url(#c)"/></svg>'
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert re.search(rf" {re.escape(rule)} n 0 0 m 0 0 100 100 re f", output)
+
+
+@pytest.mark.parametrize(
+    ("use_attrs", "star_attrs", "clip_attrs", "rule"),
+    [
+        pytest.param('clip-rule="evenodd"', "", "", "W*", id="use-sets-it"),
+        pytest.param("", 'clip-rule="evenodd"', "", "W*", id="target-sets-it"),
+        pytest.param(
+            'clip-rule="evenodd"', 'clip-rule="nonzero"', "", "W", id="target-wins"
+        ),
+        pytest.param("", "", 'clip-rule="evenodd"', "W*", id="clip-path-sets-it"),
+        pytest.param(
+            'clip-rule="nonzero"', "", 'clip-rule="evenodd"', "W", id="use-wins"
+        ),
+        pytest.param("", 'fill-rule="evenodd"', "", "W", id="fill-rule-is-ignored"),
+    ],
+)
+def test_svg_clip_rule_of_a_use(use_attrs, star_attrs, clip_attrs, rule):
+    """A shape drawn by a <use> in a <clipPath> inherits the clip-rule of the <use>."""
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'<defs><polygon id="star" {star_attrs} {_STAR}/></defs>'
+        f'<clipPath id="c" {clip_attrs}><use href="#star" {use_attrs}/></clipPath>'
+        '<rect width="100" height="100" fill="green" clip-path="url(#c)"/></svg>'
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert re.search(rf" {re.escape(rule)} n 0 0 m 0 0 100 100 re f", output)
+
+
+@pytest.mark.parametrize(
+    ("svg_attrs", "clip_attrs", "shape_attrs", "rule"),
+    [
+        pytest.param("", 'clip-rule="evenodd"', "", "W*", id="on-the-clip-path"),
+        pytest.param(
+            "", 'style="clip-rule:evenodd"', "", "W*", id="style-on-the-clip-path"
+        ),
+        pytest.param(
+            "", 'clip-rule="evenodd"', 'clip-rule="nonzero"', "W", id="shape-wins"
+        ),
+        pytest.param(
+            "", 'clip-rule="evenodd"', 'clip-rule="inherit"', "W*", id="inherit"
+        ),
+        pytest.param('clip-rule="evenodd"', "", "", "W*", id="on-the-svg"),
+        pytest.param(
+            "", "", 'fill-rule="evenodd"', "W", id="fill-rule-of-the-clip-path-shape"
+        ),
+    ],
+)
+def test_svg_clip_rule_inherited(svg_attrs, clip_attrs, shape_attrs, rule):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" {svg_attrs}>'
+        f'<clipPath id="c" {clip_attrs}><polygon {shape_attrs} {_STAR}/></clipPath>'
+        '<rect width="100" height="100" fill="green" clip-path="url(#c)"/></svg>'
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert re.search(rf" {re.escape(rule)} n 0 0 m 0 0 100 100 re f", output)
+
+
+def test_svg_clip_rule_of_the_clipped_shape_is_not_used():
+    """The fill-rule of the clipped shape does not change how the clipping path clips."""
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'<clipPath id="c"><polygon {_STAR}/></clipPath>'
+        '<rect width="100" height="100" fill="green" fill-rule="evenodd" '
+        'clip-path="url(#c)"/></svg>'
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert " W n " in output
+    assert " W* n " not in output
+
+
 @pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
 def test_svg_percentage_size_in_the_units_of_the_document(unit):
     # width="50%" is half the width of the page, whatever its unit
