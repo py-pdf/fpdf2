@@ -3081,7 +3081,6 @@ class SVGObject:
             _with_inherited_current_color(style_map, xref, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
-        self.apply_clipping_path(pdf_group, xref, style_map)
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
@@ -3164,6 +3163,8 @@ class SVGObject:
                 pdf_group.transform = placement_transform @ pdf_group.transform
             else:
                 pdf_group.transform = placement_transform
+
+        self.apply_clipping_path(pdf_group, xref, style_map)
 
         # a <use> can itself be referenced, as Inkscape does for a clone of a clone
         self.update_xref(xref.attrib.get("id"), pdf_group)
@@ -3274,7 +3275,6 @@ class SVGObject:
             merged_style,
             current_color=_current_color(merged_style, None),
         )
-        self.apply_clipping_path(pdf_group, group, local_style)
 
         # handle defs before anything else
         for child in [
@@ -3286,6 +3286,7 @@ class SVGObject:
         for child in group:
             self._build_group_child(pdf_group, child, merged_style)
 
+        self.apply_clipping_path(pdf_group, group, local_style)
         self.update_xref(group.attrib.get("id"), pdf_group)
 
         return pdf_group
@@ -3411,7 +3412,6 @@ class SVGObject:
             merged_style,
             current_color=_current_color(merged_style, None),
         )
-        self.apply_clipping_path(pdf_group, switch, local_style)
 
         for child in switch:
             if _has_switch_conditional_attrs(child):
@@ -3422,6 +3422,7 @@ class SVGObject:
             self._build_group_child(pdf_group, child, merged_style)
             break
 
+        self.apply_clipping_path(pdf_group, switch, local_style)
         self.update_xref(switch.attrib.get("id"), pdf_group)
         return pdf_group
 
