@@ -230,132 +230,6 @@ def test_svg_shape_conversion(shape, output, guard):
         assert output == path._root_graphics_context.path_items
 
 
-def _draw_svg(svg_body, width=100, height=100):
-    pdf = fpdf.FPDF()
-    pdf.compress = False
-    pdf.add_page()
-    fpdf.svg.SVGObject(
-        f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
-        f'width="{width}" height="{height}">{svg_body}</svg>'
-    ).draw_to_page(pdf)
-    return bytes(pdf.output()).decode("latin-1")
-
-
-_CLIP_50 = '<clipPath id="c"><rect width="50" height="50"/></clipPath>'
-_SQUARE = '<rect width="100" height="100" fill="red"/>'
-
-
-@pytest.mark.parametrize(
-    "svg_body",
-    [
-        pytest.param(f'<g clip-path="url(#c)">{_SQUARE}</g>', id="g"),
-        pytest.param(f'<g style="clip-path: url(#c)">{_SQUARE}</g>', id="g-style"),
-        pytest.param(
-            f'<style>.k{{clip-path:url(#c)}}</style><g class="k">{_SQUARE}</g>',
-            id="g-class",
-        ),
-        pytest.param(f'<switch clip-path="url(#c)">{_SQUARE}</switch>', id="switch"),
-        pytest.param(f'<a clip-path="url(#c)">{_SQUARE}</a>', id="a"),
-        pytest.param(f'<g clip-path="url(#c)"><g>{_SQUARE}</g></g>', id="g-in-the-g"),
-        pytest.param(
-            f'<defs>{_SQUARE.replace("<rect", "<rect id=" + chr(34) + "r" + chr(34))}</defs>'
-            '<use href="#r" clip-path="url(#c)"/>',
-            id="use",
-        ),
-        pytest.param(
-            f'<defs><g id="r" clip-path="url(#c)">{_SQUARE}</g></defs><use href="#r"/>',
-            id="use-of-a-g",
-        ),
-        pytest.param(
-            f'<defs><g id="r" clip-path="url(#c)">{_SQUARE}</g></defs>'
-            '<use href="#r" x="10"/>',
-            id="use-of-a-g-with-x",
-        ),
-        pytest.param(
-            '<g clip-path="url(#c)"><text y="50">Hello</text></g>',
-            id="text",
-        ),
-        pytest.param(
-            '<g style="clip-path: url(#c)"><text y="50" transform="translate(5 5)">Hi</text></g>',
-            id="text-with-transform",
-        ),
-    ],
-)
-def test_svg_clip_path_of_a_container(svg_body):
-    """A clip-path of a <g>, <switch>, <a> or <use> clips what they draw, once."""
-    output = _draw_svg(_CLIP_50 + svg_body)
-    assert output.count(" W n ") == 1
-    clip = output.index("0 0 m 0 0 50 50 re W n")
-    assert clip < max(output.rfind(" re f"), output.rfind(" Tj"), output.rfind(" TJ"))
-
-
-@pytest.mark.parametrize(
-    "clip_path",
-    [
-        pytest.param("none", id="none"),
-        pytest.param("url(#nope)", id="missing-clip-path"),
-        pytest.param("", id="empty-value"),
-    ],
-)
-def test_svg_clip_path_of_a_container_that_clips_nothing(clip_path):
-    output = _draw_svg(_CLIP_50 + f'<g clip-path="{clip_path}">{_SQUARE}</g>')
-    assert " W n " not in output
-
-
-def test_svg_clip_path_of_a_container_does_not_clip_its_siblings():
-    output = _draw_svg(
-        _CLIP_50 + f'<g clip-path="url(#c)">{_SQUARE}</g><rect width="9" height="9"/>'
-    )
-    assert output.count(" W n ") == 1
-    assert output.index(" W n ") < output.index("0 0 100 100 re f")
-    assert output.index("0 0 100 100 re f") < output.index("0 0 9 9 re f")
-
-
-def test_svg_clip_path_of_a_container_clips_its_children_too():
-    output = _draw_svg(
-        _CLIP_50
-        + '<clipPath id="d"><rect width="30" height="30"/></clipPath>'
-        + '<g clip-path="url(#c)"><rect width="100" height="100" clip-path="url(#d)"/></g>'
-    )
-    assert "0 0 m 0 0 50 50 re W n" in output
-    assert "0 0 m 0 0 30 30 re W n" in output
-    assert output.index("0 0 50 50 re W n") < output.index("0 0 30 30 re W n")
-
-
-def test_svg_clip_path_of_a_container_is_in_its_transformed_space():
-    """The clip-path of a <g> clips in the user space of the <g>, with its transform."""
-    output = _draw_svg(
-        _CLIP_50 + f'<g transform="translate(20 10)" clip-path="url(#c)">{_SQUARE}</g>'
-    )
-    assert re.search(r"1 0 0 1 20 10 cm [^Q]*0 0 50 50 re W n", output)
-
-
-@pytest.mark.parametrize("child", ["path", "group", "rect", "use"])
-def test_svg_transform_of_a_clip_path_shape_does_not_move_the_content(child):
-    """
-    The transform of a shape of a <clipPath> moves the shape but not what follows it,
-    as in the clipping paths that PyMuPDF writes, which flip every clipping path.
-    """
-    flip = 'transform="matrix(1,0,0,-1,0,100)"'
-    content = {
-        "path": '<path d="M0 0H50V100" fill="red" clip-path="url(#c)"/>',
-        "group": '<g clip-path="url(#c)"><path d="M0 0H50V100" fill="red"/></g>',
-        "rect": '<rect width="20" height="30" fill="red" clip-path="url(#c)"/>',
-        "use": '<use href="#p" clip-path="url(#c)"/>',
-    }[child]
-    output = _draw_svg(
-        f'<defs><path id="p" d="M0 0H50V100" fill="red"/>'
-        f'<clipPath id="c"><path {flip} d="M0 0H70V70H0Z"/></clipPath></defs>' + content
-    )
-    # the flip is undone right after the clipping path
-    assert re.search(r"cm 0 0 m 70 0 l 70 70 l 0 70 l h W n 1 0 0 -1 0 100 cm", output)
-
-
-def test_svg_clip_path_shape_without_transform_has_nothing_to_undo():
-    output = _draw_svg(_CLIP_50 + f'<g clip-path="url(#c)">{_SQUARE}</g>')
-    assert "re W n q" in output
-
-
 @pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
 @pytest.mark.parametrize("viewbox", ["0 0 100 100", "-50 -50 100 100", "20 30 100 100"])
 def test_svg_viewbox_origin_in_the_units_of_the_document(unit, viewbox):
@@ -2059,6 +1933,132 @@ class TestSVGObject:
         svg = fpdf.svg.SVGObject(svg_data)
         path_use = svg.base_group.path_items[0]
         assert tuple(path_use.transform) == pytest.approx((1, 0, 0, 1, 5, 5))
+
+
+def _draw_svg(svg_body, width=100, height=100):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+        f'width="{width}" height="{height}">{svg_body}</svg>'
+    ).draw_to_page(pdf)
+    return bytes(pdf.output()).decode("latin-1")
+
+
+_CLIP_50 = '<clipPath id="c"><rect width="50" height="50"/></clipPath>'
+_SQUARE = '<rect width="100" height="100" fill="red"/>'
+
+
+@pytest.mark.parametrize(
+    "svg_body",
+    [
+        pytest.param(f'<g clip-path="url(#c)">{_SQUARE}</g>', id="g"),
+        pytest.param(f'<g style="clip-path: url(#c)">{_SQUARE}</g>', id="g-style"),
+        pytest.param(
+            f'<style>.k{{clip-path:url(#c)}}</style><g class="k">{_SQUARE}</g>',
+            id="g-class",
+        ),
+        pytest.param(f'<switch clip-path="url(#c)">{_SQUARE}</switch>', id="switch"),
+        pytest.param(f'<a clip-path="url(#c)">{_SQUARE}</a>', id="a"),
+        pytest.param(f'<g clip-path="url(#c)"><g>{_SQUARE}</g></g>', id="g-in-the-g"),
+        pytest.param(
+            f'<defs>{_SQUARE.replace("<rect", "<rect id=" + chr(34) + "r" + chr(34))}</defs>'
+            '<use href="#r" clip-path="url(#c)"/>',
+            id="use",
+        ),
+        pytest.param(
+            f'<defs><g id="r" clip-path="url(#c)">{_SQUARE}</g></defs><use href="#r"/>',
+            id="use-of-a-g",
+        ),
+        pytest.param(
+            f'<defs><g id="r" clip-path="url(#c)">{_SQUARE}</g></defs>'
+            '<use href="#r" x="10"/>',
+            id="use-of-a-g-with-x",
+        ),
+        pytest.param(
+            '<g clip-path="url(#c)"><text y="50">Hello</text></g>',
+            id="text",
+        ),
+        pytest.param(
+            '<g style="clip-path: url(#c)"><text y="50" transform="translate(5 5)">Hi</text></g>',
+            id="text-with-transform",
+        ),
+    ],
+)
+def test_svg_clip_path_of_a_container(svg_body):
+    """A clip-path of a <g>, <switch>, <a> or <use> clips what they draw, once."""
+    output = _draw_svg(_CLIP_50 + svg_body)
+    assert output.count(" W n ") == 1
+    clip = output.index("0 0 m 0 0 50 50 re W n")
+    assert clip < max(output.rfind(" re f"), output.rfind(" Tj"), output.rfind(" TJ"))
+
+
+@pytest.mark.parametrize(
+    "clip_path",
+    [
+        pytest.param("none", id="none"),
+        pytest.param("url(#nope)", id="missing-clip-path"),
+        pytest.param("", id="empty-value"),
+    ],
+)
+def test_svg_clip_path_of_a_container_that_clips_nothing(clip_path):
+    output = _draw_svg(_CLIP_50 + f'<g clip-path="{clip_path}">{_SQUARE}</g>')
+    assert " W n " not in output
+
+
+def test_svg_clip_path_of_a_container_does_not_clip_its_siblings():
+    output = _draw_svg(
+        _CLIP_50 + f'<g clip-path="url(#c)">{_SQUARE}</g><rect width="9" height="9"/>'
+    )
+    assert output.count(" W n ") == 1
+    assert output.index(" W n ") < output.index("0 0 100 100 re f")
+    assert output.index("0 0 100 100 re f") < output.index("0 0 9 9 re f")
+
+
+def test_svg_clip_path_of_a_container_clips_its_children_too():
+    output = _draw_svg(
+        _CLIP_50
+        + '<clipPath id="d"><rect width="30" height="30"/></clipPath>'
+        + '<g clip-path="url(#c)"><rect width="100" height="100" clip-path="url(#d)"/></g>'
+    )
+    assert "0 0 m 0 0 50 50 re W n" in output
+    assert "0 0 m 0 0 30 30 re W n" in output
+    assert output.index("0 0 50 50 re W n") < output.index("0 0 30 30 re W n")
+
+
+def test_svg_clip_path_of_a_container_is_in_its_transformed_space():
+    """The clip-path of a <g> clips in the user space of the <g>, with its transform."""
+    output = _draw_svg(
+        _CLIP_50 + f'<g transform="translate(20 10)" clip-path="url(#c)">{_SQUARE}</g>'
+    )
+    assert re.search(r"1 0 0 1 20 10 cm [^Q]*0 0 50 50 re W n", output)
+
+
+@pytest.mark.parametrize("child", ["path", "group", "rect", "use"])
+def test_svg_transform_of_a_clip_path_shape_does_not_move_the_content(child):
+    """
+    The transform of a shape of a <clipPath> moves the shape but not what follows it,
+    as in the clipping paths that PyMuPDF writes, which flip every clipping path.
+    """
+    flip = 'transform="matrix(1,0,0,-1,0,100)"'
+    content = {
+        "path": '<path d="M0 0H50V100" fill="red" clip-path="url(#c)"/>',
+        "group": '<g clip-path="url(#c)"><path d="M0 0H50V100" fill="red"/></g>',
+        "rect": '<rect width="20" height="30" fill="red" clip-path="url(#c)"/>',
+        "use": '<use href="#p" clip-path="url(#c)"/>',
+    }[child]
+    output = _draw_svg(
+        f'<defs><path id="p" d="M0 0H50V100" fill="red"/>'
+        f'<clipPath id="c"><path {flip} d="M0 0H70V70H0Z"/></clipPath></defs>' + content
+    )
+    # the flip is undone right after the clipping path
+    assert re.search(r"cm 0 0 m 70 0 l 70 70 l 0 70 l h W n 1 0 0 -1 0 100 cm", output)
+
+
+def test_svg_clip_path_shape_without_transform_has_nothing_to_undo():
+    output = _draw_svg(_CLIP_50 + f'<g clip-path="url(#c)">{_SQUARE}</g>')
+    assert "re W n q" in output
 
 
 def test_user_space_gradient_tracks_svg_image_transform(tmp_path):
