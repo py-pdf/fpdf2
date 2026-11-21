@@ -1015,6 +1015,20 @@ def apply_svg_transform_to_user_space_gradients(
                             transform_paint(paint)
 
 
+def _without_paint(path: PaintedPath, paint: str) -> None:
+    """Remove the fill or stroke of a path, also from the runs of its text."""
+    attr = f"{paint}_color"
+    setattr(path.style, attr, None)
+    for item in path.get_graphics_context().path_items:
+        if isinstance(item, Text):
+            for run in item.text_runs:
+                if (
+                    run.run_style is not None
+                    and getattr(run.run_style, attr) is not GraphicsStyle.INHERIT
+                ):
+                    setattr(run.run_style, attr, None)
+
+
 def _preserve_ws(style_map: dict[str, Any], tag: "Element") -> bool:
     # CSS ‘white-space’ wins; otherwise XML’s xml:space
     ws = (style_map.get("white-space") or "").strip()
@@ -1501,6 +1515,9 @@ def _extract_css_class_styles(css_text: str) -> list[tuple[str, dict[str, Any]]]
         styles.append((class_name, declarations))
     return styles
 
+
+# the paints of the paint-order property, in their usual order
+_PAINTS = ("fill", "stroke", "markers")
 
 # A universal selector or an element name, such as "*" or "rect"
 CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
@@ -2210,6 +2227,7 @@ class SVGObject:
             "font-style",
             "font-weight",
             "letter-spacing",
+            "paint-order",
             "text-anchor",
             "white-space",
         )
@@ -2988,11 +3006,15 @@ class SVGObject:
                 )
                 self.build_group(child, None, self._ancestors_font_style(child))
             elif child.tag in xmlns_lookup("svg", "path"):
-                self.build_path(child)
+                self._apply_paint_order(self.build_path(child), child, None)
             elif child.tag in xmlns_lookup("svg", "image"):
                 self.build_image(child)
             elif child.tag in shape_tags:
-                self.build_shape(child, self._ancestors_font_style(child))
+                self._apply_paint_order(
+                    self.build_shape(child, self._ancestors_font_style(child)),
+                    child,
+                    None,
+                )
             elif child.tag in xmlns_lookup("svg", "use"):
                 self.build_xref(child)
             elif child.tag in xmlns_lookup("svg", "linearGradient"):
@@ -3082,14 +3104,22 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and self._has_em_lengths(element):
-            # the em and ex of the referenced shapes are relative to the font size
-            # that the <use> gives them, as its copy inherits from it
+        use_paint_order = _get_attr_or_style(xref, "paint-order", style_map)
+        if use_paint_order in (None, "inherit"):
+            use_paint_order = (inherited_style or {}).get("paint-order")
+        if element is not None and (
+            use_paint_order is not None or self._has_em_lengths(element)
+        ):
+            # the referenced shapes inherit the font size and the paint-order of the
+            # <use>: their em and ex are relative to that font size, as its copy
+            # inherits from it
             use_style = {**(inherited_style or {}), **style_map}
             _resolve_relative_font_size(use_style, inherited_style)
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
+            if use_paint_order is not None:
+                font_style["paint-order"] = use_paint_order
             referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
@@ -3300,11 +3330,15 @@ class SVGObject:
         elif child.tag in xmlns_lookup("svg", "path"):
             path = self.build_path(child, inherited_style)
             self._apply_inherited_pattern(path, child, inherited_style)
-            pdf_group.add_item(path, False)
+            pdf_group.add_item(
+                self._apply_paint_order(path, child, inherited_style), False
+            )
         elif child.tag in shape_tags:
             path = self.build_shape(child, inherited_style)
             self._apply_inherited_pattern(path, child, inherited_style)
-            pdf_group.add_item(path, False)
+            pdf_group.add_item(
+                self._apply_paint_order(path, child, inherited_style), False
+            )
         elif child.tag in xmlns_lookup("svg", "use"):
             pdf_group.add_item(self.build_xref(child, inherited_style), False)
         elif child.tag in xmlns_lookup("svg", "image"):
@@ -3312,12 +3346,45 @@ class SVGObject:
         elif child.tag in xmlns_lookup("svg", "text"):
             text_path = self.build_text(child, inherited_style)
             if text_path:
-                pdf_group.add_item(text_path, False)
+                pdf_group.add_item(
+                    self._apply_paint_order(text_path, child, inherited_style), False
+                )
         else:
             LOGGER.warning(
                 "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
                 without_ns(child.tag),
             )
+
+    def _apply_paint_order(
+        self,
+        path: PaintedPath,
+        element: "Element",
+        inherited_style: Optional[dict[str, Any]],
+    ) -> PaintedPath | GraphicsContext:
+        """
+        A path or a text whose paint-order paints its stroke before its fill, as in the
+        paint-order="markers stroke fill" of Inkscape, as a group of a copy with only
+        its stroke, then a copy with only its fill.
+        """
+        value = _get_attr_or_style(element, "paint-order", self._style_map_for(element))
+        if value is None or value.strip().lower() == "inherit":
+            value = (inherited_style or {}).get("paint-order")
+        if value is None:
+            return path
+        # the paints that are not given follow in their usual order
+        order = [token for token in value.lower().split() if token in _PAINTS]
+        order += [paint for paint in _PAINTS if paint not in order]
+        if order.index("stroke") > order.index("fill"):
+            return path
+        stroke = deepcopy(path)
+        _without_paint(stroke, "fill")
+        fill = deepcopy(path)
+        _without_paint(fill, "stroke")
+        group = GraphicsContext()
+        group.add_item(stroke, False)
+        group.add_item(fill, False)
+        self.update_xref(element.attrib.get("id"), group)
+        return group
 
     def _merge_inherited_paints(
         self,

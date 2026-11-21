@@ -1242,6 +1242,115 @@ class TestSVGObject:
             assert path.style.stroke_join_style == join_style
 
     @pytest.mark.parametrize(
+        "body, stroke_first",
+        [
+            # as Inkscape writes it
+            (
+                (
+                    '<rect width="5" height="5" fill="red" stroke="blue" '
+                    'paint-order="markers stroke fill"/>'
+                ),
+                True,
+            ),
+            (
+                '<path d="M0 0h5v5z" fill="red" stroke="blue" style="paint-order: stroke"/>',
+                True,
+            ),
+            (
+                '<text y="9" fill="red" stroke="blue" paint-order="stroke">a</text>',
+                True,
+            ),
+            # inherited, unless the element sets its own
+            (
+                '<g paint-order="stroke"><circle r="5" fill="red" stroke="blue"/></g>',
+                True,
+            ),
+            (
+                (
+                    '<g paint-order="stroke"><circle r="5" fill="red" stroke="blue" '
+                    'paint-order="inherit"/></g>'
+                ),
+                True,
+            ),
+            (
+                (
+                    '<g paint-order="stroke"><circle r="5" fill="red" stroke="blue" '
+                    'paint-order="normal"/></g>'
+                ),
+                False,
+            ),
+            (
+                '<rect width="5" height="5" fill="red" paint-order="fill markers"/>',
+                False,
+            ),
+        ],
+    )
+    def test_svg_paint_order(self, body, stroke_first):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">{body}</svg>'
+        )
+        item = svg.base_group.path_items[0]
+        if body.startswith("<g"):
+            item = item.path_items[0]
+        if not stroke_first:
+            assert isinstance(item, fpdf.drawing.PaintedPath)
+            return
+        # a copy with only the stroke, then a copy with only the fill
+        stroke, fill = item.path_items
+        assert stroke.style.fill_color is None
+        assert stroke.style.stroke_color == fpdf.drawing.color_from_hex_string("#00f")
+        assert fill.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+        assert fill.style.stroke_color is None
+
+    def test_svg_paint_order_of_a_use(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<rect id="r" width="5" height="5" fill="red" stroke="blue" '
+            'paint-order="stroke"/></defs><use href="#r"/></svg>'
+        )
+        stroke, fill = svg.base_group.path_items[0].path_items[0].path_items
+        assert stroke.style.fill_color is None
+        assert fill.style.stroke_color is None
+
+    @pytest.mark.parametrize(
+        "use",
+        [
+            '<use href="#r" paint-order="stroke"/>',
+            '<use href="#r" style="paint-order: stroke"/>',
+            '<g paint-order="stroke"><use href="#r"/></g>',
+        ],
+    )
+    def test_svg_paint_order_inherited_from_a_use(self, use):
+        # the same as the rect itself with paint-order="stroke"
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<rect id="r" width="5" height="5" fill="red" stroke="blue"/></defs>'
+            f"{use}</svg>"
+        )
+        group = svg.base_group.path_items[0]
+        while not isinstance(group.path_items[0], fpdf.drawing.PaintedPath):
+            group = group.path_items[0]
+        stroke, fill = group.path_items
+        assert stroke.style.fill_color is None
+        assert stroke.style.stroke_color == fpdf.drawing.color_from_hex_string("#00f")
+        assert fill.style.fill_color == fpdf.drawing.color_from_hex_string("#f00")
+        assert fill.style.stroke_color is None
+
+    def test_svg_paint_order_of_text_with_styled_tspans(self):
+        # the tspan's own fill and stroke must not paint in both copies
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">'
+            '<text y="20" paint-order="stroke">'
+            '<tspan fill="green" stroke="blue">a</tspan></text></svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        # stroke only, then fill only
+        assert re.findall(r"\d Tr", output) == ["1 Tr", "0 Tr"]
+
+    @pytest.mark.parametrize(
         "text, operators",
         [
             # as spaCy writes the labels of its dependency diagrams
