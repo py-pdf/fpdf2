@@ -1242,6 +1242,144 @@ class TestSVGObject:
             assert path.style.stroke_join_style == join_style
 
     @pytest.mark.parametrize(
+        "body, operators",
+        [
+            # the fallback of an undefined custom property, as Figma and VS Code write
+            ('<rect width="5" height="5" fill="var(--fill-0, #f00)"/>', ["1 0 0 rg"]),
+            (
+                '<rect width="5" height="5" fill="VAR(--x, rgb(255, 0, 0))"/>',
+                ["1 0 0 rg"],
+            ),
+            # a custom property of the element or an ancestor, in CSS or a style
+            (
+                '<g style="--c: lime"><rect width="5" height="5" fill="var(--c, red)"/></g>',
+                ["0 1 0 rg"],
+            ),
+            (
+                (
+                    "<style>svg { --c: red } .a { --c: lime }</style>"
+                    '<rect class="a" width="5" height="5" style="fill: var(--c)"/>'
+                ),
+                ["0 1 0 rg"],
+            ),
+            (
+                (
+                    '<g style="--a: var(--b, lime)">'
+                    '<rect width="5" height="5" fill="var(--a)"/></g>'
+                ),
+                ["0 1 0 rg"],
+            ),
+            (
+                (
+                    '<rect width="5" height="5" fill="red" stroke="var(--s, var(--t, lime))" '
+                    'stroke-width="var(--w, 3)"/>'
+                ),
+                ["0 1 0 RG", "/LW 3"],
+            ),
+            # a custom property is computed where it is declared, then inherited
+            (
+                (
+                    '<g style="--a: red; --b: var(--a)">'
+                    '<rect width="5" height="5" style="--a: lime; fill: var(--b)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            # one that is invalid or in a cycle takes the fallback where it is used
+            (
+                (
+                    '<g style="--a: var(--missing)">'
+                    '<rect width="5" height="5" fill="var(--a, red)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            (
+                (
+                    '<g style="--a: var(--a)">'
+                    '<rect width="5" height="5" fill="var(--a, red)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            (
+                (
+                    '<g style="--a: var(--b, lime); --b: var(--a); --c: var(--a, red)">'
+                    '<rect width="5" height="5" fill="var(--c)"/></g>'
+                ),
+                ["1 0 0 rg"],
+            ),
+            # without a value or a fallback, or in a cycle, the property is inherited
+            (
+                '<g fill="blue"><rect width="5" height="5" fill="var(--undefined)"/></g>',
+                ["0 0 1 rg"],
+            ),
+            (
+                '<g fill="blue"><rect width="5" height="5" fill="var(--c, red"/></g>',
+                ["0 0 1 rg"],
+            ),
+            (
+                '<g fill="blue"><rect width="5" height="5" fill="var(c, red)"/></g>',
+                ["0 0 1 rg"],
+            ),
+            (
+                (
+                    '<g style="--a: var(--b); --b: var(--a)" fill="blue">'
+                    '<rect width="5" height="5" fill="var(--a)"/></g>'
+                ),
+                ["0 0 1 rg"],
+            ),
+        ],
+    )
+    def test_svg_css_var(self, body, operators):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">{body}</svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        for operator in operators:
+            assert operator in output
+
+    def test_svg_css_var_opacity_and_transform(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<rect width="5" height="5" opacity="var(--o, 0.5)" '
+            'style="transform: var(--t, translate(1, 2))"/>'
+            '<rect width="5" height="5" opacity="var(--o)"/></svg>'
+        )
+        first, second = svg.base_group.path_items
+        assert first.style.fill_opacity == 0.5
+        assert first.transform == fpdf.drawing.Transform.translation(1, 2)
+        assert second.style.fill_opacity is fpdf.drawing.GraphicsStyle.INHERIT
+
+    def test_svg_css_var_fallback_not_read_when_the_property_is_set(self):
+        # so a var() in the fallback does not matter
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" '
+            'style="--t: translate(1, 2); '
+            'transform: var(--t, translate(var(--missing), 0))"/></svg>'
+        )
+        rect = svg.base_group.path_items[0]
+        assert rect.transform == fpdf.drawing.Transform.translation(1, 2)
+
+    def test_svg_css_var_references_are_bounded(self):
+        # a long chain of custom properties stops being followed
+        own = {f"--p{i}": f"var(--p{i + 1})" for i in range(200)}
+        own["--p200"] = "lime"
+        computed = fpdf.svg._compute_custom_properties(own, {})
+        assert computed["--p200"] == "lime"
+        assert computed["--p0"] is None
+
+    def test_svg_css_var_substitutions_are_bounded(self):
+        # custom properties that double at each step stop being substituted
+        own = {f"--p{i}": f"var(--p{i + 1}) var(--p{i + 1})" for i in range(40)}
+        own["--p40"] = "x"
+        computed = fpdf.svg._compute_custom_properties(own, {})
+        assert computed["--p39"] == "x x" and computed["--p0"] is None
+        # and so do fallbacks nested too deeply
+        nested = "".join(f"var(--f{i}, " for i in range(20)) + "lime" + ")" * 20
+        assert fpdf.svg._substitute_css_var(nested, {}) is None
+
+    @pytest.mark.parametrize(
         "text, operators",
         [
             # as spaCy writes the labels of its dependency diagrams
