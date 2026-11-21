@@ -1130,6 +1130,194 @@ class TestSVGObject:
             pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
         )
 
+    def test_svg_context_fill_is_the_color_of_the_fpdf(self):
+        # as in the icons of Firefox: the document that draws the SVG is its context
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        pdf.set_fill_color(0, 0, 255)
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" '
+            'fill="context-fill" fill-opacity="context-fill-opacity">'
+            '<path d="M0 0h5v5z"/></svg>'
+        ).draw_to_page(pdf)
+        assert "0 0 1 rg" in bytes(pdf.output()).decode("latin-1")
+
+    def test_svg_context_fill_is_the_paint_of_the_use(self):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            '<defs><path id="p" d="M0 0h5v5z" fill="context-fill" '
+            'stroke="context-stroke" stroke-opacity="context-stroke-opacity"/></defs>'
+            '<use href="#p" fill="red" stroke="lime"/></svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "1 0 0 rg" in output and "0 1 0 RG" in output
+
+    @pytest.mark.parametrize(
+        "path, use, expected",
+        [
+            # context-stroke is the stroke of the <use>, also in a fill
+            (
+                'fill="context-stroke" stroke="context-fill"',
+                'fill="red" stroke="lime"',
+                {"fill_color": "#0f0", "stroke_color": "#f00"},
+            ),
+            (
+                'style="fill: context-stroke"',
+                'style="stroke: lime"',
+                {"fill_color": "#0f0"},
+            ),
+            (
+                'fill="context-fill" fill-opacity="context-stroke-opacity"',
+                'fill="red" stroke-opacity="0.5"',
+                {"fill_color": "#f00", "fill_opacity": 0.5},
+            ),
+        ],
+    )
+    def test_svg_context_paints_of_the_use(self, path, use, expected):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f'<defs><path id="p" d="M0 0h5v5z" {path}/></defs>'
+            f'<use href="#p" {use}/></svg>'
+        )
+        style = svg.base_group.path_items[0].path_items[0].style
+        for attr, value in expected.items():
+            if attr.endswith("_color"):
+                expected_value = fpdf.drawing.color_from_hex_string(value)
+            else:
+                expected_value = value
+            assert getattr(style, attr) == expected_value
+
+    @pytest.mark.parametrize(
+        "group",
+        ['fill="red" stroke="lime" stroke-opacity="0.5"', 'style="stroke: lime"'],
+    )
+    def test_svg_context_paints_inherited_by_the_use(self, group):
+        # the <use> inherits them from its parent, also as presentation attributes
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<path id="p" d="M0 0h5v5z" fill="context-stroke" '
+            'fill-opacity="context-stroke-opacity"/></defs>'
+            f'<g {group}><g><use href="#p"/></g></g></svg>'
+        )
+        path = svg.base_group.path_items[0].path_items[0].path_items[0].path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string("#0f0")
+        # without one, the opacity of the <use> is the initial 1
+        assert path.style.fill_opacity == (0.5 if "opacity" in group else 1)
+
+    @pytest.mark.parametrize(
+        "defs, fill",
+        [
+            # a <use> of a <use> inherits the paint of the outer one
+            ('<use id="u" href="#p"/>', "#0f0"),
+            ('<use id="u" href="#p" stroke="blue"/>', "#00f"),
+            ('<g id="u"><use href="#p"/></g>', "#0f0"),
+            ('<g id="u" stroke="red"><use href="#p"/></g>', "#f00"),
+        ],
+    )
+    def test_svg_context_paints_through_a_use_of_a_use(self, defs, fill):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            f'<path id="p" d="M0 0h5v5z" fill="context-stroke"/>{defs}</defs>'
+            '<use href="#u" stroke="lime"/></svg>'
+        )
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
+
+    @pytest.mark.parametrize(
+        "defs",
+        [
+            pytest.param(
+                '<path id="p" d="M0 0h5v5z" style="fill:context-stroke"/>',
+                id="style",
+            ),
+            pytest.param(
+                (
+                    "<style>.c { fill: context-stroke }</style>"
+                    '<path id="p" d="M0 0h5v5z" class="c"/>'
+                ),
+                id="class",
+            ),
+        ],
+    )
+    def test_svg_context_paints_in_css_through_a_use_of_a_use(self, defs):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f'<defs>{defs}<use id="u" href="#p"/></defs>'
+            '<use href="#u" fill="red" stroke="lime"/></svg>'
+        )
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string("#0f0")
+
+    @pytest.mark.parametrize(
+        "use",
+        [
+            pytest.param('<use href="#g"/>', id="not-set"),
+            pytest.param('<use href="#g" stroke="none"/>', id="none"),
+        ],
+    )
+    def test_svg_context_stroke_not_set_on_the_use_is_none(self, use):
+        # not the fill of the group the path is in
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<g id="g" fill="blue"><path d="M0 0h5v5z" fill="context-stroke"/></g>'
+            f"</defs>{use}</svg>"
+        )
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color is None
+
+    def test_svg_context_paint_detection_is_not_exponential(self):
+        # each <g> is drawn by two <use> of the next one, in the branch of a <switch>
+        # that is not drawn, so the limits do not count them
+        depth = 24
+        levels = "".join(
+            f'<g id="g{i}"><use href="#g{i + 1}"/><use href="#g{i + 1}"/></g>'
+            for i in range(depth)
+        )
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<g id="a"><switch><rect width="1" height="1"/>'
+            f'<g>{levels}<g id="g{depth}"/><use href="#g0"/></g></switch></g>'
+            '</defs><use href="#a"/></svg>'
+        )
+        assert svg.base_group.path_items
+
+    def test_svg_context_opacity_not_set_on_the_use(self):
+        # the initial opacity of the <use>, not that of a group in between
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            '<g id="p" fill-opacity="0.2"><path d="M0 0h5v5z" fill="red" '
+            'fill-opacity="context-stroke-opacity"/></g></defs><use href="#p"/></svg>'
+        )
+        path = svg.base_group.path_items[0].path_items[0].path_items[0]
+        assert path.style.fill_opacity == 1
+
+    def test_svg_context_fill_through_a_group(self):
+        # the fill of a group between the <use> and the path does not replace it
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            '<defs><g id="p" fill="blue"><path d="M0 0h5v5z" fill="context-fill"/></g>'
+            '</defs><use href="#p" fill="red"/><use href="#p" fill="lime"/></svg>'
+        )
+        first, second = svg.base_group.path_items
+        red, lime = (
+            fpdf.drawing.color_from_hex_string(color) for color in ("#f00", "#0f0")
+        )
+        assert first.path_items[0].path_items[0].style.fill_color == red
+        assert second.path_items[0].path_items[0].style.fill_color == lime
+        # the definition keeps its context-fill
+        definition = svg.cross_references["#p"].path_items[0]
+        assert definition.style.fill_color is fpdf.drawing.GraphicsStyle.INHERIT
+
     @pytest.mark.parametrize(
         "css",
         [
