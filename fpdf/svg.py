@@ -994,6 +994,12 @@ def apply_svg_transform_to_user_space_gradients(
                 paint.apply_page_ctm = False
             elif paint.units == GradientUnits.USER_SPACE_ON_USE:
                 paint.gradient_transform = paint.gradient_transform @ pattern_transform
+            else:
+                # objectBoundingBox: the bounding box of the shape in its own
+                # coordinates, mapped by the transforms of the shape and its
+                # ancestors, as for a userSpaceOnUse gradient
+                paint.coordinate_transform = pattern_transform
+                paint.local_bbox = True
 
     for paint_attr in ("fill_color", "stroke_color"):
         transform_paint(getattr(node.style, paint_attr))
