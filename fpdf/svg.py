@@ -2044,7 +2044,7 @@ class SVGObject:
             for element in svg_tree.iter()
             if element.attrib.get("id")
         }
-        self._pattern_parents = {
+        self._pattern_parents: dict[Element, Optional[Element]] = {
             child: parent for parent in svg_tree.iter() for child in parent
         }
         self._collect_css_styles(svg_tree)
