@@ -2730,6 +2730,13 @@ class SVGObject:
                 for child in list(resolved):
                     resolved.remove(child)
                 resolved.extend(deepcopy(list(template)))
+        # The copy has the ancestors of the pattern, and its own children have it as
+        # their parent, so that selectors such as "pattern rect" or "g > rect" match
+        # inside a tile
+        self._pattern_parents[resolved] = self._pattern_parents.get(element)
+        self._pattern_parents.update(
+            {child: parent for parent in resolved.iter() for child in parent}
+        )
         return resolved
 
     def _get_pattern_paint(self, pattern_id: str) -> Optional[SVGPatternPaint]:
