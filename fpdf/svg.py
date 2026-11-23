@@ -206,6 +206,15 @@ def _compute_custom_properties(
             return None
         if len(stack) >= _MAX_CSS_VAR_DEPTH:
             return None
+        # the CSS-wide keywords: initial is the guaranteed-invalid value, and a
+        # custom property is inherited, so inherit and unset are its inherited value
+        keyword = own[name].strip().lower()
+        if keyword == "initial":
+            computed[name] = None
+            return None
+        if keyword in ("inherit", "unset"):
+            computed[name] = inherited.get(name)
+            return computed[name]
         stack.append(name)
         references = {
             reference: compute(reference)
@@ -224,6 +233,9 @@ def _compute_custom_properties(
         compute(name)
     return computed
 
+
+# the initial values of the properties that are not inherited and that a var() can set
+_INITIAL_VALUES = {"opacity": "1", "transform": "none"}
 
 _IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
 
@@ -2373,6 +2385,10 @@ class SVGObject:
             substituted = _substitute_css_var(value, properties)
             if substituted is not None:
                 style_map[key] = substituted
+            elif key in _INITIAL_VALUES:
+                # invalid when computed: a property that is not inherited takes its
+                # initial value, not the one of an attribute of lower priority
+                style_map[key] = _INITIAL_VALUES[key]
             elif key in svg_attr_map:
                 # invalid when computed: not set, so inherited
                 style_map[key] = "inherit"

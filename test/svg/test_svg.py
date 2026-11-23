@@ -1349,7 +1349,74 @@ class TestSVGObject:
         first, second = svg.base_group.path_items
         assert first.style.fill_opacity == 0.5
         assert first.transform == fpdf.drawing.Transform.translation(1, 2)
-        assert second.style.fill_opacity is fpdf.drawing.GraphicsStyle.INHERIT
+        # invalid when computed, so the initial value of a property that is not inherited
+        assert second.style.fill_opacity == 1
+
+    @pytest.mark.parametrize(
+        "body, operators",
+        [
+            # --c: initial is the guaranteed-invalid value, so the fallback is used
+            (
+                '<rect width="5" height="5" style="--c: initial; fill: var(--c, red)"/>',
+                ["1 0 0 rg"],
+            ),
+            # inherit, and unset for a property that is inherited, is the value of the parent
+            (
+                (
+                    '<g style="--c: lime"><rect width="5" height="5" '
+                    'style="--c: inherit; fill: var(--c, red)"/></g>'
+                ),
+                ["0 1 0 rg"],
+            ),
+            (
+                (
+                    '<g style="--c: lime"><rect width="5" height="5" '
+                    'style="--c: unset; fill: var(--c, red)"/></g>'
+                ),
+                ["0 1 0 rg"],
+            ),
+            # without a value of the parent it is invalid, so the fallback is used
+            (
+                '<rect width="5" height="5" style="--c: inherit; fill: var(--c, red)"/>',
+                ["1 0 0 rg"],
+            ),
+            # no fallback: invalid, so the fill is inherited
+            (
+                (
+                    '<g fill="blue"><rect width="5" height="5" '
+                    'style="--c: initial; fill: var(--c)"/></g>'
+                ),
+                ["0 0 1 rg"],
+            ),
+        ],
+    )
+    def test_svg_css_var_css_wide_keywords_of_custom_properties(self, body, operators):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">{body}</svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        for operator in operators:
+            assert operator in output
+
+    def test_svg_css_var_invalid_takes_the_initial_value_not_the_attribute(self):
+        # a var() invalid when computed makes the CSS property its initial value,
+        # which wins over the attribute of lower priority
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<rect width="5" height="5" transform="translate(10, 20)" '
+            'opacity="0.5" style="transform: var(--missing); opacity: var(--missing)"/>'
+            '<rect width="5" height="5" transform="translate(10, 20)" opacity="0.5" '
+            'style="transform: var(--missing, translate(1, 2)); '
+            'opacity: var(--missing, 0.25)"/></svg>'
+        )
+        invalid, with_fallback = svg.base_group.path_items
+        assert invalid.transform == fpdf.drawing.Transform.identity()
+        assert invalid.style.fill_opacity == 1
+        assert with_fallback.transform == fpdf.drawing.Transform.translation(1, 2)
+        assert with_fallback.style.fill_opacity == 0.25
 
     def test_svg_css_var_fallback_not_read_when_the_property_is_set(self):
         # so a var() in the fallback does not matter
