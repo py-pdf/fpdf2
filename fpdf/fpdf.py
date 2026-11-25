@@ -5851,6 +5851,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.page:
             raise FPDFException("No page open, you need to call add_page() first")
+        if isinstance(x, NumberClass):
+            _check_coordinate("x", x)
+        if y is not None:
+            _check_coordinate("y", y)
+        if w and not math.isfinite(w):
+            raise ValueError(f"Image width must be a finite number: {w}")
+        if h and not math.isfinite(h):
+            raise ValueError(f"Image height must be a finite number: {h}")
         if type:
             warnings.warn(
                 (
