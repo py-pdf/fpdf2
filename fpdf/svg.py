@@ -1674,9 +1674,9 @@ class ShapeBuilder:
         return " ".join(coordinates)
 
     @classmethod
-    def polyline(cls, tag: "Element") -> PaintedPath:
+    def polyline(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <polyline> into a PDF path."""
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
         points = cls._complete_points(tag.attrib.get("points", ""))
         if points:
             svg_path_converter(path, "M" + points)
