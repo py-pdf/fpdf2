@@ -3432,11 +3432,12 @@ class SVGObject:
     ) -> str:
         """
         The clip-rule of a shape in a <clipPath>, its own or inherited from its
-        ancestors, or from the <use> that draws it; the initial value is nonzero.
+        ancestors, or, for a shape that a <use> draws, from the <use>, as the shape
+        and its ancestors are not its parents then; the initial value is nonzero.
         """
         rule = self._own_clip_rule(element)
         parent = self._pattern_parents.get(element)
-        while rule is None and parent is not None:
+        while rule is None and inherited_rule is None and parent is not None:
             rule = self._own_clip_rule(parent)
             parent = self._pattern_parents.get(parent)
         return rule or inherited_rule or "nonzero"
@@ -3445,7 +3446,9 @@ class SVGObject:
         value = _get_attr_or_style(element, "clip-rule", self._style_map_for(element))
         if value is not None and value.strip().lower() in ("nonzero", "evenodd"):
             return value.strip().lower()
-        # inherit, or an invalid value: the element takes the rule of its parent
+        if value is not None and value.strip().lower() == "initial":
+            return "nonzero"
+        # inherit, unset, or an invalid value: the element takes the rule of its parent
         return None
 
     def _ancestors_font_style(self, element: "Element") -> dict[str, Any]:

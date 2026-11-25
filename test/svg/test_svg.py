@@ -2247,6 +2247,29 @@ def test_svg_clip_rule(svg_body, rule):
 
 
 @pytest.mark.parametrize(
+    ("defs_attrs", "use_attrs", "rule"),
+    [
+        # the shape is a child of the <use>, not of the <defs> it is written in
+        pytest.param('clip-rule="evenodd"', 'clip-rule="nonzero"', "W", id="use-wins"),
+        pytest.param('clip-rule="evenodd"', "", "W", id="defs-is-not-a-parent"),
+        pytest.param('clip-rule="nonzero"', 'clip-rule="evenodd"', "W*", id="use-sets"),
+    ],
+)
+def test_svg_clip_rule_of_a_use_is_not_the_one_of_the_defs(defs_attrs, use_attrs, rule):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'<defs {defs_attrs}><polygon id="star" {_STAR}/></defs>'
+        f'<clipPath id="c"><use href="#star" {use_attrs}/></clipPath>'
+        '<rect width="100" height="100" fill="green" clip-path="url(#c)"/></svg>'
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert re.search(rf" {re.escape(rule)} n 0 0 m 0 0 100 100 re f", output)
+
+
+@pytest.mark.parametrize(
     ("use_attrs", "star_attrs", "clip_attrs", "rule"),
     [
         pytest.param('clip-rule="evenodd"', "", "", "W*", id="use-sets-it"),
@@ -2288,6 +2311,18 @@ def test_svg_clip_rule_of_a_use(use_attrs, star_attrs, clip_attrs, rule):
         ),
         pytest.param(
             "", 'clip-rule="evenodd"', 'clip-rule="inherit"', "W*", id="inherit"
+        ),
+        pytest.param("", 'clip-rule="evenodd"', 'clip-rule="unset"', "W*", id="unset"),
+        # initial is the initial value, nonzero, not the rule of the parent
+        pytest.param(
+            "", 'clip-rule="evenodd"', 'clip-rule="initial"', "W", id="initial"
+        ),
+        pytest.param(
+            "",
+            'clip-rule="evenodd"',
+            'style="clip-rule: initial"',
+            "W",
+            id="initial-in-a-style",
         ),
         pytest.param('clip-rule="evenodd"', "", "", "W*", id="on-the-svg"),
         pytest.param(
