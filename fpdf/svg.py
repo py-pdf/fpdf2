@@ -1531,7 +1531,13 @@ class _SVGClippingPath(ClippingPath):
         )
         transform = self._root_graphics_context.transform
         if transform is not None:
-            inverse = transform.inverse()
+            try:
+                inverse = transform.inverse()
+            except ValueError:
+                # A transform that collapses the path leaves no area to clip with
+                empty = ClippingPath()
+                empty.rectangle(0, 0, 0, 0)
+                return empty.render(resource_registry, style, last_item, initial_point)
             # "+ 0.0" turns a negative zero into 0
             undo = Transform(*(value + 0.0 for value in astuple(inverse)))
             rendered += " " + undo.render(last_item)[0]
@@ -3134,7 +3140,6 @@ class SVGObject:
                 pattern_paints[attr + "_color"] = self._get_pattern_paint(pattern_id)
         if pattern_paints and isinstance(referenced, (GraphicsContext, PaintedPath)):
             self._bind_reference_patterns(referenced, pattern_paints)
-        pdf_group.add_item(referenced, False)
 
         placement_transform = None
         if "x" in xref.attrib or "y" in xref.attrib:
@@ -3162,13 +3167,21 @@ class SVGObject:
                 placement_transform = symbol_transform
             else:
                 placement_transform = symbol_transform @ placement_transform
-        if placement_transform:
-            if pdf_group.transform:
-                pdf_group.transform = placement_transform @ pdf_group.transform
-            else:
-                pdf_group.transform = placement_transform
-
         self.apply_clipping_path(pdf_group, xref, style_map)
+        if placement_transform and pdf_group.clipping_path is not None:
+            # The clip is in the user space of the <use>, not in the translated and
+            # scaled one of what it draws
+            placed = GraphicsContext()
+            placed.transform = placement_transform
+            placed.add_item(referenced, False)
+            pdf_group.add_item(placed, False)
+        else:
+            pdf_group.add_item(referenced, False)
+            if placement_transform:
+                if pdf_group.transform:
+                    pdf_group.transform = placement_transform @ pdf_group.transform
+                else:
+                    pdf_group.transform = placement_transform
 
         # a <use> can itself be referenced, as Inkscape does for a clone of a clone
         self.update_xref(xref.attrib.get("id"), pdf_group)

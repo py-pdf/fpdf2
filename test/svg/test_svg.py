@@ -2056,6 +2056,34 @@ def test_svg_transform_of_a_clip_path_shape_does_not_move_the_content(child):
     assert re.search(r"cm 0 0 m 70 0 l 70 70 l 0 70 l h W n 1 0 0 -1 0 100 cm", output)
 
 
+@pytest.mark.parametrize("transform", ["scale(0)", "scale(0 1)", "matrix(0 0 0 0 0 0)"])
+def test_svg_clip_path_shape_with_a_collapsing_transform_clips_everything(transform):
+    """A shape that the transform collapses has no area: it makes no error."""
+    output = _draw_svg(
+        f'<defs><clipPath id="c"><path d="M0 0H50V50Z" transform="{transform}"/>'
+        '</clipPath></defs><rect width="100" height="100" fill="red" '
+        'clip-path="url(#c)"/><rect x="0" y="80" width="10" height="10" fill="blue"/>'
+    )
+    # the clip is empty, and the rectangle that is not clipped is drawn
+    assert "0 0 m W n" in output
+    assert "0 0 1 rg" in output and "0 80 10 10 re f" in output
+
+
+@pytest.mark.parametrize(
+    "use_attributes",
+    ['width="100" height="100"', 'x="30" y="30" width="50" height="50"'],
+)
+def test_svg_clip_path_of_a_use_of_a_symbol_is_not_scaled(use_attributes):
+    """The clip of a <use> is in its user space, not in the scaled space of its symbol."""
+    output = _draw_svg(
+        '<defs><clipPath id="c"><rect width="20" height="20"/></clipPath>'
+        '<symbol id="s" viewBox="0 0 100 100"><rect width="100" height="100"/>'
+        f'</symbol></defs><use href="#s" {use_attributes} clip-path="url(#c)"/>'
+    )
+    # the 20 x 20 clip comes before the scale and the translation of the symbol
+    assert output.index("0 0 20 20 re W n") < output.index(" cm q 0.01 0 0 0.01 0 0 cm")
+
+
 def test_svg_clip_path_shape_without_transform_has_nothing_to_undo():
     output = _draw_svg(_CLIP_50 + f'<g clip-path="url(#c)">{_SQUARE}</g>')
     assert "re W n q" in output
