@@ -124,6 +124,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `RadialGradient` raises a clear `ValueError` for a negative, NaN or infinite circle radius, instead of writing it into the shading `/Coords`, where the PDF specification requires radii of zero or more - thanks to @RavSinghChandan
 * `LinearGradient` and `RadialGradient` raise a clear `ValueError` for `bounds` outside [0, 1], decreasing or NaN, instead of writing them into the shading function, where the PDF specification requires increasing values within its domain - thanks to @RavSinghChandan
 * `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
+* SVG: a `font-family` of `inherit`, `unset` or `initial`, in an attribute or a style, no longer fails with `KeyError: "No suitable font for family='inherit'"`, and a `font-size` of `unset` or `initial` no longer fails with `ValueError: Unable to parse 'unset' as a length`: `inherit` and `unset` are the font of the parent, as it is inherited, and `initial` is the default font family and the medium font size
 
 ## [2.9.0] - 2026-10-29
 ### Added
