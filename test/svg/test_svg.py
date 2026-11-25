@@ -2315,6 +2315,52 @@ def test_svg_image_opacity_with_fill_opacity_override(attributes):
     assert b"/ca 0\n" not in pdf_bytes and b"/ca 0.0" not in pdf_bytes
 
 
+@pytest.mark.parametrize(
+    "clip_path",
+    [
+        pytest.param(
+            '<clipPath id="c"><polyline points="10,10 90,10 50,90"/></clipPath>',
+            id="polyline",
+        ),
+        pytest.param(
+            '<clipPath id="c"><polyline points="10 10 90 10 50 90"/></clipPath>',
+            id="polyline-without-commas",
+        ),
+        pytest.param(
+            (
+                '<defs><polyline id="p" points="10,10 90,10 50,90"/></defs>'
+                '<clipPath id="c"><use href="#p"/></clipPath>'
+            ),
+            id="use-of-a-polyline",
+        ),
+        pytest.param(
+            '<clipPath id="c"><polyline points="10,10 90,10 50,90 20"/></clipPath>',
+            id="polyline-with-an-incomplete-point",
+        ),
+        pytest.param(
+            (
+                '<clipPath id="c"><polyline fill="none" stroke="red" '
+                'points="10,10 90,10 50,90"/></clipPath>'
+            ),
+            id="polyline-with-a-stroke",
+        ),
+    ],
+)
+def test_svg_polyline_in_clip_path(clip_path):
+    """A <polyline> in a <clipPath> clips with the area that it encloses."""
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'{clip_path}<rect width="100" height="100" fill="red" clip-path="url(#c)"/></svg>'
+    )
+    assert isinstance(svg.cross_references["#c"], fpdf.drawing.ClippingPath)
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    svg.draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert "10 10 m 90 10 l 50 90 l W n 0 0 m 0 0 100 100 re f" in output
+
+
 @pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
 def test_svg_percentage_size_in_the_units_of_the_document(unit):
     # width="50%" is half the width of the page, whatever its unit
@@ -2330,3 +2376,27 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
     # the viewBox, as large as the page, is mapped to the half of the page
     assert (transform.a, transform.d) == pytest.approx((0.5, 0.5))
     assert (transform.e, transform.f) == pytest.approx((0, 0))
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        'opacity="inherit"',
+        'opacity="INHERIT"',
+        'style="opacity: inherit"',
+    ],
+)
+def test_svg_opacity_inherit(attributes):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">'
+        f'<g opacity="0.5"><rect width="50" height="50" {attributes}/></g>'
+        f'<rect x="50" width="50" height="50" fill="red" {attributes}/>'
+        "</svg>"
+    )
+    pdf.image(BytesIO(svg.encode()))
+    pdf_bytes = bytes(pdf.output())
+    # the rect in the group keeps the opacity of the group, the other has none
+    assert pdf_bytes.count(b"/ca 0.5") == 1
+    assert pdf_bytes.count(b"/CA 0.5") == 1

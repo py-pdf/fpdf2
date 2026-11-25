@@ -374,3 +374,28 @@ def test_use_patterns_resolve_per_leaf_and_preserve_overrides(attr, placement):
     # Binding one instance must not change the shared reference or other instances.
     assert content.count(b"scn" if attr == "fill" else b"SCN") == 2
     assert content.count(b"0 0 1 rg" if attr == "fill" else b"0 0 1 RG") == 2
+
+
+@pytest.mark.parametrize(
+    "attributes, dash",
+    [
+        ('stroke-dasharray="5,3"', b"[5 3] 0 d"),
+        ('stroke-dashoffset="2"', b"[] 2 d"),
+        ('stroke-dasharray="5 3" stroke-dashoffset="2"', b"[5 3] 2 d"),
+    ],
+    ids=("dasharray", "dashoffset", "dasharray and dashoffset"),
+)
+def test_pattern_content_with_a_dash_pattern_or_phase_alone(attributes, dash):
+    # A dash pattern without a phase, or a phase without a pattern, in the content of
+    # a pattern used to fail with: TypeError: cannot produce PDF representation for
+    # value Ellipsis
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+      <defs><pattern id="p" patternUnits="userSpaceOnUse" width="20" height="20">
+        <rect x="2" y="2" width="16" height="16" fill="none" stroke="red" {attributes}/>
+      </pattern></defs>
+      <rect width="120" height="120" fill="url(#p)"/>
+    </svg>"""
+    pattern = patterns_in(render_svg(svg))[0]
+    content = pattern.get_data()
+    assert b"1 0 0 RG" in content
+    assert dash in content
