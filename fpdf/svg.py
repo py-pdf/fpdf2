@@ -3058,8 +3058,6 @@ class SVGObject:
             _with_inherited_current_color(style_map, xref, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
-        # a gradient set on the <use> is the paint of what it draws, as for a <g>
-        self._apply_gradient_paint(pdf_group, xref, style_map)
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
@@ -3099,14 +3097,23 @@ class SVGObject:
             referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
-        pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
+        pattern_paints: dict[str, Optional[SVGPatternPaint | GradientPaint]] = {}
         for attr in ("fill", "stroke"):
-            value = _get_attr_or_style(xref, attr, style_map)
+            own_value = _get_attr_or_style(xref, attr, style_map)
+            value = own_value
             if value in (None, "inherit"):
                 value = (inherited_style or {}).get(attr)
             pattern_id = self._extract_gradient_id(value) if value else None
             if pattern_id in self._pattern_elements:
                 pattern_paints[attr + "_color"] = self._get_pattern_paint(pattern_id)
+            elif own_value not in (None, "inherit"):
+                # a gradient set on the <use> is the paint of each shape it draws,
+                # sized by the bounds of the shape
+                gradient_id = self._extract_gradient_id(own_value)
+                if gradient_id and self._gradient_definition(gradient_id):
+                    pattern_paints[attr + "_color"] = self.gradient_definitions[
+                        gradient_id
+                    ]
         if pattern_paints and isinstance(referenced, (GraphicsContext, PaintedPath)):
             self._bind_reference_patterns(referenced, pattern_paints)
         pdf_group.add_item(referenced, False)
@@ -3205,7 +3212,7 @@ class SVGObject:
     def _bind_reference_patterns(
         self,
         node: GraphicsContext | PaintedPath,
-        paints: dict[str, Optional[SVGPatternPaint]],
+        paints: dict[str, Optional[SVGPatternPaint | GradientPaint]],
     ) -> None:
         """Resolve inherited reference paints at each leaf's own bounds."""
         inherited = {
@@ -3215,7 +3222,15 @@ class SVGObject:
         }
         if isinstance(node, PaintedPath):
             for attr, paint in inherited.items():
-                setattr(node.style, attr, deepcopy(paint))
+                setattr(
+                    node.style,
+                    attr,
+                    (
+                        _clone_gradient_paint(paint)
+                        if isinstance(paint, GradientPaint)
+                        else deepcopy(paint)
+                    ),
+                )
             return
         for item in node.path_items:
             if isinstance(item, (GraphicsContext, PaintedPath)):

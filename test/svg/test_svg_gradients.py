@@ -892,3 +892,24 @@ def test_gradient_on_a_use_does_not_replace_the_fill_of_the_shape():
     # the last fill color set before the rectangle is its own red
     colors = re.findall(rb"/P\d+ scn|[\d.]+ [\d.]+ [\d.]+ rg", bytes(pdf.output()))
     assert colors[-1] == b"1 0 0 rg"
+
+
+@pytest.mark.parametrize("paint", ["fill", "stroke"])
+def test_gradient_on_a_use_is_sized_by_each_shape_it_draws(paint):
+    # not by the bounds of all of them: each rectangle has the whole transition
+    pdf = FPDF(unit="pt")
+    pdf.compress = False
+    pdf.add_page()
+    SVGObject(
+        (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" '
+            'viewBox="0 0 200 40"><defs>'
+            '<linearGradient id="g"><stop offset="0" stop-color="red"/>'
+            '<stop offset="1" stop-color="blue"/></linearGradient>'
+            '<g id="two"><rect width="40" height="20"/>'
+            '<rect x="100" width="40" height="20"/></g>'
+            f'</defs><use href="#two" {paint}="url(#g)"/></svg>'
+        )
+    ).draw_to_page(pdf)
+    matrices = re.findall(rb"/Matrix \[([^\]]*)\]", bytes(pdf.output()))
+    assert matrices == [b"40 0 0 -20 0 841.89", b"40 0 0 -20 100 841.89"]
