@@ -800,7 +800,8 @@ def apply_styles(
     opacity_str = _normalize_css_value(style.get("opacity"))
     if opacity_str is None:
         opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
-    if opacity_str is not None:
+    # "inherit" keeps the opacity of the parent, as when the property is not set
+    if opacity_str is not None and opacity_str.strip().lower() != "inherit":
         # out-of-range values are clamped, as for fill-opacity and stroke-opacity
         opacity = clamp_float(0.0, 1.0)(opacity_str)
         stylable.style.fill_opacity = opacity
@@ -947,6 +948,9 @@ class SVGPatternPaint(PatternPaint):
         tile.add_item(wrapper)
         style = GraphicsStyle()
         style.stroke_width = None
+        # a dash pattern or a dash phase set alone by the content is completed by these
+        style.stroke_dash_pattern = None
+        style.stroke_dash_phase = 0
         tile.finalize(style)
         self._tiles[key] = tile
         return tile
