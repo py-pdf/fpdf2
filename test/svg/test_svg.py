@@ -1379,6 +1379,8 @@ class TestSVGObject:
             ("g + rect { fill: red }", None),
             ("> rect { fill: red }", None),
             ("rect > { fill: red }", None),
+            ("g > > rect { fill: red }", None),
+            ("g >> rect { fill: red }", None),
             ("g " * 32 + "rect { fill: red }", None),
             # the ancestors are looked up to the root
             ("#m rect { fill: red }", "#f00"),

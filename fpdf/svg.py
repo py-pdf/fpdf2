@@ -1532,6 +1532,8 @@ def _parse_css_selector(
             combinator = combinator or " "
             continue
         if token.strip() == ">":
+            if combinator == ">":
+                return None
             combinator = ">"
             continue
         match = CSS_COMPOUND_SELECTOR_RE.fullmatch(token)
