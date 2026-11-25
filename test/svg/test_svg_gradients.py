@@ -146,6 +146,57 @@ def test_gradient_stop_color_with_icc_color():
     assert stops[0][1] == DeviceGray(0.4)
 
 
+@pytest.mark.parametrize(
+    "stop, color",
+    [
+        # as written by Figma and VS Code: the custom property, or else its fallback
+        ('stop-color="var(--c, red)"', "#00ff00"),
+        ('style="stop-color: var(--c, red)"', "#00ff00"),
+        ('stop-color="var(--missing, #0000ff)"', "#0000ff"),
+        # not set and without a fallback: the initial value, black
+        ('stop-color="var(--missing)"', "#000000"),
+    ],
+)
+def test_gradient_stop_color_with_a_custom_property(stop, color):
+    svg = SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" style="--c: lime"><defs>'
+        f'<linearGradient id="g"><stop offset="0" {stop}/>'
+        '<stop offset="1" stop-color="white"/></linearGradient></defs>'
+        '<rect width="5" height="5" fill="url(#g)"/></svg>'
+    )
+    colors = svg.gradient_definitions["#g"].gradient.colors
+    # none of the stops is dropped
+    assert len(colors) == 2
+    assert (
+        colors[0].serialize().lower()
+        == {
+            "#00ff00": "0 1 0 rg",
+            "#0000ff": "0 0 1 rg",
+            "#000000": "0 g",
+        }[color]
+    )
+
+
+@pytest.mark.parametrize(
+    "stop",
+    [
+        'stop-opacity="var(--o, 0.5)"',
+        'style="stop-opacity: var(--o, 0.5)"',
+        'stop-opacity="var(--missing, 0.5)"',
+    ],
+)
+def test_gradient_stop_opacity_with_a_custom_property(stop):
+    svg = SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" style="--o: 0.5"><defs>'
+        f'<linearGradient id="g"><stop offset="0" stop-color="red" {stop}/>'
+        '<stop offset="1" stop-color="blue"/></linearGradient></defs>'
+        '<rect width="5" height="5" fill="url(#g)"/></svg>'
+    )
+    colors = svg.gradient_definitions["#g"].gradient.colors
+    assert len(colors) == 2
+    assert colors[0].a == pytest.approx(0.5)
+
+
 def test_gradient_stop_without_offset():
     # as in the Hugging Face logo on spaCy's website: a missing offset is 0
     gradient = fromstring(

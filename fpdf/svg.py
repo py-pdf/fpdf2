@@ -191,51 +191,94 @@ def _compute_custom_properties(
 ) -> dict[str, Optional[str]]:
     """
     The computed values of the custom properties declared on an element: a var() in
-    them refers to the computed custom properties of the same element, and all those
-    in a cycle are invalid, None, even when they have a fallback.
+    them refers to the computed custom properties of the same element, all those in a
+    cycle are invalid, None, even when they have a fallback, and so are those with
+    more than _MAX_CSS_VAR_DEPTH references one after the other, whatever the order
+    of the declarations.
     """
     computed: dict[str, Optional[str]] = {}
-    stack: list[str] = []
+    # the number of references in the longest chain that starts at a property
+    depths: dict[str, int] = {}
 
-    def compute(name: str) -> Optional[str]:
-        if name in computed:
-            return computed[name]
-        if name in stack:
-            for cyclic in stack[stack.index(name) :]:
-                computed[cyclic] = None
-            return None
-        if len(stack) >= _MAX_CSS_VAR_DEPTH:
-            return None
+    def references_of(name: str) -> list[str]:
+        return [
+            reference
+            for reference in dict.fromkeys(CSS_VAR_NAME_RE.findall(own[name]))
+            if reference in own
+        ]
+
+    def start(name: str) -> Optional[list[Any]]:
+        """A frame to compute a property, or None if its value is known at once."""
         # the CSS-wide keywords: initial is the guaranteed-invalid value, and a
         # custom property is inherited, so inherit and unset are its inherited value
         keyword = own[name].strip().lower()
-        if keyword == "initial":
-            computed[name] = None
+        if keyword in ("initial", "inherit", "unset"):
+            computed[name] = None if keyword == "initial" else inherited.get(name)
+            depths[name] = 0
             return None
-        if keyword in ("inherit", "unset"):
-            computed[name] = inherited.get(name)
-            return computed[name]
-        stack.append(name)
-        references = {
-            reference: compute(reference)
-            for reference in CSS_VAR_NAME_RE.findall(own[name])
-            if reference in own
-        }
-        stack.pop()
-        if name not in computed:
-            computed[name] = _substitute_css_var(
-                own[name],
-                {**inherited, **references},
-            )
-        return computed[name]
+        return [name, references_of(name), 0]
 
-    for name in own:
-        compute(name)
+    # without recursion, as a long chain of references would exceed its limit
+    for root in own:
+        frame = start(root) if root not in computed else None
+        stack = [frame] if frame is not None else []
+        active = {root} if stack else set()
+        while stack:
+            frame = stack[-1]
+            name, references, index = frame
+            if index < len(references):
+                frame[2] += 1
+                reference = references[index]
+                if reference in active:
+                    names = [pending[0] for pending in stack]
+                    for cyclic in names[names.index(reference) :]:
+                        computed[cyclic] = None
+                        depths[cyclic] = 0
+                elif reference not in computed:
+                    child = start(reference)
+                    if child is not None:
+                        stack.append(child)
+                        active.add(reference)
+                continue
+            stack.pop()
+            active.discard(name)
+            if name in computed:
+                continue
+            depth = max((depths[reference] + 1 for reference in references), default=0)
+            depths[name] = depth
+            computed[name] = (
+                None
+                if depth > _MAX_CSS_VAR_DEPTH
+                else _substitute_css_var(
+                    own[name],
+                    {
+                        **inherited,
+                        **{reference: computed[reference] for reference in references},
+                    },
+                )
+            )
     return computed
 
 
 # the initial values of the properties that are not inherited and that a var() can set
 _INITIAL_VALUES = {"opacity": "1", "transform": "none"}
+
+
+def _is_valid_value(name: str, value: str) -> bool:
+    """Whether the converter of a property accepts a value, as after a var()."""
+    converter = svg_attr_map.get(name)
+    if name == "opacity":
+        converter = clamp_float(0.0, 1.0)
+    elif name == "transform":
+        converter = convert_transforms
+    if converter is None:
+        return True
+    try:
+        converter(value)
+    except (ValueError, TypeError):
+        return False
+    return True
+
 
 _IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
 
@@ -2393,7 +2436,7 @@ class SVGObject:
             if key.startswith("--"):
                 continue
             substituted = _substitute_css_var(value, properties)
-            if substituted is not None:
+            if substituted is not None and _is_valid_value(key, substituted):
                 style_map[key] = substituted
             elif key in _INITIAL_VALUES:
                 # invalid when computed: a property that is not inherited takes its
@@ -2434,10 +2477,25 @@ class SVGObject:
     @staticmethod
     def _parse_gradient_stops(
         gradient_element: "Element",
+        custom_properties: Optional[
+            Callable[["Element"], dict[str, Optional[str]]]
+        ] = None,
     ) -> list[tuple[float, DeviceRGB | DeviceGray]]:
-        """Parse <stop> children of a gradient element."""
+        """
+        Parse <stop> children of a gradient element. A var() in the stop-color or
+        stop-opacity of a stop is replaced by its custom property, or else its
+        fallback; one that is invalid is the initial value.
+        """
         stops: list[tuple[float, DeviceRGB | DeviceGray]] = []
         opacity_converter = clamp_float(0.0, 1.0)
+
+        def resolve(
+            stop: "Element", value: Optional[str], initial: str
+        ) -> Optional[str]:
+            if value is None or "var(" not in value.lower():
+                return value
+            properties = custom_properties(stop) if custom_properties else {}
+            return _substitute_css_var(value, properties) or initial
 
         for stop_element in gradient_element:
             tag_name = without_ns(stop_element.tag)
@@ -2459,7 +2517,8 @@ class SVGObject:
             if "stop-opacity" in stop_element.attrib:
                 try:
                     stop_opacity = opacity_converter(
-                        stop_element.attrib.get("stop-opacity") or "1"
+                        resolve(stop_element, stop_element.attrib["stop-opacity"], "1")
+                        or "1"
                     )
                 except ValueError:
                     pass
@@ -2467,8 +2526,12 @@ class SVGObject:
             style = stop_element.attrib.get("style", "")
             if style:
                 style_dict = _parse_style_attribute(style)
-                stop_color = style_dict.get("stop-color")
-                stop_opacity_str = style_dict.get("stop-opacity")
+                stop_color = resolve(
+                    stop_element, style_dict.get("stop-color"), "black"
+                )
+                stop_opacity_str = resolve(
+                    stop_element, style_dict.get("stop-opacity"), "1"
+                )
                 if stop_opacity_str:
                     try:
                         stop_opacity = opacity_converter(stop_opacity_str)
@@ -2478,7 +2541,11 @@ class SVGObject:
                         )
 
             if stop_color is None:
-                stop_color = stop_element.attrib.get("stop-color", "black")
+                stop_color = resolve(
+                    stop_element,
+                    stop_element.attrib.get("stop-color", "black"),
+                    "black",
+                )
 
             try:
                 color_obj = svgcolor(_light_color(stop_color))
@@ -2613,7 +2680,7 @@ class SVGObject:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = (
-            self._parse_gradient_stops(stops_element)
+            self._parse_gradient_stops(stops_element, self._custom_properties)
             if stops_element is not None
             else []
         )
@@ -2696,7 +2763,7 @@ class SVGObject:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = (
-            self._parse_gradient_stops(stops_element)
+            self._parse_gradient_stops(stops_element, self._custom_properties)
             if stops_element is not None
             else []
         )

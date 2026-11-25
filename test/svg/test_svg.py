@@ -1436,6 +1436,49 @@ class TestSVGObject:
         assert computed["--p200"] == "lime"
         assert computed["--p0"] is None
 
+    @pytest.mark.parametrize("references, lime", [(64, True), (65, False)])
+    def test_svg_css_var_depth_does_not_depend_on_the_order(self, references, lime):
+        # the consumer, then a chain of references that ends in lime
+        chain = {f"--c{i}": f"var(--c{i + 1})" for i in range(references - 1)}
+        chain[f"--c{references - 1}"] = "lime"
+        own = {"--x": "var(--c0)", **chain}
+        reverse = dict(reversed(own.items()))
+        # pylint: disable=protected-access
+        computed = fpdf.svg._compute_custom_properties(own, {})
+        computed_in_reverse = fpdf.svg._compute_custom_properties(reverse, {})
+        # pylint: enable=protected-access
+        assert computed == computed_in_reverse
+        assert computed["--x"] == ("lime" if lime else None)
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            '<rect width="5" height="5" style="--c: bogus; fill: var(--c)"/>',
+            '<rect width="5" height="5" style="--c: bogus" fill="var(--c)"/>',
+            '<rect width="5" height="5" style="--c: bogus; fill: var(--c, blue)"/>',
+        ],
+    )
+    def test_svg_css_var_invalid_paint_is_inherited(self, body):
+        # invalid when computed, so not set: the rectangle inherits the red of the group
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f'<g fill="red">{body}</g></svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert "1 0 0 rg" in output
+
+    def test_svg_css_var_invalid_opacity_takes_the_initial_value(self):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0.5">'
+            '<rect width="5" height="5" style="--o: bogus; opacity: var(--o)"/>'
+            "</g></svg>"
+        )
+        rect = svg.base_group.path_items[0].path_items[0]
+        assert rect.style.fill_opacity == 1
+
     def test_svg_css_var_substitutions_are_bounded(self):
         # custom properties that double at each step stop being substituted
         own = {f"--p{i}": f"var(--p{i + 1}) var(--p{i + 1})" for i in range(40)}
