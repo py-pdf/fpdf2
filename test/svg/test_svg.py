@@ -2409,3 +2409,27 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
     # the viewBox, as large as the page, is mapped to the half of the page
     assert (transform.a, transform.d) == pytest.approx((0.5, 0.5))
     assert (transform.e, transform.f) == pytest.approx((0, 0))
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        'opacity="inherit"',
+        'opacity="INHERIT"',
+        'style="opacity: inherit"',
+    ],
+)
+def test_svg_opacity_inherit(attributes):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">'
+        f'<g opacity="0.5"><rect width="50" height="50" {attributes}/></g>'
+        f'<rect x="50" width="50" height="50" fill="red" {attributes}/>'
+        "</svg>"
+    )
+    pdf.image(BytesIO(svg.encode()))
+    pdf_bytes = bytes(pdf.output())
+    # the rect in the group keeps the opacity of the group, the other has none
+    assert pdf_bytes.count(b"/ca 0.5") == 1
+    assert pdf_bytes.count(b"/CA 0.5") == 1
