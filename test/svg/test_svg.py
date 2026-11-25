@@ -2281,3 +2281,27 @@ def test_svg_stroke_width_in_em_and_ex(element, width):
     pdf.add_page()
     pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
     assert width in bytes(pdf.output())
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        'opacity="inherit"',
+        'opacity="INHERIT"',
+        'style="opacity: inherit"',
+    ],
+)
+def test_svg_opacity_inherit(attributes):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = (
+        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">'
+        f'<g opacity="0.5"><rect width="50" height="50" {attributes}/></g>'
+        f'<rect x="50" width="50" height="50" fill="red" {attributes}/>'
+        "</svg>"
+    )
+    pdf.image(BytesIO(svg.encode()))
+    pdf_bytes = bytes(pdf.output())
+    # the rect in the group keeps the opacity of the group, the other has none
+    assert pdf_bytes.count(b"/ca 0.5") == 1
+    assert pdf_bytes.count(b"/CA 0.5") == 1
