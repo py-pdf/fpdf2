@@ -918,6 +918,9 @@ class SVGPatternPaint(PatternPaint):
         tile.add_item(wrapper)
         style = GraphicsStyle()
         style.stroke_width = None
+        # a dash pattern or a dash phase set alone by the content is completed by these
+        style.stroke_dash_pattern = None
+        style.stroke_dash_phase = 0
         tile.finalize(style)
         self._tiles[key] = tile
         return tile
