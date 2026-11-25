@@ -2228,3 +2228,51 @@ def test_svg_opacity_inherit(attributes):
     # the rect in the group keeps the opacity of the group, the other has none
     assert pdf_bytes.count(b"/ca 0.5") == 1
     assert pdf_bytes.count(b"/CA 0.5") == 1
+
+
+@pytest.mark.parametrize(
+    "prop, initial",
+    [
+        ("fill", "black"),
+        ("fill-rule", "nonzero"),
+        ("fill-opacity", "1"),
+        ("stroke", "none"),
+        ("stroke-width", "1"),
+        ("stroke-dasharray", "none"),
+        ("stroke-dashoffset", "0"),
+        ("stroke-linecap", "butt"),
+        ("stroke-linejoin", "miter"),
+        ("stroke-miterlimit", "4"),
+        ("stroke-opacity", "1"),
+    ],
+)
+@pytest.mark.parametrize("keyword", ["unset", "initial", "Unset", "INITIAL"])
+@pytest.mark.parametrize("declaration", ['{}="{}"', 'style="{}: {}"'])
+def test_svg_css_wide_keywords_unset_and_initial(prop, initial, keyword, declaration):
+    # as in CSS: unset is inherit, and initial is the initial value of the property
+
+    def style_of(value):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red" stroke="blue" '
+            'stroke-width="2" stroke-dasharray="3" stroke-linecap="round" '
+            'stroke-linejoin="bevel" stroke-miterlimit="8" fill-rule="evenodd" '
+            'fill-opacity="0.5" stroke-opacity="0.5" stroke-dashoffset="2">'
+            f"<rect width='5' height='5' {declaration.format(prop, value)}/></g></svg>"
+        )
+        return svg.base_group.path_items[0].path_items[0].style
+
+    attribute = fpdf.svg.svg_attr_map[prop](initial)[0]
+    expected = style_of("inherit" if keyword.lower() == "unset" else initial)
+    assert getattr(style_of(keyword), attribute) == getattr(expected, attribute)
+
+
+@pytest.mark.parametrize("keyword", ["unset", "initial"])
+@pytest.mark.parametrize("attributes", ['opacity="{}"', 'style="opacity: {}"'])
+def test_svg_opacity_unset_and_initial(keyword, attributes):
+    # opacity is not inherited: both are its initial value, 1, not the one of the group
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0.5">'
+        f"<rect width='5' height='5' {attributes.format(keyword)}/></g></svg>"
+    )
+    style = svg.base_group.path_items[0].path_items[0].style
+    assert (style.fill_opacity, style.stroke_opacity) == (1, 1)

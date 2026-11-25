@@ -629,6 +629,37 @@ def svg_line_join(joinstr: str) -> str:
     return joinstr
 
 
+# the initial values of the properties of svg_attr_map, which the CSS-wide keyword
+# initial stands for
+_INITIAL_STYLE_VALUES = {
+    "fill": "black",
+    "fill-rule": "nonzero",
+    "fill-opacity": "1",
+    "stroke": "none",
+    "stroke-width": "1",
+    "stroke-dasharray": "none",
+    "stroke-dashoffset": "0",
+    "stroke-linecap": "butt",
+    "stroke-linejoin": "miter",
+    "stroke-miterlimit": "4",
+    "stroke-opacity": "1",
+}
+
+
+def _css_wide_keyword(name: str, value: str) -> str:
+    """
+    The value of a property that the CSS-wide keyword stands for: unset is inherit for
+    the properties of svg_attr_map, which are all inherited, and initial is the
+    initial value of the property. Another value is unchanged.
+    """
+    keyword = value.strip().lower()
+    if keyword == "unset":
+        return "inherit"
+    if keyword == "initial":
+        return _INITIAL_STYLE_VALUES.get(name, value)
+    return value
+
+
 # this is mostly SVG 1.1 stuff. SVG 2 changed some of this and the documentation is much
 # harder to assemble into something coherently understandable
 svg_attr_map: dict[str, Any] = {
@@ -757,6 +788,8 @@ def apply_styles(
             attr_value = _normalize_css_value(style.get(attr_name))
             if attr_value is None:
                 attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+            if isinstance(attr_value, str):
+                attr_value = _css_wide_keyword(attr_name, attr_value)
             if (
                 current_color is not None
                 and attr_name in ("fill", "stroke")
@@ -771,7 +804,10 @@ def apply_styles(
     opacity_str = _normalize_css_value(style.get("opacity"))
     if opacity_str is None:
         opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
-    # "inherit" keeps the opacity of the parent, as when the property is not set
+    # "inherit" keeps the opacity of the parent, as when the property is not set;
+    # it is not inherited, so unset is the initial value, as initial is
+    if opacity_str is not None and opacity_str.strip().lower() in ("unset", "initial"):
+        opacity_str = "1"
     if opacity_str is not None and opacity_str.strip().lower() != "inherit":
         # out-of-range values are clamped, as for fill-opacity and stroke-opacity
         opacity = clamp_float(0.0, 1.0)(opacity_str)
