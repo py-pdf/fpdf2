@@ -222,7 +222,7 @@ def _compute_custom_properties(
     for root in own:
         frame = start(root) if root not in computed else None
         stack = [frame] if frame is not None else []
-        active = {root} if stack else set()
+        active: set[str] = {root} if stack else set()
         while stack:
             frame = stack[-1]
             name, references, index = frame
@@ -2541,10 +2541,13 @@ class SVGObject:
                         )
 
             if stop_color is None:
-                stop_color = resolve(
-                    stop_element,
-                    stop_element.attrib.get("stop-color", "black"),
-                    "black",
+                stop_color = (
+                    resolve(
+                        stop_element,
+                        stop_element.attrib.get("stop-color", "black"),
+                        "black",
+                    )
+                    or "black"
                 )
 
             try:
