@@ -503,6 +503,37 @@ class PDFPageLabel:
     def get_start(self) -> int:
         return self.st or 1
 
+    def is_continued_by(self, page_label: "PDFPageLabel") -> bool:
+        """
+        Return True if `page_label` carries on the numbering of this label:
+        same style, same prefix, and no explicit start value of its own.
+        """
+        has_same_style = page_label.get_style() == self.get_style()
+        has_same_prefix = page_label.get_prefix() == self.get_prefix()
+        has_explicit_start = bool(page_label.st)
+        return has_same_style and has_same_prefix and not has_explicit_start
+
+    def next_label(self) -> "PDFPageLabel":
+        "Return a new label with the same style & prefix, numbered one past this one."
+        return PDFPageLabel(self.get_style(), self.get_prefix(), self.get_start() + 1)
+
+    @staticmethod
+    def resolve(
+        previous_page_label: Optional["PDFPageLabel"],
+        page_label: Optional["PDFPageLabel"],
+    ) -> Optional["PDFPageLabel"]:
+        """
+        Compute the label of a page, given the label of the previous page
+        and the label requested for this page (if any).
+        """
+        if page_label is None:
+            return previous_page_label.next_label() if previous_page_label else None
+        if previous_page_label and previous_page_label.is_continued_by(page_label):
+            page_label.st = previous_page_label.get_start() + 1
+        if not page_label.st:
+            page_label.st = 1
+        return page_label
+
 
 class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -574,27 +605,7 @@ class PDFPage(PDFObject):
         previous_page_label: Optional[PDFPageLabel],
         page_label: Optional[PDFPageLabel],
     ) -> None:
-        if (
-            previous_page_label
-            and page_label
-            and page_label.get_style() == previous_page_label.get_style()
-            and page_label.get_prefix() == previous_page_label.get_prefix()
-            and not page_label.st
-        ):
-            page_label.st = previous_page_label.get_start() + 1
-
-        if page_label:
-            if page_label.st is None or page_label.st == 0:
-                page_label.st = 1
-
-        if previous_page_label and not page_label:
-            page_label = PDFPageLabel(
-                previous_page_label.get_style(),
-                previous_page_label.get_prefix(),
-                previous_page_label.get_start() + 1,
-            )
-
-        self._page_label = page_label
+        self._page_label = PDFPageLabel.resolve(previous_page_label, page_label)
 
     def get_page_label(self) -> Optional[PDFPageLabel]:
         return self._page_label
