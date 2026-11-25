@@ -1572,6 +1572,7 @@ def _stroke_first(value: Optional[str]) -> Optional[bool]:
     order += [paint for paint in _PAINTS if paint not in order]
     return order.index("stroke") < order.index("fill")
 
+
 # A universal selector or an element name, such as "*" or "rect"
 CSS_TYPE_SELECTOR_RE = re.compile(r"\*|[A-Za-z][\w-]*")
 
