@@ -221,6 +221,7 @@ class SymbolInfo(NamedTuple):
     viewbox: tuple[float, float, float, float]
     width: Optional[float]
     height: Optional[float]
+    preserve_aspect_ratio: str = "xMidYMid meet"
 
 
 @force_nodocument
@@ -3042,6 +3043,9 @@ class SVGObject:
                     viewbox=(vx, vy, vw, vh),
                     width=resolve_optional_length(symbol.attrib.get("width")),
                     height=resolve_optional_length(symbol.attrib.get("height")),
+                    preserve_aspect_ratio=symbol.attrib.get(
+                        "preserveAspectRatio", "xMidYMid meet"
+                    ),
                 )
         return group
 
@@ -3130,7 +3134,30 @@ class SVGObject:
                 or symbol_info.height
                 or vh
             )
-            symbol_transform = Transform.scaling(x=width, y=height)
+            # The viewBox of the symbol, a unit square in the group, is fitted in
+            # the width and height of the <use> with the preserveAspectRatio of the
+            # symbol: not stretched, and aligned, by default
+            scale_x, scale_y, offset_x, offset_y = width, height, 0.0, 0.0
+            preserve = symbol_info.preserve_aspect_ratio.split()
+            if preserve and preserve[0] == "defer":
+                preserve = preserve[1:]
+            alignment = preserve[0] if preserve else "xMidYMid"
+            if alignment != "none" and vw > 0 and vh > 0:
+                ratio = (
+                    max(width / vw, height / vh)
+                    if "slice" in preserve
+                    else min(width / vw, height / vh)
+                )
+                scale_x, scale_y = vw * ratio, vh * ratio
+                offset_x = (width - scale_x) * (
+                    0 if "xMin" in alignment else 1 if "xMax" in alignment else 0.5
+                )
+                offset_y = (height - scale_y) * (
+                    0 if "YMin" in alignment else 1 if "YMax" in alignment else 0.5
+                )
+            symbol_transform = Transform.scaling(
+                x=scale_x, y=scale_y
+            ) @ Transform.translation(x=offset_x, y=offset_y)
             if placement_transform is None:
                 placement_transform = symbol_transform
             else:

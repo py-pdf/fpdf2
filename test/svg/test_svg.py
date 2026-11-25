@@ -1895,7 +1895,38 @@ class TestSVGObject:
         )
         svg = fpdf.svg.SVGObject(svg_data)
         symbol_use = svg.base_group.path_items[0]
-        assert tuple(symbol_use.transform) == pytest.approx((40, 0, 0, 20, 5, 5))
+        # the viewBox is fitted in the width and height, centered, as in browsers
+        assert tuple(symbol_use.transform) == pytest.approx((20, 0, 0, 20, 15, 5))
+
+    @pytest.mark.parametrize(
+        "aspect_ratio, size, transform",
+        [
+            # the viewBox 2 x 2 of the symbol, in the width and height of the <use>
+            ("xMidYMid meet", (40, 20), (20, 0, 0, 20, 15, 5)),
+            ("xMinYMid meet", (40, 20), (20, 0, 0, 20, 5, 5)),
+            ("xMaxYMid meet", (40, 20), (20, 0, 0, 20, 25, 5)),
+            ("xMidYMin meet", (20, 40), (20, 0, 0, 20, 5, 5)),
+            ("xMidYMid meet", (20, 40), (20, 0, 0, 20, 5, 15)),
+            ("xMidYMax meet", (20, 40), (20, 0, 0, 20, 5, 25)),
+            ("none", (40, 20), (40, 0, 0, 20, 5, 5)),
+            ("defer none", (40, 20), (40, 0, 0, 20, 5, 5)),
+            # slice fills the width and height, and what is outside is not clipped
+            ("xMidYMid slice", (40, 20), (40, 0, 0, 40, 5, -5)),
+            ("xMinYMin slice", (40, 20), (40, 0, 0, 40, 5, 5)),
+        ],
+    )
+    def test_svg_symbol_preserve_aspect_ratio(self, aspect_ratio, size, transform):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+            f'<symbol id="myDot" viewBox="0 0 2 2" preserveAspectRatio="{aspect_ratio}">'
+            '<circle cx="1" cy="1" r="1" />'
+            "</symbol>"
+            f'<use href="#myDot" x="5" y="5" width="{size[0]}" height="{size[1]}" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        symbol_use = svg.base_group.path_items[0]
+        assert tuple(symbol_use.transform) == pytest.approx(transform)
 
     @pytest.mark.parametrize("viewbox", ["0 0 nan 2", "0 0 2 inf"])
     def test_svg_symbol_not_finite_viewbox(self, viewbox):
