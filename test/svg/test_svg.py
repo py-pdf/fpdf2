@@ -1283,6 +1283,37 @@ class TestSVGObject:
                 '<rect width="5" height="5" fill="red" paint-order="fill markers"/>',
                 False,
             ),
+            # an invalid value is ignored, so that the cascade supplies the order
+            (
+                (
+                    '<g paint-order="stroke"><circle r="5" fill="red" stroke="blue" '
+                    'paint-order="stroke bogus"/></g>'
+                ),
+                True,
+            ),
+            (
+                '<rect width="5" height="5" fill="red" paint-order="stroke bogus"/>',
+                False,
+            ),
+            (
+                '<rect width="5" height="5" fill="red" paint-order="stroke stroke"/>',
+                False,
+            ),
+            (
+                (
+                    '<rect width="5" height="5" fill="red" stroke="blue" '
+                    'paint-order="stroke" style="paint-order: bogus"/>'
+                ),
+                True,
+            ),
+            # unset is inherit
+            (
+                (
+                    '<g paint-order="stroke"><circle r="5" fill="red" stroke="blue" '
+                    'paint-order="unset"/></g>'
+                ),
+                True,
+            ),
         ],
     )
     def test_svg_paint_order(self, body, stroke_first):
@@ -1349,6 +1380,58 @@ class TestSVGObject:
         output = bytes(pdf.output()).decode("latin-1")
         # stroke only, then fill only
         assert re.findall(r"\d Tr", output) == ["1 Tr", "0 Tr"]
+
+    @pytest.mark.parametrize(
+        "text, render_modes",
+        [
+            # a tspan with its own paint-order, in a text that has none: the stroke
+            # of the tspan first, the other runs as usual, then the fill of the tspan
+            (
+                (
+                    '<text y="20" fill="red" stroke="blue">a'
+                    '<tspan paint-order="stroke">b</tspan>c</text>'
+                ),
+                ["2 Tr", "1 Tr", "2 Tr", "3 Tr", "0 Tr", "3 Tr"],
+            ),
+            (
+                (
+                    '<text y="20" fill="red" stroke="blue">a'
+                    '<tspan fill="green" paint-order="stroke">b</tspan>c</text>'
+                ),
+                ["2 Tr", "1 Tr", "2 Tr", "3 Tr", "0 Tr", "3 Tr"],
+            ),
+            # a tspan with the normal order, in a text that paints its stroke first
+            (
+                (
+                    '<text y="20" fill="red" stroke="blue" paint-order="stroke">a'
+                    '<tspan paint-order="normal">b</tspan>c</text>'
+                ),
+                ["1 Tr", "2 Tr", "1 Tr", "0 Tr", "3 Tr", "0 Tr"],
+            ),
+            # inherit is the paint-order of the text
+            (
+                (
+                    '<text y="20" fill="red" stroke="blue" paint-order="stroke">a'
+                    '<tspan paint-order="inherit">b</tspan>c</text>'
+                ),
+                ["1 Tr", "1 Tr", "1 Tr", "0 Tr", "0 Tr", "0 Tr"],
+            ),
+        ],
+    )
+    def test_svg_paint_order_of_a_tspan(self, text, render_modes):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40" '
+            f'font-family="helvetica" font-size="20">{text}</svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert re.findall(r"\d Tr", output) == render_modes
+        # both copies have the layout of the text
+        positions = re.findall(r"1 0 0 -1 ([\d.]+) [\d.]+ Tm", output)
+        half = len(positions) // 2
+        assert positions[:half] == positions[half:]
 
     @pytest.mark.parametrize(
         "text, operators",
