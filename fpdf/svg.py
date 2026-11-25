@@ -3258,6 +3258,9 @@ class SVGObject:
             if value is None:
                 # not set on the <use> or anywhere above it: the initial value
                 value = {"fill": "black", "stroke": "none"}.get(attr, "1")
+            elif _is_current_color(value):
+                # the color of the <use>, not the one of the element it draws
+                value = _current_color(style_map, inherited_style) or value
             context[attr] = value
         return context
 

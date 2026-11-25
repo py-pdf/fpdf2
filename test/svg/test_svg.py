@@ -1209,6 +1209,42 @@ class TestSVGObject:
         assert path.style.fill_opacity == (0.5 if "opacity" in group else 1)
 
     @pytest.mark.parametrize(
+        "use, defs_color, fill",
+        [
+            # currentColor is the color of the <use>, not the one of the path it draws
+            ('<use href="#p" color="red" stroke="currentColor"/>', "blue", "#f00"),
+            (
+                '<use href="#p" style="color: red" stroke="currentColor"/>',
+                "blue",
+                "#f00",
+            ),
+            (
+                '<g color="red" stroke="currentColor"><use href="#p"/></g>',
+                "blue",
+                "#f00",
+            ),
+            (
+                '<g stroke="currentColor"><use href="#p" color="red"/></g>',
+                "blue",
+                "#f00",
+            ),
+            ('<use href="#p" color="red" stroke="lime"/>', "blue", "#0f0"),
+        ],
+    )
+    def test_svg_context_stroke_of_current_color_is_the_color_of_the_use(
+        self, use, defs_color, fill
+    ):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><defs>'
+            f'<path id="p" d="M0 0h5v5z" color="{defs_color}" fill="context-stroke"/>'
+            f"</defs>{use}</svg>"
+        )
+        path = svg.base_group.path_items[0]
+        while not isinstance(path, fpdf.drawing.PaintedPath):
+            path = path.path_items[0]
+        assert path.style.fill_color == fpdf.drawing.color_from_hex_string(fill)
+
+    @pytest.mark.parametrize(
         "defs, fill",
         [
             # a <use> of a <use> inherits the paint of the outer one
