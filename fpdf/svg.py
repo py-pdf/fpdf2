@@ -771,7 +771,8 @@ def apply_styles(
     opacity_str = _normalize_css_value(style.get("opacity"))
     if opacity_str is None:
         opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
-    if opacity_str is not None:
+    # "inherit" keeps the opacity of the parent, as when the property is not set
+    if opacity_str is not None and opacity_str.strip().lower() != "inherit":
         # out-of-range values are clamped, as for fill-opacity and stroke-opacity
         opacity = clamp_float(0.0, 1.0)(opacity_str)
         stylable.style.fill_opacity = opacity
