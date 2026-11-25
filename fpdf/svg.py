@@ -748,7 +748,7 @@ def _with_inherited_stroke_width(
     if width is None or _get_attr_or_style(svg_element, "stroke-width", style_map):
         return style_map
     stroke = _get_attr_or_style(svg_element, "stroke", style_map)
-    if stroke is None or stroke.strip().lower() in ("none", "inherit", "currentcolor"):
+    if stroke is None or stroke.strip().lower() in ("none", "inherit"):
         return style_map
     return {**style_map, "stroke-width": width}
 
@@ -3229,7 +3229,6 @@ class SVGObject:
                     if stroke is not None and stroke.strip().lower() not in (
                         "none",
                         "inherit",
-                        "currentcolor",
                     ):
                         found = True
                         break
@@ -3820,6 +3819,10 @@ class SVGObject:
                 inherited_style,
             ),
             current_color=_current_color(effective_style, None),
+        )
+        # the stroke-width that the runs of the text inherit from it
+        _carry_stroke_width(
+            text_tag, local_style, path, effective_style, inherited_style
         )
         self._apply_gradient_paint(path, text_tag, effective_style)
         self.apply_clipping_path(path, text_tag, effective_style)

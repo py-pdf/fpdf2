@@ -2241,6 +2241,20 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
             ),
             {b"6"},
         ),
+        # the width of its immediate parent, not of the group above it
+        (
+            (
+                '<g stroke-width="6"><text x="10" y="50" stroke-width="3">'
+                '<tspan stroke="red">Hi</tspan></text></g>'
+            ),
+            {b"6", b"3"},
+        ),
+        # a currentColor stroke takes the width too
+        ('<g color="red" stroke-width="6">{R_CURRENT}</g>', {b"6"}),
+        (
+            '<defs>{R_CURRENT}</defs><use href="#r" color="red" stroke-width="6"/>',
+            {b"6"},
+        ),
         ('<defs>{R_ID}</defs><use href="#r" stroke-width="6"/>', {b"6"}),
         ('<defs>{R_ID}</defs><g stroke-width="6"><use href="#r"/></g>', {b"6"}),
         (
@@ -2285,6 +2299,9 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
         "polyline",
         "text",
         "tspan",
+        "tspan of a text with a width",
+        "currentColor",
+        "currentColor in a use",
         "use",
         "use in group",
         "use of use",
@@ -2302,6 +2319,7 @@ def test_svg_stroke_width_of_the_ancestors(body, widths):
         .replace("{R_WIDTH}", f'<rect {shape} stroke="red" stroke-width="3"/>')
         .replace("{R_GRADIENT}", f'<rect {shape} stroke="url(#g)"/>')
         .replace("{R_ID}", f'<rect id="r" {shape} stroke="red"/>')
+        .replace("{R_CURRENT}", f'<rect id="r" {shape} stroke="currentColor"/>')
     )
     svg = (
         '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
@@ -2313,6 +2331,22 @@ def test_svg_stroke_width_of_the_ancestors(body, widths):
     found = set(re.findall(rb"/LW ([\d.]+)", bytes(pdf.output())))
     # 0.567 is the line width of the page
     assert found - {b"0.567"} == widths
+
+
+def test_svg_stroke_width_of_a_tspan_is_the_one_of_its_text():
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        'viewBox="0 0 100 100"><g stroke-width="6">'
+        '<text x="10" y="50" font-size="20" stroke-width="3">'
+        '<tspan stroke="red">Hi</tspan></text></g></svg>'
+    )
+    pdf = fpdf.FPDF(unit="pt", format=(100, 100))
+    pdf.add_page()
+    pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
+    widths = re.findall(rb"/LW ([\d.]+)", bytes(pdf.output()))
+    # the width of the group is only its own; the text and its tspan have 3, not 6
+    assert widths.count(b"6") == 1
+    assert widths.count(b"3") == 2
 
 
 def test_svg_stroke_width_of_the_svg_element():
