@@ -290,6 +290,46 @@ def test_svg_shape_percentages_of_a_percentage_sized_svg(svg, kwargs, rect_size)
     assert (rect.size.x, rect.size.y) == rect_size
 
 
+def test_svg_image_with_a_percentage_width_keeps_a_circle_round():
+    # FPDF.image() must not give the SVG a viewBox from a width that is a percentage:
+    # the percentage of the radius is of the size it is placed at
+    pdf = fpdf.FPDF(unit="pt")
+    pdf.compress = False
+    pdf.add_page()
+    pdf.image(
+        b'<svg xmlns="http://www.w3.org/2000/svg" width="50%" height="40">'
+        b'<circle cx="20" cy="20" r="10%"/></svg>',
+        x=0,
+        y=0,
+        w=200,
+        h=80,
+    )
+    output = bytes(pdf.output()).decode("latin-1")
+    # the curves of the circle: its extent is the same in both directions, twice the
+    # radius, a tenth of the diagonal of the size it is placed at
+    curves = re.findall(r"([-\d. ]+) c\b", output)
+    coordinates = [float(value) for curve in curves for value in curve.split()]
+    xs, ys = coordinates[0::2], coordinates[1::2]
+    diameter = 2 * 0.1 * ((200**2 + 80**2) / 2) ** 0.5
+    assert max(xs) - min(xs) == pytest.approx(diameter, abs=0.01)
+    assert max(ys) - min(ys) == pytest.approx(diameter, abs=0.01)
+
+
+def test_svg_shape_percent_lengths_in_a_symbol_are_of_its_viewbox():
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" '
+        'viewBox="0 0 200 100"><defs><symbol id="s" viewBox="0 0 20 10">'
+        '<rect width="100%" height="50%"/></symbol></defs>'
+        '<use href="#s" width="20" height="10"/></svg>'
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    # a rectangle of the viewBox of the symbol, not of the one of the <svg>
+    assert " 0 0 20 5 re" in output
+
+
 @pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
 @pytest.mark.parametrize("viewbox", ["0 0 100 100", "-50 -50 100 100", "20 30 100 100"])
 def test_svg_viewbox_origin_in_the_units_of_the_document(unit, viewbox):

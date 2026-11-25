@@ -3069,10 +3069,19 @@ class SVGObject:
         self, symbol: "Element", inherited_style: Optional[dict[str, Any]] = None
     ) -> GraphicsContext:
         """Parse <symbol> as reusable content, not rendered directly."""
-        group = self.build_group(symbol, None, inherited_style)
         viewbox = symbol.attrib.get("viewBox")
-        if viewbox:
-            vx, vy, vw, vh = parse_viewbox(viewbox)
+        parsed_viewbox = parse_viewbox(viewbox) if viewbox else None
+        outer_viewport = self.pattern_viewport
+        if parsed_viewbox and parsed_viewbox[2] > 0 and parsed_viewbox[3] > 0:
+            # the percentages of its shapes are of its viewBox, not of the one of the
+            # <svg>
+            self.pattern_viewport = (parsed_viewbox[2], parsed_viewbox[3])
+        try:
+            group = self.build_group(symbol, None, inherited_style)
+        finally:
+            self.pattern_viewport = outer_viewport
+        if parsed_viewbox:
+            vx, vy, vw, vh = parsed_viewbox
             if vw == 0 or vh == 0:
                 group = GraphicsContext()
             else:

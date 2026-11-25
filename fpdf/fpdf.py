@@ -6006,7 +6006,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         alt_text: Optional[str] = None,
         keep_aspect_ratio: bool = False,
     ) -> VectorImageInfo:
-        if not svg.viewbox and svg.width and svg.height:
+        if (
+            not svg.viewbox
+            and svg.width
+            and svg.height
+            and not isinstance(svg.width, Percent)
+            and not isinstance(svg.height, Percent)
+        ):
             warnings.warn(
                 '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"',
                 stacklevel=get_stack_level(),
