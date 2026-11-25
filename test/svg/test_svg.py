@@ -2248,6 +2248,53 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
             '<text x="10" y="50" font-size="20" stroke="red" stroke-width="0.1em">Hi</text>',
             b"/LW 2",
         ),
+        # computed where it is declared, then inherited: the nested font size is not used
+        (
+            (
+                '<g style="font-size:10;stroke:red;stroke-width:2em">'
+                '<g font-size="40"><rect {R}/></g></g>'
+            ),
+            b"/LW 20",
+        ),
+        (
+            (
+                "<style>.c{font-size:10;stroke:red;stroke-width:2em}</style>"
+                '<g class="c"><g font-size="40"><rect {R}/></g></g>'
+            ),
+            b"/LW 20",
+        ),
+        (
+            (
+                '<g style="font-size:10;stroke:red;stroke-width:2em">'
+                '<switch><g font-size="40"><rect {R}/></g></switch></g>'
+            ),
+            b"/LW 20",
+        ),
+        # relative to the font size of the <use>, for a path, and for a rectangle
+        (
+            (
+                '<defs><path id="u" d="M10 10h80" stroke="red" stroke-width="2em"/>'
+                '</defs><use href="#u" font-size="40"/>'
+            ),
+            b"/LW 80",
+        ),
+        (
+            (
+                '<defs><rect id="u" {R} style="stroke:red;stroke-width:2em"/></defs>'
+                '<use href="#u" font-size="40"/>'
+            ),
+            b"/LW 80",
+        ),
+        # inherited by the content of a pattern from the <defs> that declares it
+        (
+            (
+                '<defs stroke="red" stroke-width="2em" font-size="4">'
+                '<pattern id="p" width="10" height="10" patternUnits="userSpaceOnUse">'
+                '<rect width="5" height="5" fill="none"/></pattern></defs>'
+                '<rect x="10" y="10" width="20" height="20" fill="url(#p)"/>'
+            ),
+            b"/LW 8",
+        ),
         # computed where it is declared, then inherited: not 2em of the child's 40
         (
             '<g font-size="10" stroke="red" stroke-width="2em"><rect {R} font-size="40"/></g>',
@@ -2266,6 +2313,12 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
         "polygon",
         "switch",
         "text",
+        "nested group",
+        "nested class",
+        "nested switch",
+        "use of a path",
+        "use of a rectangle",
+        "pattern",
         "computed where declared",
     ),
 )

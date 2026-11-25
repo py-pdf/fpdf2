@@ -1161,6 +1161,22 @@ def _resolve_relative_letter_spacing(
     style_map["letter-spacing"] = f"{float(match.group('value')) * factor * size}pt"
 
 
+def _resolve_relative_stroke_width(style_map: dict[str, Any]) -> None:
+    """
+    Make a stroke-width in em or ex absolute, against the font size of the element
+    that sets it, so that descendants inherit the computed width, as in CSS.
+    Call it after _resolve_relative_font_size().
+    """
+    value = style_map.get("stroke-width")
+    if not isinstance(value, str):
+        return
+    match = unit_splitter.fullmatch(value.strip())
+    if match is None or match.group("unit") not in ("em", "ex"):
+        return
+    font_size = _font_size_pt(style_map.get("font-size"))
+    style_map["stroke-width"] = f"{_em_length(font_size)(value.strip())}pt"
+
+
 def _letter_spacing(style: dict[str, Any]) -> float:
     """
     The letter-spacing of a text in pt, made absolute by
@@ -2644,6 +2660,7 @@ class SVGObject:
                         inherited[attr] = value
                 _resolve_relative_font_size(inherited, parent_style)
                 _resolve_relative_letter_spacing(inherited, parent_style)
+                _resolve_relative_stroke_width(inherited)
                 _resolve_inherited_color(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
@@ -3177,6 +3194,15 @@ class SVGObject:
                     ):
                         found = True
                         break
+                    if (
+                        descendant.tag in shape_tags
+                        or descendant.tag in xmlns_lookup("svg", "path")
+                    ) and _is_em_length(
+                        self._style_map_for(descendant).get("stroke-width")
+                        or descendant.attrib.get("stroke-width", "")
+                    ):
+                        found = True
+                        break
                     if descendant.tag in xmlns_lookup("svg", "use"):
                         ref = next(
                             (
@@ -3249,6 +3275,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
+        _resolve_relative_stroke_width(merged_style)
         _resolve_inherited_color(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
@@ -3386,6 +3413,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
+        _resolve_relative_stroke_width(merged_style)
         _resolve_inherited_color(merged_style, inherited_style)
         self._merge_inherited_paints(switch, local_style, inherited_style, merged_style)
         pdf_group = GraphicsContext()
@@ -3696,6 +3724,7 @@ class SVGObject:
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
         _resolve_relative_letter_spacing(effective_style, inherited_style)
+        _resolve_relative_stroke_width(effective_style)
         _resolve_inherited_color(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
@@ -3844,6 +3873,7 @@ class SVGObject:
                 child_effective_style.update(child_local_style)
                 _resolve_relative_font_size(child_effective_style, effective_style)
                 _resolve_relative_letter_spacing(child_effective_style, effective_style)
+                _resolve_relative_stroke_width(child_effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )
