@@ -1457,6 +1457,74 @@ class TestSVGObject:
                 ["25.23", "25.23"],
             ),
             ('<text y="20" dominant-baseline="inherit">a</text>', ["20"]),
+            # unset is inherit, and an invalid value is ignored
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" style="dominant-baseline: unset">a</text></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="bogus">a</text></g>'
+                ),
+                ["25.23"],
+            ),
+            ('<text y="20" dominant-baseline="unset">a</text>', ["20"]),
+            # alphabetic and auto are values, which reset the baseline of the parent
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="alphabetic">a</text></g>'
+                ),
+                ["20"],
+            ),
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="auto">a</text></g>'
+                ),
+                ["20"],
+            ),
+            # a <use> gives the text it draws its dominant-baseline
+            (
+                (
+                    '<defs><text id="l" y="20">a</text></defs>'
+                    '<g dominant-baseline="middle"><use href="#l"/></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<defs><text id="l" y="20">a</text></defs>'
+                    '<use href="#l" dominant-baseline="middle"/>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<defs><g id="l"><text y="20">a</text></g></defs>'
+                    '<g dominant-baseline="middle"><use href="#l"/></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<defs><text id="l" y="20" dominant-baseline="central">a</text>'
+                    '</defs><g dominant-baseline="middle"><use href="#l"/></g>'
+                ),
+                ["25.11"],
+            ),
+            (
+                (
+                    '<defs><text id="l" y="20">a</text></defs>'
+                    '<g dominant-baseline="middle"><use href="#l" '
+                    'dominant-baseline="inherit"/></g>'
+                ),
+                ["25.23"],
+            ),
         ],
     )
     def test_svg_text_dominant_baseline(self, text, baselines):

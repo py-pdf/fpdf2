@@ -1136,12 +1136,24 @@ DOMINANT_BASELINES = (
 )
 
 
+# the other values of dominant-baseline: they place a text on its alphabetic baseline
+_OTHER_BASELINES = ("auto", "alphabetic", "initial")
+
+
 def _resolve_inherited_baseline(
     style: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
-    """A dominant-baseline of inherit is the one of the parent, as in CSS."""
+    """
+    A dominant-baseline of inherit or unset is the one of the parent, as in this
+    library the baseline is inherited, and so is an invalid one, which is ignored.
+    """
     value = style.get("dominant-baseline")
-    if isinstance(value, str) and value.strip().lower() == "inherit":
+    if not isinstance(value, str):
+        return
+    keyword = value.strip().lower()
+    if keyword in ("inherit", "unset") or (
+        keyword not in DOMINANT_BASELINES and keyword not in _OTHER_BASELINES
+    ):
         parent_value = (inherited_style or {}).get("dominant-baseline")
         if parent_value is None:
             style.pop("dominant-baseline")
@@ -2002,6 +2014,7 @@ class SVGObject:
             and element.attrib.get("id")
         }
         self._em_lengths_cache: dict["Element", bool] = {}
+        self._text_cache: dict["Element", bool] = {}
         # the gradients already parsed when a url() referenced them
         self._looked_up_gradients: set[str] = set()
         self._elements_by_id = {
@@ -3120,14 +3133,22 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and self._has_em_lengths(element):
+        use_style = {**(inherited_style or {}), **style_map}
+        _resolve_inherited_baseline(use_style, inherited_style)
+        use_baseline = use_style.get("dominant-baseline")
+        if element is not None and (
+            self._has_em_lengths(element)
+            or (use_baseline is not None and self._has_text(element))
+        ):
             # the em and ex of the referenced shapes are relative to the font size
-            # that the <use> gives them, as its copy inherits from it
-            use_style = {**(inherited_style or {}), **style_map}
+            # that the <use> gives them, as its copy inherits from it, and a text
+            # takes the dominant-baseline of the <use>
             _resolve_relative_font_size(use_style, inherited_style)
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
+            if use_baseline is not None:
+                font_style["dominant-baseline"] = use_baseline
             referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
@@ -3184,7 +3205,29 @@ class SVGObject:
         Whether an element, or what it draws, also through a <use>, has a shape with a
         length in em or ex.
         """
-        if element not in self._em_lengths_cache:
+        return self._draws(
+            element,
+            self._em_lengths_cache,
+            lambda node: node.tag in shape_tags
+            and any(_is_em_length(value) for value in node.attrib.values()),
+        )
+
+    def _has_text(self, element: "Element") -> bool:
+        """Whether an element, or what it draws, also through a <use>, has a text."""
+        return self._draws(
+            element,
+            self._text_cache,
+            lambda node: node.tag in xmlns_lookup("svg", "text"),
+        )
+
+    def _draws(
+        self,
+        element: "Element",
+        cache: dict["Element", bool],
+        found_in: Callable[["Element"], bool],
+    ) -> bool:
+        """Whether found_in() holds for an element or a descendant, or what a <use> draws."""
+        if element not in cache:
             found = False
             pending = [element]
             seen: set["Element"] = set()
@@ -3194,9 +3237,7 @@ class SVGObject:
                     continue
                 seen.add(node)
                 for descendant in node.iter():
-                    if descendant.tag in shape_tags and any(
-                        _is_em_length(value) for value in descendant.attrib.values()
-                    ):
+                    if found_in(descendant):
                         found = True
                         break
                     if descendant.tag in xmlns_lookup("svg", "use"):
@@ -3211,8 +3252,8 @@ class SVGObject:
                         target = self._elements_by_id.get(ref) if ref else None
                         if target is not None:
                             pending.append(target)
-            self._em_lengths_cache[element] = found
-        return self._em_lengths_cache[element]
+            cache[element] = found
+        return cache[element]
 
     def _rebuild_for_use(
         self, ref: str, element: "Element", font_style: dict[str, Any]
