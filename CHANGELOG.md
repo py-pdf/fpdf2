@@ -125,6 +125,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `RadialGradient` raises a clear `ValueError` for a negative, NaN or infinite circle radius, instead of writing it into the shading `/Coords`, where the PDF specification requires radii of zero or more - thanks to @RavSinghChandan
 * `LinearGradient` and `RadialGradient` raise a clear `ValueError` for `bounds` outside [0, 1], decreasing or NaN, instead of writing them into the shading function, where the PDF specification requires increasing values within its domain - thanks to @RavSinghChandan
 * `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
+* `FPDF.rect_clip()`, `FPDF.elliptic_clip()` and `FPDF.round_clip()` raise a clear `ValueError` for NaN or infinite coordinates or dimensions, instead of writing them into the page, which is not a valid PDF number - thanks to @agustin18
 * `FPDF.image()` raises a clear `ValueError` for a NaN or infinite `x`, `y`, `w` or `h`, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
 
 ## [2.9.0] - 2026-10-29
