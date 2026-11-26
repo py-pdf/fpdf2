@@ -6832,6 +6832,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): width of the clipping region
             h (float): height of the clipping region
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
+        if not (math.isfinite(w) and math.isfinite(h)):
+            raise ValueError(f"Clip dimensions must be finite numbers: w={w}, h={h}")
         prev_font_set = self.current_font_is_set_on_page
         self._out(
             (
@@ -6860,6 +6864,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w (float): ellipse width
             h (float): ellipse height
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
+        if not (math.isfinite(w) and math.isfinite(h)):
+            raise ValueError(f"Clip dimensions must be finite numbers: w={w}, h={h}")
         prev_font_set = self.current_font_is_set_on_page
         self._out("q")
         self._draw_ellipse(x, y, w, h, "W n")
@@ -6881,6 +6889,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y (float): ordinate of the clipping region top left corner
             r (float): radius of the clipping region
         """
+        _check_coordinate("r", r)
         with self.elliptic_clip(x, y, r, r):
             yield
 
