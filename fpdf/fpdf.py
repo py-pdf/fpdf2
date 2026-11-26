@@ -1177,13 +1177,26 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     self.toc_placeholder and self.toc_placeholder.reset_page_indices
                 ):
                     label_start = current_page_label.get_start()
-            label_style = (
-                PageLabelStyle.coerce(label_style, case_sensitive=True)
-                if label_style
-                else None
+            new_page_label = self._new_page_label(
+                label_style, label_prefix, label_start
             )
-            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
         self.pages[self.page].set_page_label(current_page_label, new_page_label)
+
+    @staticmethod
+    def _new_page_label(
+        label_style: Optional[str | PageLabelStyle],
+        label_prefix: Optional[str],
+        label_start: Optional[int],
+    ) -> Optional[PDFPageLabel]:
+        "Build the page label requested, or return None if no label setting was given"
+        if not (label_style or label_prefix or label_start):
+            return None
+        style = (
+            PageLabelStyle.coerce(label_style, case_sensitive=True)
+            if label_style
+            else None
+        )
+        return PDFPageLabel(style, label_prefix, label_start)
 
     def add_page(
         self,
@@ -1273,14 +1286,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_page_label = (
             None if self.page == 0 else self.pages[self.page].get_page_label()
         )
-        new_page_label = None
-        if label_style or label_prefix or label_start:
-            label_style = (
-                PageLabelStyle.coerce(label_style, case_sensitive=True)
-                if label_style
-                else None
-            )
-            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
+        new_page_label = self._new_page_label(label_style, label_prefix, label_start)
 
         # Start new page
         self._beginpage(
@@ -5851,6 +5857,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.page:
             raise FPDFException("No page open, you need to call add_page() first")
+        if isinstance(x, NumberClass):
+            _check_coordinate("x", x)
+        if y is not None:
+            _check_coordinate("y", y)
+        if w and not math.isfinite(w):
+            raise ValueError(f"Image width must be a finite number: {w}")
+        if h and not math.isfinite(h):
+            raise ValueError(f"Image height must be a finite number: {h}")
         if type:
             warnings.warn(
                 (
