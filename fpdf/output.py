@@ -1400,7 +1400,13 @@ class OutputProducer:
                 # 2. make a subset
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
-                options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
+                # Strip some name metadata for compatibility with FontTools <4.69.
+                # Reevaluate this restriction later.
+                options = ftsubset.Options(
+                    notdef_outline=True,
+                    recommended_glyphs=True,
+                    name_IDs=list(range(7)),
+                )
                 # dropping some tables that currently not used:
                 options.drop_tables += [
                     "FFTM",  # FontForge Timestamp table - cf. https://github.com/py-pdf/fpdf2/issues/600
