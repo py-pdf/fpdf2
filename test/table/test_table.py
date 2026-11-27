@@ -965,6 +965,31 @@ def test_table_cell_fill_mode(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_cell_fill_mode.pdf", tmp_path)
 
 
+@pytest.mark.parametrize(
+    "mode, expected_grid",
+    [
+        # one string per row i, one character per column j: X = filled
+        (TableCellFillMode.NONE, ("...", "...", "...")),
+        (TableCellFillMode.ALL, ("XXX", "XXX", "XXX")),
+        (TableCellFillMode.ROWS, ("...", "XXX", "...")),
+        (TableCellFillMode.COLUMNS, (".X.", ".X.", ".X.")),
+        (TableCellFillMode.EVEN_ROWS, ("XXX", "...", "XXX")),
+        (TableCellFillMode.EVEN_COLUMNS, ("X.X", "X.X", "X.X")),
+    ],
+)
+def test_table_cell_fill_mode_should_fill_cell(mode, expected_grid):
+    grid = tuple(
+        "".join("X" if mode.should_fill_cell(i, j) else "." for j in range(3))
+        for i in range(3)
+    )
+    assert grid == expected_grid
+
+
+def test_table_cell_fill_mode_all_members_covered():
+    for mode in TableCellFillMode:
+        assert isinstance(mode.should_fill_cell(0, 0), bool)
+
+
 def test_table_with_very_long_text():
     pdf = FPDF()
     pdf.add_page()

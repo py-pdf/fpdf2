@@ -2189,6 +2189,52 @@ def test_svg_image_opacity_with_fill_opacity_override(attributes):
     assert b"/ca 0\n" not in pdf_bytes and b"/ca 0.0" not in pdf_bytes
 
 
+@pytest.mark.parametrize(
+    "clip_path",
+    [
+        pytest.param(
+            '<clipPath id="c"><polyline points="10,10 90,10 50,90"/></clipPath>',
+            id="polyline",
+        ),
+        pytest.param(
+            '<clipPath id="c"><polyline points="10 10 90 10 50 90"/></clipPath>',
+            id="polyline-without-commas",
+        ),
+        pytest.param(
+            (
+                '<defs><polyline id="p" points="10,10 90,10 50,90"/></defs>'
+                '<clipPath id="c"><use href="#p"/></clipPath>'
+            ),
+            id="use-of-a-polyline",
+        ),
+        pytest.param(
+            '<clipPath id="c"><polyline points="10,10 90,10 50,90 20"/></clipPath>',
+            id="polyline-with-an-incomplete-point",
+        ),
+        pytest.param(
+            (
+                '<clipPath id="c"><polyline fill="none" stroke="red" '
+                'points="10,10 90,10 50,90"/></clipPath>'
+            ),
+            id="polyline-with-a-stroke",
+        ),
+    ],
+)
+def test_svg_polyline_in_clip_path(clip_path):
+    """A <polyline> in a <clipPath> clips with the area that it encloses."""
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+        f'{clip_path}<rect width="100" height="100" fill="red" clip-path="url(#c)"/></svg>'
+    )
+    assert isinstance(svg.cross_references["#c"], fpdf.drawing.ClippingPath)
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    svg.draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    assert "10 10 m 90 10 l 50 90 l W n 0 0 m 0 0 100 100 re f" in output
+
+
 @pytest.mark.parametrize("unit", ["pt", "mm", "cm", "in"])
 def test_svg_percentage_size_in_the_units_of_the_document(unit):
     # width="50%" is half the width of the page, whatever its unit
@@ -2334,6 +2380,40 @@ def test_svg_stroke_width_in_em_and_ex(element, width):
     pdf.add_page()
     pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
     assert width in bytes(pdf.output())
+
+
+@pytest.mark.parametrize(
+    "keyword, font, size",
+    [
+        # inherit, and unset as the font is inherited, are the font of the parent
+        ("inherit", "Courier", "20"),
+        ("unset", "Courier", "20"),
+        # initial is the default font family, and the medium font size, 16px
+        ("initial", "Helvetica", "12"),
+    ],
+)
+@pytest.mark.parametrize(
+    "text", ['<text y="20" {}>b</text>', '<text y="20">a<tspan {}>b</tspan></text>']
+)
+@pytest.mark.parametrize(
+    "declaration",
+    ['font-family="{0}" font-size="{0}"', 'style="font-family: {0}; font-size: {0}"'],
+)
+def test_svg_font_family_and_size_css_wide_keywords(
+    keyword, font, size, text, declaration
+):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">'
+        '<g font-family="courier" font-size="20">'
+        f"{text.format(declaration.format(keyword))}</g></svg>"
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    # the last text drawn is the one with the keyword
+    assert re.findall(r"/BaseFont /(\w+)", output)[-1] == font
+    assert re.findall(r"/F\d+ ([\d.]+) Tf", output)[-1] == size
 
 
 @pytest.mark.parametrize(

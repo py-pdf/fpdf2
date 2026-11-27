@@ -1100,21 +1100,45 @@ _FONT_SIZE_KEYWORDS = {
 _RELATIVE_FONT_SIZE_KEYWORDS = {"larger": 1.2, "smaller": 1 / 1.2}
 
 
+def _resolve_font_family_keyword(
+    style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """
+    A font-family of inherit, or of unset as it is inherited, is the one of the parent,
+    and initial is the default font family, as when there is nothing to inherit.
+    """
+    value = style_map.get("font-family")
+    if not isinstance(value, str):
+        return
+    keyword = value.strip().lower()
+    if keyword in ("inherit", "unset", "initial"):
+        parent_family = (inherited_style or {}).get("font-family")
+        style_map["font-family"] = (
+            parent_family if keyword != "initial" and parent_family else "sans-serif"
+        )
+
+
 def _resolve_relative_font_size(
     style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
     """
     Make a relative font-size (em, ex, % or larger and smaller) or a font-size keyword
     absolute, against the inherited one, so that descendants inherit the computed
-    size, as in CSS.
+    size, as in CSS. The font-family keywords inherit, unset and initial are resolved
+    along with it.
     """
+    _resolve_font_family_keyword(style_map, inherited_style)
     value = style_map.get("font-size")
     if not isinstance(value, str):
         return
     keyword = value.strip().lower()
-    if keyword == "inherit":
-        # the initial value, medium, when there is nothing to inherit
-        style_map["font-size"] = (inherited_style or {}).get("font-size") or "16px"
+    if keyword in ("inherit", "unset", "initial"):
+        # unset is inherit, as the font-size is inherited; initial is medium, which
+        # is also the size when there is nothing to inherit
+        inherited_size = (inherited_style or {}).get("font-size")
+        style_map["font-size"] = (
+            inherited_size if keyword != "initial" and inherited_size else "16px"
+        )
         return
     if keyword in _FONT_SIZE_KEYWORDS:
         style_map["font-size"] = (
@@ -1701,9 +1725,9 @@ class ShapeBuilder:
         return " ".join(coordinates)
 
     @classmethod
-    def polyline(cls, tag: "Element") -> PaintedPath:
+    def polyline(cls, tag: "Element", clipping_path: bool = False) -> PaintedPath:
         """Convert an SVG <polyline> into a PDF path."""
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
         points = cls._complete_points(tag.attrib.get("points", ""))
         if points:
             svg_path_converter(path, "M" + points)
