@@ -126,6 +126,160 @@ def _normalize_css_value(value: Optional[str]) -> Optional[str]:
     return value
 
 
+# a var(), with an optional fallback that can contain parentheses, as in rgb()
+CSS_VAR_NAME_RE = re.compile(r"var\(\s*(--[\w-]+)", re.IGNORECASE)
+CSS_CUSTOM_PROPERTY_RE = re.compile(r"--[\w-]+")
+# to stop at fallbacks nested too deeply, and values that grow too long
+_MAX_CSS_VAR_SUBSTITUTIONS = 16
+_MAX_CSS_VAR_LENGTH = 10_000
+_MAX_CSS_VAR_DEPTH = 64
+
+
+def _substitute_css_var(
+    value: str, properties: dict[str, Optional[str]], depth: int = 0
+) -> Optional[str]:
+    """
+    A value with each var() replaced by the custom property it names, or else by its
+    fallback; None if it is invalid: without either, or too deeply nested. A
+    property of None is invalid, so its fallback is used. The fallback of a var()
+    whose property is set is not read, as in CSS, so a var() inside it does not
+    matter.
+    """
+    if depth > _MAX_CSS_VAR_SUBSTITUTIONS:
+        return None
+    lowered = value.lower()
+    parts: list[str] = []
+    length = 0
+    position = 0
+    while (start := lowered.find("var(", position)) >= 0:
+        parts.append(value[position:start])
+        # the closing parenthesis of this var(), and its first comma
+        index, level, comma = start + 4, 1, -1
+        while index < len(value) and level:
+            char = value[index]
+            if char == "(":
+                level += 1
+            elif char == ")":
+                level -= 1
+            elif char == "," and level == 1 and comma < 0:
+                comma = index
+            index += 1
+        if level:
+            return None
+        end = index - 1
+        name = value[start + 4 : comma if comma >= 0 else end].strip()
+        if not CSS_CUSTOM_PROPERTY_RE.fullmatch(name):
+            return None
+        replacement = properties.get(name)
+        if replacement is None and comma >= 0:
+            replacement = _substitute_css_var(
+                value[comma + 1 : end], properties, depth + 1
+            )
+        if replacement is None:
+            return None
+        length += start - position + len(replacement)
+        if length > _MAX_CSS_VAR_LENGTH:
+            return None
+        parts.append(replacement)
+        position = index
+    parts.append(value[position:])
+    return "".join(parts).strip()
+
+
+def _compute_custom_properties(
+    own: dict[str, str], inherited: dict[str, Optional[str]]
+) -> dict[str, Optional[str]]:
+    """
+    The computed values of the custom properties declared on an element: a var() in
+    them refers to the computed custom properties of the same element, all those in a
+    cycle are invalid, None, even when they have a fallback, and so are those with
+    more than _MAX_CSS_VAR_DEPTH references one after the other, whatever the order
+    of the declarations.
+    """
+    computed: dict[str, Optional[str]] = {}
+    # the number of references in the longest chain that starts at a property
+    depths: dict[str, int] = {}
+
+    def references_of(name: str) -> list[str]:
+        return [
+            reference
+            for reference in dict.fromkeys(CSS_VAR_NAME_RE.findall(own[name]))
+            if reference in own
+        ]
+
+    def start(name: str) -> Optional[list[Any]]:
+        """A frame to compute a property, or None if its value is known at once."""
+        # the CSS-wide keywords: initial is the guaranteed-invalid value, and a
+        # custom property is inherited, so inherit and unset are its inherited value
+        keyword = own[name].strip().lower()
+        if keyword in ("initial", "inherit", "unset"):
+            computed[name] = None if keyword == "initial" else inherited.get(name)
+            depths[name] = 0
+            return None
+        return [name, references_of(name), 0]
+
+    # without recursion, as a long chain of references would exceed its limit
+    for root in own:
+        frame = start(root) if root not in computed else None
+        stack = [frame] if frame is not None else []
+        active: set[str] = {root} if stack else set()
+        while stack:
+            frame = stack[-1]
+            name, references, index = frame
+            if index < len(references):
+                frame[2] += 1
+                reference = references[index]
+                if reference in active:
+                    names = [pending[0] for pending in stack]
+                    for cyclic in names[names.index(reference) :]:
+                        computed[cyclic] = None
+                        depths[cyclic] = 0
+                elif reference not in computed:
+                    child = start(reference)
+                    if child is not None:
+                        stack.append(child)
+                        active.add(reference)
+                continue
+            stack.pop()
+            active.discard(name)
+            if name in computed:
+                continue
+            depth = max((depths[reference] + 1 for reference in references), default=0)
+            depths[name] = depth
+            computed[name] = (
+                None
+                if depth > _MAX_CSS_VAR_DEPTH
+                else _substitute_css_var(
+                    own[name],
+                    {
+                        **inherited,
+                        **{reference: computed[reference] for reference in references},
+                    },
+                )
+            )
+    return computed
+
+
+# the initial values of the properties that are not inherited and that a var() can set
+_INITIAL_VALUES = {"opacity": "1", "transform": "none"}
+
+
+def _is_valid_value(name: str, value: str) -> bool:
+    """Whether the converter of a property accepts a value, as after a var()."""
+    converter = svg_attr_map.get(name)
+    if name == "opacity":
+        converter = clamp_float(0.0, 1.0)
+    elif name == "transform":
+        converter = convert_transforms
+    if converter is None:
+        return True
+    try:
+        converter(value)
+    except (ValueError, TypeError):
+        return False
+    return True
+
+
 _IMPORTANT_RE = re.compile(r"\s*!\s*important\s*$", re.IGNORECASE)
 
 
@@ -752,11 +906,19 @@ def apply_styles(
                 style[key] = norm_value
     stylable.style.auto_close = False
 
+    def declared(name: str) -> Optional[str]:
+        value = _normalize_css_value(style.get(name))
+        if value is None:
+            value = _normalize_css_value(svg_element.attrib.get(name))
+        if isinstance(value, str) and "var(" in value.lower():
+            # not resolved by SVGObject._style_map_for() against the custom
+            # properties: its fallback, or else not set
+            value = _substitute_css_var(value, {})
+        return value
+
     if allow_fill_and_stroke:
         for attr_name, converter in svg_attr_map.items():
-            attr_value = _normalize_css_value(style.get(attr_name))
-            if attr_value is None:
-                attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+            attr_value = declared(attr_name)
             if (
                 current_color is not None
                 and attr_name in ("fill", "stroke")
@@ -768,9 +930,7 @@ def apply_styles(
                 setattr(stylable.style, *converter(attr_value))
 
     # handle this separately for now
-    opacity_str = _normalize_css_value(style.get("opacity"))
-    if opacity_str is None:
-        opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
+    opacity_str = declared("opacity")
     # "inherit" keeps the opacity of the parent, as when the property is not set
     if opacity_str is not None and opacity_str.strip().lower() != "inherit":
         # out-of-range values are clamped, as for fill-opacity and stroke-opacity
@@ -779,9 +939,7 @@ def apply_styles(
         stylable.style.stroke_opacity = opacity
 
     # in SVG 2 transform is also a CSS property, which wins over the attribute
-    tfstr = _normalize_css_value(style.get("transform"))
-    if tfstr is None:
-        tfstr = svg_element.attrib.get("transform")
+    tfstr = declared("transform")
     if tfstr:
         stylable.transform = convert_transforms(tfstr)
 
@@ -2001,6 +2159,7 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
+        self._custom_properties_cache: dict["Element", dict[str, Optional[str]]] = {}
         self._em_lengths_cache: dict["Element", bool] = {}
         # the gradients already parsed when a url() referenced them
         self._looked_up_gradients: set[str] = set()
@@ -2203,7 +2362,9 @@ class SVGObject:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
         return display is not None and display.strip().lower() == "none"
 
-    def _style_map_for(self, tag: "Element") -> dict[str, Any]:
+    def _style_map_for(
+        self, tag: "Element", substitute_vars: bool = True
+    ) -> dict[str, Any]:
         style_map: dict[str, Any] = {}
         # an !important declaration of a stylesheet wins over a normal inline one
         important: set[str] = set()
@@ -2254,7 +2415,70 @@ class SVGObject:
                 norm_value = _normalize_css_value(tag.attrib.get(attr))
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
+        if substitute_vars:
+            self._substitute_css_vars(tag, style_map)
         return style_map
+
+    def _custom_properties(self, tag: "Element") -> dict[str, Optional[str]]:
+        """
+        The CSS custom properties, such as --color, of an element and its ancestors,
+        with their var() substituted where they are declared, as in CSS: None for one
+        that is invalid, so that a var() of it takes its fallback.
+        """
+        cache = self._custom_properties_cache
+        chain: list["Element"] = []
+        ancestor: Optional["Element"] = tag
+        while ancestor is not None and ancestor not in cache:
+            chain.append(ancestor)
+            ancestor = self._pattern_parents.get(ancestor)
+        properties = cache[ancestor] if ancestor is not None else {}
+        # from the outermost ancestor, so that the nearest declaration wins
+        for element in reversed(chain):
+            own = {
+                key: value
+                for key, value in self._style_map_for(element, False).items()
+                if key.startswith("--")
+            }
+            if own:
+                properties = {
+                    **properties,
+                    **_compute_custom_properties(own, properties),
+                }
+            cache[element] = properties
+        return properties
+
+    def _substitute_css_vars(self, tag: "Element", style_map: dict[str, Any]) -> None:
+        """
+        Replace the var() of the style of an element, or of its attributes, as in the
+        fill="var(--fill-0, #171D25)" of Figma, with the value of the custom property,
+        or else its fallback. A value left invalid, with neither, is inherited.
+        """
+        declared = {
+            key: value
+            for key, value in style_map.items()
+            if isinstance(value, str) and "var(" in value.lower()
+        }
+        for key, value in tag.attrib.items():
+            if key not in style_map and "var(" in value.lower():
+                declared[key] = value
+        if not declared:
+            return
+        properties = self._custom_properties(tag)
+        for key, value in declared.items():
+            if key.startswith("--"):
+                continue
+            substituted = _substitute_css_var(value, properties)
+            if substituted is not None and _is_valid_value(key, substituted):
+                style_map[key] = substituted
+            elif key in _INITIAL_VALUES:
+                # invalid when computed: a property that is not inherited takes its
+                # initial value, not the one of an attribute of lower priority
+                style_map[key] = _INITIAL_VALUES[key]
+            elif key in svg_attr_map:
+                # invalid when computed: not set, so inherited
+                style_map[key] = "inherit"
+            else:
+                style_map.pop(key, None)
 
     @force_nodocument
     @staticmethod
@@ -2285,10 +2509,25 @@ class SVGObject:
     @staticmethod
     def _parse_gradient_stops(
         gradient_element: "Element",
+        custom_properties: Optional[
+            Callable[["Element"], dict[str, Optional[str]]]
+        ] = None,
     ) -> list[tuple[float, DeviceRGB | DeviceGray]]:
-        """Parse <stop> children of a gradient element."""
+        """
+        Parse <stop> children of a gradient element. A var() in the stop-color or
+        stop-opacity of a stop is replaced by its custom property, or else its
+        fallback; one that is invalid is the initial value.
+        """
         stops: list[tuple[float, DeviceRGB | DeviceGray]] = []
         opacity_converter = clamp_float(0.0, 1.0)
+
+        def resolve(
+            stop: "Element", value: Optional[str], initial: str
+        ) -> Optional[str]:
+            if value is None or "var(" not in value.lower():
+                return value
+            properties = custom_properties(stop) if custom_properties else {}
+            return _substitute_css_var(value, properties) or initial
 
         for stop_element in gradient_element:
             tag_name = without_ns(stop_element.tag)
@@ -2310,7 +2549,8 @@ class SVGObject:
             if "stop-opacity" in stop_element.attrib:
                 try:
                     stop_opacity = opacity_converter(
-                        stop_element.attrib.get("stop-opacity") or "1"
+                        resolve(stop_element, stop_element.attrib["stop-opacity"], "1")
+                        or "1"
                     )
                 except ValueError:
                     pass
@@ -2318,8 +2558,12 @@ class SVGObject:
             style = stop_element.attrib.get("style", "")
             if style:
                 style_dict = _parse_style_attribute(style)
-                stop_color = style_dict.get("stop-color")
-                stop_opacity_str = style_dict.get("stop-opacity")
+                stop_color = resolve(
+                    stop_element, style_dict.get("stop-color"), "black"
+                )
+                stop_opacity_str = resolve(
+                    stop_element, style_dict.get("stop-opacity"), "1"
+                )
                 if stop_opacity_str:
                     try:
                         stop_opacity = opacity_converter(stop_opacity_str)
@@ -2329,7 +2573,14 @@ class SVGObject:
                         )
 
             if stop_color is None:
-                stop_color = stop_element.attrib.get("stop-color", "black")
+                stop_color = (
+                    resolve(
+                        stop_element,
+                        stop_element.attrib.get("stop-color", "black"),
+                        "black",
+                    )
+                    or "black"
+                )
 
             try:
                 color_obj = svgcolor(_light_color(stop_color))
@@ -2464,7 +2715,7 @@ class SVGObject:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = (
-            self._parse_gradient_stops(stops_element)
+            self._parse_gradient_stops(stops_element, self._custom_properties)
             if stops_element is not None
             else []
         )
@@ -2547,7 +2798,7 @@ class SVGObject:
                 LOGGER.warning("Could not parse gradientTransform: %s", e)
 
         stops = (
-            self._parse_gradient_stops(stops_element)
+            self._parse_gradient_stops(stops_element, self._custom_properties)
             if stops_element is not None
             else []
         )
