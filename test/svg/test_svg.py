@@ -1895,7 +1895,81 @@ class TestSVGObject:
         )
         svg = fpdf.svg.SVGObject(svg_data)
         symbol_use = svg.base_group.path_items[0]
-        assert tuple(symbol_use.transform) == pytest.approx((40, 0, 0, 20, 5, 5))
+        # the viewBox is fitted in the width and height, centered, as in browsers
+        assert tuple(symbol_use.transform) == pytest.approx((20, 0, 0, 20, 15, 5))
+
+    @pytest.mark.parametrize(
+        "aspect_ratio, size, transform",
+        [
+            # the viewBox 2 x 2 of the symbol, in the width and height of the <use>
+            ("xMidYMid meet", (40, 20), (20, 0, 0, 20, 15, 5)),
+            ("xMinYMid meet", (40, 20), (20, 0, 0, 20, 5, 5)),
+            ("xMaxYMid meet", (40, 20), (20, 0, 0, 20, 25, 5)),
+            ("xMidYMin meet", (20, 40), (20, 0, 0, 20, 5, 5)),
+            ("xMidYMid meet", (20, 40), (20, 0, 0, 20, 5, 15)),
+            ("xMidYMax meet", (20, 40), (20, 0, 0, 20, 5, 25)),
+            ("none", (40, 20), (40, 0, 0, 20, 5, 5)),
+            ("defer none", (40, 20), (40, 0, 0, 20, 5, 5)),
+            # slice fills the width and height
+            ("xMidYMid slice", (40, 20), (40, 0, 0, 40, 5, -5)),
+            ("xMinYMin slice", (40, 20), (40, 0, 0, 40, 5, 5)),
+        ],
+    )
+    def test_svg_symbol_preserve_aspect_ratio(self, aspect_ratio, size, transform):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+            f'<symbol id="myDot" viewBox="0 0 2 2" preserveAspectRatio="{aspect_ratio}">'
+            '<circle cx="1" cy="1" r="1" />'
+            "</symbol>"
+            f'<use href="#myDot" x="5" y="5" width="{size[0]}" height="{size[1]}" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        symbol_use = svg.base_group.path_items[0]
+        assert tuple(symbol_use.transform) == pytest.approx(transform)
+
+    @pytest.mark.parametrize(
+        "aspect_ratio, size, viewport",
+        [
+            # the part of the unit square of the viewBox that is in the width and
+            # height of the <use>, which a slice overflows
+            ("xMidYMid slice", (40, 20), (0, 0.25, 1, 0.5)),
+            ("xMinYMin slice", (40, 20), (0, 0, 1, 0.5)),
+            ("xMaxYMax slice", (40, 20), (0, 0.5, 1, 0.5)),
+            ("xMidYMid slice", (20, 40), (0.25, 0, 0.5, 1)),
+            ("defer xMidYMid slice", (20, 40), (0.25, 0, 0.5, 1)),
+        ],
+    )
+    def test_svg_symbol_slice_is_clipped_to_the_viewport(
+        self, aspect_ratio, size, viewport
+    ):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+            f'<symbol id="myDot" viewBox="0 0 2 2" preserveAspectRatio="{aspect_ratio}">'
+            '<circle cx="1" cy="1" r="1" />'
+            "</symbol>"
+            f'<use href="#myDot" x="5" y="5" width="{size[0]}" height="{size[1]}" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        clipped = svg.base_group.path_items[0].path_items[0]
+        box, _ = clipped.clipping_path.bounding_box(fpdf.drawing.Point(0, 0))
+        assert (box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0) == pytest.approx(
+            viewport
+        )
+
+    @pytest.mark.parametrize("aspect_ratio", ["xMidYMid meet", "none"])
+    def test_svg_symbol_without_slice_is_not_clipped(self, aspect_ratio):
+        svg_data = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+            f'<symbol id="myDot" viewBox="0 0 2 2" preserveAspectRatio="{aspect_ratio}">'
+            '<circle cx="1" cy="1" r="1" />'
+            "</symbol>"
+            '<use href="#myDot" width="40" height="20" />'
+            "</svg>"
+        )
+        svg = fpdf.svg.SVGObject(svg_data)
+        assert svg.base_group.path_items[0].path_items[0].clipping_path is None
 
     @pytest.mark.parametrize("viewbox", ["0 0 nan 2", "0 0 2 inf"])
     def test_svg_symbol_not_finite_viewbox(self, viewbox):
