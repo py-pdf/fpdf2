@@ -2253,6 +2253,176 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
 
 
 @pytest.mark.parametrize(
+    "body, widths",
+    [
+        ('<g stroke-width="6">{R}</g>', {b"6"}),
+        ('<g style="stroke-width:6">{R}</g>', {b"6"}),
+        ('<g stroke-width="6"><g>{R}</g></g>', {b"6"}),
+        ('<g stroke-width="6"><g stroke-width="inherit">{R}</g></g>', {b"6"}),
+        ('<g stroke-width="inherit">{R}</g>', {b"1"}),
+        ('<g stroke-width="6"><g stroke-width="4">{R}</g></g>', {b"6", b"4"}),
+        ('<g stroke-width="6">{R_WIDTH}</g>', {b"6", b"3"}),
+        (
+            (
+                '<defs><linearGradient id="g"><stop offset="0" stop-color="red"/>'
+                '<stop offset="1" stop-color="blue"/></linearGradient></defs>'
+                '<g stroke-width="6">{R_GRADIENT}</g>'
+            ),
+            {b"6"},
+        ),
+        ('<switch stroke-width="6">{R}</switch>', {b"6"}),
+        ('<g stroke-width="6"><path d="M10 10h80" stroke="red"/></g>', {b"6"}),
+        (
+            '<g stroke-width="6"><polyline points="10,10 90,90" stroke="red"/></g>',
+            {b"6"},
+        ),
+        (
+            '<g stroke-width="6"><text x="10" y="50" stroke="red">Hi</text></g>',
+            {b"6"},
+        ),
+        (
+            (
+                '<g stroke-width="6"><text x="10" y="50"><tspan stroke="red">Hi'
+                "</tspan></text></g>"
+            ),
+            {b"6"},
+        ),
+        # the width of its immediate parent, not of the group above it
+        (
+            (
+                '<g stroke-width="6"><text x="10" y="50" stroke-width="3">'
+                '<tspan stroke="red">Hi</tspan></text></g>'
+            ),
+            {b"6", b"3"},
+        ),
+        # a currentColor stroke takes the width too
+        ('<g color="red" stroke-width="6">{R_CURRENT}</g>', {b"6"}),
+        (
+            '<defs>{R_CURRENT}</defs><use href="#r" color="red" stroke-width="6"/>',
+            {b"6"},
+        ),
+        ('<defs>{R_ID}</defs><use href="#r" stroke-width="6"/>', {b"6"}),
+        ('<defs>{R_ID}</defs><g stroke-width="6"><use href="#r"/></g>', {b"6"}),
+        (
+            (
+                '<defs>{R_ID}<use id="u" href="#r"/></defs>'
+                '<use href="#u" stroke-width="6"/>'
+            ),
+            {b"6"},
+        ),
+        (
+            '<defs><g id="s">{R}</g></defs><use href="#s" stroke-width="6"/>',
+            {b"6"},
+        ),
+        (
+            (
+                '<defs>{R_ID}<rect id="q" width="5" height="5"/><g id="s">'
+                '<use href="#r"/><use href="#q"/><use href="#q"/><use href="#missing"/>'
+                '</g></defs><use href="#s" stroke-width="6"/>'
+            ),
+            {b"6"},
+        ),
+        (
+            (
+                '<defs stroke-width="6"><pattern id="p" width="100" height="100" '
+                'patternUnits="userSpaceOnUse">{R}</pattern></defs>'
+                '<rect width="100" height="100" fill="url(#p)"/>'
+            ),
+            {b"6"},
+        ),
+    ],
+    ids=(
+        "group",
+        "group style",
+        "nested group",
+        "inherit keyword",
+        "inherit without a width above",
+        "group in group",
+        "own width",
+        "gradient stroke",
+        "switch",
+        "path",
+        "polyline",
+        "text",
+        "tspan",
+        "tspan of a text with a width",
+        "currentColor",
+        "currentColor in a use",
+        "use",
+        "use in group",
+        "use of use",
+        "use of group",
+        "use of a group with repeated and missing references",
+        "pattern",
+    ),
+)
+def test_svg_stroke_width_of_the_ancestors(body, widths):
+    # A shape that sets a stroke, but no width, used to get a width of 1 and lose the
+    # stroke-width of its group, of its <use> or of the <svg>.
+    shape = 'x="10" y="10" width="80" height="80" fill="none"'
+    body = (
+        body.replace("{R}", f'<rect {shape} stroke="red"/>')
+        .replace("{R_WIDTH}", f'<rect {shape} stroke="red" stroke-width="3"/>')
+        .replace("{R_GRADIENT}", f'<rect {shape} stroke="url(#g)"/>')
+        .replace("{R_ID}", f'<rect id="r" {shape} stroke="red"/>')
+        .replace("{R_CURRENT}", f'<rect id="r" {shape} stroke="currentColor"/>')
+    )
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        f'viewBox="0 0 100 100">{body}</svg>'
+    )
+    pdf = fpdf.FPDF(unit="pt", format=(100, 100))
+    pdf.add_page()
+    pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
+    found = set(re.findall(rb"/LW ([\d.]+)", bytes(pdf.output())))
+    # 0.567 is the line width of the page
+    assert found - {b"0.567"} == widths
+
+
+def test_svg_stroke_width_of_a_tspan_is_the_one_of_its_text():
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        'viewBox="0 0 100 100"><g stroke-width="6">'
+        '<text x="10" y="50" font-size="20" stroke-width="3">'
+        '<tspan stroke="red">Hi</tspan></text></g></svg>'
+    )
+    pdf = fpdf.FPDF(unit="pt", format=(100, 100))
+    pdf.add_page()
+    pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
+    widths = re.findall(rb"/LW ([\d.]+)", bytes(pdf.output()))
+    # the width of the group is only its own; the text and its tspan have 3, not 6
+    assert widths.count(b"6") == 1
+    assert widths.count(b"3") == 2
+
+
+def test_svg_stroke_width_of_the_svg_element():
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        'viewBox="0 0 100 100" stroke-width="6">'
+        '<rect x="10" y="10" width="80" height="80" fill="none" stroke="red"/></svg>'
+    )
+    pdf = fpdf.FPDF(unit="pt", format=(100, 100))
+    pdf.add_page()
+    pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
+    found = set(re.findall(rb"/LW ([\d.]+)", bytes(pdf.output())))
+    assert found - {b"0.567"} == {b"6"}
+
+
+def test_svg_stroke_width_zero_of_a_group_draws_no_stroke():
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        'viewBox="0 0 100 100"><g stroke-width="0">'
+        '<rect x="10" y="10" width="80" height="80" fill="none" stroke="red"/>'
+        "</g></svg>"
+    )
+    pdf = fpdf.FPDF(unit="pt", format=(100, 100))
+    pdf.add_page()
+    pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
+    content = bytes(pdf.pages[1].contents)
+    assert b" re S" not in content and b" re B" not in content
+
+
+@pytest.mark.parametrize(
     "keyword, font, size",
     [
         # inherit, and unset as the font is inherited, are the font of the parent

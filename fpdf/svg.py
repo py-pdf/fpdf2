@@ -728,6 +728,56 @@ def _with_inherited_current_color(
     return {**style_map, **inherited_paints} if inherited_paints else style_map
 
 
+# Not a CSS property: where the stroke-width of the ancestors of an element is kept for
+# it, apart from the styles that apply_styles() reads, so that a group does not write
+# the width of its ancestors to itself.
+_INHERITED_STROKE_WIDTH = "inherited-stroke-width"
+
+
+def _with_inherited_stroke_width(
+    style_map: dict[str, Any],
+    svg_element: "Element",
+    inherited_style: Optional[dict[str, Any]],
+) -> dict[str, Any]:
+    """
+    The stroke-width that the ancestors of an element give it, when the element sets
+    its own stroke: that gives a stroke a width of 1 unless the element has one, which
+    would hide the width of the ancestors.
+    """
+    width = (inherited_style or {}).get(_INHERITED_STROKE_WIDTH)
+    if width is None or _get_attr_or_style(svg_element, "stroke-width", style_map):
+        return style_map
+    stroke = _get_attr_or_style(svg_element, "stroke", style_map)
+    if stroke is None or stroke.strip().lower() in ("none", "inherit"):
+        return style_map
+    return {**style_map, "stroke-width": width}
+
+
+def _carry_stroke_width(
+    element: "Element",
+    local_style: dict[str, Any],
+    stylable: PaintedPath | GraphicsContext,
+    merged_style: dict[str, Any],
+    inherited_style: Optional[dict[str, Any]],
+) -> None:
+    """
+    Pass the stroke-width of a group to its descendants as a computed length, once
+    apply_styles() has read it, for _with_inherited_stroke_width().
+    """
+    value = _get_attr_or_style(element, "stroke-width", local_style)
+    if value is None:
+        return
+    parent_width = (inherited_style or {}).get(_INHERITED_STROKE_WIDTH)
+    width = stylable.style.stroke_width
+    if value.strip().lower() == "inherit" or isinstance(width, InheritType):
+        if parent_width is None:
+            merged_style.pop(_INHERITED_STROKE_WIDTH, None)
+        else:
+            merged_style[_INHERITED_STROKE_WIDTH] = parent_width
+    else:
+        merged_style[_INHERITED_STROKE_WIDTH] = f"{width or 0}pt"
+
+
 def apply_styles(
     stylable: PaintedPath | GraphicsContext,
     svg_element: "Element",
@@ -2002,6 +2052,7 @@ class SVGObject:
             and element.attrib.get("id")
         }
         self._em_lengths_cache: dict["Element", bool] = {}
+        self._stroke_cache: dict["Element", bool] = {}
         # the gradients already parsed when a url() referenced them
         self._looked_up_gradients: set[str] = set()
         self._elements_by_id = {
@@ -2666,6 +2717,8 @@ class SVGObject:
                 _resolve_relative_font_size(inherited, parent_style)
                 _resolve_relative_letter_spacing(inherited, parent_style)
                 _resolve_inherited_color(inherited, parent_style)
+            if "stroke-width" in inherited:
+                inherited[_INHERITED_STROKE_WIDTH] = inherited["stroke-width"]
             empty = copy(element)
             empty.attrib = {}
             apply_styles(group, empty, inherited)
@@ -2676,7 +2729,7 @@ class SVGObject:
                 {
                     key: value
                     for key, value in inherited.items()
-                    if key in (*font_keys, "color")
+                    if key in (*font_keys, "color", _INHERITED_STROKE_WIDTH)
                     or (
                         key in ("fill", "stroke")
                         and self._extract_gradient_id(value) in self._pattern_elements
@@ -3092,6 +3145,10 @@ class SVGObject:
             _with_inherited_current_color(style_map, xref, inherited_style),
             current_color=_current_color(style_map, inherited_style),
         )
+        # the stroke-width that what the <use> draws inherits from it
+        width_style = dict(inherited_style or {})
+        _carry_stroke_width(xref, style_map, pdf_group, width_style, inherited_style)
+        use_width = width_style.get(_INHERITED_STROKE_WIDTH)
 
         for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
@@ -3120,14 +3177,20 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and self._has_em_lengths(element):
+        if element is not None and (
+            self._has_em_lengths(element)
+            or (use_width is not None and self._sets_stroke(element))
+        ):
             # the em and ex of the referenced shapes are relative to the font size
-            # that the <use> gives them, as its copy inherits from it
+            # that the <use> gives them, and a shape with a stroke but no width has
+            # the stroke-width of the <use>, as its copy inherits from it
             use_style = {**(inherited_style or {}), **style_map}
             _resolve_relative_font_size(use_style, inherited_style)
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
+            if use_width is not None:
+                font_style[_INHERITED_STROKE_WIDTH] = use_width
             referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
@@ -3178,6 +3241,45 @@ class SVGObject:
         # a <use> can itself be referenced, as Inkscape does for a clone of a clone
         self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
+
+    def _sets_stroke(self, element: "Element") -> bool:
+        """
+        Whether an element, or what it draws, also through a <use>, sets a stroke of
+        its own.
+        """
+        if element not in self._stroke_cache:
+            found = False
+            pending = [element]
+            seen: set["Element"] = set()
+            while pending and not found:
+                node = pending.pop()
+                if node in seen:
+                    continue
+                seen.add(node)
+                for descendant in node.iter():
+                    stroke = _get_attr_or_style(
+                        descendant, "stroke", self._style_map_for(descendant)
+                    )
+                    if stroke is not None and stroke.strip().lower() not in (
+                        "none",
+                        "inherit",
+                    ):
+                        found = True
+                        break
+                    if descendant.tag in xmlns_lookup("svg", "use"):
+                        ref = next(
+                            (
+                                descendant.attrib[key]
+                                for key in xmlns_lookup("xlink", "href")
+                                if key in descendant.attrib
+                            ),
+                            None,
+                        )
+                        target = self._elements_by_id.get(ref) if ref else None
+                        if target is not None:
+                            pending.append(target)
+            self._stroke_cache[element] = found
+        return self._stroke_cache[element]
 
     def _has_em_lengths(self, element: "Element") -> bool:
         """
@@ -3281,6 +3383,9 @@ class SVGObject:
             group,
             merged_style,
             current_color=_current_color(merged_style, None),
+        )
+        _carry_stroke_width(
+            group, local_style, pdf_group, merged_style, inherited_style
         )
 
         # handle defs before anything else
@@ -3417,6 +3522,9 @@ class SVGObject:
             merged_style,
             current_color=_current_color(merged_style, None),
         )
+        _carry_stroke_width(
+            switch, local_style, pdf_group, merged_style, inherited_style
+        )
 
         for child in switch:
             if _has_switch_conditional_attrs(child):
@@ -3441,7 +3549,11 @@ class SVGObject:
         apply_styles(
             pdf_path,
             path,
-            _with_inherited_current_color(style_map, path, inherited_style),
+            _with_inherited_stroke_width(
+                _with_inherited_current_color(style_map, path, inherited_style),
+                path,
+                inherited_style,
+            ),
             current_color=_current_color(style_map, inherited_style),
         )
         self._apply_gradient_paint(pdf_path, path, style_map)
@@ -3497,7 +3609,11 @@ class SVGObject:
         apply_styles(
             shape_path,
             shape,
-            _with_inherited_current_color(style_map, shape, inherited_style),
+            _with_inherited_stroke_width(
+                _with_inherited_current_color(style_map, shape, inherited_style),
+                shape,
+                inherited_style,
+            ),
             current_color=_current_color(style_map, inherited_style),
         )
         self._apply_gradient_paint(shape_path, shape, style_map)
@@ -3731,8 +3847,16 @@ class SVGObject:
         apply_styles(
             path,
             text_tag,
-            _with_inherited_current_color(local_style, text_tag, inherited_style),
+            _with_inherited_stroke_width(
+                _with_inherited_current_color(local_style, text_tag, inherited_style),
+                text_tag,
+                inherited_style,
+            ),
             current_color=_current_color(effective_style, None),
+        )
+        # the stroke-width that the runs of the text inherit from it
+        _carry_stroke_width(
+            text_tag, local_style, path, effective_style, inherited_style
         )
         self._apply_gradient_paint(path, text_tag, effective_style)
         self.apply_clipping_path(path, text_tag, effective_style)
@@ -3766,7 +3890,13 @@ class SVGObject:
             apply_styles(
                 context,
                 tag,
-                _with_inherited_current_color(style_map_for_tag, tag, effective_style),
+                _with_inherited_stroke_width(
+                    _with_inherited_current_color(
+                        style_map_for_tag, tag, effective_style
+                    ),
+                    tag,
+                    effective_style,
+                ),
                 current_color=_current_color(style_map_for_tag, effective_style),
             )
             self._apply_gradient_paint(context, tag, style_map_for_tag)
