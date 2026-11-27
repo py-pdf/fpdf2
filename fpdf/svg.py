@@ -1157,6 +1157,54 @@ def _resolve_relative_font_size(
     style_map["font-size"] = f"{number * factor * parent_size}pt"
 
 
+# the values of dominant-baseline that place a text differently from its
+# alphabetic baseline; the others, such as auto, keep it
+DOMINANT_BASELINES = (
+    "middle",
+    "central",
+    "mathematical",
+    "hanging",
+    "text-before-edge",
+    "text-top",
+    "text-after-edge",
+    "text-bottom",
+    "ideographic",
+)
+
+
+# the other values of dominant-baseline: they place a text on its alphabetic baseline
+_OTHER_BASELINES = ("auto", "alphabetic", "initial")
+
+
+def _resolve_inherited_baseline(
+    style: dict[str, Any], inherited_style: Optional[dict[str, Any]]
+) -> None:
+    """
+    A dominant-baseline of inherit or unset is the one of the parent, as in this
+    library the baseline is inherited, and so is an invalid one, which is ignored.
+    """
+    value = style.get("dominant-baseline")
+    if not isinstance(value, str):
+        return
+    keyword = value.strip().lower()
+    if keyword in ("inherit", "unset") or (
+        keyword not in DOMINANT_BASELINES and keyword not in _OTHER_BASELINES
+    ):
+        parent_value = (inherited_style or {}).get("dominant-baseline")
+        if parent_value is None:
+            style.pop("dominant-baseline")
+        else:
+            style["dominant-baseline"] = parent_value
+
+
+def _dominant_baseline(style: dict[str, Any]) -> Optional[str]:
+    """The dominant-baseline of a text, as Mermaid sets it to center labels."""
+    value = style.get("dominant-baseline")
+    if isinstance(value, str) and value.strip().lower() in DOMINANT_BASELINES:
+        return value.strip().lower()
+    return None
+
+
 def _resolve_relative_letter_spacing(
     style_map: dict[str, Any], inherited_style: Optional[dict[str, Any]]
 ) -> None:
@@ -2002,6 +2050,7 @@ class SVGObject:
             and element.attrib.get("id")
         }
         self._em_lengths_cache: dict["Element", bool] = {}
+        self._text_cache: dict["Element", bool] = {}
         # the gradients already parsed when a url() referenced them
         self._looked_up_gradients: set[str] = set()
         self._elements_by_id = {
@@ -2240,6 +2289,7 @@ class SVGObject:
             elif key in style_map:
                 style_map.pop(key, None)
         inheritable_attrs = (
+            "dominant-baseline",
             "color",
             "font-family",
             "font-size",
@@ -2665,6 +2715,7 @@ class SVGObject:
                         inherited[attr] = value
                 _resolve_relative_font_size(inherited, parent_style)
                 _resolve_relative_letter_spacing(inherited, parent_style)
+                _resolve_inherited_baseline(inherited, parent_style)
                 _resolve_inherited_color(inherited, parent_style)
             empty = copy(element)
             empty.attrib = {}
@@ -3120,14 +3171,22 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and self._has_em_lengths(element):
+        use_style = {**(inherited_style or {}), **style_map}
+        _resolve_inherited_baseline(use_style, inherited_style)
+        use_baseline = use_style.get("dominant-baseline")
+        if element is not None and (
+            self._has_em_lengths(element)
+            or (use_baseline is not None and self._has_text(element))
+        ):
             # the em and ex of the referenced shapes are relative to the font size
-            # that the <use> gives them, as its copy inherits from it
-            use_style = {**(inherited_style or {}), **style_map}
+            # that the <use> gives them, as its copy inherits from it, and a text
+            # takes the dominant-baseline of the <use>
             _resolve_relative_font_size(use_style, inherited_style)
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
+            if use_baseline is not None:
+                font_style["dominant-baseline"] = use_baseline
             referenced = self._rebuild_for_use(ref, element, font_style)
         else:
             referenced = deepcopy(referenced)
@@ -3184,7 +3243,29 @@ class SVGObject:
         Whether an element, or what it draws, also through a <use>, has a shape with a
         length in em or ex.
         """
-        if element not in self._em_lengths_cache:
+        return self._draws(
+            element,
+            self._em_lengths_cache,
+            lambda node: node.tag in shape_tags
+            and any(_is_em_length(value) for value in node.attrib.values()),
+        )
+
+    def _has_text(self, element: "Element") -> bool:
+        """Whether an element, or what it draws, also through a <use>, has a text."""
+        return self._draws(
+            element,
+            self._text_cache,
+            lambda node: node.tag in xmlns_lookup("svg", "text"),
+        )
+
+    def _draws(
+        self,
+        element: "Element",
+        cache: dict["Element", bool],
+        found_in: Callable[["Element"], bool],
+    ) -> bool:
+        """Whether found_in() holds for an element or a descendant, or what a <use> draws."""
+        if element not in cache:
             found = False
             pending = [element]
             seen: set["Element"] = set()
@@ -3194,9 +3275,7 @@ class SVGObject:
                     continue
                 seen.add(node)
                 for descendant in node.iter():
-                    if descendant.tag in shape_tags and any(
-                        _is_em_length(value) for value in descendant.attrib.values()
-                    ):
+                    if found_in(descendant):
                         found = True
                         break
                     if descendant.tag in xmlns_lookup("svg", "use"):
@@ -3211,8 +3290,8 @@ class SVGObject:
                         target = self._elements_by_id.get(ref) if ref else None
                         if target is not None:
                             pending.append(target)
-            self._em_lengths_cache[element] = found
-        return self._em_lengths_cache[element]
+            cache[element] = found
+        return cache[element]
 
     def _rebuild_for_use(
         self, ref: str, element: "Element", font_style: dict[str, Any]
@@ -3271,6 +3350,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
+        _resolve_inherited_baseline(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
         if pdf_group is None:
             pdf_group = GraphicsContext()
@@ -3407,6 +3487,7 @@ class SVGObject:
         merged_style.update(local_style)
         _resolve_relative_font_size(merged_style, inherited_style)
         _resolve_relative_letter_spacing(merged_style, inherited_style)
+        _resolve_inherited_baseline(merged_style, inherited_style)
         _resolve_inherited_color(merged_style, inherited_style)
         self._merge_inherited_paints(switch, local_style, inherited_style, merged_style)
         pdf_group = GraphicsContext()
@@ -3714,6 +3795,7 @@ class SVGObject:
         effective_style.update(local_style)
         _resolve_relative_font_size(effective_style, inherited_style)
         _resolve_relative_letter_spacing(effective_style, inherited_style)
+        _resolve_inherited_baseline(effective_style, inherited_style)
         _resolve_inherited_color(effective_style, inherited_style)
         for attr in ("fill", "stroke"):
             value = _get_attr_or_style(text_tag, attr, local_style)
@@ -3792,6 +3874,7 @@ class SVGObject:
             style_tag: Optional["Element"] = None,
             style_map_for_tag: Optional[dict[str, Any]] = None,
             letter_spacing: float = 0.0,
+            dominant_baseline: Optional[str] = None,
         ) -> None:
             nonlocal pending_dx, pending_dy
             raw = raw_text or ""
@@ -3837,9 +3920,11 @@ class SVGObject:
                     abs_y=abs_y,
                     run_style=run_style,
                     letter_spacing=letter_spacing,
+                    dominant_baseline=dominant_baseline,
                 )
             )
 
+        base_baseline = _dominant_baseline(effective_style)
         base_spacing = _letter_spacing(effective_style)
         # Leading text (before child <tspan>)
         _add_run(
@@ -3851,6 +3936,7 @@ class SVGObject:
             style_tag=None,
             style_map_for_tag=None,
             letter_spacing=base_spacing,
+            dominant_baseline=base_baseline,
         )
 
         for child in text_tag:
@@ -3860,6 +3946,7 @@ class SVGObject:
                 child_effective_style.update(child_local_style)
                 _resolve_relative_font_size(child_effective_style, effective_style)
                 _resolve_relative_letter_spacing(child_effective_style, effective_style)
+                _resolve_inherited_baseline(child_effective_style, effective_style)
                 fam, emph, size, _anchor = _parse_font_attrs(
                     child, child_effective_style
                 )
@@ -3900,6 +3987,7 @@ class SVGObject:
                         style_tag=child,
                         style_map_for_tag=child_local_style,
                         letter_spacing=_letter_spacing(child_effective_style),
+                        dominant_baseline=_dominant_baseline(child_effective_style),
                     )
 
                 # Text between tspans inherits parent style
@@ -3912,6 +4000,7 @@ class SVGObject:
                     style_tag=None,
                     style_map_for_tag=None,
                     letter_spacing=base_spacing,
+                    dominant_baseline=base_baseline,
                 )
             else:
                 # other child tags are ignored (already logged elsewhere)

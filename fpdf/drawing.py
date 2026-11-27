@@ -2515,6 +2515,64 @@ class TextRun(NamedTuple):
     run_style: Optional[GraphicsStyle] = None
     # added after each character, as the letter-spacing of CSS
     letter_spacing: float = 0.0
+    # the baseline placed at the y of the run, as the dominant-baseline of SVG
+    dominant_baseline: Optional[str] = None
+
+
+# The ascender, descender and x-height of the standard 14 fonts, in thousandths of
+# an em, from their Adobe font metrics files, and of the fonts the bounding boxes
+# are estimated with
+_CORE_FONT_BASELINE_METRICS = {
+    "courier": (629, -157, 426),
+    "helvetica": (718, -207, 523),
+    "times": (683, -217, 450),
+    "symbol": (1010, -293, 505),
+    "zapfdingbats": (820, -143, 410),
+}
+_APPROXIMATE_BASELINE_METRICS = (800, -200, 500)
+
+
+def _baseline_offset(
+    dominant_baseline: Optional[str],
+    size: float,
+    font: "Optional[CoreFont | TTFFont]" = None,
+) -> float:
+    """
+    How far down the alphabetic baseline of a run goes for its y to be on its
+    dominant-baseline, as browsers place it with the metrics of the font.
+    """
+    if dominant_baseline in (None, "auto", "alphabetic"):
+        return 0.0
+    ascent: float
+    descent: float
+    x_height: float
+    if font is None:
+        ascent, descent, x_height = _APPROXIMATE_BASELINE_METRICS
+    elif font.type == "core":
+        family = next(
+            name
+            for name in _CORE_FONT_BASELINE_METRICS
+            if font.fontkey.startswith(name)
+        )
+        ascent, descent, x_height = _CORE_FONT_BASELINE_METRICS[family]
+    else:
+        ttf_font = cast("TTFFont", font)
+        ascent, descent = ttf_font.desc.ascent, ttf_font.desc.descent
+        os2_table = ttf_font.ttfont["OS/2"] if "OS/2" in ttf_font.ttfont else None
+        # sxHeight is only in version 2 and later of the OS/2 table
+        x_height = getattr(os2_table, "sxHeight", 0) * ttf_font.scale or ascent / 2
+    offset = {
+        "middle": x_height / 2,
+        "central": (ascent + descent) / 2,
+        "mathematical": ascent / 2,
+        "hanging": ascent * 0.8,
+        "text-before-edge": ascent,
+        "text-top": ascent,
+        "text-after-edge": descent,
+        "text-bottom": descent,
+        "ideographic": descent,
+    }.get(dominant_baseline, 0.0)
+    return offset * size / 1000
 
 
 class Text(NamedTuple):
@@ -2557,7 +2615,13 @@ class Text(NamedTuple):
             pen_y += run.dy
             # Fallback width estimation: ~0.5em per glyph
             approx_width = (0.5 * run.size + run.letter_spacing) * max(0, len(run.text))
-            positions.append((pen_x, pen_y, approx_width))
+            positions.append(
+                (
+                    pen_x,
+                    pen_y + _baseline_offset(run.dominant_baseline, run.size),
+                    approx_width,
+                )
+            )
             min_left = min(min_left, pen_x)
             max_right = max(max_right, pen_x + approx_width)
             pen_x += approx_width
@@ -2673,7 +2737,8 @@ class Text(NamedTuple):
             pen_y += run.dy
             min_x = min(min_x, pen_x)
             max_x = max(max_x, pen_x + width)
-            layout.append((pen_x, pen_y, width, run, font))
+            baseline_y = pen_y + _baseline_offset(run.dominant_baseline, run.size, font)
+            layout.append((pen_x, baseline_y, width, run, font))
             pen_x += width
 
         has_absolute = any(run.abs_x is not None for _, _, _, run, _ in layout)

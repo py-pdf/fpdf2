@@ -1411,6 +1411,169 @@ class TestSVGObject:
             pdf, GENERATED_PDF_DIR / "svg_rendering_image_over_page_break.pdf", tmp_path
         )
 
+    @pytest.mark.parametrize(
+        "text, baselines",
+        [
+            ('<text y="20">a</text>', ["20"]),
+            # as Mermaid centers its labels: the y is on the middle of the x-height
+            ('<text y="20" dominant-baseline="middle">a</text>', ["25.23"]),
+            ('<text y="20" style="dominant-baseline: middle">a</text>', ["25.23"]),
+            ('<g dominant-baseline="middle"><text y="20">a</text></g>', ["25.23"]),
+            ('<text y="20" dominant-baseline="central">a</text>', ["25.11"]),
+            ('<text y="20" dominant-baseline="hanging">a</text>', ["31.488"]),
+            ('<text y="20" dominant-baseline="text-after-edge">a</text>', ["15.86"]),
+            (
+                '<text y="20">a<tspan dominant-baseline="middle">b</tspan>c</text>',
+                ["20", "25.23", "20"],
+            ),
+            ('<text y="20" dominant-baseline="unknown">a</text>', ["20"]),
+            # inherit is the dominant-baseline of the parent
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="inherit">a</text></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" style="dominant-baseline: inherit">a</text></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<g dominant-baseline="middle"><g dominant-baseline="inherit">'
+                    '<text y="20" dominant-baseline="inherit">a</text></g></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<text y="20" dominant-baseline="middle">a'
+                    '<tspan dominant-baseline="inherit">b</tspan></text>'
+                ),
+                ["25.23", "25.23"],
+            ),
+            ('<text y="20" dominant-baseline="inherit">a</text>', ["20"]),
+            # unset is inherit, and an invalid value is ignored
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" style="dominant-baseline: unset">a</text></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="bogus">a</text></g>'
+                ),
+                ["25.23"],
+            ),
+            ('<text y="20" dominant-baseline="unset">a</text>', ["20"]),
+            # alphabetic and auto are values, which reset the baseline of the parent
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="alphabetic">a</text></g>'
+                ),
+                ["20"],
+            ),
+            (
+                (
+                    '<g dominant-baseline="middle">'
+                    '<text y="20" dominant-baseline="auto">a</text></g>'
+                ),
+                ["20"],
+            ),
+            # a <use> gives the text it draws its dominant-baseline
+            (
+                (
+                    '<defs><text id="l" y="20">a</text></defs>'
+                    '<g dominant-baseline="middle"><use href="#l"/></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<defs><text id="l" y="20">a</text></defs>'
+                    '<use href="#l" dominant-baseline="middle"/>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<defs><g id="l"><text y="20">a</text></g></defs>'
+                    '<g dominant-baseline="middle"><use href="#l"/></g>'
+                ),
+                ["25.23"],
+            ),
+            (
+                (
+                    '<defs><text id="l" y="20" dominant-baseline="central">a</text>'
+                    '</defs><g dominant-baseline="middle"><use href="#l"/></g>'
+                ),
+                ["25.11"],
+            ),
+            (
+                (
+                    '<defs><text id="l" y="20">a</text></defs>'
+                    '<g dominant-baseline="middle"><use href="#l" '
+                    'dominant-baseline="inherit"/></g>'
+                ),
+                ["25.23"],
+            ),
+        ],
+    )
+    def test_svg_text_dominant_baseline(self, text, baselines):
+        # with the metrics of Helvetica: x-height 523, ascender 718, descender -207
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40" '
+            f'font-family="helvetica" font-size="20">{text}</svg>'
+        ).draw_to_page(pdf)
+        output = bytes(pdf.output()).decode("latin-1")
+        assert re.findall(r"1 0 0 -1 [\d.]+ ([\d.]+) Tm", output) == baselines
+
+    @pytest.mark.parametrize(
+        "font_file, baseline",
+        [
+            # its x-height, 536 of 1000
+            ("NotoSans-Regular.ttf", "25.36"),
+            # without one in its OS/2 table, half its ascender, 928 of 1000
+            ("DejaVuSans.ttf", "24.64"),
+        ],
+    )
+    def test_svg_text_dominant_baseline_ttf_font(self, font_file, baseline):
+        pdf = fpdf.FPDF()
+        pdf.compress = False
+        pdf.add_page()
+        pdf.add_font(family="custom", fname=HERE.parent / "fonts" / font_file)
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40" '
+            'font-family="custom" font-size="20">'
+            '<text y="20" dominant-baseline="middle">a</text></svg>'
+        ).draw_to_page(pdf)
+        assert f"1 0 0 -1 0 {baseline} Tm" in bytes(pdf.output()).decode("latin-1")
+
+    def test_svg_text_dominant_baseline_bounding_box(self):
+        text = fpdf.drawing.Text(
+            0,
+            10,
+            (
+                fpdf.drawing.TextRun(
+                    "a", "helvetica", "", 10, dominant_baseline="middle"
+                ),
+            ),
+        )
+        bbox, _ = text.bounding_box(fpdf.drawing.Point(0, 0))
+        # estimated with an x-height of half an em, 2.5 lower
+        assert (bbox.y0, bbox.y1) == pytest.approx((10 + 2.5 - 8, 10 + 2.5 + 2))
+
     def test_svg_text_ttf_font(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.add_page()
