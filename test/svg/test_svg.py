@@ -2253,6 +2253,136 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
 
 
 @pytest.mark.parametrize(
+    "element, width",
+    [
+        ('<rect {R} font-size="20" stroke="red" stroke-width="1.5em"/>', b"/LW 30"),
+        ('<rect {R} font-size="20" stroke="red" stroke-width="2ex"/>', b"/LW 20"),
+        (
+            '<rect {R} font-size="20" style="stroke:red;stroke-width:1.5em"/>',
+            b"/LW 30",
+        ),
+        (
+            (
+                "<style>.c{stroke:red;stroke-width:1.5em}</style>"
+                '<rect {R} font-size="20" class="c"/>'
+            ),
+            b"/LW 30",
+        ),
+        (
+            '<g font-size="10"><rect {R} stroke="red" stroke-width="2em"/></g>',
+            b"/LW 20",
+        ),
+        # the font size is 16px, which is 12pt in fpdf2, if no element sets one
+        ('<rect {R} stroke="red" stroke-width="1em"/>', b"/LW 12"),
+        (
+            '<path d="M10 10h80" font-size="20" stroke="red" stroke-width="1.5em"/>',
+            b"/LW 30",
+        ),
+        (
+            '<polyline points="10,10 90,90" font-size="20" stroke="red" stroke-width="1.5em"/>',
+            b"/LW 30",
+        ),
+        (
+            '<polygon points="10,10 90,10 50,90" font-size="20" stroke="red" stroke-width="1.5em"/>',
+            b"/LW 30",
+        ),
+        (
+            '<switch font-size="20"><rect {R} stroke="red" stroke-width="1.5em"/></switch>',
+            b"/LW 30",
+        ),
+        (
+            '<text x="10" y="50" font-size="20" stroke="red" stroke-width="0.1em">Hi</text>',
+            b"/LW 2",
+        ),
+        # computed where it is declared, then inherited: the nested font size is not used
+        (
+            (
+                '<g style="font-size:10;stroke:red;stroke-width:2em">'
+                '<g font-size="40"><rect {R}/></g></g>'
+            ),
+            b"/LW 20",
+        ),
+        (
+            (
+                "<style>.c{font-size:10;stroke:red;stroke-width:2em}</style>"
+                '<g class="c"><g font-size="40"><rect {R}/></g></g>'
+            ),
+            b"/LW 20",
+        ),
+        (
+            (
+                '<g style="font-size:10;stroke:red;stroke-width:2em">'
+                '<switch><g font-size="40"><rect {R}/></g></switch></g>'
+            ),
+            b"/LW 20",
+        ),
+        # relative to the font size of the <use>, for a path, and for a rectangle
+        (
+            (
+                '<defs><path id="u" d="M10 10h80" stroke="red" stroke-width="2em"/>'
+                '</defs><use href="#u" font-size="40"/>'
+            ),
+            b"/LW 80",
+        ),
+        (
+            (
+                '<defs><rect id="u" {R} style="stroke:red;stroke-width:2em"/></defs>'
+                '<use href="#u" font-size="40"/>'
+            ),
+            b"/LW 80",
+        ),
+        # inherited by the content of a pattern from the <defs> that declares it
+        (
+            (
+                '<defs stroke="red" stroke-width="2em" font-size="4">'
+                '<pattern id="p" width="10" height="10" patternUnits="userSpaceOnUse">'
+                '<rect width="5" height="5" fill="none"/></pattern></defs>'
+                '<rect x="10" y="10" width="20" height="20" fill="url(#p)"/>'
+            ),
+            b"/LW 8",
+        ),
+        # computed where it is declared, then inherited: not 2em of the child's 40
+        (
+            '<g font-size="10" stroke="red" stroke-width="2em"><rect {R} font-size="40"/></g>',
+            b"/LW 20",
+        ),
+    ],
+    ids=(
+        "attribute em",
+        "attribute ex",
+        "style em",
+        "class em",
+        "font size of the group",
+        "default font size",
+        "path",
+        "polyline",
+        "polygon",
+        "switch",
+        "text",
+        "nested group",
+        "nested class",
+        "nested switch",
+        "use of a path",
+        "use of a rectangle",
+        "pattern",
+        "computed where declared",
+    ),
+)
+def test_svg_stroke_width_in_em_and_ex(element, width):
+    # An em or ex stroke-width used to fail with:
+    # ValueError: 1.5em uses unsupported relative length em
+    rect = 'x="10" y="10" width="80" height="80" fill="none"'
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" '
+        f'viewBox="0 0 100 100">{element.replace("{R}", rect)}</svg>'
+    )
+    pdf = fpdf.FPDF(unit="pt", format=(100, 100))
+    pdf.add_page()
+    pdf.image(BytesIO(svg.encode()), x=0, y=0, w=100, h=100)
+    assert width in bytes(pdf.output())
+
+
+@pytest.mark.parametrize(
     "keyword, font, size",
     [
         # inherit, and unset as the font is inherited, are the font of the parent
