@@ -12,6 +12,7 @@ import zlib
 from dataclasses import dataclass
 from io import BytesIO
 from math import ceil
+from os import name as os_name
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -160,20 +161,19 @@ def _validate_resource_access(
     filename: Any,
     resource_access_policy: ResourceAccessPolicy,
 ) -> None:
-    if isinstance(filename, Path):
-        if ResourceAccessPolicy.LOCAL_FILES not in resource_access_policy:
-            raise FPDFResourceAccessError(
-                "Local file access is disabled by resource_access_policy: "
-                f"{filename!r}"
-            )
+    if not isinstance(filename, (str, Path)):
         return
-    if not isinstance(filename, str):
-        return
-    if filename.startswith("data:"):
-        return
-    if filename.startswith(("http://", "https://")):
-        _validate_remote_url_access(filename, resource_access_policy)
-        return
+    if os_name == "nt" and str(filename).replace("/", "\\").startswith("\\\\"):
+        # Windows can resolve UNC and device paths through the OS file APIs.
+        raise FPDFResourceAccessError(
+            f"Windows UNC and device paths are unsupported: {filename!r}"
+        )
+    if isinstance(filename, str):
+        if filename.startswith("data:"):
+            return
+        if filename.startswith(("http://", "https://")):
+            _validate_remote_url_access(filename, resource_access_policy)
+            return
     if ResourceAccessPolicy.LOCAL_FILES not in resource_access_policy:
         raise FPDFResourceAccessError(
             f"Local file access is disabled by resource_access_policy: {filename!r}"
@@ -383,19 +383,14 @@ def preload_image(
     Returns: A tuple, consisting of 3 values: the name, the image data,
         and an instance of a subclass of `ImageInfo`.
     """
+    _validate_resource_access(name, resource_access_policy)
     if isinstance(name, Path):
-        if ResourceAccessPolicy.LOCAL_FILES not in resource_access_policy:
-            raise FPDFResourceAccessError(
-                "Local file access is disabled by resource_access_policy: " f"{name!r}"
-            )
         name = str(name)
         if not name.endswith(".svg"):
             info = image_cache.images.get(name)
             if info is not None:
                 info["usages"] = info["usages"] + 1  # type: ignore[operator]
                 return name, None, info
-    else:
-        _validate_resource_access(name, resource_access_policy)
 
     # Identify and load SVG data:
     if isinstance(name, str) and (name.endswith(".svg") or _is_svg_data_uri(name)):

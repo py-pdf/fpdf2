@@ -184,6 +184,68 @@ def test_load_image_blocks_local_files_by_policy():
         )
 
 
+@pytest.fixture
+def windows_file_access(monkeypatch):
+    monkeypatch.setattr(fpdf.image_parsing, "os_name", "nt")
+
+    def unexpected_open(*_args, **_kwargs):
+        pytest.fail("The resource policy must reject the path before opening it")
+
+    monkeypatch.setattr(fpdf.image_parsing, "open", unexpected_open, raising=False)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        r"\\example.invalid\share\image.png",
+        "//example.invalid/share/image.png",
+        r"\\?\UNC\example.invalid\share\image.png",
+        Path("//example.invalid/share/image.png"),
+    ],
+)
+@pytest.mark.parametrize(
+    "policy", [fpdf.ResourceAccessPolicy.DEFAULT, fpdf.ResourceAccessPolicy.ALL]
+)
+@pytest.mark.usefixtures("windows_file_access")
+def test_reject_windows_network_image_paths(path, policy):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.resource_access_policy = policy
+    with pytest.raises(
+        fpdf.FPDFResourceAccessError, match="Windows UNC and device paths"
+    ):
+        pdf.image(path)
+    with pytest.raises(
+        fpdf.FPDFResourceAccessError, match="Windows UNC and device paths"
+    ):
+        fpdf.image_parsing.load_image(path, resource_access_policy=policy)
+
+
+@pytest.mark.usefixtures("windows_file_access")
+def test_reject_windows_network_html_image():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(
+        fpdf.FPDFResourceAccessError, match="Windows UNC and device paths"
+    ):
+        pdf.write_html('<img src="//example.invalid/share/image.png">')
+
+
+@pytest.mark.usefixtures("windows_file_access")
+def test_reject_windows_network_svg_image():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    svg = b"""
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10">
+      <image href="//example.invalid/share/image.png" width="10" height="10"/>
+    </svg>
+    """
+    with pytest.raises(
+        fpdf.FPDFResourceAccessError, match="Windows UNC and device paths"
+    ):
+        pdf.image(svg)
+
+
 def test_load_image_allows_public_remote_by_default():
     opener = MockOpener(PNG_BYTES)
     with (

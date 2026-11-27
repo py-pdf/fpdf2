@@ -132,6 +132,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Add image validation to properly reject EPS images.
 * Count newly rendered SVG pattern tiles toward the SVG complexity limit.
 * `FPDF.add_link()` and `FPDF.set_link()` now require a finite numeric `zoom` or the default `"null"` value, preventing invalid zoom strings from altering the generated PDF structure.
+* Reject Windows UNC and device paths when loading images, including images referenced from HTML and SVG, to prevent a resource access policy bypass.
 
 ## [2.9.0] - 2026-10-29
 ### Added
