@@ -119,6 +119,11 @@ jobs:
         run: |
           choco install qpdf -y
           qpdf --version
+      - name: Install qpdf on macOS
+        if: startsWith(matrix.platform, 'macos')
+        run: |
+          brew install qpdf
+          qpdf --version
       - name: Install Python dependencies ⚙️
         shell: bash
         run: |

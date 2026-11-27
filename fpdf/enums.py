@@ -1001,6 +1001,50 @@ class CellFillProtocol(Protocol):
 TableCellFillModeType: TypeAlias = "TableCellFillMode | CellFillProtocol"
 
 
+# The built-in fill modes must keep the (i, j) signature of CellFillProtocol,
+# even when they only depend on one of those indices:
+# pylint: disable=unused-argument
+
+
+class _NoCellFill:
+    @staticmethod
+    def should_fill_cell(i: int, j: int) -> bool:
+        return False
+
+
+class _AllCellsFill:
+    @staticmethod
+    def should_fill_cell(i: int, j: int) -> bool:
+        return True
+
+
+class _OddRowsFill:
+    @staticmethod
+    def should_fill_cell(i: int, j: int) -> bool:
+        return i % 2 == 1
+
+
+class _OddColumnsFill:
+    @staticmethod
+    def should_fill_cell(i: int, j: int) -> bool:
+        return j % 2 == 1
+
+
+class _EvenRowsFill:
+    @staticmethod
+    def should_fill_cell(i: int, j: int) -> bool:
+        return i % 2 == 0
+
+
+class _EvenColumnsFill:
+    @staticmethod
+    def should_fill_cell(i: int, j: int) -> bool:
+        return j % 2 == 0
+
+
+# pylint: enable=unused-argument
+
+
 class TableCellFillMode(CoerciveEnum):
     "Defines which table cells to fill"
 
@@ -1033,19 +1077,19 @@ class TableCellFillMode(CoerciveEnum):
         return super().coerce(value, case_sensitive)  # type: ignore[arg-type] # pyright: ignore[reportArgumentType]
 
     def should_fill_cell(self, i: int, j: int) -> bool:
-        if self is TableCellFillMode.NONE:
-            return False
-        if self is TableCellFillMode.ALL:
-            return True
-        if self is TableCellFillMode.ROWS:
-            return i % 2 == 1
-        if self is TableCellFillMode.COLUMNS:
-            return j % 2 == 1
-        if self is TableCellFillMode.EVEN_ROWS:
-            return i % 2 == 0
-        if self is TableCellFillMode.EVEN_COLUMNS:
-            return j % 2 == 0
-        raise NotImplementedError
+        return _CELL_FILL_STRATEGIES[self].should_fill_cell(i, j)
+
+
+# Each built-in fill mode is implemented by the same CellFillProtocol
+# that custom fill modes implement:
+_CELL_FILL_STRATEGIES: dict[TableCellFillMode, CellFillProtocol] = {
+    TableCellFillMode.NONE: _NoCellFill(),
+    TableCellFillMode.ALL: _AllCellsFill(),
+    TableCellFillMode.ROWS: _OddRowsFill(),
+    TableCellFillMode.COLUMNS: _OddColumnsFill(),
+    TableCellFillMode.EVEN_ROWS: _EvenRowsFill(),
+    TableCellFillMode.EVEN_COLUMNS: _EvenColumnsFill(),
+}
 
 
 class TableSpan(CoerciveEnum):

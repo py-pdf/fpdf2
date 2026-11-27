@@ -2253,6 +2253,40 @@ def test_svg_percentage_size_in_the_units_of_the_document(unit):
 
 
 @pytest.mark.parametrize(
+    "keyword, font, size",
+    [
+        # inherit, and unset as the font is inherited, are the font of the parent
+        ("inherit", "Courier", "20"),
+        ("unset", "Courier", "20"),
+        # initial is the default font family, and the medium font size, 16px
+        ("initial", "Helvetica", "12"),
+    ],
+)
+@pytest.mark.parametrize(
+    "text", ['<text y="20" {}>b</text>', '<text y="20">a<tspan {}>b</tspan></text>']
+)
+@pytest.mark.parametrize(
+    "declaration",
+    ['font-family="{0}" font-size="{0}"', 'style="font-family: {0}; font-size: {0}"'],
+)
+def test_svg_font_family_and_size_css_wide_keywords(
+    keyword, font, size, text, declaration
+):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40">'
+        '<g font-family="courier" font-size="20">'
+        f"{text.format(declaration.format(keyword))}</g></svg>"
+    ).draw_to_page(pdf)
+    output = bytes(pdf.output()).decode("latin-1")
+    # the last text drawn is the one with the keyword
+    assert re.findall(r"/BaseFont /(\w+)", output)[-1] == font
+    assert re.findall(r"/F\d+ ([\d.]+) Tf", output)[-1] == size
+
+
+@pytest.mark.parametrize(
     "attributes",
     [
         'opacity="inherit"',
