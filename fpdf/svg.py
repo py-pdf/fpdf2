@@ -189,7 +189,7 @@ class SVGLimits:
     "Maximum depth allowed while resolving nested SVG <use> references."
 
     max_resolved_elements: int | None = 100_000
-    "Maximum number of elements allowed after resolving SVG control flow."
+    "Maximum number of elements allowed after resolving SVG control flow and instantiating pattern tiles."
 
     def __post_init__(self) -> None:
         self._validate_limit("max_use_depth", self.max_use_depth)
@@ -807,11 +807,17 @@ class SVGPatternPaint(PatternPaint):
     local_bbox = True
 
     def __init__(  # pylint: disable=super-init-not-called
-        self, group: GraphicsContext, attributes: dict[str, str], svg: "SVGObject"
+        self,
+        group: GraphicsContext,
+        attributes: dict[str, str],
+        svg: "SVGObject",
+        record_resolved_elements: Callable[[int], None],
     ) -> None:
         # SVG definitions bind to a document only when _tile_for() creates a tile.
         self._colored = True
         self.group = group
+        self._tile_cost = _resolved_element_cost(group)
+        self._record_resolved_elements = record_resolved_elements
         self.attributes = attributes
         self.svg = svg
         self.units = GradientUnits.coerce(
@@ -910,6 +916,8 @@ class SVGPatternPaint(PatternPaint):
             @ unit_matrix
             @ self.svg_transform
         )
+        # Charge before cloning and rendering the resolved pattern contents.
+        self._record_resolved_elements(self._tile_cost)
         tile = PatternPaint(catalog, width, height, width, height, matrix)
         wrapper = GraphicsContext()
         wrapper.transform = content_matrix
@@ -2675,7 +2683,9 @@ class SVGObject:
                     )
                 },
             )
-            paint = SVGPatternPaint(group, dict(element.attrib), self)
+            paint = SVGPatternPaint(
+                group, dict(element.attrib), self, self._record_resolved_elements
+            )
             self.pattern_definitions[pattern_id] = paint
             return deepcopy(paint)
         finally:

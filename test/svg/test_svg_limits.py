@@ -97,6 +97,38 @@ def test_image_uses_svg_resolved_element_limit() -> None:
         pdf.image(_nested_use_svg(level=2, fanout=4), w=10)
 
 
+@pytest.mark.parametrize(
+    "second_x, limit, rejected",
+    [(0, 9, False), (2, 9, True), (2, 12, False), (2, None, False)],
+)
+def test_image_counts_new_svg_pattern_tiles(
+    second_x: int, limit: int | None, rejected: bool
+) -> None:
+    svg = f"""
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 2">
+      <defs>
+        <pattern id="p" width=".5" height=".5" patternContentUnits="objectBoundingBox">
+          <rect width=".25" height=".25"/>
+          <rect x=".25" width=".25" height=".25"/>
+        </pattern>
+      </defs>
+      <rect width="2" height="2" fill="url(#p)"/>
+      <rect x="{second_x}" width="2" height="2" fill="url(#p)"/>
+    </svg>
+    """.encode()
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.svg_limits = SVGLimits(max_resolved_elements=limit)
+
+    # Conversion uses six elements. Each new tile adds its group and two shapes.
+    if rejected:
+        with pytest.raises(FPDFSvgLimitExceeded, match="max_resolved_elements"):
+            pdf.image(svg, w=10)
+    else:
+        pdf.image(svg, w=10)
+        assert pdf.output()
+
+
 def test_image_preserves_limit_exception(tmp_path: Path) -> None:
     svg_file = tmp_path / "heavy.svg"
     svg_file.write_bytes(_nested_use_svg(level=2, fanout=4))
