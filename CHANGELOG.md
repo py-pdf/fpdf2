@@ -130,6 +130,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.rect_clip()`, `FPDF.elliptic_clip()` and `FPDF.round_clip()` raise a clear `ValueError` for NaN or infinite coordinates or dimensions, instead of writing them into the page, which is not a valid PDF number - thanks to @agustin18
 * `FPDF.image()` raises a clear `ValueError` for a NaN or infinite `x`, `y`, `w` or `h`, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
 * Add image validation to properly reject EPS images.
+* Count newly rendered SVG pattern tiles toward the SVG complexity limit.
 
 ## [2.9.0] - 2026-10-29
 ### Added
