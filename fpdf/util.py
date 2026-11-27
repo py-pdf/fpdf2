@@ -71,7 +71,7 @@ absolute_length_units = {
     "pc": 12.0,  # (pica, 12 pt)
     "px": 0.75,  # (reference pixel unit, 0.75 pt)
     # CSS 3
-    "Q": 72.0 / 101.6,  # (quarter-millimeter, 72 / 101.6 pt)
+    "q": 72.0 / 101.6,  # (quarter-millimeter, 72 / 101.6 pt)
 }
 
 
@@ -81,8 +81,8 @@ def resolve_length(length_str: str, default_unit: str = "pt") -> float:
     if match is None:
         raise ValueError(f"Unable to parse '{length_str}' as a length") from None
     value, unit = match.groups()
-    if not unit:
-        unit = default_unit
+    # units are ASCII case-insensitive in CSS: 10PX is 10px
+    unit = unit.lower() or default_unit
 
     try:
         return float(value) * absolute_length_units[unit]

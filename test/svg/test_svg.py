@@ -85,6 +85,43 @@ class TestUnits:
         with pytest.raises(ValueError):
             fpdf.svg.resolve_angle("1 fake")
 
+    @pytest.mark.parametrize("angle", ["a", "", "deg"])
+    def test_resolve_angle_without_a_number(self, angle):
+        with pytest.raises(ValueError, match="as an angle"):
+            fpdf.svg.resolve_angle(angle)
+
+    @pytest.mark.parametrize(
+        "unit, lowercase",
+        [("DEG", "deg"), ("Rad", "rad"), ("TURN", "turn"), ("Grad", "grad")],
+    )
+    def test_resolve_angle_units_are_case_insensitive(self, unit, lowercase):
+        assert fpdf.svg.resolve_angle(f"45{unit}") == fpdf.svg.resolve_angle(
+            f"45{lowercase}"
+        )
+
+    @pytest.mark.parametrize(
+        "unit", ["PX", "Pt", "IN", "CM", "MM", "PC", "Q", "q", "Px"]
+    )
+    def test_resolve_length_units_are_case_insensitive(self, unit):
+        assert fpdf.svg.resolve_length(f"10{unit}") == fpdf.svg.resolve_length(
+            f"10{unit.lower()}"
+        )
+
+    def test_svg_lengths_in_uppercase_units(self):
+        # the units of CSS are case-insensitive, also those relative to the font size
+        def draw(width, height):
+            svg = fpdf.svg.SVGObject(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+                f'<g font-size="10px"><rect width="{width}" height="{height}"/></g>'
+                "</svg>"
+            )
+            rect = svg.base_group.path_items[0].path_items[0]
+            return rect.bounding_box(fpdf.drawing.Point(0, 0))[0]
+
+        assert draw("10PX", "2EM") == draw("10px", "2em")
+        assert draw("10PX", "3EX") == draw("10px", "3ex")
+        assert draw("1IN", "2.54CM") == draw("1in", "2.54cm")
+
     @pytest.mark.parametrize(
         "name", [pytest.param(name, id=name) for name in fpdf.svg.angle_units]
     )
