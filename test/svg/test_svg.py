@@ -1362,6 +1362,121 @@ class TestSVGObject:
         assert path.style.stroke_join_style == fpdf.enums.StrokeJoinStyle.ROUND
         assert path.style.stroke_cap_style == fpdf.enums.StrokeCapStyle.BUTT
 
+    @pytest.mark.parametrize(
+        "css, fill",
+        [
+            # as Mermaid writes the style of a flowchart
+            ("#m .node rect { fill: red }", "#f00"),
+            ("#r { fill: red }", "#f00"),
+            ("rect#r.a { fill: red }", "#f00"),
+            (".node .a { fill: red }", "#f00"),
+            ("g.node > rect { fill: red }", "#f00"),
+            ("svg > rect { fill: red }", None),
+            ("#m .a.b { fill: red }", None),
+            # a rule with a selector that is not supported is ignored
+            ("rect:first-child { fill: red }", None),
+            ("rect[x] { fill: red }", None),
+            ("g + rect { fill: red }", None),
+            ("> rect { fill: red }", None),
+            ("rect > { fill: red }", None),
+            ("g > > rect { fill: red }", None),
+            ("g >> rect { fill: red }", None),
+            ("g " * 32 + "rect { fill: red }", None),
+            # the ancestors are looked up to the root
+            ("#m rect { fill: red }", "#f00"),
+            (".other rect { fill: red }", None),
+            ("g svg { fill: red }", None),
+            # by specificity, then in order
+            ("g rect { fill: red } .a { fill: blue }", "#00f"),
+            ("#m rect { fill: red } .node .a { fill: blue }", "#f00"),
+            ("g .a { fill: blue } svg .a { fill: red }", "#f00"),
+            ("#r { fill: red } rect { fill: blue !important }", "#00f"),
+            ("*.a { fill: red } .a { fill: blue }", "#00f"),
+            (".a { fill: blue } *.a { fill: red }", "#f00"),
+            ("* { fill: blue } rect { fill: red }", "#f00"),
+            # a repeated class counts each time
+            (".a.a { fill: red } *.a { fill: blue }", "#f00"),
+        ],
+    )
+    def test_svg_css_selectors_with_ids_and_combinators(self, css, fill):
+        svg = fpdf.svg.SVGObject(
+            f'<svg xmlns="http://www.w3.org/2000/svg" id="m"><style>{css}</style>'
+            '<g class="node"><rect id="r" class="a" width="10" height="10"/></g></svg>'
+        )
+        rect = svg.base_group.path_items[0].path_items[0]
+        expected = fpdf.drawing.color_from_hex_string(fill) if fill else None
+        assert rect.style.fill_color == (expected or fpdf.drawing.GraphicsStyle.INHERIT)
+
+    @pytest.mark.parametrize(
+        "css, pattern, lime",
+        [
+            # the contents of a <pattern> have the ancestors of the pattern too
+            ("pattern rect", '<rect width="5" height="5"/>', True),
+            ("#p rect", '<rect width="5" height="5"/>', True),
+            ("pattern > rect", '<rect width="5" height="5"/>', True),
+            ("g > rect", '<g><rect width="5" height="5"/></g>', True),
+            ("svg pattern > g rect", '<g><rect width="5" height="5"/></g>', True),
+            ("rect.a", '<rect class="a" width="5" height="5"/>', True),
+            # and only the ancestors that they have
+            ("g > rect", '<rect width="5" height="5"/>', False),
+            ("defs rect", '<rect width="5" height="5"/>', False),
+        ],
+    )
+    def test_svg_css_selectors_with_ancestors_in_a_pattern(self, css, pattern, lime):
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'
+            f"<style>{css} {{ fill: lime }}</style>"
+            f'<pattern id="p" width="10" height="10" patternUnits="userSpaceOnUse">'
+            f'{pattern}</pattern><rect width="10" height="10" fill="url(#p)"/></svg>'
+        ).draw_to_page(pdf)
+        streams = re.findall(
+            rb"/FlateDecode.*?stream\r?\n(.*?)\r?\nendstream", bytes(pdf.output()), re.S
+        )
+        tile = b"".join(zlib.decompress(stream) for stream in streams)
+        assert (b"0 1 0 rg" in tile) == lime
+
+    def test_svg_css_selectors_with_ancestors_in_a_pattern_with_href(self):
+        # the contents of a pattern that refers to another are those of the template
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg" '
+            'xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10">'
+            "<style>pattern rect { fill: lime }</style>"
+            '<pattern id="t" width="10" height="10" patternUnits="userSpaceOnUse">'
+            '<rect width="5" height="5"/></pattern>'
+            '<pattern id="p" xlink:href="#t"/>'
+            '<rect width="10" height="10" fill="url(#p)"/></svg>'
+        ).draw_to_page(pdf)
+        streams = re.findall(
+            rb"/FlateDecode.*?stream\r?\n(.*?)\r?\nendstream", bytes(pdf.output()), re.S
+        )
+        assert b"0 1 0 rg" in b"".join(zlib.decompress(stream) for stream in streams)
+
+    def test_svg_css_descendant_selectors_linear_time(self):
+        # what is known of each element is kept, so a long selector over deeply
+        # nested elements is matched quickly
+        depth = 100
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>'
+            f"{'g ' * 31}rect {{ fill: red }} {'g > ' * 31}rect {{ stroke: red }}"
+            "svg rect { stroke-width: 3 }"
+            "</style>"
+            + '<g class="x">' * depth
+            + '<rect width="1" height="1"/>' * 100
+            + "</g>" * depth
+            + "</svg>"
+        )
+        group = svg.base_group
+        while not isinstance(group.path_items[0], fpdf.drawing.PaintedPath):
+            group = group.path_items[0]
+        red = fpdf.drawing.color_from_hex_string("#f00")
+        assert all(rect.style.fill_color == red for rect in group.path_items)
+        assert all(rect.style.stroke_color == red for rect in group.path_items)
+        assert all(rect.style.stroke_width == 3 for rect in group.path_items)
+
     def test_svg_switch_uses_the_first_unconditional_child(self):
         svg_data = """
             <svg xmlns="http://www.w3.org/2000/svg">
