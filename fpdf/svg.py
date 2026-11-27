@@ -612,7 +612,36 @@ def svg_paint(colorstr: Optional[str]) -> Any:
         return None
     if colorstr and colorstr.strip().lower() == "transparent":
         return None
+    if colorstr and colorstr.strip().lower() in ("context-fill", "context-stroke"):
+        # The paint of the context element, as in the icons of Firefox. A <use>
+        # replaces it with its own paint, see SVGObject._context_paints; outside a
+        # <use>, the context is the document drawing the SVG, so it is inherited, as
+        # from the color set on the FPDF
+        return GraphicsStyle.INHERIT
     return optional(colorstr, svgcolor)
+
+
+@force_nodocument
+def svg_opacity(opacitystr: str) -> Any:
+    """A fill-opacity or stroke-opacity, which can be that of the context element."""
+    if opacitystr.strip().lower() in ("context-fill-opacity", "context-stroke-opacity"):
+        return GraphicsStyle.INHERIT
+    return clamp_float(0.0, 1.0)(opacitystr)
+
+
+# the context paints that each property can take, and the property of the <use> they are
+_CONTEXT_PAINT_KEYWORDS = {
+    "fill": {"context-fill": "fill", "context-stroke": "stroke"},
+    "stroke": {"context-fill": "fill", "context-stroke": "stroke"},
+    "fill-opacity": {
+        "context-fill-opacity": "fill-opacity",
+        "context-stroke-opacity": "stroke-opacity",
+    },
+    "stroke-opacity": {
+        "context-fill-opacity": "fill-opacity",
+        "context-stroke-opacity": "stroke-opacity",
+    },
+}
 
 
 @force_nodocument
@@ -639,7 +668,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#FillOpacityProperty
     "fill-opacity": lambda filopstr: (
         "fill_opacity",
-        inheritable(filopstr, clamp_float(0.0, 1.0)),
+        inheritable(filopstr, svg_opacity),
     ),
     # https://www.w3.org/TR/SVG11/painting.html#StrokeProperty
     "stroke": lambda colorstr: ("stroke_color", svg_paint(colorstr)),
@@ -674,7 +703,7 @@ svg_attr_map: dict[str, Any] = {
     # https://www.w3.org/TR/SVG11/painting.html#StrokeOpacityProperty
     "stroke-opacity": lambda stropstr: (
         "stroke_opacity",
-        inheritable(stropstr, clamp_float(0.0, 1.0)),
+        inheritable(stropstr, svg_opacity),
     ),
 }
 
@@ -2001,6 +2030,10 @@ class SVGObject:
             if element.tag in xmlns_lookup("svg", "linearGradient", "radialGradient")
             and element.attrib.get("id")
         }
+        # the element each <use> being built draws, with the fill, stroke and their
+        # opacities of the <use>, for the context-fill and context-stroke in it
+        self._context_paints: list[tuple["Element", dict[str, Optional[str]]]] = []
+        self._context_paint_cache: dict["Element", bool] = {}
         self._em_lengths_cache: dict["Element", bool] = {}
         # the gradients already parsed when a url() referenced them
         self._looked_up_gradients: set[str] = set()
@@ -2203,7 +2236,9 @@ class SVGObject:
         display = _get_attr_or_style(tag, "display", self._style_map_for(tag))
         return display is not None and display.strip().lower() == "none"
 
-    def _style_map_for(self, tag: "Element") -> dict[str, Any]:
+    def _style_map_for(
+        self, tag: "Element", resolve_context: bool = True
+    ) -> dict[str, Any]:
         style_map: dict[str, Any] = {}
         # an !important declaration of a stylesheet wins over a normal inline one
         important: set[str] = set()
@@ -2254,6 +2289,13 @@ class SVGObject:
                 norm_value = _normalize_css_value(tag.attrib.get(attr))
                 if norm_value is not None:
                     style_map.setdefault(attr, norm_value)
+        if resolve_context and self._context_paints:
+            context = self._context_paints[-1][1]
+            for attr, keywords in _CONTEXT_PAINT_KEYWORDS.items():
+                paint = style_map.get(attr, tag.attrib.get(attr))
+                source = keywords.get(str(paint).strip().lower())
+                if source is not None and context[source] is not None:
+                    style_map[attr] = context[source]
         return style_map
 
     @force_nodocument
@@ -3120,7 +3162,10 @@ class SVGObject:
             return pdf_group
         self._record_resolved_elements(1 + referenced_cost)
         element = self._elements_by_id.get(ref)
-        if element is not None and self._has_em_lengths(element):
+        uses_context_paint = element is not None and self._uses_context_paint(element)
+        if element is not None and (
+            uses_context_paint or self._has_em_lengths(element)
+        ):
             # the em and ex of the referenced shapes are relative to the font size
             # that the <use> gives them, as its copy inherits from it
             use_style = {**(inherited_style or {}), **style_map}
@@ -3128,7 +3173,12 @@ class SVGObject:
             font_style = {}
             if "font-size" in use_style:
                 font_style["font-size"] = use_style["font-size"]
-            referenced = self._rebuild_for_use(ref, element, font_style)
+            context = (
+                self._context_paints_of_use(xref, style_map, inherited_style)
+                if uses_context_paint
+                else None
+            )
+            referenced = self._rebuild_for_use(ref, element, font_style, context)
         else:
             referenced = deepcopy(referenced)
         pattern_paints: dict[str, Optional[SVGPatternPaint]] = {}
@@ -3179,6 +3229,79 @@ class SVGObject:
         self.update_xref(xref.attrib.get("id"), pdf_group)
         return pdf_group
 
+    def _uses_context_paint(self, element: "Element") -> bool:
+        """
+        Whether an element or one of its descendants paints with context-fill & co,
+        also through the elements a <use> in it draws (a cycle of <use> was refused
+        by _check_svg_limits()). The result of each element is kept, so that elements
+        drawn by many <use>, also in a <switch> that is not drawn, are read once.
+        """
+        if element not in self._context_paint_cache:
+            found = False
+            for descendant in element.iter():
+                # the styles as written, not with the context paints of an outer <use>
+                styles = self._style_map_for(descendant, resolve_context=False)
+                if any(
+                    str(value).strip().lower().startswith("context-")
+                    for attr in _CONTEXT_PAINT_KEYWORDS
+                    for value in (styles.get(attr), descendant.attrib.get(attr))
+                ):
+                    found = True
+                elif descendant.tag in xmlns_lookup("svg", "use"):
+                    ref = next(
+                        (
+                            descendant.attrib[key]
+                            for key in xmlns_lookup("xlink", "href")
+                            if key in descendant.attrib
+                        ),
+                        None,
+                    )
+                    referenced = self._elements_by_id.get(ref) if ref else None
+                    found = referenced is not None and self._uses_context_paint(
+                        referenced
+                    )
+                if found:
+                    break
+            self._context_paint_cache[element] = found
+        return self._context_paint_cache[element]
+
+    def _context_paints_of_use(
+        self,
+        xref: "Element",
+        style_map: dict[str, Any],
+        inherited_style: Optional[dict[str, Any]],
+    ) -> dict[str, Optional[str]]:
+        """
+        The fill, stroke and their opacities of a <use>, for the context-fill,
+        context-stroke and their opacities of the element it draws.
+        """
+        # a <use> drawn by another <use> inherits from it, past the element it draws
+        enclosing_element, enclosing_context = (
+            self._context_paints[-1] if self._context_paints else (None, {})
+        )
+        context: dict[str, Optional[str]] = {}
+        for attr in ("fill", "stroke", "fill-opacity", "stroke-opacity"):
+            value = _get_attr_or_style(xref, attr, style_map)
+            # else inherited, also as a presentation attribute of an ancestor
+            node: Optional["Element"] = xref
+            while value in (None, "inherit") and node is not None:
+                if node is enclosing_element:
+                    value = enclosing_context[attr]
+                    break
+                node = self._pattern_parents.get(node)
+                if node is not None:
+                    value = _get_attr_or_style(node, attr, self._style_map_for(node))
+            if value in (None, "inherit"):
+                value = (inherited_style or {}).get(attr)
+            if value is None:
+                # not set on the <use> or anywhere above it: the initial value
+                value = {"fill": "black", "stroke": "none"}.get(attr, "1")
+            elif _is_current_color(value):
+                # the color of the <use>, not the one of the element it draws
+                value = _current_color(style_map, inherited_style) or value
+            context[attr] = value
+        return context
+
     def _has_em_lengths(self, element: "Element") -> bool:
         """
         Whether an element, or what it draws, also through a <use>, has a shape with a
@@ -3215,20 +3338,33 @@ class SVGObject:
         return self._em_lengths_cache[element]
 
     def _rebuild_for_use(
-        self, ref: str, element: "Element", font_style: dict[str, Any]
+        self,
+        ref: str,
+        element: "Element",
+        font_style: dict[str, Any],
+        context: Optional[dict[str, Optional[str]]] = None,
     ) -> Any:
-        """Build the element a <use> draws again, with the font size of the <use>."""
+        """
+        Build the element a <use> draws again, with the font size of the <use>, and
+        its context-fill, context-stroke and their opacities replaced by those of the
+        <use> when given.
+        """
         ids = ["#" + e.attrib["id"] for e in element.iter() if e.attrib.get("id")]
         saved = [
             (key, self.cross_references[key], self._cross_reference_costs[key])
             for key in ids
             if key in self.cross_references
         ]
+        if context is not None:
+            self._context_paints.append((element, context))
         try:
             self._build_group_child(GraphicsContext(), element, font_style)
             rebuilt = self.cross_references[ref]
         finally:
-            # the definition itself keeps the font size of its own ancestors
+            if context is not None:
+                self._context_paints.pop()
+            # the definition itself keeps the font size of its own ancestors, and its
+            # context paints, for the other <use>
             for key, referenced, cost in saved:
                 self.cross_references[key] = referenced
                 self._cross_reference_costs[key] = cost
