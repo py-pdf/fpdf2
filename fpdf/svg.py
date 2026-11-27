@@ -249,13 +249,11 @@ def parse_viewbox(viewbox: str) -> tuple[float, float, float, float]:
 def resolve_angle(angle_str: str, default_unit: str = "deg") -> float:
     """Convert an angle value to our canonical angle unit, radians"""
     m = unit_splitter.match(angle_str)
-    value: str | float
-    if m is not None:
-        value, unit = m.groups()
-    else:
-        value = angle_str
-    if not unit:  # pyright: ignore[reportPossiblyUnboundVariable]
-        unit = default_unit
+    if m is None:
+        raise ValueError(f"Unable to parse '{angle_str}' as an angle")
+    value, unit = m.groups()
+    # units are ASCII case-insensitive in CSS: 45DEG is 45deg
+    unit = unit.lower() or default_unit
 
     try:
         return float(value) * angle_units[unit]
@@ -1147,8 +1145,8 @@ def _resolve_relative_font_size(
     match = unit_splitter.fullmatch(value.strip())
     if keyword in _RELATIVE_FONT_SIZE_KEYWORDS:
         factor, number = _RELATIVE_FONT_SIZE_KEYWORDS[keyword], 1.0
-    elif match is not None and match.group("unit") in ("em", "ex", "%"):
-        factor = {"em": 1.0, "ex": 0.5, "%": 0.01}[match.group("unit")]
+    elif match is not None and match.group("unit").lower() in ("em", "ex", "%"):
+        factor = {"em": 1.0, "ex": 0.5, "%": 0.01}[match.group("unit").lower()]
         number = float(match.group("value"))
     else:
         return
@@ -1176,9 +1174,9 @@ def _resolve_relative_letter_spacing(
             style_map["letter-spacing"] = parent_value
         return
     match = unit_splitter.fullmatch(value.strip())
-    if match is None or match.group("unit") not in ("em", "ex"):
+    if match is None or match.group("unit").lower() not in ("em", "ex"):
         return
-    factor = 0.5 if match.group("unit") == "ex" else 1.0
+    factor = 0.5 if match.group("unit").lower() == "ex" else 1.0
     font_size = style_map.get("font-size")
     size = resolve_length(font_size) if font_size else resolve_length("16px")
     style_map["letter-spacing"] = f"{float(match.group('value')) * factor * size}pt"
@@ -1212,7 +1210,7 @@ def _resolve_root_length(length_str: str, root_tag: "Element") -> float:
 
 def _is_em_length(value: str) -> bool:
     match = unit_splitter.fullmatch(value.strip())
-    return match is not None and match.group("unit") in ("em", "ex")
+    return match is not None and match.group("unit").lower() in ("em", "ex")
 
 
 def _font_size_pt(font_size: Optional[str]) -> float:
@@ -1230,7 +1228,7 @@ def _em_length(font_size_pt: Optional[float] = None) -> Callable[[str], float]:
 
     def resolve(length_str: str) -> float:
         match = unit_splitter.fullmatch(length_str)
-        unit = match.group("unit") if match else None
+        unit = match.group("unit").lower() if match else None
         if match is None or unit not in ("em", "ex"):
             return resolve_length(length_str)
         return float(match.group("value")) * font_size_pt * (0.5 if unit == "ex" else 1)
