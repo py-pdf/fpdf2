@@ -3111,8 +3111,6 @@ class SVGObject:
                 pattern_paints[attr + "_color"] = self._get_pattern_paint(pattern_id)
         if pattern_paints and isinstance(referenced, (GraphicsContext, PaintedPath)):
             self._bind_reference_patterns(referenced, pattern_paints)
-        pdf_group.add_item(referenced, False)
-
         placement_transform = None
         if "x" in xref.attrib or "y" in xref.attrib:
             # Quoting the SVG spec - 5.6.2. Layout of re-used graphics:
@@ -3155,6 +3153,21 @@ class SVGObject:
                 offset_y = (height - scale_y) * (
                     0 if "YMin" in alignment else 1 if "YMax" in alignment else 0.5
                 )
+            if "slice" in preserve and alignment != "none" and vw > 0 and vh > 0:
+                # The symbol is clipped to its viewport, the width and height of the
+                # <use>, which the slice of its viewBox overflows: in the unit square
+                # of the group, the viewport is not the whole square
+                viewport = ClippingPath()
+                viewport.rectangle(
+                    -offset_x / scale_x,
+                    -offset_y / scale_y,
+                    width / scale_x,
+                    height / scale_y,
+                )
+                clipped = GraphicsContext()
+                clipped.clipping_path = viewport
+                clipped.add_item(referenced, False)
+                referenced = clipped
             symbol_transform = Transform.scaling(
                 x=scale_x, y=scale_y
             ) @ Transform.translation(x=offset_x, y=offset_y)
@@ -3162,6 +3175,7 @@ class SVGObject:
                 placement_transform = symbol_transform
             else:
                 placement_transform = symbol_transform @ placement_transform
+        pdf_group.add_item(referenced, False)
         if placement_transform:
             if pdf_group.transform:
                 pdf_group.transform = placement_transform @ pdf_group.transform
