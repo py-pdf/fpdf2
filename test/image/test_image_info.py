@@ -3,7 +3,8 @@ import zlib
 from io import BytesIO
 from pathlib import Path
 
-from PIL import Image
+import pytest
+from PIL import EpsImagePlugin, Image, UnidentifiedImageError
 
 import fpdf
 
@@ -29,6 +30,32 @@ def break_down_filename(image):
         "colortype_ds": image[5].lower(),
         "n_bits_depth": int(image[6:8], 10),
     }
+
+
+@pytest.mark.parametrize("source", ["path", "bytes", "stream", "pillow"])
+def test_reject_eps_images(source, tmp_path, monkeypatch):
+    image_path = tmp_path / "image.png"
+    Image.new("RGB", (1, 1), "white").save(image_path, format="EPS")
+
+    def unexpected_load(*_args, **_kwargs):
+        pytest.fail("Pillow attempted to load EPS")
+
+    monkeypatch.setattr(EpsImagePlugin.EpsImageFile, "load", unexpected_load)
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    if source == "pillow":
+        with Image.open(image_path) as image:
+            with pytest.raises(UnidentifiedImageError):
+                pdf.image(image)
+        return
+
+    image = {
+        "path": image_path,
+        "bytes": image_path.read_bytes(),
+        "stream": BytesIO(image_path.read_bytes()),
+    }[source]
+    with pytest.raises(UnidentifiedImageError):
+        pdf.image(image)
 
 
 def test_get_img_info():

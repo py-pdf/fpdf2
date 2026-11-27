@@ -129,6 +129,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.link()`, `FPDF.ink_annotation()` and the other annotation methods raise a clear `ValueError` for a negative, NaN or infinite `border_width`, instead of writing `/Border [0 0 nan]` into the page - thanks to @RavSinghChandan
 * `FPDF.rect_clip()`, `FPDF.elliptic_clip()` and `FPDF.round_clip()` raise a clear `ValueError` for NaN or infinite coordinates or dimensions, instead of writing them into the page, which is not a valid PDF number - thanks to @agustin18
 * `FPDF.image()` raises a clear `ValueError` for a NaN or infinite `x`, `y`, `w` or `h`, instead of writing `nan` or `inf` into the page, which is not a valid PDF number - thanks to @agustin18
+* Add image validation to properly reject EPS images.
 
 ## [2.9.0] - 2026-10-29
 ### Added
