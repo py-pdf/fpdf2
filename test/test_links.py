@@ -93,6 +93,26 @@ def test_link_with_zoom_and_shift(tmp_path):
     assert_pdf_equal(pdf, HERE / "link_with_zoom_and_shift.pdf", tmp_path)
 
 
+@pytest.mark.parametrize("zoom", ["1.5", "invalid", float("nan"), float("inf"), True])
+def test_link_rejects_invalid_zoom(zoom):
+    pdf = FPDF()
+    pdf.add_page()
+    link = pdf.add_link(x=10, y=20, zoom=1.5)
+    destination = pdf.links[link]
+    original = destination.replace()
+
+    with pytest.raises(ValueError, match="zoom must be a finite number"):
+        pdf.add_link(zoom=zoom, name="new")
+    with pytest.raises(ValueError, match="zoom must be a finite number"):
+        pdf.set_link(name="named", zoom=zoom)
+    with pytest.raises(ValueError, match="zoom must be a finite number"):
+        pdf.set_link(link, page=2, x=30, y=40, zoom=zoom)
+
+    assert pdf.links == {link: original}
+    assert pdf.links[link] is destination
+    assert not pdf.named_destinations
+
+
 def test_link_border(tmp_path):
     "Acrobat renders this border it but not Sumatra"
     pdf = FPDF()

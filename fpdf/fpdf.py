@@ -3064,7 +3064,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 The default value is 0 (top of page).
             page (int): optional number of target page.
                 -1 indicates the current page, which is the default value.
-            zoom (float): optional new zoom level after following the link.
+            zoom (float | str): optional finite zoom level after following the link.
+                Use "null" (the default) to leave the zoom unchanged.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
             name (str, optional): Name for the destination. If provided, creates a named
                 destination in the PDF that can be referenced from other parts of the document
@@ -3132,7 +3133,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 The default value is 0 (top of page).
             page (int): optional number of target page.
                 -1 indicates the current page, which is the default value.
-            zoom (float): optional new zoom level after following the link.
+            zoom (float | str): optional finite zoom level after following the link.
+                Use "null" (the default) to leave the zoom unchanged.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
             name (str, optional): Name for the destination. If provided, creates or updates a named
                 destination in the PDF that can be referenced from other parts of the document
@@ -3158,10 +3160,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # as a reference to self.links[link] is kept in self.pages[].annots:
         assert link is not None
         destination = self.links[link]
-        destination.page_number = self._link_page(page)
-        destination.top = self.h_pt - y * self.k
-        destination.left = x * self.k
+        page_number = self._link_page(page)
+        top = self.h_pt - y * self.k
+        left = x * self.k
         destination.zoom = zoom
+        destination.page_number = page_number
+        destination.top = top
+        destination.left = left
 
         # If a name is provided with an existing link, associate the name with this link
         if name:
