@@ -629,6 +629,37 @@ def svg_line_join(joinstr: str) -> str:
     return joinstr
 
 
+# the initial values of the properties of svg_attr_map, which the CSS-wide keyword
+# initial stands for
+_INITIAL_STYLE_VALUES = {
+    "fill": "black",
+    "fill-rule": "nonzero",
+    "fill-opacity": "1",
+    "stroke": "none",
+    "stroke-width": "1",
+    "stroke-dasharray": "none",
+    "stroke-dashoffset": "0",
+    "stroke-linecap": "butt",
+    "stroke-linejoin": "miter",
+    "stroke-miterlimit": "4",
+    "stroke-opacity": "1",
+}
+
+
+def _css_wide_keyword(name: str, value: str) -> str:
+    """
+    The value of a property that the CSS-wide keyword stands for: unset is inherit for
+    the properties of svg_attr_map, which are all inherited, and initial is the
+    initial value of the property. Another value is unchanged.
+    """
+    keyword = value.strip().lower()
+    if keyword == "unset":
+        return "inherit"
+    if keyword == "initial":
+        return _INITIAL_STYLE_VALUES.get(name, value)
+    return value
+
+
 # this is mostly SVG 1.1 stuff. SVG 2 changed some of this and the documentation is much
 # harder to assemble into something coherently understandable
 svg_attr_map: dict[str, Any] = {
@@ -708,6 +739,14 @@ def _resolve_inherited_color(
             style["color"] = parent_color
 
 
+def _own_paint_is_inherited(
+    svg_element: "Element", attr: str, style_map: dict[str, Any]
+) -> bool:
+    """Whether the fill or stroke of an element is not set, or inherit or unset."""
+    own = _get_attr_or_style(svg_element, attr, style_map)
+    return own is None or _css_wide_keyword(attr, own).strip().lower() == "inherit"
+
+
 def _with_inherited_current_color(
     style_map: dict[str, Any],
     svg_element: "Element",
@@ -723,7 +762,7 @@ def _with_inherited_current_color(
         attr: "currentColor"
         for attr in ("fill", "stroke")
         if _is_current_color(inherited_style.get(attr))
-        and _get_attr_or_style(svg_element, attr, style_map) in (None, "inherit")
+        and _own_paint_is_inherited(svg_element, attr, style_map)
     }
     return {**style_map, **inherited_paints} if inherited_paints else style_map
 
@@ -752,11 +791,14 @@ def apply_styles(
                 style[key] = norm_value
     stylable.style.auto_close = False
 
+    applied_opacities = set()
     if allow_fill_and_stroke:
         for attr_name, converter in svg_attr_map.items():
             attr_value = _normalize_css_value(style.get(attr_name))
             if attr_value is None:
                 attr_value = _normalize_css_value(svg_element.attrib.get(attr_name))
+            if isinstance(attr_value, str):
+                attr_value = _css_wide_keyword(attr_name, attr_value)
             if (
                 current_color is not None
                 and attr_name in ("fill", "stroke")
@@ -765,14 +807,23 @@ def apply_styles(
             ):
                 attr_value = current_color
             if attr_value is not None:
-                setattr(stylable.style, *converter(attr_value))
+                name, value = converter(attr_value)
+                setattr(stylable.style, name, value)
+                if value is not GraphicsStyle.INHERIT:
+                    applied_opacities.add(name)
 
     # handle this separately for now
     opacity_str = _normalize_css_value(style.get("opacity"))
     if opacity_str is None:
         opacity_str = _normalize_css_value(svg_element.attrib.get("opacity"))
-    # "inherit" keeps the opacity of the parent, as when the property is not set
-    if opacity_str is not None and opacity_str.strip().lower() != "inherit":
+    # "inherit" keeps the opacity of the parent, as when the property is not set;
+    # it is not inherited, so unset is the initial value, as initial is: 1, which
+    # leaves the fill-opacity and the stroke-opacity of the element as they are
+    if opacity_str is not None and opacity_str.strip().lower() in ("unset", "initial"):
+        for name in ("fill_opacity", "stroke_opacity"):
+            if name not in applied_opacities:
+                setattr(stylable.style, name, 1)
+    elif opacity_str is not None and opacity_str.strip().lower() != "inherit":
         # out-of-range values are clamped, as for fill-opacity and stroke-opacity
         opacity = clamp_float(0.0, 1.0)(opacity_str)
         stylable.style.fill_opacity = opacity
