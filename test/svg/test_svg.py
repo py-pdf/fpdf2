@@ -2276,3 +2276,39 @@ def test_svg_opacity_unset_and_initial(keyword, attributes):
     )
     style = svg.base_group.path_items[0].path_items[0].style
     assert (style.fill_opacity, style.stroke_opacity) == (1, 1)
+
+
+@pytest.mark.parametrize("prop", ["fill", "stroke"])
+@pytest.mark.parametrize("declaration", ['{}="{}"', 'style="{}: {}"'])
+def test_svg_unset_paint_inherits_current_color_like_inherit(prop, declaration):
+    # unset is inherit for fill and stroke: a currentColor of the parent is the color
+    # of the element, not the color of the parent
+
+    def style_of(value):
+        svg = fpdf.svg.SVGObject(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<g color="red" fill="currentColor" stroke="currentColor">'
+            f'<rect width="5" height="5" color="blue" {declaration.format(prop, value)}/>'
+            "</g></svg>"
+        )
+        return svg.base_group.path_items[0].path_items[0].style
+
+    attribute = fpdf.svg.svg_attr_map[prop]("none")[0]
+    assert getattr(style_of("unset"), attribute) == getattr(
+        style_of("inherit"), attribute
+    )
+
+
+@pytest.mark.parametrize("keyword", ["unset", "initial"])
+@pytest.mark.parametrize("attributes", ['opacity="{}"', 'style="opacity: {}"'])
+def test_svg_opacity_unset_and_initial_keep_fill_and_stroke_opacity(
+    keyword, attributes
+):
+    # an opacity of 1 does not change the fill-opacity and the stroke-opacity
+    svg = fpdf.svg.SVGObject(
+        '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0.5">'
+        '<rect width="5" height="5" fill-opacity=".25" stroke-opacity=".75" '
+        f"{attributes.format(keyword)}/></g></svg>"
+    )
+    style = svg.base_group.path_items[0].path_items[0].style
+    assert (style.fill_opacity, style.stroke_opacity) == (0.25, 0.75)
