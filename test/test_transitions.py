@@ -89,3 +89,49 @@ def test_transition_errors():
 
     with pytest.raises(ValueError):
         pdf.add_page(transition=UncoverTransition(-1))
+
+
+@pytest.mark.parametrize(
+    "build_transition, expected_message",
+    [
+        (
+            lambda: SplitTransition("A", "I"),
+            "Unsupported dimension 'A', must be H(horizontal) or V(ertical)",
+        ),
+        (
+            lambda: SplitTransition("H", "B"),
+            "Unsupported direction 'B', must be I(nward) or O(utward)",
+        ),
+        (
+            lambda: BlindsTransition("A"),
+            "Unsupported dimension 'A', must be H(horizontal) or V(ertical)",
+        ),
+        (
+            lambda: BoxTransition("A"),
+            "Unsupported direction 'A', must be I(nward) or O(utward)",
+        ),
+        (
+            lambda: WipeTransition(-1),
+            "Unsupported direction '-1', must 0, 90, 180 or 270",
+        ),
+        (
+            lambda: GlitterTransition(-1),
+            "Unsupported direction '-1', must 0, 270 or 315",
+        ),
+        (
+            lambda: FlyTransition("A"),
+            "Unsupported dimension 'A', must be H(horizontal) or V(ertical)",
+        ),
+        (
+            lambda: FlyTransition("V", -1),
+            "Unsupported direction '-1', must 0, 270 or None",
+        ),
+        (lambda: PushTransition(-1), "Unsupported direction '-1', must 0 or 270"),
+        (lambda: CoverTransition(-1), "Unsupported direction '-1', must 0 or 270"),
+        (lambda: UncoverTransition(-1), "Unsupported direction '-1', must 0 or 270"),
+    ],
+)
+def test_transition_error_messages(build_transition, expected_message):
+    with pytest.raises(ValueError) as error:
+        build_transition()
+    assert str(error.value) == expected_message
