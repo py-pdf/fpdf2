@@ -3461,6 +3461,30 @@ class SVGObject:
         _resolve_relative_font_size(font_style, inherited_style)
         return _font_size_pt(font_style.get("font-size"))
 
+    def _clip_rule_of(
+        self, element: "Element", inherited_rule: Optional[str] = None
+    ) -> str:
+        """
+        The clip-rule of a shape in a <clipPath>, its own or inherited from its
+        ancestors, or, for a shape that a <use> draws, from the <use>, as the shape
+        and its ancestors are not its parents then; the initial value is nonzero.
+        """
+        rule = self._own_clip_rule(element)
+        parent = self._pattern_parents.get(element)
+        while rule is None and inherited_rule is None and parent is not None:
+            rule = self._own_clip_rule(parent)
+            parent = self._pattern_parents.get(parent)
+        return rule or inherited_rule or "nonzero"
+
+    def _own_clip_rule(self, element: "Element") -> Optional[str]:
+        value = _get_attr_or_style(element, "clip-rule", self._style_map_for(element))
+        if value is not None and value.strip().lower() in ("nonzero", "evenodd"):
+            return value.strip().lower()
+        if value is not None and value.strip().lower() == "initial":
+            return "nonzero"
+        # inherit, unset, or an invalid value: the element takes the rule of its parent
+        return None
+
     def _ancestors_font_style(self, element: "Element") -> dict[str, Any]:
         """
         The font size that the ancestors of an element give it, for an element that is
@@ -3523,6 +3547,26 @@ class SVGObject:
         shape: "Element",
         allow_use: bool = True,
         font_style: Optional[dict[str, Any]] = None,
+        use_clip_rule: Optional[str] = None,
+    ) -> Optional[PaintedPath]:
+        clipping_path_shape = self._clipping_path_outline(
+            shape, allow_use, font_style, use_clip_rule
+        )
+        if clipping_path_shape is not None and shape.tag not in xmlns_lookup(
+            "svg", "use"
+        ):
+            # a shape clips by its clip-rule; its fill-rule does not matter
+            clipping_path_shape.style.intersection_rule = self._clip_rule_of(
+                shape, use_clip_rule
+            )
+        return clipping_path_shape
+
+    def _clipping_path_outline(
+        self,
+        shape: "Element",
+        allow_use: bool,
+        font_style: Optional[dict[str, Any]],
+        use_clip_rule: Optional[str],
     ) -> Optional[PaintedPath]:
         if shape.tag in shape_tags:
             self._record_resolved_elements(1)
@@ -3567,7 +3611,10 @@ class SVGObject:
                 _resolve_relative_font_size(own, use_font_style)
                 use_font_style = own
             referenced_shape = self._clipping_path_shape(
-                referenced, allow_use=False, font_style=use_font_style
+                referenced,
+                allow_use=False,
+                font_style=use_font_style,
+                use_clip_rule=self._clip_rule_of(shape, use_clip_rule),
             )
             if referenced_shape is None:
                 return None
