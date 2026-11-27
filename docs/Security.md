@@ -110,6 +110,7 @@ pdf.resource_access_policy = (
 The policy applies globally to the `FPDF` instance and affects all resource loading performed through that document, including nested resources referenced from HTML or SVG.
 
 By default, `fpdf2` restricts resource loading to local files and remote HTTP(S) resources that resolve to public network addresses. Access to private, loopback, and link-local network targets is blocked.
+On Windows, UNC and device paths are rejected under every resource access policy.
 
 ## Per-call override with `image()`
 
