@@ -45,6 +45,7 @@ from .svg import SVGLimits, SVGObject
 from .util import ImageType
 
 try:
+    import PIL
     from PIL import (
         Image,
         ImageChops,
@@ -53,6 +54,7 @@ try:
         features as PIL_features,
     )
 except ImportError:
+    PIL = None  # type: ignore[assignment]
     Image = None  # type: ignore[assignment]
     ImageChops = None  # type: ignore[assignment]
     ImageCms = None  # type: ignore[assignment]
@@ -434,6 +436,7 @@ def preload_image(
     if isinstance(name, str):
         raster_name, img = name, None
     elif _is_pil_image(name):
+        _reject_eps_image(name)
         bytes_ = name.tobytes()
         img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
@@ -613,6 +616,12 @@ def _from_16_bit_grayscale(img: "PILImage") -> "PILImage":
     return Image.merge("LA", (gray, ImageChops.lighter(above, below)))
 
 
+def _reject_eps_image(img: "PILImage") -> None:
+    if img.format == "EPS":
+        assert PIL is not None
+        raise PIL.UnidentifiedImageError("EPS images are not supported")
+
+
 def get_img_info(
     filename: str | BinaryIO | Path,
     img: "PILImage | bytes | BinaryIO | Path | str | None" = None,
@@ -639,7 +648,6 @@ def get_img_info(
         img_raw_data = load_image(
             filename, resource_access_policy=resource_access_policy
         )
-        img = Image.open(img_raw_data)
         is_pil_img = False
     elif not _is_pil_image(img):
         keep_bytes_io_open = isinstance(img, BytesIO)
@@ -647,10 +655,16 @@ def get_img_info(
             img_raw_data = BytesIO(img)
         else:
             img_raw_data = img  # type: ignore[assignment]
-        assert img_raw_data is not None
-        img = Image.open(img_raw_data)
         is_pil_img = False
+    if not is_pil_img:
+        assert img_raw_data is not None
+        # Pillow's EPS decoder can launch Ghostscript. Preserve other registered
+        # decoders and leave Pillow's global registry intact.
+        Image.init()
+        formats = [format_id for format_id in Image.ID if format_id != "EPS"]
+        img = Image.open(img_raw_data, formats=formats)
     assert _is_pil_image(img)
+    _reject_eps_image(img)
     # Pillow opens 16-bit grayscale PNG files in mode "I;16", or "I" before 10.3.0
     is_16_bit_grayscale = img.mode in ("I;16", "I;16B", "I;16L") or (
         img.mode == "I" and img.format == "PNG"

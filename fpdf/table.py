@@ -414,10 +414,11 @@ class Table:
 
         style = self._initial_style
         assert style is not None
-        cell_mode_fill = self._cell_fill_mode.should_fill_cell(i, j)
-        if cell_mode_fill and self._cell_fill_color:
+        is_filled_by_fill_mode = self._cell_fill_mode.should_fill_cell(i, j)
+        if is_filled_by_fill_mode and self._cell_fill_color:
             style = style.replace(fill_color=self._cell_fill_color)
-        if i < self._num_heading_rows:
+        is_heading_row = i < self._num_heading_rows
+        if is_heading_row:
             style = FontFace.combine(style, self._headings_style)
         style = FontFace.combine(style, row.style)
         style = FontFace.combine(style, cell.style)
