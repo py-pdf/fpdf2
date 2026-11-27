@@ -1223,12 +1223,25 @@ def _font_size_pt(font_size: Optional[str]) -> float:
         return resolve_length("16px")
 
 
-def _em_length(font_size_pt: Optional[float] = None) -> Callable[[str], float]:
-    """resolve_length(), with em and ex relative to a font size in pt (16px if None), as in CSS."""
+def _em_length(
+    font_size_pt: Optional[float] = None,
+    viewport: Optional[tuple[float, float]] = None,
+) -> Callable[..., float]:
+    """
+    resolve_length(), with em and ex relative to a font size in pt (16px if None), as
+    in CSS, and, with a viewport, a percentage of its width (axis 0), its height
+    (axis 1) or its normalized diagonal (axis None), as in SVG.
+    """
     if font_size_pt is None:
         font_size_pt = _font_size_pt(None)
 
-    def resolve(length_str: str) -> float:
+    def resolve(length_str: str, axis: Optional[int] = None) -> float:
+        if viewport is not None and length_str.strip().endswith("%"):
+            if axis is None:
+                size = math.sqrt((viewport[0] ** 2 + viewport[1] ** 2) / 2)
+            else:
+                size = viewport[axis]
+            return float(length_str.strip()[:-1]) / 100 * size
         match = unit_splitter.fullmatch(length_str)
         unit = match.group("unit") if match else None
         if match is None or unit not in ("em", "ex"):
@@ -1561,22 +1574,26 @@ class ShapeBuilder:
         tag: "Element",
         clipping_path: bool = False,
         font_size: Optional[float] = None,
+        viewport: Optional[tuple[float, float]] = None,
     ) -> PaintedPath:
-        """Convert an SVG <rect> into a PDF path; em and ex are relative to font_size."""
-        length = _em_length(font_size)
+        """
+        Convert an SVG <rect> into a PDF path; em and ex are relative to font_size,
+        and percentages to the viewport.
+        """
+        length = _em_length(font_size, viewport)
         # svg rect is wound clockwise
-        x = length(tag.attrib.get("x", "0"))
-        y = length(tag.attrib.get("y", "0"))
+        x = length(tag.attrib.get("x", "0"), 0)
+        y = length(tag.attrib.get("y", "0"), 1)
         width_str = tag.attrib.get("width") or "0"
-        if width_str.endswith("%"):
+        if width_str.endswith("%") and viewport is None:
             width: Percent | float = Percent(width_str[:-1])
         else:
-            width = length(width_str)
+            width = length(width_str, 0)
         height_str = tag.attrib.get("height") or "0"
-        if height_str.endswith("%"):
+        if height_str.endswith("%") and viewport is None:
             height: Percent | float = Percent(height_str[:-1])
         else:
-            height = length(height_str)
+            height = length(height_str, 1)
         rx_str = tag.attrib.get("rx") or "auto"
         ry_str = tag.attrib.get("ry") or "auto"
 
@@ -1591,12 +1608,12 @@ class ShapeBuilder:
         if rx_str == ry_str == "auto":
             rx = ry = 0
         elif rx_str == "auto":
-            rx = ry = length(ry_str)
+            rx = ry = length(ry_str, 1)
         elif ry_str == "auto":
-            ry = rx = length(rx_str)
+            ry = rx = length(rx_str, 0)
         else:
-            rx = length(rx_str)
-            ry = length(ry_str)
+            rx = length(rx_str, 0)
+            ry = length(ry_str, 1)
 
         if (width < 0) or (height < 0) or (rx < 0) or (ry < 0):
             raise ValueError(f"bad rect {tag}")
@@ -1619,11 +1636,15 @@ class ShapeBuilder:
         tag: "Element",
         clipping_path: bool = False,
         font_size: Optional[float] = None,
+        viewport: Optional[tuple[float, float]] = None,
     ) -> PaintedPath:
-        """Convert an SVG <circle> into a PDF path; em and ex are relative to font_size."""
-        length = _em_length(font_size)
-        cx = length(tag.attrib.get("cx", "0"))
-        cy = length(tag.attrib.get("cy", "0"))
+        """
+        Convert an SVG <circle> into a PDF path; em and ex are relative to font_size,
+        and percentages to the viewport.
+        """
+        length = _em_length(font_size, viewport)
+        cx = length(tag.attrib.get("cx", "0"), 0)
+        cy = length(tag.attrib.get("cy", "0"), 1)
         r = length(tag.attrib.get("r", "0"))
 
         path = cls.new_path(tag, clipping_path)
@@ -1639,11 +1660,15 @@ class ShapeBuilder:
         tag: "Element",
         clipping_path: bool = False,
         font_size: Optional[float] = None,
+        viewport: Optional[tuple[float, float]] = None,
     ) -> PaintedPath:
-        """Convert an SVG <ellipse> into a PDF path; em and ex are relative to font_size."""
-        length = _em_length(font_size)
-        cx = length(tag.attrib.get("cx", "0"))
-        cy = length(tag.attrib.get("cy", "0"))
+        """
+        Convert an SVG <ellipse> into a PDF path; em and ex are relative to
+        font_size, and percentages to the viewport.
+        """
+        length = _em_length(font_size, viewport)
+        cx = length(tag.attrib.get("cx", "0"), 0)
+        cy = length(tag.attrib.get("cy", "0"), 1)
 
         rx_str = tag.attrib.get("rx") or "auto"
         ry_str = tag.attrib.get("ry") or "auto"
@@ -1654,12 +1679,12 @@ class ShapeBuilder:
             return path
 
         if rx_str == "auto":
-            rx = ry = length(ry_str)
+            rx = ry = length(ry_str, 1)
         elif ry_str == "auto":
-            rx = ry = length(rx_str)
+            rx = ry = length(rx_str, 0)
         else:
-            rx = length(rx_str)
-            ry = length(ry_str)
+            rx = length(rx_str, 0)
+            ry = length(ry_str, 1)
 
         path.ellipse(cx, cy, rx, ry)
         return path
@@ -1670,16 +1695,18 @@ class ShapeBuilder:
         tag: "Element",
         clipping_path: bool = False,
         font_size: Optional[float] = None,
+        viewport: Optional[tuple[float, float]] = None,
     ) -> PaintedPath:
         """
         Convert an SVG <line> into a PDF path. In a <clipPath>, it has no area, so it
-        clips everything away. em and ex are relative to font_size.
+        clips everything away. em and ex are relative to font_size, and percentages
+        to the viewport.
         """
-        length = _em_length(font_size)
-        x1 = length(tag.attrib.get("x1", "0"))
-        y1 = length(tag.attrib.get("y1", "0"))
-        x2 = length(tag.attrib.get("x2", "0"))
-        y2 = length(tag.attrib.get("y2", "0"))
+        length = _em_length(font_size, viewport)
+        x1 = length(tag.attrib.get("x1", "0"), 0)
+        y1 = length(tag.attrib.get("y1", "0"), 1)
+        x2 = length(tag.attrib.get("x2", "0"), 0)
+        y2 = length(tag.attrib.get("y2", "0"), 1)
 
         path = cls.new_path(tag, clipping_path)
         path.move_to(x1, y1)
@@ -1962,7 +1989,11 @@ class SVGObject:
         image_cache: Optional[ImageCache] = None,
         resource_access_policy: ResourceAccessPolicy = ResourceAccessPolicy.DEFAULT,
         svg_limits: Optional[SVGLimits] = None,
+        _viewport: Optional[tuple[float, float]] = None,
     ) -> None:
+        # _viewport is for transform_to_rect_viewport(), which builds the shapes again
+        # when the size of an SVG without a viewBox is only known by then
+        self._svg_text = svg_text
         self.image_cache = image_cache  # Needed to render images
         self.resource_access_policy = resource_access_policy
         self.svg_limits = svg_limits or SVGLimits()
@@ -2019,6 +2050,8 @@ class SVGObject:
             if self.viewbox
             else (float(self.width or 300), float(self.height or 150))
         )
+        if _viewport is not None:
+            self.pattern_viewport = _viewport
         self._check_svg_limits(svg_tree)
         # A <use> of an element that is itself hidden draws nothing.
         self._hidden_references = {
@@ -2925,6 +2958,19 @@ class SVGObject:
 
         transform = Transform.identity()
 
+        if not self.viewbox and self.pattern_viewport != (vp_width, vp_height):
+            # The percentages of the shapes are of this viewport, not of the one
+            # their geometry was built with, from a width or height that was a
+            # percentage too: build them again
+            SVGObject.__init__(
+                self,
+                self._svg_text,
+                self.image_cache,
+                self.resource_access_policy,
+                self.svg_limits,
+                _viewport=(float(vp_width), float(vp_height)),
+            )
+
         if self.viewbox:
             vx, vy, vw, vh = self.viewbox
 
@@ -3057,10 +3103,19 @@ class SVGObject:
         self, symbol: "Element", inherited_style: Optional[dict[str, Any]] = None
     ) -> GraphicsContext:
         """Parse <symbol> as reusable content, not rendered directly."""
-        group = self.build_group(symbol, None, inherited_style)
         viewbox = symbol.attrib.get("viewBox")
-        if viewbox:
-            vx, vy, vw, vh = parse_viewbox(viewbox)
+        parsed_viewbox = parse_viewbox(viewbox) if viewbox else None
+        outer_viewport = self.pattern_viewport
+        if parsed_viewbox and parsed_viewbox[2] > 0 and parsed_viewbox[3] > 0:
+            # the percentages of its shapes are of its viewBox, not of the one of the
+            # <svg>
+            self.pattern_viewport = (parsed_viewbox[2], parsed_viewbox[3])
+        try:
+            group = self.build_group(symbol, None, inherited_style)
+        finally:
+            self.pattern_viewport = outer_viewport
+        if parsed_viewbox:
+            vx, vy, vw, vh = parsed_viewbox
             if vw == 0 or vh == 0:
                 group = GraphicsContext()
             else:
@@ -3492,7 +3547,9 @@ class SVGObject:
             shape_path = shape_builder(shape)
         else:
             font_size = self._shape_font_size(style_map, inherited_style)
-            shape_path = shape_builder(shape, font_size=font_size)
+            shape_path = shape_builder(
+                shape, font_size=font_size, viewport=self.pattern_viewport
+            )
         assert isinstance(shape_path, PaintedPath)
         apply_styles(
             shape_path,
@@ -3534,7 +3591,9 @@ class SVGObject:
                 if font_style is None:
                     font_style = self._ancestors_font_style(shape)
                 font_size = self._shape_font_size(style_map, font_style)
-                clipping_path_shape = shape_builder(shape, True, font_size=font_size)
+                clipping_path_shape = shape_builder(
+                    shape, True, font_size=font_size, viewport=self.pattern_viewport
+                )
             apply_styles(clipping_path_shape, shape, style_map)
         elif shape.tag in xmlns_lookup("svg", "path"):
             self._record_resolved_elements(1)

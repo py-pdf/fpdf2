@@ -346,6 +346,46 @@ test_svg_shape_tags = (
     ),
 )
 
+# percentages of a viewport of 200 x 100, and of its normalized diagonal for r
+test_svg_shape_tags_with_viewport = (
+    pytest.param(
+        '<rect x="10%" y="10%" width="80%" height="80%" rx="5%" ry="10%"/>',
+        [M(0, 0), Re(20, 10, 160, 80, 10, 10)],
+        id="rect with percents",
+    ),
+    pytest.param(
+        # as python-barcode and draw.io write the background
+        '<rect width="100%" height="100%"/>',
+        [M(0, 0), Re(0, 0, 200, 100, 0, 0)],
+        id="rect of the whole viewport",
+    ),
+    pytest.param(
+        '<rect width="100" height="100" rx="10%"/>',
+        [M(0, 0), Re(0, 0, 100, 100, 20, 20)],
+        id="rect with a percent rx",
+    ),
+    pytest.param(
+        '<circle cx="50%" cy="50%" r="10%"/>',
+        [M(0, 0), El(0.1 * math.sqrt(25000), 0.1 * math.sqrt(25000), 100, 50)],
+        id="circle with percents",
+    ),
+    pytest.param(
+        '<ellipse cx="50%" rx="25%" ry="50%"/>',
+        [M(0, 0), El(50, 50, 100, 0)],
+        id="ellipse with percents",
+    ),
+    pytest.param(
+        '<ellipse rx="10%"/>',
+        [M(0, 0), El(20, 20, 0, 0)],
+        id="ellipse with a percent rx",
+    ),
+    pytest.param(
+        '<line x1="0" y1="100%" x2="100%" y2="0"/>',
+        [M(0, 100), L(200, 0)],
+        id="line with percents",
+    ),
+)
+
 test_svg_transforms = (
     pytest.param(
         "matrix(1e0,2E0,3e+0,4e0,5e1,-6E1)",
