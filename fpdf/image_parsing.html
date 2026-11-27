@@ -51,7 +51,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L886-L913" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L900-L927" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ccitt_payload_location_from_pil(img: &#34;PILImage&#34;) -&gt; tuple[int, int]:
     &#34;&#34;&#34;
@@ -91,7 +91,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L1076-L1086" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L1090-L1100" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def clear_table() -&gt; tuple[dict[bytes, int], int, int, int]:
     &#34;&#34;&#34;
@@ -114,7 +114,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L616-L858" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L625-L872" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_img_info(
     filename: str | BinaryIO | Path,
@@ -142,7 +142,6 @@ el.replaceWith(d);
         img_raw_data = load_image(
             filename, resource_access_policy=resource_access_policy
         )
-        img = Image.open(img_raw_data)
         is_pil_img = False
     elif not _is_pil_image(img):
         keep_bytes_io_open = isinstance(img, BytesIO)
@@ -150,10 +149,16 @@ el.replaceWith(d);
             img_raw_data = BytesIO(img)
         else:
             img_raw_data = img  # type: ignore[assignment]
-        assert img_raw_data is not None
-        img = Image.open(img_raw_data)
         is_pil_img = False
+    if not is_pil_img:
+        assert img_raw_data is not None
+        # Pillow&#39;s EPS decoder can launch Ghostscript. Preserve other registered
+        # decoders and leave Pillow&#39;s global registry intact.
+        Image.init()
+        formats = [format_id for format_id in Image.ID if format_id != &#34;EPS&#34;]
+        img = Image.open(img_raw_data, formats=formats)
     assert _is_pil_image(img)
+    _reject_eps_image(img)
     # Pillow opens 16-bit grayscale PNG files in mode &#34;I;16&#34;, or &#34;I&#34; before 10.3.0
     is_16_bit_grayscale = img.mode in (&#34;I;16&#34;, &#34;I;16B&#34;, &#34;I;16L&#34;) or (
         img.mode == &#34;I&#34; and img.format == &#34;PNG&#34;
@@ -378,7 +383,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L571-L595" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L574-L598" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_svg_info(
     filename: str,
@@ -415,7 +420,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L552-L568" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L555-L571" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@no_type_check
 def is_iccp_valid(iccp: bytes, filename: str | Path) -&gt; bool:
@@ -444,7 +449,7 @@ def is_iccp_valid(iccp: bytes, filename: str | Path) -&gt; bool:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L497-L532" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L500-L535" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_image(
     filename: str | Path | BinaryIO,
@@ -494,7 +499,7 @@ It always return a BytesIO buffer.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L1033-L1073" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L1047-L1087" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def pack_codes_into_bytes(codes: Iterable[int]) -&gt; bytes:
     &#34;&#34;&#34;
@@ -548,7 +553,7 @@ The bit-width starts at 9 bits and expands as needed.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L359-L481" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L361-L484" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def preload_image(
     image_cache: ImageCache,
@@ -628,6 +633,7 @@ The bit-width starts at 9 bits and expands as needed.</p></div>
     if isinstance(name, str):
         raster_name, img = name, None
     elif _is_pil_image(name):
+        _reject_eps_image(name)
         bytes_ = name.tobytes()
         img_hash = hashlib.new(&#34;md5&#34;, usedforsecurity=False)  # nosec B324
         img_hash.update(bytes_)
@@ -700,7 +706,7 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L916-L966" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L930-L980" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transcode_monochrome(img: &#34;PILImage&#34;) -&gt; bytes:
     &#34;&#34;&#34;
@@ -769,7 +775,7 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L81-L86" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L83-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class ImageSettings:
@@ -799,7 +805,7 @@ class ImageSettings:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/379c57cee6d8b1a2c99960ee364dcf3ed361a502/fpdf/image_parsing.py#L861-L883" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/0f34595da58ad0b8d4bbb2ee0955daa099c4056a/fpdf/image_parsing.py#L875-L897" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class temp_attr:
     &#34;&#34;&#34;
