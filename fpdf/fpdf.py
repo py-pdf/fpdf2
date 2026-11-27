@@ -2064,6 +2064,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             corner_radius: Optional radius of the corners
         """
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
+        if not (math.isfinite(w) and math.isfinite(h)):
+            raise ValueError(
+                f"Rectangle dimensions must be finite numbers: w={w}, h={h}"
+            )
 
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
         if round_corners is not False:
@@ -2474,6 +2480,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         style = RenderStyle.coerce(style) if style is not None else RenderStyle.D
 
+        _check_coordinate("x", x)
+        _check_coordinate("y", y)
         if b is None:
             b = a
         if a == 0 or b == 0 or not (math.isfinite(a) and math.isfinite(b)):
