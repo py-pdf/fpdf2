@@ -62,6 +62,7 @@ in non-backward-compatible ways.
 
 # pyright: reportUnknownVariableType=false, reportUnknownMemberType=false, reportAttributeAccessIssue=false
 
+import math
 import re
 import zlib
 from abc import ABC
@@ -480,6 +481,22 @@ class DestinationXYZ(Destination):
         self.left = left
         self.zoom = zoom
         self.page_ref: Optional[str] = None
+
+    @property
+    def zoom(self) -> str | float:
+        return self._zoom
+
+    @zoom.setter
+    def zoom(self, value: str | float) -> None:
+        # Store only built-in values so serialization cannot use a custom __str__.
+        if isinstance(value, str) and str.__eq__(value, "null"):
+            self._zoom: str | float = "null"
+        elif isinstance(value, int) and not isinstance(value, bool):
+            self._zoom = int.__int__(value)
+        elif isinstance(value, float) and math.isfinite(value):
+            self._zoom = float.__float__(value)
+        else:
+            raise ValueError('zoom must be a finite number or "null"')
 
     def __eq__(self, dest: object) -> bool:
         if not isinstance(dest, DestinationXYZ):
