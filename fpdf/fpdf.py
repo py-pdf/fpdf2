@@ -4147,6 +4147,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with text="
             )
+        if w is not None and not math.isfinite(w):
+            raise ValueError(f"Parameter 'w' must be a finite number, got {w}")
+        if h is not None and not math.isfinite(h):
+            raise ValueError(f"Parameter 'h' must be a finite number, got {h}")
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently ignored',
@@ -5358,6 +5362,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with text="
             )
+        if not math.isfinite(w):
+            raise ValueError(f"Parameter 'w' must be a finite number, got {w}")
+        if h is not None and not math.isfinite(h):
+            raise ValueError(f"Parameter 'h' must be a finite number, got {h}")
         new_x = XPos.coerce(new_x)
         new_y = YPos.coerce(new_y)
         if ln != "DEPRECATED":
@@ -5685,6 +5693,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
         if h is None:
             h = self.font_size
+        if not math.isfinite(h):
+            raise ValueError(f"Parameter 'h' must be a finite number, got {h}")
 
         page_break_triggered = False
         normalized_string = self.normalize_text(text).replace("\r", "")
